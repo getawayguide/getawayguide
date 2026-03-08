@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getawayguide</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --cream: #F5F0E8; --ink: #1A1610; --terra: #C4673A; --sage: #7A8C6E; --gold: #D4A843; --mist: #E8E2D6; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--cream); color: var(--ink); font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 300; overflow-x: hidden; cursor: none; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 1000; opacity: 0.4; }
+
+  .cursor { width: 10px; height: 10px; background: var(--terra); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width 0.2s, height 0.2s; mix-blend-mode: multiply; }
+  .cursor-ring { width: 36px; height: 36px; border: 1px solid var(--terra); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width 0.3s, height 0.3s; opacity: 0.5; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 3rem; background: rgba(245,240,232,0.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid rgba(26,22,16,0.06); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-weight: 300; font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink); opacity: 0.6; text-decoration: none; cursor: none; }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; align-items: center; }
+  .nav-links a { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); text-decoration: none; opacity: 0.5; transition: opacity 0.2s; cursor: none; }
+  .nav-links a:hover { opacity: 1; }
+  .nav-links a.active { opacity: 1; border-bottom: 1px solid var(--terra); padding-bottom: 2px; }
+
+  /* DESTINATIONS DROPDOWN */
+  .nav-dropdown-wrap { position: relative; list-style: none; }
+  .nav-dropdown-trigger { display: flex; align-items: center; gap: 0.4rem; }
+  .nav-caret { font-style: normal; font-size: 0.6rem; transition: transform 0.2s; display: inline-block; }
+  .nav-dropdown-wrap:hover .nav-caret { transform: rotate(180deg); }
+  .nav-dropdown-wrap::after { content: ''; position: absolute; top: 100%; left: -20px; right: -20px; height: 1.8rem; }
+  .nav-dropdown { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: rgba(245,240,232,0.98); backdrop-filter: blur(12px); border: 1px solid rgba(26,22,16,0.08); box-shadow: 0 16px 48px rgba(26,22,16,0.12); padding: 2rem; display: none; grid-template-columns: repeat(3, 190px); gap: 0; min-width: 580px; z-index: 200; margin-top: 1.5rem; }
+  .nav-dropdown-wrap:hover .nav-dropdown { display: grid; }
+  .nav-dropdown-col { padding: 0 1.5rem; border-right: 1px solid rgba(26,22,16,0.06); display: flex; flex-direction: column; gap: 0.1rem; }
+  .nav-dropdown-col:first-child { padding-left: 0; }
+  .nav-dropdown-col:last-child { border-right: none; }
+  .nav-dropdown-continent { font-family: 'Playfair Display', serif; font-size: 0.9rem; font-style: italic; color: var(--terra); text-decoration: none; padding: 0.3rem 0; margin-bottom: 0.2rem; cursor: none; }
+  .nav-dropdown-continent:hover { opacity: 0.75; }
+  .nav-dropdown-item { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: none; color: var(--ink); text-decoration: none; opacity: 0.5; padding: 0.22rem 0; transition: opacity 0.15s, color 0.15s; cursor: none; display: flex; align-items: center; gap: 0.4rem; }
+  .nav-dropdown-item:hover { opacity: 1; color: var(--terra); }
+  .nav-dropdown-item .flag { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif !important; font-size: 1rem; text-transform: none !important; letter-spacing: 0; line-height: 1; }
+  .nav-dropdown-item .country-name { text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-dropdown-spacer { height: 1.2rem; }
+  .nav-dropdown-all { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terra); text-decoration: none; padding: 0.3rem 0; margin-top: 0.25rem; cursor: none; }
+  .nav-dropdown-all:hover { opacity: 0.75; }
+
+  /* PAGE SYSTEM */
+  .page { display: none; }
+  .page.active { display: block; }
+  .page.fade-in { animation: pageFade 0.4s ease forwards; }
+  @keyframes pageFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HOME */
+  .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; padding-top: 5rem; }
+  .hero-text { display: flex; flex-direction: column; justify-content: center; padding: 8rem 4rem 4rem 6rem; position: relative; z-index: 2; }
+  .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terra); margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(3.5rem,6vw,7rem); line-height: 0.95; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.4s forwards; }
+  .hero-title em { font-style: italic; color: var(--terra); }
+  .hero-subtitle { font-size: 1.25rem; line-height: 1.7; color: var(--ink); opacity: 0; max-width: 380px; animation: fadeUp 0.8s 0.6s forwards; }
+  .hero-cta { display: inline-flex; align-items: center; gap: 1rem; margin-top: 3rem; font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--terra); padding-bottom: 0.25rem; opacity: 0; animation: fadeUp 0.8s 0.8s forwards; transition: gap 0.2s, color 0.2s; cursor: none; }
+  .hero-cta:hover { gap: 1.5rem; color: var(--terra); }
+  .hero-cta svg { transition: transform 0.2s; }
+  .hero-cta:hover svg { transform: translateX(4px); }
+  .hero-image { position: relative; overflow: hidden; opacity: 0; animation: fadeIn 1.2s 0.3s forwards; }
+  .hero-image-inner { position: absolute; inset: 5% 5% 5% -5%; background: linear-gradient(160deg,#8B6F5C 0%,#5C4A3A 30%,#3A2E24 60%,#7A6B52 100%); border-radius: 2px; overflow: hidden; }
+  .hero-image-inner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 50% 100%,#4A3728 0%,transparent 70%), radial-gradient(ellipse 80% 50% at 30% 85%,#6B5040 0%,transparent 60%), linear-gradient(180deg,#C4A882 0%,#A8896C 20%,#7A6050 40%,#3D2E1E 100%); }
+  .hero-image-inner::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 55%; background: radial-gradient(ellipse 100% 80% at 50% 100%,#2A1F14 0%,transparent 70%); }
+  .mountain { position: absolute; bottom: 28%; left: 0; right: 0; height: 40%; clip-path: polygon(0% 100%,12% 45%,22% 65%,35% 20%,50% 55%,65% 15%,78% 50%,88% 35%,100% 60%,100% 100%); background: #1E160D; opacity: 0.7; }
+  .mountain-2 { position: absolute; bottom: 20%; left: 0; right: 0; height: 35%; clip-path: polygon(0% 100%,18% 55%,30% 70%,45% 30%,60% 60%,72% 25%,85% 55%,100% 40%,100% 100%); background: #2D2015; opacity: 0.8; }
+  .sun { position: absolute; top: 22%; left: 55%; width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle,#E8A855 0%,#C4673A 50%,transparent 70%); box-shadow: 0 0 40px 20px rgba(212,168,67,0.3); }
+  .hero-image-label { position: absolute; right: 1.5rem; bottom: 3rem; font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,232,0.5); writing-mode: vertical-rl; }
+  .hero-scroll { position: absolute; bottom: 3rem; left: 6rem; font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink); opacity: 0.35; display: flex; align-items: center; gap: 1rem; }
+  .hero-scroll::before { content: ''; width: 40px; height: 1px; background: var(--ink); display: inline-block; animation: scrollLine 2s infinite; }
+  @keyframes scrollLine { 0%,100% { width: 40px; opacity: 0.35; } 50% { width: 60px; opacity: 0.6; } }
+
+  .marquee-wrap { overflow: hidden; border-top: 1px solid rgba(26,22,16,0.1); border-bottom: 1px solid rgba(26,22,16,0.1); padding: 1rem 0; background: var(--ink); }
+  .marquee-track { display: flex; gap: 3rem; white-space: nowrap; animation: marquee 20s linear infinite; }
+  .marquee-item { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.1rem; color: var(--cream); opacity: 0.5; flex-shrink: 0; display: flex; align-items: center; gap: 3rem; }
+  .marquee-item span { color: var(--terra); font-style: normal; font-size: 0.5rem; opacity: 1; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .section { padding: 7rem 6rem; }
+  .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 400; letter-spacing: -0.02em; }
+  .section-title em { font-style: italic; color: var(--terra); }
+  .section-link { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); text-decoration: none; opacity: 0.45; transition: opacity 0.2s; border-bottom: 1px solid currentColor; padding-bottom: 2px; cursor: none; }
+  .section-link:hover { opacity: 1; }
+
+  .posts-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; grid-template-rows: auto auto; gap: 2px; }
+  .post-card { position: relative; overflow: hidden; background: var(--mist); cursor: none; }
+  .post-card:first-child { grid-row: span 2; }
+  .post-card-image { width: 100%; aspect-ratio: 4/3; position: relative; overflow: hidden; transition: transform 0.6s ease; }
+  .post-card:first-child .post-card-image { aspect-ratio: unset; height: 100%; min-height: 500px; }
+  .img-kyoto { background: linear-gradient(180deg,#B5C9D8 0%,#8FA8B8 30%,#C4A882 60%,#7A8C6E 100%); }
+  .img-kyoto::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 40% 60% at 60% 20%,rgba(255,220,180,0.4) 0%,transparent 60%), radial-gradient(ellipse 60% 40% at 50% 100%,#3D5230 0%,transparent 60%); }
+  .img-patagonia { background: linear-gradient(180deg,#6B8FA8 0%,#4A6B7A 40%,#8A9E6E 70%,#4A5C3A 100%); }
+  .img-morocco { background: linear-gradient(160deg,#E8C882 0%,#C4893A 40%,#8B5230 70%,#3A2415 100%); }
+  .img-iceland { background: linear-gradient(180deg,#2A3A4A 0%,#1A2830 30%,#3A5A3A 60%,#1E2E1E 100%); }
+  .img-vietnam { background: linear-gradient(180deg,#A8C882 0%,#7A9E5A 40%,#4A6A3A 70%,#2A3A1E 100%); }
+  .post-card:hover .post-card-image { transform: scale(1.04); }
+  .post-card-body { padding: 1.5rem 1.75rem 2rem; }
+  .post-card:first-child .post-card-body { position: absolute; bottom: 0; left: 0; right: 0; padding: 3rem 2.5rem 2.5rem; background: linear-gradient(transparent,rgba(26,22,16,0.88)); color: var(--cream); }
+  .post-tag { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--terra); margin-bottom: 0.75rem; display: block; }
+  .post-card:first-child .post-tag { color: var(--gold); }
+  .post-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; line-height: 1.25; font-weight: 400; margin-bottom: 0.75rem; transition: color 0.2s; }
+  .post-card:first-child .post-title { font-size: 2rem; color: var(--cream); }
+  .post-excerpt { font-size: 0.9rem; line-height: 1.65; opacity: 0.65; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .post-card:first-child .post-excerpt { color: rgba(245,240,232,0.7); }
+  .post-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(26,22,16,0.08); font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; opacity: 0.4; text-transform: uppercase; }
+  .post-card:first-child .post-meta { border-color: rgba(245,240,232,0.15); color: var(--cream); }
+  .post-card:hover .post-title { color: var(--terra); }
+  .post-card:first-child:hover .post-title { color: var(--gold); }
+
+  .about-strip { background: var(--ink); display: grid; grid-template-columns: 1fr 1fr; min-height: 50vh; overflow: hidden; }
+  .about-image { position: relative; background: linear-gradient(135deg,#3A2E24 0%,#5C4A3A 50%,#7A6050 100%); overflow: hidden; }
+  .about-image::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 70% at 50% 50%,rgba(196,103,58,0.15) 0%,transparent 70%), repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(245,240,232,0.02) 30px,rgba(245,240,232,0.02) 31px); }
+  .portrait-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 220px; height: 280px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(160deg,#8B6F5C 0%,#6B4A38 100%); border: 1px solid rgba(212,168,67,0.3); }
+  .portrait-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 240px; height: 300px; border: 1px solid rgba(212,168,67,0.15); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+  .about-text { padding: 5rem; display: flex; flex-direction: column; justify-content: center; color: var(--cream); }
+  .about-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terra); margin-bottom: 2rem; }
+  .about-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 1.5rem; font-weight: 400; }
+  .about-title em { font-style: italic; color: var(--gold); }
+  .about-body { font-size: 1.1rem; line-height: 1.8; opacity: 0.65; max-width: 420px; }
+  .about-sig { margin-top: 2.5rem; font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.8rem; color: var(--gold); opacity: 0.8; }
+
+  .home-destinations { padding: 6rem; background: var(--mist); }
+  .home-dest-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 1.5rem; margin-top: 3rem; }
+  .home-dest-card { position: relative; aspect-ratio: 2/3; overflow: hidden; cursor: none; transition: transform 0.4s; }
+  .home-dest-card:hover { transform: translateY(-8px); }
+  .dest-bg { position: absolute; inset: 0; transition: transform 0.4s; }
+  .home-dest-card:hover .dest-bg { transform: scale(1.06); }
+  .d1 { background: linear-gradient(160deg,#8B6F5C 0%,#3D2E1E 100%); }
+  .d2 { background: linear-gradient(160deg,#5A7A6E 0%,#2E4A3E 100%); }
+  .d3 { background: linear-gradient(160deg,#8B7A4A 0%,#4A3A1E 100%); }
+  .d4 { background: linear-gradient(160deg,#6E7A8B 0%,#2E3A4A 100%); }
+  .dest-overlay { position: absolute; inset: 0; background: linear-gradient(transparent 30%,rgba(0,0,0,0.7)); }
+  .dest-info { position: absolute; bottom: 1.25rem; left: 1.25rem; right: 1.25rem; color: var(--cream); }
+  .dest-info-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 400; margin-bottom: 0.25rem; }
+  .dest-info-count { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.55; }
+
+  .newsletter { padding: 6rem; display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; border-top: 1px solid rgba(26,22,16,0.08); }
+  .newsletter-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; line-height: 1.1; font-weight: 400; }
+  .newsletter-title em { font-style: italic; color: var(--terra); }
+  .newsletter-sub { margin-top: 1.25rem; font-size: 1rem; line-height: 1.7; opacity: 0.55; max-width: 380px; }
+  .newsletter-form { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row { display: flex; border: 1px solid rgba(26,22,16,0.2); }
+  .form-row input { flex: 1; padding: 1rem 1.25rem; background: transparent; border: none; outline: none; font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--ink); }
+  .form-row input::placeholder { opacity: 0.4; }
+  .form-row button { padding: 1rem 1.75rem; background: var(--ink); color: var(--cream); border: none; font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: none; transition: background 0.2s; }
+  .form-row button:hover { background: var(--terra); }
+  .form-note { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; opacity: 0.35; text-transform: uppercase; }
+
+  .map-tooltip { background: var(--ink) !important; color: var(--cream) !important; border: none !important; border-radius: 0 !important; font-family: 'DM Mono', monospace !important; font-size: 0.6rem !important; letter-spacing: 0.15em !important; text-transform: uppercase !important; padding: 0.3rem 0.6rem !important; box-shadow: none !important; }
+  .map-tooltip::before { display: none !important; }
+  #map-container { z-index: 0; cursor: grab; }
+
+  /* DESTINATIONS PAGE */
+  .page-header { padding: 10rem 6rem 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end; border-bottom: 1px solid rgba(26,22,16,0.08); }
+  .page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terra); margin-bottom: 1.5rem; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: clamp(3rem,5vw,5.5rem); line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
+  .page-title em { font-style: italic; color: var(--terra); }
+  .page-desc { font-size: 1.15rem; line-height: 1.75; align-self: end; padding-bottom: 0.5rem; max-width: 420px; }
+
+  .filter-bar { padding: 1.5rem 6rem; display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; border-bottom: 1px solid rgba(26,22,16,0.06); position: sticky; top: 64px; background: rgba(245,240,232,0.97); backdrop-filter: blur(8px); z-index: 50; }
+  .filter-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.35; margin-right: 0.25rem; }
+  .filter-btn { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.35rem 0.9rem; border: 1px solid rgba(26,22,16,0.15); background: transparent; color: var(--ink); cursor: none; transition: all 0.2s; opacity: 0.5; white-space: nowrap; }
+  .filter-btn:hover { opacity: 1; border-color: var(--ink); }
+  .filter-btn.active { background: var(--terra); border-color: var(--terra); color: var(--cream); opacity: 1; }
+
+  .destinations-section { padding: 5rem 6rem 7rem; }
+  .continent-section { margin-bottom: 5rem; }
+  .continent-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(26,22,16,0.08); }
+  .continent-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; color: var(--ink); font-style: normal; }
+  .continent-title em { font-style: italic; color: var(--terra); }
+  .continent-count { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.35; }
+
+  .dest-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; }
+  .dest-card { position: relative; overflow: hidden; cursor: none; background: var(--mist); }
+  .dest-card-image { aspect-ratio: 3/2; position: relative; overflow: hidden; transition: transform 0.6s ease; }
+  .dest-card:hover .dest-card-image { transform: scale(1.05); }
+  .dest-card-image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%,rgba(26,22,16,0.2)); }
+  .dest-card-body { padding: 1.1rem 1.4rem 1.4rem; background: var(--cream); border-bottom: 2px solid transparent; transition: border-color 0.3s; }
+  .dest-card:hover .dest-card-body { border-color: var(--terra); }
+  .dest-subregion { font-family: 'DM Mono', monospace; font-size: 0.54rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--terra); margin-bottom: 0.3rem; }
+  .dest-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 400; transition: color 0.2s; }
+  .dest-card:hover .dest-name { color: var(--terra); }
+  .dest-trips { font-family: 'DM Mono', monospace; font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.35; margin-top: 0.4rem; }
+
+  .bg-thailand{background:linear-gradient(160deg,#A8C882 0%,#7A9E5A 35%,#4A8A6A 60%,#2A5A3A 100%)}
+  .bg-vietnam{background:linear-gradient(160deg,#B8D890 0%,#6A9E5A 35%,#3A7A4A 60%,#1A4A2A 100%)}
+  .bg-indonesia{background:linear-gradient(160deg,#78B888 0%,#488858 35%,#C8A858 65%,#684820 100%)}
+  .bg-philippines{background:linear-gradient(160deg,#88C8D8 0%,#4898A8 30%,#A8C878 60%,#3A5A2A 100%)}
+  .bg-india{background:linear-gradient(160deg,#E8C870 0%,#C89840 35%,#A85820 60%,#582810 100%)}
+  .bg-japan{background:linear-gradient(160deg,#C8D8E8 0%,#A8B8C8 25%,#D4C8A8 55%,#7A8C6E 100%)}
+  .bg-turkey{background:linear-gradient(160deg,#D82818 0%,#A80808 25%,#E8C848 55%,#C8A828 100%)}
+  .bg-jordan{background:linear-gradient(160deg,#181818 0%,#383838 20%,#F8F8F8 40%,#188838 60%,#D81818 85%,#A80808 100%)}
+  .bg-morocco{background:linear-gradient(160deg,#E8C882 0%,#D4943A 35%,#A86830 60%,#5A3018 100%)}
+  .bg-egypt{background:linear-gradient(160deg,#E8C870 0%,#C89840 30%,#D8A040 55%,#A87020 100%)}
+  .bg-tanzania{background:linear-gradient(160deg,#188838 0%,#086818 25%,#E8C850 50%,#C89820 75%,#181818 100%)}
+  .bg-portugal{background:linear-gradient(160deg,#D87848 0%,#A85828 35%,#88B878 60%,#487838 100%)}
+  .bg-spain{background:linear-gradient(160deg,#E89848 0%,#C86820 35%,#F8C848 60%,#C89828 100%)}
+  .bg-france{background:linear-gradient(160deg,#88A8C8 0%,#587898 30%,#D8C880 55%,#A89850 100%)}
+  .bg-monaco{background:linear-gradient(160deg,#D83838 0%,#A81818 25%,#F8F8F8 55%,#C8C8C8 100%)}
+  .bg-belgium{background:linear-gradient(160deg,#D89820 0%,#A87010 25%,#181818 55%,#383838 100%)}
+  .bg-finland{background:linear-gradient(160deg,#D8E8F8 0%,#A8C8E8 30%,#3878B8 60%,#185888 100%)}
+  .bg-estonia{background:linear-gradient(160deg,#2858A8 0%,#183878 25%,#181818 50%,#F8F8F8 100%)}
+  .bg-latvia{background:linear-gradient(160deg,#A81818 0%,#781010 30%,#F8F8F8 65%,#D0D0D0 100%)}
+  .bg-sweden{background:linear-gradient(160deg,#F8D820 0%,#C8A810 25%,#1858A8 55%,#083888 100%)}
+  .bg-netherlands{background:linear-gradient(160deg,#E85820 0%,#C83810 25%,#F8F8F8 50%,#0838A8 80%,#082888 100%)}
+  .bg-switzerland{background:linear-gradient(160deg,#A8C8E8 0%,#78A8C8 30%,#E8E8E8 60%,#C8C8C8 100%)}
+  .bg-slovenia{background:linear-gradient(160deg,#2868B8 0%,#084888 25%,#F8F8F8 50%,#D83828 80%,#A81808 100%)}
+  .bg-hungary{background:linear-gradient(160deg,#D82818 0%,#A80808 25%,#F8F8F8 50%,#188838 80%,#086818 100%)}
+  .bg-croatia{background:linear-gradient(160deg,#68B8D8 0%,#388898 30%,#C8D870 55%,#789840 100%)}
+  .bg-montenegro{background:linear-gradient(160deg,#D89828 0%,#A87010 25%,#C83818 55%,#981808 100%)}
+  .bg-greece{background:linear-gradient(160deg,#A8C8D8 0%,#7898B8 25%,#E8D8B8 50%,#C8A878 100%)}
+  .bg-germany{background:linear-gradient(160deg,#181818 0%,#383838 25%,#C83818 50%,#F8C818 100%)}
+  .bg-italy{background:linear-gradient(160deg,#88B8D8 0%,#587898 30%,#D8C880 55%,#A89850 100%)}
+  .bg-london{background:linear-gradient(160deg,#889898 0%,#586868 30%,#C8C8D8 60%,#9898A8 100%)}
+  .bg-copenhagen{background:linear-gradient(160deg,#D82818 0%,#A80808 30%,#F8F8F8 65%,#D0D0D0 100%)}
+  .bg-georgia{background:linear-gradient(160deg,#C83818 0%,#981808 25%,#F8F8F8 50%,#D0D0D0 100%)}
+  .bg-kosovo{background:linear-gradient(160deg,#1848A8 0%,#083880 25%,#F8D820 55%,#C8A810 100%)}
+  .bg-albania{background:linear-gradient(160deg,#D81818 0%,#A80808 30%,#181818 65%,#383838 100%)}
+  .bg-serbia{background:linear-gradient(160deg,#C83818 0%,#183888 35%,#F8F8F8 65%,#D0D0D0 100%)}
+  .bg-bosnia{background:linear-gradient(160deg,#1848A8 0%,#083880 25%,#F8D820 50%,#181818 80%,#383838 100%)}
+  .bg-cuba{background:linear-gradient(160deg,#78C8D8 0%,#48A8B8 25%,#D89838 55%,#987028 100%)}
+  .bg-mexico{background:linear-gradient(160deg,#E8C870 0%,#C87830 35%,#784818 60%,#381808 100%)}
+  .bg-guatemala{background:linear-gradient(160deg,#68B878 0%,#388848 30%,#C87830 60%,#784820 100%)}
+  .bg-nicaragua{background:linear-gradient(160deg,#88C878 0%,#489848 30%,#E8A830 55%,#A85820 100%)}
+  .bg-elsalvador{background:linear-gradient(160deg,#68B888 0%,#387848 30%,#D8A830 60%,#987820 100%)}
+  .bg-chile{background:linear-gradient(160deg,#78A8C8 0%,#487898 30%,#8AC888 60%,#385828 100%)}
+  .bg-argentina{background:linear-gradient(160deg,#88B8D8 0%,#5888A8 30%,#C8D888 60%,#587838 100%)}
+  .bg-colombia{background:linear-gradient(160deg,#F8D048 0%,#C89828 25%,#58A858 55%,#286828 100%)}
+  .bg-brazil{background:linear-gradient(160deg,#58B858 0%,#288828 25%,#F8D848 55%,#C89828 100%)}
+  .bg-paraguay{background:linear-gradient(160deg,#88B868 0%,#587838 30%,#D8A848 60%,#887028 100%)}
+  .bg-peru{background:linear-gradient(160deg,#788898 0%,#485868 30%,#C8A858 60%,#887028 100%)}
+  .bg-australia{background:linear-gradient(160deg,#D89840 0%,#A86820 30%,#E8C860 55%,#C89830 100%)}
+  .bg-newzealand{background:linear-gradient(160deg,#8AB8C8 0%,#5A8898 30%,#7A9878 55%,#4A6848 100%)}
+
+  /* FOOTER */
+  footer { background: var(--ink); color: var(--cream); padding: 3rem 6rem; display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.6rem; color: var(--cream); opacity: 0.7; }
+  .footer-tagline { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.3; margin-top: 0.4rem; }
+  .footer-links { display: flex; gap: 2rem; list-style: none; }
+  .footer-links a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cream); text-decoration: none; opacity: 0.35; transition: opacity 0.2s; cursor: none; }
+  .footer-links a:hover { opacity: 0.8; }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; opacity: 0.25; }
+
+  /* RESOURCES */
+  .resources-section { padding: 5rem 6rem 7rem; }
+  .resource-category { margin-bottom: 5rem; }
+  .resource-category-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(26,22,16,0.08); }
+  .resource-category-icon { font-size: 1.4rem; }
+  .resource-category-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; }
+  .resource-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
+  .resource-card { background: var(--mist); padding: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 2px solid transparent; transition: border-color 0.3s, transform 0.3s; cursor: none; }
+  .resource-card:hover { border-color: var(--terra); transform: translateY(-4px); }
+  .resource-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+  .resource-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 400; }
+  .resource-tag { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.2rem 0.5rem; border: 1px solid rgba(26,22,16,0.15); white-space: nowrap; opacity: 0.5; flex-shrink: 0; }
+  .resource-desc { font-size: 0.95rem; line-height: 1.7; opacity: 0.65; flex: 1; }
+  .resource-link { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terra); text-decoration: none; margin-top: auto; }
+
+  /* ABOUT */
+  .about-hero { display: grid; grid-template-columns: 1fr 1.4fr; min-height: 90vh; padding-top: 5rem; }
+  .about-hero-image { position: relative; background: linear-gradient(135deg,#2A1F14 0%,#4A3828 50%,#6A5040 100%); overflow: hidden; }
+  .about-portrait-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 80% at 50% 60%,rgba(196,103,58,0.12) 0%,transparent 70%); }
+  .about-portrait-shape { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 260px; height: 340px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(160deg,#8B6F5C 0%,#6B4A38 100%); border: 1px solid rgba(212,168,67,0.25); }
+  .about-portrait-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 285px; height: 370px; border: 1px solid rgba(212,168,67,0.1); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+  .about-hero-text { padding: 9rem 6rem 5rem 5rem; display: flex; flex-direction: column; justify-content: center; }
+  .about-big-title { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem,4.5vw,5rem); line-height: 1.0; font-weight: 700; letter-spacing: -0.02em; margin: 1.5rem 0 2rem; }
+  .about-big-title em { font-style: italic; color: var(--terra); }
+  .about-intro { font-size: 1.2rem; line-height: 1.8; opacity: 0.75; max-width: 500px; }
+  .about-stats-bar { background: var(--ink); display: flex; align-items: center; justify-content: center; padding: 3.5rem 6rem; }
+  .about-stat { flex: 1; text-align: center; }
+  .about-stat-num { display: block; font-family: 'Playfair Display', serif; font-style: italic; font-size: 3.5rem; color: var(--gold); line-height: 1; }
+  .about-stat-label { display: block; font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cream); opacity: 0.4; margin-top: 0.5rem; }
+  .about-stat-divider { width: 1px; height: 60px; background: rgba(245,240,232,0.1); flex-shrink: 0; }
+  .about-body-section { padding: 6rem; }
+  .about-body-grid { display: grid; grid-template-columns: 1fr 280px; gap: 6rem; align-items: start; }
+  .about-body-main p { font-size: 1.1rem; line-height: 1.9; opacity: 0.7; margin-bottom: 1.25rem; }
+  .about-section-heading { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 400; margin-bottom: 1.25rem; }
+  .about-sidebar-card { padding: 1.25rem 1.5rem; background: var(--mist); margin-bottom: 1rem; }
+  .about-sidebar-title { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--terra); margin-bottom: 0.5rem; }
+  .about-sidebar-content { font-size: 1rem; line-height: 1.6; opacity: 0.75; }
+  .about-newsletter-strip { background: var(--ink); padding: 6rem; }
+  .about-newsletter-inner { max-width: 560px; }
+  .about-newsletter-strip input { background: transparent; color: var(--cream); }
+  .about-newsletter-strip input::placeholder { color: rgba(245,240,232,0.3); opacity: 1; }
+
+  /* CONTACT */
+  .contact-section { padding: 5rem 6rem 7rem; }
+  .contact-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 7rem; align-items: start; }
+  .contact-form-side { display: flex; flex-direction: column; gap: 1.75rem; }
+  .contact-field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .contact-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.45; }
+  .contact-input { background: transparent; border: none; border-bottom: 1px solid rgba(26,22,16,0.2); padding: 0.75rem 0; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); outline: none; transition: border-color 0.2s; width: 100%; }
+  .contact-input:focus { border-color: var(--terra); }
+  .contact-input::placeholder { opacity: 0.3; }
+  .contact-textarea { resize: vertical; min-height: 140px; }
+  .contact-submit { margin-top: 0.5rem; align-self: flex-start; padding: 1rem 2rem; background: var(--ink); color: var(--cream); border: none; font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: none; transition: background 0.2s; }
+  .contact-submit:hover { background: var(--terra); }
+  .contact-info-side { display: flex; flex-direction: column; gap: 0; padding-top: 0.5rem; }
+  .contact-info-card { padding: 1.5rem 0; border-bottom: 1px solid rgba(26,22,16,0.08); }
+  .contact-info-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--terra); margin-bottom: 0.5rem; }
+  .contact-info-value { font-size: 1.05rem; line-height: 1.65; opacity: 0.75; }
+  .contact-info-link { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--terra); padding-bottom: 1px; }
+  .contact-info-link:hover { color: var(--terra); }
+
+  /* PRIVACY */
+  .privacy-section { padding: 5rem 6rem 7rem; }
+  .privacy-body { max-width: 720px; display: flex; flex-direction: column; gap: 3rem; }
+  .privacy-block { display: flex; flex-direction: column; gap: 1rem; }
+  .privacy-heading { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; }
+  .privacy-body p { font-size: 1.05rem; line-height: 1.85; opacity: 0.7; }
+  .privacy-link { color: var(--terra); text-decoration: none; border-bottom: 1px solid var(--terra); padding-bottom: 1px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="#" class="nav-logo" onclick="showPage('home')">Getawayguide</a>
+  <ul class="nav-links">
+    <li><a href="#" onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
+      <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="showPage('destinations'); return false;">Destinations <span class="nav-caret">↓</span></a>
+      <div class="nav-dropdown">
+        <div class="nav-dropdown-col">
+          <a href="#" class="nav-dropdown-continent" onclick="showPage('destinations'); filterContAndScroll('europe')">Europe</a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/al.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="al"><span class="country-name">Albania</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/be.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="be"><span class="country-name">Belgium</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/ba.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ba"><span class="country-name">Bosnia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/hr.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="hr"><span class="country-name">Croatia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/dk.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="dk"><span class="country-name">Denmark</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/ee.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ee"><span class="country-name">Estonia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/fi.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="fi"><span class="country-name">Finland</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="fr"><span class="country-name">France</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/ge.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ge"><span class="country-name">Georgia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="de"><span class="country-name">Germany</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="gr"><span class="country-name">Greece</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/hu.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="hu"><span class="country-name">Hungary</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="it"><span class="country-name">Italy</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/xk.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="xk"><span class="country-name">Kosovo</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/lv.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="lv"><span class="country-name">Latvia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/mc.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="mc"><span class="country-name">Monaco</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/me.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="me"><span class="country-name">Montenegro</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/nl.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="nl"><span class="country-name">Netherlands</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="pt"><span class="country-name">Portugal</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/rs.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="rs"><span class="country-name">Serbia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/si.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="si"><span class="country-name">Slovenia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="es"><span class="country-name">Spain</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/se.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="se"><span class="country-name">Sweden</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/ch.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ch"><span class="country-name">Switzerland</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('europe')"><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="gb"><span class="country-name">United Kingdom</span></a>
+        </div>
+        <div class="nav-dropdown-col">
+          <a href="#" class="nav-dropdown-continent" onclick="showPage('destinations'); filterContAndScroll('americas')">The Americas</a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/ar.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ar"><span class="country-name">Argentina</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/br.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="br"><span class="country-name">Brazil</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/cl.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="cl"><span class="country-name">Chile</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/co.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="co"><span class="country-name">Colombia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/cu.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="cu"><span class="country-name">Cuba</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/sv.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="sv"><span class="country-name">El Salvador</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/gt.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="gt"><span class="country-name">Guatemala</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/mx.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="mx"><span class="country-name">Mexico</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/ni.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ni"><span class="country-name">Nicaragua</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/py.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="py"><span class="country-name">Paraguay</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('americas')"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="pe"><span class="country-name">Peru</span></a>
+          <div class="nav-dropdown-spacer"></div>
+          <a href="#" class="nav-dropdown-continent" onclick="showPage('destinations'); filterContAndScroll('africa')">Africa</a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('africa')"><img src="https://flagcdn.com/16x12/eg.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="eg"><span class="country-name">Egypt</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('africa')"><img src="https://flagcdn.com/16x12/ma.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ma"><span class="country-name">Morocco</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('africa')"><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="tz"><span class="country-name">Tanzania</span></a>
+        </div>
+        <div class="nav-dropdown-col">
+          <a href="#" class="nav-dropdown-continent" onclick="showPage('destinations'); filterContAndScroll('asia')">Asia</a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/in.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="in"><span class="country-name">India</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/id.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="id"><span class="country-name">Indonesia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="jp"><span class="country-name">Japan</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/jo.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="jo"><span class="country-name">Jordan</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="ph"><span class="country-name">Philippines</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/th.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="th"><span class="country-name">Thailand</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="tr"><span class="country-name">Turkey</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('asia')"><img src="https://flagcdn.com/16x12/vn.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="vn"><span class="country-name">Vietnam</span></a>
+          <div class="nav-dropdown-spacer"></div>
+          <a href="#" class="nav-dropdown-continent" onclick="showPage('destinations'); filterContAndScroll('oceania')">Oceania</a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('oceania')"><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="au"><span class="country-name">Australia</span></a>
+          <a href="#" class="nav-dropdown-item" onclick="showPage('destinations'); filterContAndScroll('oceania')"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" style="display:inline-block;vertical-align:middle;border-radius:1px;" alt="nz"><span class="country-name">New Zealand</span></a>
+          <div class="nav-dropdown-spacer"></div>
+          <a href="#" class="nav-dropdown-all" onclick="showPage('destinations')">→ All destinations</a>
+        </div>
+      </div>
+    </li>
+    <li><a href="#" onclick="showPage('resources')" id="nav-resources">Resources</a></li>
+    <li><a href="#" onclick="showPage('about')" id="nav-about">About Me</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════ HOME ═══════ -->
+<div class="page active fade-in" id="page-home">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Est. 2026 · Dispatches from the Road</p>
+      <h1 class="hero-title">Find your <em>next<br>adventure.</em></h1>
+      <p class="hero-subtitle">Discover my detailed itineraries, insider tips and thoughtful city guides for the places I've been.</p>
+      <a href="#" class="hero-cta" onclick="showPage('destinations')">Read My Travel Blog <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5H15M15 5L11 1M15 5L11 9" stroke="currentColor" stroke-width="1"/></svg></a>
+      <div class="hero-scroll">Scroll to explore</div>
+    </div>
+    <div class="hero-image">
+      <div class="hero-image-inner"><div class="sun"></div><div class="mountain"></div><div class="mountain-2"></div></div>
+      <div class="hero-image-label">Patagonia, 2026</div>
+    </div>
+  </section>
+
+  <div class="marquee-wrap"><div class="marquee-track">
+    <div class="marquee-item">Kyoto in November <span>✦</span></div>
+    <div class="marquee-item">Trekking Patagonia <span>✦</span></div>
+    <div class="marquee-item">Lost in the Medina <span>✦</span></div>
+    <div class="marquee-item">Iceland in Winter <span>✦</span></div>
+    <div class="marquee-item">Vietnam by Motorbike <span>✦</span></div>
+    <div class="marquee-item">Dolomites at Dawn <span>✦</span></div>
+    <div class="marquee-item">Kyoto in November <span>✦</span></div>
+    <div class="marquee-item">Trekking Patagonia <span>✦</span></div>
+    <div class="marquee-item">Lost in the Medina <span>✦</span></div>
+    <div class="marquee-item">Iceland in Winter <span>✦</span></div>
+    <div class="marquee-item">Vietnam by Motorbike <span>✦</span></div>
+    <div class="marquee-item">Dolomites at Dawn <span>✦</span></div>
+  </div></div>
+
+  <section class="home-destinations">
+    <div class="section-header">
+      <h2 class="section-title">Explore by <em>Destination</em></h2>
+      <a href="#" class="section-link" onclick="showPage('destinations')">All destinations →</a>
+    </div>
+    <div class="home-dest-grid">
+      <div class="home-dest-card"><div class="dest-bg d1"></div><div class="dest-overlay"></div><div class="dest-info"><div class="dest-info-name">Japan</div><div class="dest-info-count">8 stories</div></div></div>
+      <div class="home-dest-card"><div class="dest-bg d2"></div><div class="dest-overlay"></div><div class="dest-info"><div class="dest-info-name">Patagonia</div><div class="dest-info-count">5 stories</div></div></div>
+      <div class="home-dest-card"><div class="dest-bg d3"></div><div class="dest-overlay"></div><div class="dest-info"><div class="dest-info-name">Morocco</div><div class="dest-info-count">6 stories</div></div></div>
+      <div class="home-dest-card"><div class="dest-bg d4"></div><div class="dest-overlay"></div><div class="dest-info"><div class="dest-info-name">Iceland</div><div class="dest-info-count">4 stories</div></div></div>
+      <div class="home-dest-card" id="map-card"><div id="map-container" style="position:absolute;inset:0;"></div><div class="dest-overlay"></div><div class="dest-info"><div class="dest-info-name">Explore Map</div><div class="dest-info-count">All destinations</div></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Recent <em>Dispatches</em></h2>
+      <a href="#" class="section-link">View all posts →</a>
+    </div>
+    <div class="posts-grid">
+      <article class="post-card"><div class="post-card-image img-patagonia"></div><div class="post-card-body"><span class="post-tag">Patagonia · Chile</span><h3 class="post-title">Three Weeks at the End of the World: Torres del Paine on Foot</h3><p class="post-excerpt">The wind here has opinions. Strong ones. It will knock you sideways, steal your hat, and at dawn turn rose-gold across peaks so savage they seem invented.</p><div class="post-meta"><span>Nov 12, 2026</span><span>14 min read</span></div></div></article>
+      <article class="post-card"><div class="post-card-image img-kyoto"></div><div class="post-card-body"><span class="post-tag">Kyoto · Japan</span><h3 class="post-title">November's Secret: Kyoto After the Crowds Leave</h3><p class="post-excerpt">Everyone comes for the cherry blossoms. Fewer know what autumn does to the temple gardens.</p><div class="post-meta"><span>Oct 28, 2026</span><span>8 min read</span></div></div></article>
+      <article class="post-card"><div class="post-card-image img-morocco"></div><div class="post-card-body"><span class="post-tag">Fez · Morocco</span><h3 class="post-title">Getting Purposefully Lost in the World's Oldest Living City</h3><p class="post-excerpt">The Medina of Fez has 9,000 streets. A few of them go nowhere you expect.</p><div class="post-meta"><span>Sep 14, 2026</span><span>10 min read</span></div></div></article>
+      <article class="post-card"><div class="post-card-image img-iceland"></div><div class="post-card-body"><span class="post-tag">Iceland · North</span><h3 class="post-title">Chasing Aurora: What No One Tells You About the Northern Lights</h3><p class="post-excerpt">You can't schedule wonder. But you can position yourself beautifully for it.</p><div class="post-meta"><span>Jan 6, 2026</span><span>7 min read</span></div></div></article>
+      <article class="post-card"><div class="post-card-image img-vietnam"></div><div class="post-card-body"><span class="post-tag">Hà Giang · Vietnam</span><h3 class="post-title">The Loop: Vietnam's Most Spectacular Road You've Never Heard Of</h3><p class="post-excerpt">Four days, a rented motorbike, and 300 kilometers of karst mountains that rewired something.</p><div class="post-meta"><span>Mar 22, 2026</span><span>11 min read</span></div></div></article>
+    </div>
+  </section>
+
+  <div class="about-strip">
+    <div class="about-image"><div class="portrait-circle"></div><div class="portrait-frame"></div></div>
+    <div class="about-text">
+      <p class="about-eyebrow">The person behind the passport</p>
+      <h2 class="about-title">Slow travel,<br><em>deep stories.</em></h2>
+      <p class="about-body">I left a desk job in 2022 with a one-way ticket and a notebook. Since then I've been moving slowly through the world — spending weeks where others spend days, learning what a place tastes like at 6am, and writing about the gap between what we expect and what we actually find.</p>
+      <div class="about-sig">— Your Name</div>
+    </div>
+  </div>
+
+  <section class="newsletter">
+    <div>
+      <h2 class="newsletter-title">Stories from<br>the <em>road</em>,<br>in your inbox.</h2>
+      <p class="newsletter-sub">The blog is still under construction and I'm constantly adding new destinations! Subscribe to stay up to date with new articles.</p>
+    </div>
+    <div class="newsletter-form">
+      <div class="form-row"><input type="email" placeholder="your@email.com"><button>Subscribe</button></div>
+      <p class="form-note">Unsubscribe anytime. Promise not to spam you :)</p>
+    </div>
+  </section>
+
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<!-- ═══════ DESTINATIONS ═══════ -->
+<div class="page" id="page-destinations">
+  <header class="page-header">
+    <div><p class="page-eyebrow">40+ countries &amp; counting</p><h1 class="page-title">All <em>destinations</em></h1></div>
+    <p class="page-desc">Every country I've explored — from quick getaways to months-long adventures across multiple continents.</p>
+  </header>
+  <div class="filter-bar">
+    <span class="filter-label">Filter by</span>
+    <button class="filter-btn active" onclick="filterCont('all',this)">All</button>
+    <button class="filter-btn" onclick="filterCont('europe',this)">Europe</button>
+    <button class="filter-btn" onclick="filterCont('americas',this)">Americas</button>
+    <button class="filter-btn" onclick="filterCont('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterCont('africa',this)">Africa</button>
+    <button class="filter-btn" onclick="filterCont('oceania',this)">Oceania</button>
+  </div>
+  <section class="destinations-section">
+    <div class="continent-section" data-continent="europe">
+      <div class="continent-header"><h2 class="continent-title">Europe</h2><span class="continent-count">25 countries</span></div>
+      <div class="dest-grid">
+        <article class="dest-card"><div class="dest-card-image bg-albania"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Albania</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-belgium"></div><div class="dest-card-body"><div class="dest-subregion">Western Europe</div><h3 class="dest-name">Belgium</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-bosnia"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Bosnia</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-croatia"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Croatia</h3><div class="dest-trips">2023 ×2</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-copenhagen"></div><div class="dest-card-body"><div class="dest-subregion">Scandinavia</div><h3 class="dest-name">Denmark</h3><div class="dest-trips">2021</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-estonia"></div><div class="dest-card-body"><div class="dest-subregion">Baltic</div><h3 class="dest-name">Estonia</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-finland"></div><div class="dest-card-body"><div class="dest-subregion">Scandinavia</div><h3 class="dest-name">Finland</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-france"></div><div class="dest-card-body"><div class="dest-subregion">Western Europe</div><h3 class="dest-name">France</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-georgia"></div><div class="dest-card-body"><div class="dest-subregion">Caucasus</div><h3 class="dest-name">Georgia</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-germany"></div><div class="dest-card-body"><div class="dest-subregion">Central Europe</div><h3 class="dest-name">Germany</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-greece"></div><div class="dest-card-body"><div class="dest-subregion">Southern Europe</div><h3 class="dest-name">Greece</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-hungary"></div><div class="dest-card-body"><div class="dest-subregion">Central Europe</div><h3 class="dest-name">Hungary</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-italy"></div><div class="dest-card-body"><div class="dest-subregion">Southern Europe</div><h3 class="dest-name">Italy</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-kosovo"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Kosovo</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-latvia"></div><div class="dest-card-body"><div class="dest-subregion">Baltic</div><h3 class="dest-name">Latvia</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-monaco"></div><div class="dest-card-body"><div class="dest-subregion">Western Europe</div><h3 class="dest-name">Monaco</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-montenegro"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Montenegro</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-netherlands"></div><div class="dest-card-body"><div class="dest-subregion">Western Europe</div><h3 class="dest-name">Netherlands</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-portugal"></div><div class="dest-card-body"><div class="dest-subregion">Southern Europe</div><h3 class="dest-name">Portugal</h3><div class="dest-trips">2018 · 2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-serbia"></div><div class="dest-card-body"><div class="dest-subregion">Balkans</div><h3 class="dest-name">Serbia</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-slovenia"></div><div class="dest-card-body"><div class="dest-subregion">Central Europe</div><h3 class="dest-name">Slovenia</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-spain"></div><div class="dest-card-body"><div class="dest-subregion">Southern Europe</div><h3 class="dest-name">Spain</h3><div class="dest-trips">2018 · 2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-sweden"></div><div class="dest-card-body"><div class="dest-subregion">Scandinavia</div><h3 class="dest-name">Sweden</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-switzerland"></div><div class="dest-card-body"><div class="dest-subregion">Central Europe</div><h3 class="dest-name">Switzerland</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-london"></div><div class="dest-card-body"><div class="dest-subregion">Northern Europe</div><h3 class="dest-name">United Kingdom</h3><div class="dest-trips">2021</div></div></article>
+      </div>
+    </div>
+    <div class="continent-section" data-continent="americas">
+      <div class="continent-header"><h2 class="continent-title">The Americas</h2><span class="continent-count">11 countries</span></div>
+      <div class="dest-grid">
+        <article class="dest-card"><div class="dest-card-image bg-argentina"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Argentina</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-brazil"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Brazil</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-chile"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Chile</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-colombia"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Colombia</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-cuba"></div><div class="dest-card-body"><div class="dest-subregion">Caribbean</div><h3 class="dest-name">Cuba</h3><div class="dest-trips">2019</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-elsalvador"></div><div class="dest-card-body"><div class="dest-subregion">Central America</div><h3 class="dest-name">El Salvador</h3><div class="dest-trips">2026</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-guatemala"></div><div class="dest-card-body"><div class="dest-subregion">Central America</div><h3 class="dest-name">Guatemala</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-mexico"></div><div class="dest-card-body"><div class="dest-subregion">Central America</div><h3 class="dest-name">Mexico</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-nicaragua"></div><div class="dest-card-body"><div class="dest-subregion">Central America</div><h3 class="dest-name">Nicaragua</h3><div class="dest-trips">2025</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-paraguay"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Paraguay</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-peru"></div><div class="dest-card-body"><div class="dest-subregion">South America</div><h3 class="dest-name">Peru</h3><div class="dest-trips">2024</div></div></article>
+      </div>
+    </div>
+    <div class="continent-section" data-continent="asia">
+      <div class="continent-header"><h2 class="continent-title">Asia</h2><span class="continent-count">8 countries</span></div>
+      <div class="dest-grid">
+        <article class="dest-card"><div class="dest-card-image bg-india"></div><div class="dest-card-body"><div class="dest-subregion">South Asia</div><h3 class="dest-name">India</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-indonesia"></div><div class="dest-card-body"><div class="dest-subregion">Southeast Asia</div><h3 class="dest-name">Indonesia</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-japan"></div><div class="dest-card-body"><div class="dest-subregion">East Asia</div><h3 class="dest-name">Japan</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-jordan"></div><div class="dest-card-body"><div class="dest-subregion">Middle East</div><h3 class="dest-name">Jordan</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-philippines"></div><div class="dest-card-body"><div class="dest-subregion">Southeast Asia</div><h3 class="dest-name">Philippines</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-thailand"></div><div class="dest-card-body"><div class="dest-subregion">Southeast Asia</div><h3 class="dest-name">Thailand</h3><div class="dest-trips">2017</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-turkey"></div><div class="dest-card-body"><div class="dest-subregion">Western Asia</div><h3 class="dest-name">Turkey</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-vietnam"></div><div class="dest-card-body"><div class="dest-subregion">Southeast Asia</div><h3 class="dest-name">Vietnam</h3><div class="dest-trips">2017 · 2024</div></div></article>
+      </div>
+    </div>
+    <div class="continent-section" data-continent="africa">
+      <div class="continent-header"><h2 class="continent-title">Africa</h2><span class="continent-count">3 countries</span></div>
+      <div class="dest-grid">
+        <article class="dest-card"><div class="dest-card-image bg-egypt"></div><div class="dest-card-body"><div class="dest-subregion">North Africa</div><h3 class="dest-name">Egypt</h3><div class="dest-trips">2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-morocco"></div><div class="dest-card-body"><div class="dest-subregion">North Africa</div><h3 class="dest-name">Morocco</h3><div class="dest-trips">2018 · 2023</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-tanzania"></div><div class="dest-card-body"><div class="dest-subregion">East Africa</div><h3 class="dest-name">Tanzania</h3><div class="dest-trips">2023</div></div></article>
+      </div>
+    </div>
+    <div class="continent-section" data-continent="oceania">
+      <div class="continent-header"><h2 class="continent-title">Oceania</h2><span class="continent-count">2 countries</span></div>
+      <div class="dest-grid">
+        <article class="dest-card"><div class="dest-card-image bg-australia"></div><div class="dest-card-body"><div class="dest-subregion">Pacific</div><h3 class="dest-name">Australia</h3><div class="dest-trips">2024</div></div></article>
+        <article class="dest-card"><div class="dest-card-image bg-newzealand"></div><div class="dest-card-body"><div class="dest-subregion">Pacific</div><h3 class="dest-name">New Zealand</h3><div class="dest-trips">2024</div></div></article>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<!-- ═══════ RESOURCES ═══════ -->
+<div class="page" id="page-resources">
+  <header class="page-header">
+    <div><p class="page-eyebrow">Tools &amp; recommendations</p><h1 class="page-title">Travel <em>resources</em></h1></div>
+    <p class="page-desc">Everything I actually use and trust — from gear I've carried across 40+ countries to apps I open every single trip.</p>
+  </header>
+  <section class="resources-section">
+    <div class="resource-category">
+      <div class="resource-category-header"><span class="resource-category-icon">✈</span><h2 class="resource-category-title">Getting There</h2></div>
+      <div class="resource-grid">
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Google Flights</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Still the best way to scout flight prices. I use the explore map to find where's cheap from my city at any given time.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Skyscanner</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Better than Google Flights for obscure budget carriers and multi-city routes in less common regions.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Rome2Rio</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Invaluable for overland travel — shows every way to get between two points including trains, buses, ferries and driving time.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Seat61</h3><span class="resource-tag">Free</span></div><p class="resource-desc">The definitive guide to train and ferry travel worldwide. Written by one obsessive person. More reliable than any official rail website.</p><a href="#" class="resource-link">Visit →</a></div>
+      </div>
+    </div>
+    <div class="resource-category">
+      <div class="resource-category-header"><span class="resource-category-icon">🏨</span><h2 class="resource-category-title">Accommodation</h2></div>
+      <div class="resource-grid">
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Booking.com</h3><span class="resource-tag">Free</span></div><p class="resource-desc">My default for hotels and guesthouses. The free cancellation filter is the most useful feature — book early, cancel if plans change.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Hostelworld</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Better hostel inventory than Booking. The review system is more detailed and I trust it more for solo travel.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Airbnb</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Useful for apartments on longer stays, particularly in Eastern Europe and Latin America where it tends to be better value.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Workaway</h3><span class="resource-tag">Paid</span></div><p class="resource-desc">How I've stayed for free in exchange for a few hours of work per day. Life-changing for extended slow travel.</p><a href="#" class="resource-link">Visit →</a></div>
+      </div>
+    </div>
+    <div class="resource-category">
+      <div class="resource-category-header"><span class="resource-category-icon">📱</span><h2 class="resource-category-title">Apps I Actually Use</h2></div>
+      <div class="resource-grid">
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Maps.me</h3><span class="resource-tag">Free</span></div><p class="resource-desc">Offline maps that work without data. I download every country before I arrive. Saved me more times than I can count.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Airalo</h3><span class="resource-tag">Paid</span></div><p class="resource-desc">eSIM marketplace. I buy a local data plan before landing and never deal with airport SIM stalls. Covers almost every country now.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Notion</h3><span class="resource-tag">Free / Paid</span></div><p class="resource-desc">Where I build all my trip planning docs, packing lists, and day-by-day itineraries. The offline app has gotten good enough to use in the field.</p><a href="#" class="resource-link">Visit →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">XE Currency</h3><span class="resource-tag">Free</span></div><p class="resource-desc">The one currency converter that works offline and doesn't try to add features I don't want. Simple and reliable.</p><a href="#" class="resource-link">Visit →</a></div>
+      </div>
+    </div>
+    <div class="resource-category">
+      <div class="resource-category-header"><span class="resource-category-icon">🎒</span><h2 class="resource-category-title">Gear I Travel With</h2></div>
+      <div class="resource-grid">
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Osprey Farpoint 40</h3><span class="resource-tag">Gear</span></div><p class="resource-desc">My main bag for the last three years. Fits in carry-on overhead bins on most airlines, comfortable hip belt for long carry days.</p><a href="#" class="resource-link">View →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Peak Design Capture</h3><span class="resource-tag">Gear</span></div><p class="resource-desc">Clips my camera to my bag strap for quick access. Worth it if you hate putting your camera away and missing shots.</p><a href="#" class="resource-link">View →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Anker PowerCore 26800</h3><span class="resource-tag">Gear</span></div><p class="resource-desc">Charges my phone 7–8 times. I bring this on every trip. Bulky but I've never regretted it on a long travel day.</p><a href="#" class="resource-link">View →</a></div>
+        <div class="resource-card"><div class="resource-card-top"><h3 class="resource-name">Wise Travel Card</h3><span class="resource-tag">Finance</span></div><p class="resource-desc">The only travel card that gives real exchange rates with no hidden markup. I use it everywhere and convert currencies in the app when the rate is good.</p><a href="#" class="resource-link">Visit →</a></div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<!-- ═══════ ABOUT ═══════ -->
+<div class="page" id="page-about">
+  <section class="about-hero">
+    <div class="about-hero-image"><div class="about-portrait-bg"></div><div class="about-portrait-shape"></div><div class="about-portrait-frame"></div></div>
+    <div class="about-hero-text">
+      <p class="page-eyebrow" style="opacity:1;">The person behind the passport</p>
+      <h1 class="about-big-title">Hello, I'm <em>Your Name.</em></h1>
+      <p class="about-intro">I left a desk job in 2022 with a one-way ticket and a notebook. What started as a sabbatical turned into something I couldn't stop. Three years, 49 countries, and counting.</p>
+      <p class="about-intro" style="margin-top:1.25rem;">Getawayguide is where I write about what I actually found — the gap between the Instagram version of a place and the real one. Slow travel, deep stories.</p>
+    </div>
+  </section>
+  <section class="about-stats-bar">
+    <div class="about-stat"><span class="about-stat-num">49</span><span class="about-stat-label">Countries visited</span></div>
+    <div class="about-stat-divider"></div>
+    <div class="about-stat"><span class="about-stat-num">4</span><span class="about-stat-label">Years on the road</span></div>
+    <div class="about-stat-divider"></div>
+    <div class="about-stat"><span class="about-stat-num">6</span><span class="about-stat-label">Continents explored</span></div>
+    <div class="about-stat-divider"></div>
+    <div class="about-stat"><span class="about-stat-num">1</span><span class="about-stat-label">Bag. Always carry-on.</span></div>
+  </section>
+  <section class="about-body-section">
+    <div class="about-body-grid">
+      <div class="about-body-main">
+        <h2 class="about-section-heading">How this started</h2>
+        <p>I used to work in [industry]. Good job, good salary, the whole thing. But I kept noticing that the weeks I spent abroad — even short trips — felt more alive than everything else combined. So in early 2022, I handed in my notice and booked a flight to Lisbon with no return date.</p>
+        <p>The plan was six months. Three years later I'm still going, albeit more slowly. I've learned that the way I like to travel is incompatible with itineraries that try to fit six cities into ten days. I'd rather spend a month in one place and actually understand something about it.</p>
+        <h2 class="about-section-heading" style="margin-top:3rem;">How I travel</h2>
+        <p>Almost always solo. Almost always overland when possible — I've taken more buses than I can count, a lot of slow overnight trains, a few cargo boats. I stay in a mix of hostels, guesthouses, and Workaway placements. I try to eat where locals eat and avoid the menu with photos.</p>
+        <p>The blog is a record of that. Not a highlight reel. I write about the things that go wrong as much as the things that go right, and I try to be honest about what a place is really like to travel in — costs, safety, logistics, the things the travel guides smooth over.</p>
+        <h2 class="about-section-heading" style="margin-top:3rem;">What I'm working on</h2>
+        <p>Right now I'm slowly building out the destination guides — each country page will eventually have a full write-up with itineraries, logistics, and recommended reads. It's a long project. Subscribe to the newsletter if you want to know when new ones land.</p>
+      </div>
+      <div class="about-body-side">
+        <div class="about-sidebar-card"><h3 class="about-sidebar-title">Currently in</h3><p class="about-sidebar-content">Central America</p></div>
+        <div class="about-sidebar-card"><h3 class="about-sidebar-title">Next up</h3><p class="about-sidebar-content">Southeast Asia (late 2026)</p></div>
+        <div class="about-sidebar-card"><h3 class="about-sidebar-title">Favourite trip so far</h3><p class="about-sidebar-content">Patagonia, without question. Torres del Paine broke my brain in the best way.</p></div>
+        <div class="about-sidebar-card"><h3 class="about-sidebar-title">Biggest travel mistake</h3><p class="about-sidebar-content">Booking a 4am bus in Nicaragua without checking if it actually ran. It did not.</p></div>
+        <div class="about-sidebar-card"><h3 class="about-sidebar-title">Get in touch</h3><p class="about-sidebar-content">hello@getawayguide.com</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="about-newsletter-strip">
+    <div class="about-newsletter-inner">
+      <h2 class="newsletter-title" style="color:var(--cream);">Stories from the <em style="color:var(--gold);">road</em>,<br>in your inbox.</h2>
+      <p style="margin-top:1rem;font-size:1rem;opacity:0.55;color:var(--cream);max-width:380px;">New destination guides, honest trip reports, and occasional thoughts on slow travel. No spam, ever.</p>
+      <div class="form-row" style="margin-top:2rem;max-width:460px;border-color:rgba(245,240,232,0.2);"><input type="email" placeholder="your@email.com" style="color:var(--cream);"><button>Subscribe</button></div>
+    </div>
+  </section>
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<!-- ═══════ CONTACT ═══════ -->
+<div class="page" id="page-contact">
+  <header class="page-header">
+    <div><p class="page-eyebrow">Get in touch</p><h1 class="page-title">Say <em>hello.</em></h1></div>
+    <p class="page-desc">Whether you have a question about a destination, want to collaborate, or just want to share a travel story — I'd love to hear from you.</p>
+  </header>
+  <section class="contact-section">
+    <div class="contact-grid">
+      <div class="contact-form-side">
+        <div class="contact-field"><label class="contact-label">Your name</label><input type="text" class="contact-input" placeholder="Jane Smith"></div>
+        <div class="contact-field"><label class="contact-label">Email address</label><input type="email" class="contact-input" placeholder="jane@email.com"></div>
+        <div class="contact-field"><label class="contact-label">Subject</label><input type="text" class="contact-input" placeholder="Question about Japan itinerary"></div>
+        <div class="contact-field"><label class="contact-label">Message</label><textarea class="contact-input contact-textarea" placeholder="Write your message here..."></textarea></div>
+        <button class="contact-submit">Send message →</button>
+      </div>
+      <div class="contact-info-side">
+        <div class="contact-info-card"><p class="contact-info-label">Email</p><p class="contact-info-value">hello@getawayguide.com</p></div>
+        <div class="contact-info-card"><p class="contact-info-label">Instagram</p><a href="https://www.instagram.com/kphanthaman" target="_blank" class="contact-info-value contact-info-link">@kphanthaman</a></div>
+        <div class="contact-info-card"><p class="contact-info-label">Response time</p><p class="contact-info-value">Usually within a few days. I'm often in a timezone that makes this complicated.</p></div>
+        <div class="contact-info-card"><p class="contact-info-label">Collaborations</p><p class="contact-info-value">I'm open to genuine partnerships with brands I actually use. I don't do paid reviews or sponsored posts that compromise the writing.</p></div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<!-- ═══════ PRIVACY ═══════ -->
+<div class="page" id="page-privacy">
+  <header class="page-header">
+    <div><p class="page-eyebrow">Legal</p><h1 class="page-title">Privacy <em>policy.</em></h1></div>
+  </header>
+  <section class="privacy-section">
+    <div class="privacy-body">
+      <div class="privacy-block"><h2 class="privacy-heading">Information we collect</h2><p>Getawayguide collects only the information you choose to provide. This includes your email address if you subscribe to the newsletter, and any details you submit via the contact form. We do not collect any information passively or without your knowledge.</p></div>
+      <div class="privacy-block"><h2 class="privacy-heading">How we use your information</h2><p>Your email address is used solely to send you newsletter updates from Getawayguide. We will never sell, rent, or share your personal information with third parties. You may unsubscribe at any time using the link included in every email.</p></div>
+      <div class="privacy-block"><h2 class="privacy-heading">Cookies &amp; tracking</h2><p>This site does not use advertising or analytics tracking cookies. We do not build user profiles or share data with advertising networks.</p></div>
+      <div class="privacy-block"><h2 class="privacy-heading">Affiliate links</h2><p>Some links on the Resources page are affiliate links. If you purchase through one of these links, we may earn a small commission at no additional cost to you. Affiliate relationships do not influence our recommendations — we only feature products and services we genuinely use.</p></div>
+      <div class="privacy-block"><h2 class="privacy-heading">Your rights</h2><p>You have the right to request access to, correction of, or deletion of any personal data we hold. To submit a request, please use the <a href="#" onclick="showPage('contact')" class="privacy-link">contact page</a>. We will respond within 30 days.</p></div>
+      <div class="privacy-block"><h2 class="privacy-heading">Changes to this policy</h2><p>We may update this policy from time to time. Any changes will be reflected on this page with an updated date below.</p></div>
+      <p style="opacity:0.35;font-size:0.8rem;font-family:'DM Mono',monospace;letter-spacing:0.1em;margin-top:1rem;">Last updated: March 2026</p>
+    </div>
+  </section>
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="#" onclick="showPage('contact')">Contact</a></li><li><a href="#" onclick="showPage('privacy')">Privacy</a></li></ul>
+    <div class="footer-copy">© 2026 getawayguide</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mouseX=0, mouseY=0, ringX=0, ringY=0;
+  document.addEventListener('mousemove', e => { mouseX=e.clientX; mouseY=e.clientY; cursor.style.left=mouseX+'px'; cursor.style.top=mouseY+'px'; });
+  function animateRing() { ringX+=(mouseX-ringX)*0.12; ringY+=(mouseY-ringY)*0.12; ring.style.left=ringX+'px'; ring.style.top=ringY+'px'; requestAnimationFrame(animateRing); }
+  animateRing();
+  function expandCursor() { cursor.style.width='20px'; cursor.style.height='20px'; ring.style.width='60px'; ring.style.height='60px'; }
+  function shrinkCursor() { cursor.style.width='10px'; cursor.style.height='10px'; ring.style.width='36px'; ring.style.height='36px'; }
+  document.querySelectorAll('a,button,.post-card,.dest-card,.home-dest-card,.resource-card').forEach(el => { el.addEventListener('mouseenter', expandCursor); el.addEventListener('mouseleave', shrinkCursor); });
+
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active','fade-in'); });
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    const target = document.getElementById('page-' + name);
+    target.classList.add('active');
+    setTimeout(() => target.classList.add('fade-in'), 10);
+    document.getElementById('nav-' + name)?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (name === 'destinations') {
+      setTimeout(() => {
+        document.querySelectorAll('#page-destinations .dest-card').forEach((el,i) => {
+          el.style.opacity='0'; el.style.transform='translateY(14px)';
+          el.style.transition=`opacity 0.5s ${(i%4)*0.06}s ease, transform 0.5s ${(i%4)*0.06}s ease`;
+          destObserver.observe(el);
+        });
+      }, 50);
+    }
+    setTimeout(() => {
+      document.querySelectorAll('a,button,.post-card,.dest-card,.home-dest-card,.resource-card').forEach(el => {
+        el.removeEventListener('mouseenter', expandCursor);
+        el.removeEventListener('mouseleave', shrinkCursor);
+        el.addEventListener('mouseenter', expandCursor);
+        el.addEventListener('mouseleave', shrinkCursor);
+      });
+    }, 50);
+    return false;
+  }
+
+  const homeObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('#page-home .post-card, #page-home .home-dest-card, #page-home .about-strip, #page-home .newsletter').forEach(el => {
+    el.style.transition='opacity 0.7s ease, transform 0.7s ease'; el.style.opacity='0'; el.style.transform='translateY(24px)';
+    homeObserver.observe(el);
+  });
+
+  const destObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } });
+  }, { threshold: 0.05 });
+
+  const map = L.map('map-container', { zoomControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, touchZoom:false, attributionControl:false }).setView([20,15],1);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
+  const markerStyle = L.divIcon({ className:'', html:`<div style="width:8px;height:8px;background:#C4673A;border-radius:50%;border:1.5px solid #F5F0E8;box-shadow:0 0 6px rgba(196,103,58,0.7);"></div>`, iconSize:[8,8], iconAnchor:[4,4] });
+  [{name:'Japan',coords:[36.2,138.2]},{name:'Patagonia',coords:[-51,-73]},{name:'Morocco',coords:[31.8,-7.1]},{name:'Iceland',coords:[64.9,-18.5]},{name:'Vietnam',coords:[14.1,108.3]}].forEach(d => {
+    L.marker(d.coords,{icon:markerStyle}).bindTooltip(d.name,{permanent:false,className:'map-tooltip',direction:'top'}).addTo(map);
+  });
+  const mapCard = document.getElementById('map-card');
+  mapCard.addEventListener('mouseenter',()=>{ map.dragging.enable(); map.scrollWheelZoom.enable(); });
+  mapCard.addEventListener('mouseleave',()=>{ map.dragging.disable(); map.scrollWheelZoom.disable(); });
+
+  function filterCont(continent, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.continent-section').forEach(s => { s.style.display = (continent==='all' || s.dataset.continent===continent) ? '' : 'none'; });
+  }
+
+  function filterContAndScroll(continent) {
+    const btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(b => {
+      const t = b.textContent.trim().toLowerCase();
+      b.classList.toggle('active', continent === 'all' ? t === 'all' : t.includes(continent));
+    });
+    document.querySelectorAll('.continent-section').forEach(s => {
+      s.style.display = (continent === 'all' || s.dataset.continent === continent) ? '' : 'none';
+    });
+    setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
+  }
+</script>
+</body>
+</html>
