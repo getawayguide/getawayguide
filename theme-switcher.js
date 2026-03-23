@@ -24,7 +24,7 @@
     btn.onmouseout  = function(){ btn.style.opacity = '.55'; };
 
     btn.onclick = function(){
-      document.documentElement.classList.remove(themes[idx]);
+      if(themes[idx]) document.documentElement.classList.remove(themes[idx]);
       idx = (idx + 1) % themes.length;
       if(themes[idx]) document.documentElement.classList.add(themes[idx]);
       localStorage.setItem('gag-theme', themes[idx]);
