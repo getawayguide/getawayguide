@@ -2,8 +2,8 @@
   const themes = [
     { id: '', name: 'Parchment', dot: '#C4673A', bg: '#F5F0E8' },
     { id: 'theme-coastal', name: 'Coastal', dot: '#B85C38', bg: '#FFFFFF' },
-    { id: 'theme-sage', name: 'Sage', dot: '#5C7A6E', bg: '#F7F7F3' },
-    { id: 'theme-dark', name: 'Dark', dot: '#D4845A', bg: '#0D1117' },
+    { id: 'theme-sage', name: 'Sage', dot: '#2D6B50', bg: '#F7F7F3' },
+    { id: 'theme-dark', name: 'Dark', dot: '#F2C124', bg: '#0D1117' },
   ];
 
   // Apply saved theme immediately (before DOM loads to avoid flash)

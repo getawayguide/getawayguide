@@ -2,22 +2,22 @@
 /* TOKENS & RESET */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --cream:#F5F0E8;
-  --ink:#1A1610;
-  --terra:#C4673A;
-  --gold:#D4A843;
-  --mist:#E8E2D6;
-  --void:#1A1610;
-  --void-text:#F0EBE0;
-  --nav-bg:rgba(245,240,232,.92);
-  --nav-border:rgba(26,22,16,.06);
-  --dropdown-bg:rgba(245,240,232,.98);
-  --filter-bg:rgba(245,240,232,.97);
-  --b-faint:rgba(26,22,16,.05);
-  --b-subtle:rgba(26,22,16,.08);
-  --b-medium:rgba(26,22,16,.14);
-  --b-strong:rgba(26,22,16,.22);
-  --shadow:rgba(26,22,16,.12);
+  --cream:#F7F7F3;
+  --ink:#1C2821;
+  --terra:#2D6B50;
+  --gold:#5E9A78;
+  --mist:#EDEDE7;
+  --void:#1C2821;
+  --void-text:#EDF0EC;
+  --nav-bg:rgba(247,247,243,.95);
+  --nav-border:rgba(28,40,33,.05);
+  --dropdown-bg:rgba(247,247,243,.98);
+  --filter-bg:rgba(247,247,243,.97);
+  --b-faint:rgba(28,40,33,.04);
+  --b-subtle:rgba(28,40,33,.08);
+  --b-medium:rgba(28,40,33,.13);
+  --b-strong:rgba(28,40,33,.20);
+  --shadow:rgba(28,40,33,.10);
 }
 html{scroll-behavior:smooth}
 body{background:var(--cream);color:var(--ink);font-family:'Source Serif 4',Georgia,serif;font-weight:300;overflow-x:hidden}
@@ -105,12 +105,9 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .hero-cta svg{transition:transform .2s}
 .hero-cta:hover svg{transform:translateX(4px)}
 .hero-image{position:relative;overflow:hidden;opacity:0;animation:fadeIn 1.2s .3s forwards}
-.hero-image-inner{position:absolute;inset:5% 5% 5% -5%;background:linear-gradient(160deg,#8B6F5C 0%,#5C4A3A 30%,#3A2E24 60%,#7A6B52 100%);border-radius:2px;overflow:hidden}
-.hero-image-inner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 100%,#4A3728 0%,transparent 70%),radial-gradient(ellipse 80% 50% at 30% 85%,#6B5040 0%,transparent 60%),linear-gradient(180deg,#C4A882 0%,#A8896C 20%,#7A6050 40%,#3D2E1E 100%)}
-.hero-image-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:55%;background:radial-gradient(ellipse 100% 80% at 50% 100%,#2A1F14 0%,transparent 70%)}
-.mountain{position:absolute;bottom:28%;left:0;right:0;height:40%;clip-path:polygon(0% 100%,12% 45%,22% 65%,35% 20%,50% 55%,65% 15%,78% 50%,88% 35%,100% 60%,100% 100%);background:#1E160D;opacity:.7}
-.mountain-2{position:absolute;bottom:20%;left:0;right:0;height:35%;clip-path:polygon(0% 100%,18% 55%,30% 70%,45% 30%,60% 60%,72% 25%,85% 55%,100% 40%,100% 100%);background:#2D2015;opacity:.8}
-.sun{position:absolute;top:22%;left:55%;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#E8A855 0%,#C4673A 50%,transparent 70%);box-shadow:0 0 60px 30px rgba(212,132,67,.25)}
+.hero-image-inner{position:absolute;inset:5% 5% 5% -5%;background:url('Images/Index/fitzroy island - main photo.JPG') center/cover no-repeat;border-radius:2px;overflow:hidden}
+.hero-image-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(20,32,24,.15) 0%,transparent 60%)}
+.hero-image-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(20,32,24,.45))}
 .hero-image-label{position:absolute;right:1.5rem;bottom:3rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(237,232,220,.4);writing-mode:vertical-rl}
 .hero-scroll{position:absolute;bottom:3rem;left:6rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);opacity:.3;display:flex;align-items:center;gap:1rem}
 .hero-scroll::before{content:'';width:40px;height:1px;background:var(--ink);display:inline-block;animation:scrollLine 2s infinite}
@@ -179,6 +176,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .newsletter-form{display:flex;flex-direction:column;gap:1rem}
 
 /* MAP */
+.map-dot{width:8px;height:8px;background:var(--terra);border-radius:50%;border:1.5px solid var(--cream);box-shadow:0 0 6px var(--terra)}
 .map-tooltip{background:var(--ink)!important;color:var(--cream)!important;border:none!important;border-radius:0!important;font-family:'Space Mono',monospace!important;font-size:.58rem!important;letter-spacing:.15em!important;text-transform:uppercase!important;padding:.3rem .6rem!important;box-shadow:none!important}
 .map-tooltip::before{display:none!important}
 #map-container{z-index:0;cursor:grab}
@@ -557,7 +555,7 @@ html.theme-coastal {
 }
 
 html.theme-sage {
-  --cream: #F7F7F3; --ink: #1C2821; --terra: #5C7A6E; --gold: #8BA898; --mist: #EDEDE7;
+  --cream: #F7F7F3; --ink: #1C2821; --terra: #2D6B50; --gold: #5E9A78; --mist: #EDEDE7;
   --void: #1C2821; --void-text: #EDF0EC;
   --nav-bg: rgba(247,247,243,.95); --nav-border: rgba(28,40,33,.05);
   --dropdown-bg: rgba(247,247,243,.98); --filter-bg: rgba(247,247,243,.97);
@@ -565,21 +563,21 @@ html.theme-sage {
   --b-medium: rgba(28,40,33,.13); --b-strong: rgba(28,40,33,.20);
   --shadow: rgba(28,40,33,.10);
 }
-/* Sage uses Lora for headings */
-html.theme-sage .section-title, html.theme-sage .page-title, html.theme-sage .hero-title,
-html.theme-sage .newsletter-title, html.theme-sage .nav-dropdown-continent,
-html.theme-sage .article-h2, html.theme-sage .article-h3, html.theme-sage .country-hero-title,
-html.theme-sage .article-hero-title, html.theme-sage .about-big-title, html.theme-sage .about-title,
-html.theme-sage .about-section-heading, html.theme-sage .about-stat-num, html.theme-sage .about-sig,
-html.theme-sage .footer-logo, html.theme-sage .country-article-title, html.theme-sage .country-info-heading,
-html.theme-sage .post-title, html.theme-sage .dest-info-name, html.theme-sage .resource-name,
-html.theme-sage .continent-title, html.theme-sage .privacy-heading, html.theme-sage .resource-category-title,
-html.theme-sage .country-util-text strong, html.theme-sage .article-day-num, html.theme-sage .article-day-title {
+/* Lora for headings */
+.section-title, .page-title, .hero-title,
+.newsletter-title, .nav-dropdown-continent,
+.article-h2, .article-h3, .country-hero-title,
+.article-hero-title, .about-big-title, .about-title,
+.about-section-heading, .about-stat-num, .about-sig,
+.footer-logo, .country-article-title, .country-info-heading,
+.post-title, .dest-info-name, .resource-name,
+.continent-title, .privacy-heading, .resource-category-title,
+.country-util-text strong, .article-day-num, .article-day-title {
   font-family: 'Lora', Georgia, serif;
 }
 
 html.theme-dark {
-  --cream: #0D1117; --ink: #EDE8DC; --terra: #D4845A; --gold: #C8A96E; --mist: #141A18;
+  --cream: #0D1117; --ink: #EDE8DC; --terra: #F2C124; --gold: #C8A96E; --mist: #141A18;
   --void: #060A08; --void-text: #EDE8DC;
   --nav-bg: rgba(13,17,23,.92); --nav-border: rgba(237,232,220,.06);
   --dropdown-bg: rgba(13,17,23,.98); --filter-bg: rgba(13,17,23,.97);
@@ -593,3 +591,49 @@ html.theme-dark .map-style-b svg { fill: rgba(237,232,220,.06); }
 html.theme-dark .filter-btn.active { color: var(--void); }
 /* Dark: post-card first child overlay */
 html.theme-dark .post-card:first-child .post-card-body { background: linear-gradient(transparent, rgba(6,10,8,.92)); }
+
+/* Sage: card fixes */
+.post-card { border: 1px solid var(--b-medium); }
+.post-card:first-child .post-card-body { background: linear-gradient(transparent, rgba(20,32,24,.96)); }
+.dest-info { color: #EDF0EC; }
+.dest-card { border: 1px solid var(--b-medium); }
+
+/* Sage: override hardcoded orange elements */
+html.theme-sage .sun {
+  background: radial-gradient(circle, #8EC8A8 0%, #2D6B50 50%, transparent 70%);
+  box-shadow: 0 0 60px 30px rgba(45,107,80,.20);
+}
+html.theme-sage .about-image::before {
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(45,107,80,.10) 0%, transparent 70%),
+    repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(28,40,33,.02) 30px, rgba(28,40,33,.02) 31px);
+}
+html.theme-sage .about-portrait-bg {
+  background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(45,107,80,.10) 0%, transparent 70%);
+}
+html.theme-sage .country-place-btn:hover { background: rgba(45,107,80,.06); }
+html.theme-sage .article-hero-bg,
+html.theme-sage .country-article-bg {
+  background: linear-gradient(160deg, #68B888 0%, #387848 30%, #2A6A48 65%, #151F18 100%);
+}
+
+/* Dark: override hardcoded orange elements */
+html.theme-dark .sun {
+  background: radial-gradient(circle, #FDE68A 0%, #F2C124 50%, transparent 70%);
+  box-shadow: 0 0 60px 30px rgba(242,193,36,.28);
+}
+html.theme-dark .about-image::before {
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(242,193,36,.08) 0%, transparent 70%),
+    repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(237,232,220,.02) 30px, rgba(237,232,220,.02) 31px);
+}
+html.theme-dark .about-portrait-bg {
+  background: radial-gradient(ellipse 80% 80% at 50% 60%, rgba(242,193,36,.08) 0%, transparent 70%);
+}
+html.theme-dark .country-place-btn:hover { background: rgba(242,193,36,.06); }
+html.theme-dark .article-hero-bg,
+html.theme-dark .country-article-bg {
+  background: linear-gradient(160deg, #3A6848 0%, #1E3828 30%, #181510 65%, #060A08 100%);
+}
+html.theme-dark .article-tip { background: rgba(242,193,36,.07) !important; }
+
+/* Sage: article-tip inline override */
+html.theme-sage .article-tip { background: rgba(62,126,98,.08) !important; }
