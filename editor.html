@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1C2821;
+      --cream: #F7F7F3;
+      --terra: #2D6B50;
+      --mist: #EDEDE7;
+      --b-subtle: rgba(28,40,33,.08);
+      --b-medium: rgba(28,40,33,.14);
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: .02em;
+      color: var(--cream);
+    }
+
+    .file-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .58rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(237,232,220,.4);
+      padding: .3rem 0;
+    }
+
+    #file-name {
+      font-family: 'Space Mono', monospace;
+      font-size: .62rem;
+      letter-spacing: .1em;
+      color: rgba(237,232,220,.7);
+      background: rgba(255,255,255,.06);
+      padding: .3rem .8rem;
+      border-radius: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .btn {
+      font-family: 'Space Mono', monospace;
+      font-size: .58rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      padding: .55rem 1.1rem;
+      border-radius: 3px;
+      transition: all .2s;
+    }
+
+    .btn-open {
+      background: rgba(255,255,255,.1);
+      color: var(--cream);
+      border: 1px solid rgba(255,255,255,.15);
+    }
+    .btn-open:hover { background: rgba(255,255,255,.18); }
+
+    .btn-save {
+      background: var(--terra);
+      color: #fff;
+    }
+    .btn-save:hover { background: #255c43; }
+    .btn-save:disabled { background: rgba(255,255,255,.1); color: rgba(237,232,220,.3); cursor: default; }
+
+    .save-status {
+      font-family: 'Space Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(237,232,220,.35);
+      min-width: 80px;
+      text-align: right;
+    }
+    .save-status.saved { color: #6EC99A; }
+    .save-status.unsaved { color: rgba(242,193,36,.7); }
+
+    /* LAYOUT */
+    .workspace {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: #fff;
+      border-right: 1px solid var(--b-medium);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 1.25rem 1.25rem .75rem;
+      border-bottom: 1px solid var(--b-subtle);
+    }
+
+    .sidebar-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .52rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(28,40,33,.35);
+    }
+
+    .article-list {
+      overflow-y: auto;
+      flex: 1;
+      padding: .5rem 0;
+    }
+
+    .article-item {
+      padding: .75rem 1.25rem;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all .15s;
+    }
+
+    .article-item:hover { background: var(--mist); }
+    .article-item.active {
+      border-left-color: var(--terra);
+      background: rgba(45,107,80,.06);
+    }
+
+    .article-item-name {
+      font-size: .85rem;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+
+    .article-item-file {
+      font-family: 'Space Mono', monospace;
+      font-size: .5rem;
+      letter-spacing: .08em;
+      color: rgba(28,40,33,.35);
+      margin-top: .2rem;
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      background: #fff;
+      border-bottom: 1px solid var(--b-medium);
+      padding: .5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: .65rem;
+      font-weight: 700;
+      border: 1px solid var(--b-medium);
+      background: #fff;
+      color: var(--ink);
+      padding: .3rem .55rem;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all .15s;
+      line-height: 1;
+    }
+    .tool-btn:hover { background: var(--mist); border-color: var(--b-medium); }
+    .tool-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+    .tool-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--b-medium);
+      margin: 0 .35rem;
+    }
+
+    /* EDITOR AREA */
+    .editor-wrap {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .editor-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 3rem 4rem;
+    }
+
+    #editor {
+      max-width: 720px;
+      margin: 0 auto;
+      outline: none;
+      min-height: 400px;
+    }
+
+    /* Article typography in editor */
+    #editor h1, #editor h2 { font-family: 'Fraunces', serif; font-weight: 400; }
+    #editor h2 { font-size: 1.7rem; margin: 2.5rem 0 1rem; letter-spacing: -.01em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
+    #editor h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: var(--terra); margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
+    #editor p { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 300; }
+    #editor a { color: var(--terra); }
+    #editor strong { font-weight: 500; color: var(--ink); }
+    #editor em { font-style: italic; }
+    #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
+    #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 300; }
+    #editor img { max-width: 100%; border-radius: 2px; margin: 1rem 0; display: block; }
+    #editor blockquote { border-left: 3px solid var(--terra); padding-left: 1.25rem; margin: 1.5rem 0; opacity: .75; }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 1rem;
+      color: rgba(28,40,33,.3);
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      opacity: .3;
+    }
+
+    .empty-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    .empty-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      opacity: .6;
+    }
+
+    /* Notice banner */
+    #notice {
+      display: none;
+      background: rgba(45,107,80,.08);
+      border: 1px solid rgba(45,107,80,.2);
+      color: var(--terra);
+      font-family: 'Space Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: .1em;
+      padding: .6rem 2rem;
+      text-align: center;
+    }
+
+    /* Unsupported browser */
+    #unsupported {
+      display: none;
+      background: rgba(200,50,30,.08);
+      border: 1px solid rgba(200,50,30,.2);
+      color: #c83218;
+      font-family: 'Space Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: .1em;
+      padding: .6rem 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="logo">Article Editor</span>
+    <span class="file-label">—</span>
+    <span id="file-name">no file open</span>
+  </div>
+  <div class="header-actions">
+    <span class="save-status" id="save-status"></span>
+    <button class="btn btn-open" id="btn-open">Open Article</button>
+    <button class="btn btn-save" id="btn-save" disabled>Save</button>
+  </div>
+</header>
+
+<div id="unsupported">
+  Your browser does not support the File System Access API. Please use Chrome or Edge.
+</div>
+
+<div id="notice">
+  Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
+</div>
+
+<div class="workspace">
+
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-label">Articles</div>
+    </div>
+    <div class="article-list" id="article-list">
+      <div style="padding:1.25rem;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;color:rgba(28,40,33,.3);text-transform:uppercase;line-height:1.8">
+        Open an article file<br>to get started
+      </div>
+    </div>
+  </aside>
+
+  <div class="editor-wrap">
+    <div class="toolbar" id="toolbar">
+      <button class="tool-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+      <button class="tool-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+      <button class="tool-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="insertLink()" title="Insert Link">Link</button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
+      <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="undo()" title="Undo">↩ Undo</button>
+      <button class="tool-btn" onclick="redo()" title="Redo">↪ Redo</button>
+    </div>
+
+    <div class="editor-scroll">
+      <div id="editor-container">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">✦</div>
+          <div class="empty-title">No article open</div>
+          <div class="empty-sub">Click "Open Article" to begin editing</div>
+        </div>
+        <div id="editor" contenteditable="false" spellcheck="true" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Check browser support
+  if (!('showOpenFilePicker' in window)) {
+    document.getElementById('unsupported').style.display = 'block';
+  }
+
+  let fileHandle = null;
+  let originalHTML = '';
+  let hiddenBlocks = []; // stores non-text nodes we strip out
+  let isDirty = false;
+
+  const KNOWN_ARTICLES = [
+    { name: 'Home', file: 'index.html' },
+    { name: 'About', file: 'about.html' },
+    { name: 'El Salvador', file: 'el-salvador.html' },
+    { name: 'El Salvador Itinerary', file: 'el-salvador-itinerary.html' },
+    { name: 'Santa Ana Guide', file: 'santa-ana.html' },
+    { name: 'Destinations', file: 'destinations.html' },
+    { name: 'Resources', file: 'resources.html' },
+    { name: 'Contact', file: 'contact.html' },
+    { name: 'Privacy', file: 'privacy.html' },
+  ];
+
+  // Populate sidebar
+  const list = document.getElementById('article-list');
+  list.innerHTML = '';
+  KNOWN_ARTICLES.forEach((art, i) => {
+    const item = document.createElement('div');
+    item.className = 'article-item';
+    item.innerHTML = `<div class="article-item-name">${art.name}</div><div class="article-item-file">${art.file}</div>`;
+    item.onclick = () => openKnownArticle(art, item);
+    list.appendChild(item);
+  });
+
+  // Open a known article from sidebar (requires folder handle)
+  let folderHandle = null;
+
+  async function openKnownArticle(art, itemEl) {
+    if (!folderHandle) {
+      alert('First, click "Open Article" and select any file from the Travel Blog folder. This grants access to the folder.');
+      return;
+    }
+    try {
+      const fh = await folderHandle.getFileHandle(art.file);
+      await loadFile(fh);
+      document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+      itemEl.classList.add('active');
+    } catch (e) {
+      alert('Could not open ' + art.file + ': ' + e.message);
+    }
+  }
+
+  // Open article button
+  document.getElementById('btn-open').onclick = async () => {
+    try {
+      const [fh] = await window.showOpenFilePicker({
+        types: [{ description: 'HTML files', accept: { 'text/html': ['.html'] } }],
+        multiple: false
+      });
+      // Try to get folder access
+      try { folderHandle = await fh.getParent?.(); } catch(e) {}
+      await loadFile(fh);
+      // Highlight matching sidebar item
+      const fname = fh.name;
+      document.querySelectorAll('.article-item').forEach(el => {
+        el.classList.toggle('active', el.querySelector('.article-item-file')?.textContent === fname);
+      });
+    } catch (e) {
+      if (e.name !== 'AbortError') alert('Error opening file: ' + e.message);
+    }
+  };
+
+  async function loadFile(fh) {
+    fileHandle = fh;
+    const file = await fh.getFile();
+    originalHTML = await file.text();
+
+    document.getElementById('file-name').textContent = fh.name;
+    document.getElementById('btn-save').disabled = false;
+
+    // Parse and extract article-body content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(originalHTML, 'text/html');
+    const body = doc.querySelector('.article-body');
+
+    if (!body) {
+      alert('No .article-body found in this file. Only article pages can be edited here.');
+      return;
+    }
+
+    // Build editor content: show editable text nodes, preserve but hide complex blocks
+    const editor = document.getElementById('editor');
+    editor.innerHTML = '';
+
+    // Clone article-body and strip images, divs (preserve them as hidden placeholders)
+    const clone = body.cloneNode(true);
+
+    // Remove images and figure divs from clone for display, but keep placeholders
+    const nonTextEls = clone.querySelectorAll('img, div, section, figure');
+    nonTextEls.forEach(el => {
+      const placeholder = document.createElement('div');
+      placeholder.style.cssText = 'background:rgba(45,107,80,.06);border:1px dashed rgba(45,107,80,.25);border-radius:3px;padding:.4rem .8rem;margin:.5rem 0;font-family:"Space Mono",monospace;font-size:.5rem;letter-spacing:.1em;color:rgba(45,107,80,.5);text-transform:uppercase;pointer-events:none;user-select:none';
+      placeholder.setAttribute('data-non-editable', 'true');
+      placeholder.textContent = '[' + (el.tagName === 'IMG' ? 'image: ' + (el.alt || el.src.split('/').pop()) : 'block element') + ']';
+      placeholder.contentEditable = 'false';
+      el.parentNode.replaceChild(placeholder, el);
+    });
+
+    editor.innerHTML = clone.innerHTML;
+    editor.contentEditable = 'true';
+    editor.style.display = 'block';
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('notice').style.display = 'block';
+
+    setDirty(false);
+
+    editor.addEventListener('input', () => setDirty(true), { once: false });
+  }
+
+  function setDirty(dirty) {
+    isDirty = dirty;
+    const status = document.getElementById('save-status');
+    if (dirty) {
+      status.textContent = '● Unsaved';
+      status.className = 'save-status unsaved';
+    } else {
+      status.textContent = '';
+      status.className = 'save-status';
+    }
+  }
+
+  // Save
+  document.getElementById('btn-save').onclick = async () => {
+    if (!fileHandle) return;
+    await saveFile();
+  };
+
+  // Ctrl+S to save
+  document.addEventListener('keydown', async (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      if (fileHandle) await saveFile();
+    }
+  });
+
+  async function saveFile() {
+    const editor = document.getElementById('editor');
+
+    // Parse original HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(originalHTML, 'text/html');
+    const originalBody = doc.querySelector('.article-body');
+    if (!originalBody) return;
+
+    // Get editor HTML and merge back
+    // Strategy: walk through original article-body children and editor children
+    // Replace text/paragraph nodes with edited versions, keep non-text nodes (imgs, divs) as-is
+    const editorEl = document.createElement('div');
+    editorEl.innerHTML = editor.innerHTML;
+
+    // Remove placeholder divs from editor content
+    editorEl.querySelectorAll('[data-non-editable]').forEach(el => el.remove());
+
+    // Rebuild article body: interleave original non-text elements with edited text
+    const origChildren = Array.from(originalBody.childNodes);
+    const editChildren = Array.from(editorEl.childNodes);
+
+    // Simple approach: collect text-type nodes from original, replace with edited equivalents
+    const origTextNodes = origChildren.filter(n =>
+      n.nodeType === Node.ELEMENT_NODE && !['IMG','DIV','SECTION','FIGURE'].includes(n.tagName)
+    );
+    const editTextNodes = Array.from(editorEl.querySelectorAll('p, h1, h2, h3, h4, ul, ol, blockquote'))
+      .filter(el => !el.hasAttribute('data-non-editable'));
+
+    // Replace each original text node with its edited counterpart
+    origTextNodes.forEach((orig, i) => {
+      if (editTextNodes[i]) {
+        orig.parentNode.replaceChild(
+          doc.adoptNode(editTextNodes[i].cloneNode(true)),
+          orig
+        );
+      }
+    });
+
+    // Serialize back to HTML string
+    const serializer = new XMLSerializer();
+    let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
+    // Write file
+    try {
+      const writable = await fileHandle.createWritable();
+      await writable.write(newHTML);
+      await writable.close();
+      originalHTML = newHTML;
+      setDirty(false);
+      const status = document.getElementById('save-status');
+      status.textContent = '✓ Saved';
+      status.className = 'save-status saved';
+      setTimeout(() => { if (!isDirty) { status.textContent = ''; status.className = 'save-status'; } }, 2500);
+    } catch (e) {
+      alert('Save failed: ' + e.message);
+    }
+  }
+
+  // Formatting commands
+  function fmt(cmd, value) {
+    document.getElementById('editor').focus();
+    document.execCommand(cmd, false, value || null);
+  }
+
+  function insertLink() {
+    const url = prompt('Enter URL:');
+    if (url) fmt('createLink', url);
+  }
+
+  function undo() { fmt('undo'); }
+  function redo() { fmt('redo'); }
+</script>
+</body>
+</html>
