@@ -133,7 +133,7 @@
 </div>
 
 <div class="page active fade-in" id="page-article-sv-santaana">
-  <section class="article-hero" style="background:url('Images/El Salvador/Santa Ana/Volcano de Santa Ana Horizontal.jpg') center 75%/cover no-repeat;padding:clamp(3rem,6vh,5rem) clamp(1.5rem,6vw,6rem);aspect-ratio:16/7;min-height:unset;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.5rem;position:relative;text-align:center;overflow:hidden;width:100%;box-sizing:border-box">
+  <section class="article-hero" style="background:url('Images/El Salvador/Santa Ana/Volcano de Santa Ana Horizontal.jpg') center 75%/cover no-repeat;padding:clamp(3rem,6vh,5rem) clamp(1.5rem,6vw,6rem) clamp(3rem,5vh,5rem);aspect-ratio:16/7;min-height:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.5rem;position:relative;text-align:center;overflow:hidden;width:100%;box-sizing:border-box">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,.60);pointer-events:none;z-index:0"></div>
     <div style="position:relative;z-index:1;margin-bottom:.4rem"><span onclick="location.href='el-salvador.html'" style="cursor:pointer;background:#1C2821;color:#EDF0EC;padding:.3rem .9rem;border-radius:20px;display:inline-block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase">El Salvador</span></div>
     <p style="font-family:'DM Mono',monospace;position:relative;z-index:1;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#7ED4A8;opacity:1;margin-bottom:.3rem">City Guide</p>
@@ -260,6 +260,9 @@
 
 
 <style>
+@media(max-width:768px){
+  #page-article-sv-santaana .article-hero{min-height:80vw!important;justify-content:flex-end!important;padding-bottom:2.5rem!important;padding-top:1rem!important}
+}
 #toc-b{border:1px solid var(--b-medium);border-radius:6px;padding:1.5rem 1.75rem;margin:0 0 2.5rem;background:var(--mist)}
 #toc-b .toc-label{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--terra);opacity:.7;margin-bottom:.5rem}
 #toc-b .toc-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:1.2rem;line-height:1.2}
@@ -267,19 +270,25 @@
 /* top-level rows */
 #toc-b .toc-row{display:flex;align-items:baseline;gap:.55rem;padding:.38rem 0;border-bottom:1px solid var(--b-subtle)}
 #toc-b .toc-row:last-child{border-bottom:none}
-#toc-b .toc-num{font-family:'Space Mono',monospace;font-size:.52rem;color:var(--terra);opacity:.55;flex-shrink:0;line-height:1.6}
-#toc-b a.toc-link{font-family:'Jost',sans-serif;font-size:.8rem;font-weight:300;color:rgba(28,40,33,.7);text-decoration:none;transition:color .15s;line-height:1.5}
+#toc-b .toc-num{font-family:'Space Mono',monospace;font-size:.65rem;font-weight:400;color:var(--terra);flex-shrink:0;line-height:1.6}
+#toc-b a.toc-link{font-family:'Jost',sans-serif;font-size:.85rem;font-weight:400;color:rgba(28,40,33,.85);text-decoration:none;transition:color .15s;line-height:1.5}
 #toc-b a.toc-link:hover{color:var(--terra)}
-/* collapsible toggle */
-#toc-b .toc-toggle{font-family:'Jost',sans-serif;font-size:.8rem;font-weight:300;color:rgba(28,40,33,.7);background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:baseline;gap:.4rem;width:100%;text-align:left;line-height:1.5}
-#toc-b .toc-toggle:hover{color:var(--terra)}
-#toc-b .toc-chevron{font-size:.55rem;transition:transform .2s;display:inline-block;margin-left:auto;opacity:.4}
-#toc-b .toc-toggle.open .toc-chevron{transform:rotate(180deg)}
+/* collapsible section header row */
+#toc-b .toc-section-head{display:flex;align-items:baseline;gap:.45rem;width:100%}
+#toc-b a.toc-section-link{font-family:'Jost',sans-serif;font-size:.85rem;font-weight:400;color:rgba(28,40,33,.85);text-decoration:none;transition:color .15s;line-height:1.5;flex:1}
+#toc-b a.toc-section-link:hover{color:var(--terra)}
+#toc-b .toc-arrow{background:none;border:none;padding:0 0 0 .2rem;cursor:pointer;color:var(--terra);font-size:1.2rem;line-height:1.4;transition:transform .2s,opacity .15s;opacity:.6;flex-shrink:0}
+#toc-b .toc-arrow:hover{opacity:1}
+#toc-b .toc-arrow.open{transform:rotate(180deg)}
 /* sub-items */
 #toc-b .toc-sub{overflow:hidden;transition:max-height .25s ease}
-#toc-b .toc-sub a{display:block;font-family:'Jost',sans-serif;font-size:.74rem;font-weight:300;color:rgba(28,40,33,.5);text-decoration:none;padding:.28rem 0 .28rem 1.1rem;border-left:1.5px solid var(--b-medium);margin-left:.1rem;transition:color .15s}
+#toc-b .toc-sub a{display:block;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:300;color:rgba(28,40,33,.7);text-decoration:none;padding:.28rem 0 .28rem 1.1rem;border-left:1.5px solid var(--b-medium);margin-left:.1rem;transition:color .15s}
 #toc-b .toc-sub a:hover{color:var(--terra);border-left-color:var(--terra)}
-@media(max-width:600px){#toc-b .toc-cols{grid-template-columns:1fr}}
+@media(max-width:600px){
+  #toc-b .toc-cols{grid-template-columns:1fr}
+  #toc-b .toc-col{display:contents}
+  #toc-b .toc-row{padding:.55rem 0;border-bottom:1px solid var(--b-subtle)!important}
+}
 </style>
 
 <script>
@@ -299,10 +308,11 @@
           <span class="toc-num">01</span>
           <a href="#getting-there" class="toc-link">Getting There</a>
         </div>
-        <div class="toc-row" style="flex-direction:column;align-items:stretch">
-          <div style="display:flex;align-items:baseline;gap:.55rem">
+        <div class="toc-row" style="flex-direction:column;align-items:stretch;gap:0">
+          <div class="toc-section-head">
             <span class="toc-num">02</span>
-            <button class="toc-toggle open" data-sub="toc-sub-trips">Day Trips<span class="toc-chevron">▾</span></button>
+            <a href="#day-trips" class="toc-section-link">Day Trips</a>
+            <button class="toc-arrow open" data-sub="toc-sub-trips" aria-label="Toggle Day Trips">▾</button>
           </div>
           <div class="toc-sub" id="toc-sub-trips">
             <a href="#volcano">Santa Ana Volcano</a>
@@ -313,10 +323,11 @@
         </div>
       </div>
       <div class="toc-col">
-        <div class="toc-row" style="flex-direction:column;align-items:stretch">
-          <div style="display:flex;align-items:baseline;gap:.55rem">
+        <div class="toc-row" style="flex-direction:column;align-items:stretch;gap:0">
+          <div class="toc-section-head">
             <span class="toc-num">03</span>
-            <button class="toc-toggle open" data-sub="toc-sub-city">Santa Ana City<span class="toc-chevron">▾</span></button>
+            <a href="#the-city" class="toc-section-link">Santa Ana City</a>
+            <button class="toc-arrow open" data-sub="toc-sub-city" aria-label="Toggle Santa Ana City">▾</button>
           </div>
           <div class="toc-sub" id="toc-sub-city">
             <a href="#parque-libertad">Parque Libertad</a>
@@ -342,7 +353,7 @@
   toc.querySelectorAll('.toc-sub').forEach(sub => {
     sub.style.maxHeight = sub.scrollHeight + 'px';
   });
-  toc.querySelectorAll('.toc-toggle').forEach(btn => {
+  toc.querySelectorAll('.toc-arrow').forEach(btn => {
     btn.addEventListener('click', function() {
       const sub = document.getElementById(this.dataset.sub);
       const open = this.classList.toggle('open');
@@ -351,6 +362,11 @@
   });
 })();
 </script>
+
+<footer>
+  <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+  <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="contact.html">Contact</a></li><li><a href="privacy.html">Privacy</a></li></ul><div class="footer-copy">© 2026 getawayguide</div></div>
+</footer>
 
 <script>
 function toggleMobileMenu(){
