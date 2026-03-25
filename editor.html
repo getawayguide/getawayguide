@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Article Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -209,12 +209,135 @@
     .tool-btn:hover { background: var(--mist); border-color: var(--b-medium); }
     .tool-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
+    .color-picker-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .color-swatch {
+      width: 28px;
+      height: 26px;
+      border-radius: 3px;
+      border: 1px solid var(--b-medium);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 3px 5px;
+      background: #fff;
+      transition: all .15s;
+    }
+    .color-swatch:hover { background: var(--mist); }
+
+    .color-swatch-letter {
+      font-family: 'Space Mono', monospace;
+      font-size: .65rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .color-swatch-bar {
+      width: 14px;
+      height: 3px;
+      border-radius: 1px;
+      background: #e63946;
+    }
+
+    .color-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: #fff;
+      border: 1px solid var(--b-medium);
+      border-radius: 5px;
+      padding: .5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      z-index: 200;
+      width: 160px;
+    }
+    .color-dropdown.open { display: block; }
+
+    .color-dropdown-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .48rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: rgba(28,40,33,.35);
+      margin-bottom: .4rem;
+      display: block;
+    }
+
+    .color-swatches-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-bottom: .5rem;
+    }
+
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: transform .1s;
+    }
+    .color-dot:hover { transform: scale(1.2); border-color: rgba(0,0,0,.2); }
+
+    .color-custom-row {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: .3rem;
+      padding-top: .4rem;
+      border-top: 1px solid var(--b-subtle);
+    }
+
+    .color-custom-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .48rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(28,40,33,.4);
+      flex-shrink: 0;
+    }
+
+    #color-input {
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--b-medium);
+      border-radius: 3px;
+      padding: 0;
+      cursor: pointer;
+      background: none;
+    }
+
     .tool-divider {
       width: 1px;
       height: 18px;
       background: var(--b-medium);
       margin: 0 .35rem;
     }
+
+    .tool-select {
+      font-family: 'Space Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: .08em;
+      border: 1px solid var(--b-medium);
+      background: #fff;
+      color: var(--ink);
+      padding: .28rem .4rem;
+      border-radius: 3px;
+      cursor: pointer;
+      height: 26px;
+      outline: none;
+    }
+    .tool-select:focus { border-color: var(--terra); }
 
     /* EDITOR AREA */
     .editor-wrap {
@@ -246,8 +369,64 @@
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
     #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 300; }
-    #editor img { max-width: 100%; border-radius: 2px; margin: 1rem 0; display: block; }
+    #editor img { max-width: 100%; height: auto; cursor: pointer; }
+    #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
+    #editor img.img-cropped { cursor: grab; }
+    #editor img.img-cropped.img-panning { cursor: grabbing; }
     #editor blockquote { border-left: 3px solid var(--terra); padding-left: 1.25rem; margin: 1.5rem 0; opacity: .75; }
+
+    /* Floating image toolbar */
+    #img-floating-toolbar {
+      display: none;
+      position: fixed;
+      z-index: 400;
+      background: #1C2821;
+      border-radius: 4px;
+      padding: .2rem .3rem;
+      gap: .1rem;
+      align-items: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,.3);
+    }
+    .img-tool-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: .55rem;
+      background: transparent;
+      color: rgba(237,232,220,.75);
+      border: none;
+      cursor: pointer;
+      padding: .28rem .45rem;
+      border-radius: 2px;
+      white-space: nowrap;
+      transition: background .1s, color .1s;
+    }
+    .img-tool-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .img-tool-btn.active-align { color: #6EC99A; }
+    .img-tool-divider { width: 1px; height: 14px; background: rgba(255,255,255,.15); margin: 0 .1rem; flex-shrink: 0; }
+    #img-width-input {
+      width: 44px;
+      font-family: 'Space Mono', monospace;
+      font-size: .55rem;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      border-radius: 2px;
+      padding: .18rem .3rem;
+      text-align: center;
+      outline: none;
+    }
+    /* Resize handle */
+    #img-resize-handle {
+      display: none;
+      position: fixed;
+      width: 11px;
+      height: 11px;
+      background: var(--terra);
+      border: 2px solid #fff;
+      border-radius: 2px;
+      cursor: se-resize;
+      z-index: 401;
+      box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    }
 
     /* Empty state */
     .empty-state {
@@ -305,9 +484,109 @@
       padding: .6rem 2rem;
       text-align: center;
     }
+    /* Image modal */
+    .img-modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .img-modal-backdrop.open { display: flex; }
+    .img-modal {
+      background: #fff;
+      border-radius: 6px;
+      padding: 1.5rem;
+      width: 380px;
+      max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .img-modal-title {
+      font-family: 'Space Mono', monospace;
+      font-size: .52rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(28,40,33,.4);
+      margin-bottom: 1rem;
+    }
+    .img-modal-preview {
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      border-radius: 3px;
+      margin-bottom: 1rem;
+      background: var(--mist);
+      display: none;
+    }
+    .img-modal-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .5rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(28,40,33,.4);
+      margin-bottom: .3rem;
+      display: block;
+    }
+    .img-modal-input {
+      width: 100%;
+      font-family: 'Space Mono', monospace;
+      font-size: .65rem;
+      color: var(--ink);
+      border: 1px solid var(--b-medium);
+      border-radius: 3px;
+      padding: .5rem .7rem;
+      margin-bottom: .9rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .img-modal-input:focus { border-color: var(--terra); }
+    .img-modal-actions {
+      display: flex;
+      gap: .5rem;
+      justify-content: flex-end;
+      margin-top: .25rem;
+    }
   </style>
 </head>
 <body>
+
+<!-- Image insert modal -->
+<div class="img-modal-backdrop" id="img-modal-backdrop">
+  <div class="img-modal">
+    <div class="img-modal-title">Insert Image</div>
+    <img id="img-modal-preview" class="img-modal-preview" alt="preview">
+    <label class="img-modal-label">Image Path (relative to site root)</label>
+    <input class="img-modal-input" id="img-path-input" type="text" placeholder="Images/folder/filename.jpg">
+    <label class="img-modal-label">Alt Text</label>
+    <input class="img-modal-input" id="img-alt-input" type="text" placeholder="Describe the image">
+    <div class="img-modal-actions">
+      <button class="btn btn-open" onclick="closeImgModal()">Cancel</button>
+      <button class="btn btn-save" onclick="confirmInsertImage()">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating image toolbar -->
+<div id="img-floating-toolbar" style="display:none;position:fixed;z-index:400">
+  <button class="img-tool-btn" onclick="imgAlign('left')" title="Float left">← Left</button>
+  <button class="img-tool-btn" onclick="imgAlign('center')" title="Center">⊡ Center</button>
+  <button class="img-tool-btn" onclick="imgAlign('right')" title="Float right">Right →</button>
+  <div class="img-tool-divider"></div>
+  <button class="img-tool-btn" onclick="imgSetWidth('25%')">25%</button>
+  <button class="img-tool-btn" onclick="imgSetWidth('50%')">50%</button>
+  <button class="img-tool-btn" onclick="imgSetWidth('100%')">100%</button>
+  <input id="img-width-input" type="text" placeholder="width" title="e.g. 300px or 50%">
+  <div class="img-tool-divider"></div>
+  <button class="img-tool-btn" onclick="imgPan()" title="Pan/reposition without changing shape">↔ Pan</button>
+  <button class="img-tool-btn" onclick="imgCrop('4/5')" title="Reshape to portrait 4:5">⬜ 4:5</button>
+  <button class="img-tool-btn" onclick="imgCrop('7/5')" title="Reshape to landscape 7:5">⬜ 7:5</button>
+  <button class="img-tool-btn" onclick="imgCrop('1/1')" title="Reshape to square 1:1">⬜ 1:1</button>
+  <button class="img-tool-btn" onclick="imgCrop('none')" title="Remove crop/reshape">✂ Off</button>
+  <div class="img-tool-divider"></div>
+  <button class="img-tool-btn" onclick="imgDelete()" title="Delete image" style="color:#ff8080">✕</button>
+</div>
+<div id="img-resize-handle"></div>
 
 <header>
   <div class="header-left">
@@ -335,12 +614,13 @@
   <aside class="sidebar">
     <div class="sidebar-head">
       <div class="sidebar-label">Articles</div>
-    </div>
-    <div class="article-list" id="article-list">
-      <div style="padding:1.25rem;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;color:rgba(28,40,33,.3);text-transform:uppercase;line-height:1.8">
-        Open an article file<br>to get started
+      <div id="folder-status" style="margin-top:.6rem">
+        <button id="btn-connect-folder" onclick="connectFolder()" style="width:100%;font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">
+          ⚙ Connect Site Folder
+        </button>
       </div>
     </div>
+    <div class="article-list" id="article-list"></div>
   </aside>
 
   <div class="editor-wrap">
@@ -349,13 +629,56 @@
       <button class="tool-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
       <button class="tool-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
       <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
+      <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
+      <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="textAlign('left')" title="Align left">≡←</button>
+      <button class="tool-btn" onclick="textAlign('center')" title="Align center">≡</button>
+      <button class="tool-btn" onclick="textAlign('right')" title="Align right">≡→</button>
+      <div class="tool-divider"></div>
       <button class="tool-btn" onclick="insertLink()" title="Insert Link">Link</button>
+      <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
       <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
+      <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="undo()" title="Undo">↩ Undo</button>
       <button class="tool-btn" onclick="redo()" title="Redo">↪ Redo</button>
+      <div class="tool-divider"></div>
+      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
+        <option value="">Font</option>
+        <option value="Jost, sans-serif">Jost</option>
+        <option value="__jost-bold__">Jost Bold</option>
+        <option value="Fraunces, serif">Fraunces</option>
+        <option value="Lora, serif">Lora</option>
+        <option value="'Space Mono', monospace">Mono</option>
+      </select>
+      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
+        <option value="">Size</option>
+        <option value="0.85rem">Small</option>
+        <option value="1rem">Body</option>
+        <option value="1.2rem">Large</option>
+        <option value="1.5rem">XLarge</option>
+      </select>
+      <div class="tool-divider"></div>
+      <div class="color-picker-wrap" id="color-picker-wrap">
+        <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
+          <span class="color-swatch-letter">A</span>
+          <div class="color-swatch-bar" id="color-swatch-bar"></div>
+        </div>
+        <div class="color-dropdown" id="color-dropdown">
+          <span class="color-dropdown-label">Theme</span>
+          <div class="color-swatches-grid" id="color-theme-grid"></div>
+          <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
+          <div class="color-swatches-grid" id="color-swatches-grid"></div>
+          <div class="color-custom-row">
+            <span class="color-custom-label">Custom</span>
+            <input type="color" id="color-input" value="#e63946" title="Pick custom color">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="editor-scroll">
@@ -380,7 +703,6 @@
 
   let fileHandle = null;
   let originalHTML = '';
-  let hiddenBlocks = []; // stores non-text nodes we strip out
   let isDirty = false;
 
   const KNOWN_ARTICLES = [
@@ -406,35 +728,107 @@
     list.appendChild(item);
   });
 
-  // Open a known article from sidebar (requires folder handle)
   let folderHandle = null;
+  let lastFileHandle = null;
+
+  // --- IndexedDB helpers for persisting the folder handle across sessions ---
+  function idbRequest(fn) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('editor-handles', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('handles');
+      req.onerror = () => reject(req.error);
+      req.onsuccess = e => {
+        try { fn(e.target.result, resolve, reject); }
+        catch(err) { reject(err); }
+      };
+    });
+  }
+  function saveFolderHandle(h) {
+    return idbRequest((db, resolve, reject) => {
+      const tx = db.transaction('handles', 'readwrite');
+      tx.objectStore('handles').put(h, 'folder');
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  function loadFolderHandle() {
+    return idbRequest((db, resolve) => {
+      const tx = db.transaction('handles', 'readonly');
+      const req = tx.objectStore('handles').get('folder');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  }
+
+  // On load: restore stored handle and check permission
+  (async () => {
+    try {
+      const stored = await loadFolderHandle();
+      if (stored) {
+        folderHandle = stored;
+        const perm = await stored.queryPermission({ mode: 'readwrite' });
+        if (perm === 'granted') updateFolderUI();
+      }
+    } catch(e) {}
+  })();
+
+  async function ensureFolderHandle() {
+    if (!folderHandle) return false;
+    const perm = await folderHandle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') return true;
+    const granted = await folderHandle.requestPermission({ mode: 'readwrite' });
+    return granted === 'granted';
+  }
+
+  async function connectFolder() {
+    try {
+      const h = await window.showDirectoryPicker({
+        id: 'travel-blog',
+        mode: 'readwrite',
+        startIn: lastFileHandle || 'documents'
+      });
+      folderHandle = h;
+      await saveFolderHandle(h);
+      updateFolderUI();
+    } catch(e) {}
+  }
+
+  function updateFolderUI() {
+    const status = document.getElementById('folder-status');
+    if (!folderHandle) {
+      status.innerHTML = `<button onclick="connectFolder()" style="width:100%;font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">⚙ Connect Site Folder</button>`;
+      return;
+    }
+    status.innerHTML = `
+      <div style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.1em;color:rgba(28,40,33,.5);text-transform:uppercase;margin-bottom:.3rem">Connected</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem">
+        <span style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--terra);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${folderHandle.name}">${folderHandle.name}</span>
+        <button onclick="connectFolder()" title="Change folder" style="font-family:'Space Mono',monospace;font-size:.5rem;background:none;border:1px solid var(--b-medium);border-radius:2px;padding:.15rem .35rem;cursor:pointer;color:rgba(28,40,33,.4);flex-shrink:0">↺</button>
+      </div>`;
+  }
 
   async function openKnownArticle(art, itemEl) {
     if (!folderHandle) {
-      alert('First, click "Open Article" and select any file from the Travel Blog folder. This grants access to the folder.');
+      alert('Connect your site folder first using the button in the sidebar.');
       return;
     }
+    const ok = await ensureFolderHandle();
+    if (!ok) return;
     try {
       const fh = await folderHandle.getFileHandle(art.file);
       await loadFile(fh);
       document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
       itemEl.classList.add('active');
     } catch (e) {
-      alert('Could not open ' + art.file + ': ' + e.message);
+      alert('Could not open ' + art.file + '.\nMake sure the Travel Blog root folder is connected (not a subfolder).');
     }
   }
 
-  // Open article button
+  // Open article button — single file picker, no folder access required
   document.getElementById('btn-open').onclick = async () => {
     try {
-      const [fh] = await window.showOpenFilePicker({
-        types: [{ description: 'HTML files', accept: { 'text/html': ['.html'] } }],
-        multiple: false
-      });
-      // Try to get folder access
-      try { folderHandle = await fh.getParent?.(); } catch(e) {}
+      const [fh] = await window.showOpenFilePicker({ multiple: false });
       await loadFile(fh);
-      // Highlight matching sidebar item
       const fname = fh.name;
       document.querySelectorAll('.article-item').forEach(el => {
         el.classList.toggle('active', el.querySelector('.article-item-file')?.textContent === fname);
@@ -446,13 +840,13 @@
 
   async function loadFile(fh) {
     fileHandle = fh;
+    lastFileHandle = fh; // remember for directory picker startIn
     const file = await fh.getFile();
     originalHTML = await file.text();
 
     document.getElementById('file-name').textContent = fh.name;
     document.getElementById('btn-save').disabled = false;
 
-    // Parse and extract article-body content
     const parser = new DOMParser();
     const doc = parser.parseFromString(originalHTML, 'text/html');
     const body = doc.querySelector('.article-body');
@@ -462,32 +856,58 @@
       return;
     }
 
-    // Build editor content: show editable text nodes, preserve but hide complex blocks
     const editor = document.getElementById('editor');
-    editor.innerHTML = '';
+    editor.innerHTML = body.innerHTML;
 
-    // Clone article-body and strip images, divs (preserve them as hidden placeholders)
-    const clone = body.cloneNode(true);
+    // Convert all existing image src paths to blob URLs so they display reliably in the editor.
+    // Images are always stored under Travel Blog/Images/ — use folderHandle to get file blobs.
+    const imgEls = editor.querySelectorAll('img');
+    await Promise.all(Array.from(imgEls).map(async img => {
+      const rawSrc = img.getAttribute('src');
+      if (!rawSrc || rawSrc.startsWith('blob:') || rawSrc.startsWith('data:') || rawSrc.startsWith('http')) return;
+      img.setAttribute('data-path', rawSrc); // preserve original path for saving
+      if (folderHandle) {
+        try {
+          // rawSrc is like "Images/El Salvador/Santa Ana/foo.JPEG" — traverse the folder tree
+          const parts = rawSrc.split('/');
+          let handle = folderHandle;
+          for (let i = 0; i < parts.length - 1; i++) {
+            handle = await handle.getDirectoryHandle(parts[i]);
+          }
+          const fileH = await handle.getFileHandle(parts[parts.length - 1]);
+          const blob = await fileH.getFile();
+          img.src = URL.createObjectURL(blob);
+        } catch(e) {
+          // Leave src as-is if file not found
+        }
+      }
+    }));
 
-    // Remove images and figure divs from clone for display, but keep placeholders
-    const nonTextEls = clone.querySelectorAll('img, div, section, figure');
-    nonTextEls.forEach(el => {
-      const placeholder = document.createElement('div');
-      placeholder.style.cssText = 'background:rgba(45,107,80,.06);border:1px dashed rgba(45,107,80,.25);border-radius:3px;padding:.4rem .8rem;margin:.5rem 0;font-family:"Space Mono",monospace;font-size:.5rem;letter-spacing:.1em;color:rgba(45,107,80,.5);text-transform:uppercase;pointer-events:none;user-select:none';
-      placeholder.setAttribute('data-non-editable', 'true');
-      placeholder.textContent = '[' + (el.tagName === 'IMG' ? 'image: ' + (el.alt || el.src.split('/').pop()) : 'block element') + ']';
-      placeholder.contentEditable = 'false';
-      el.parentNode.replaceChild(placeholder, el);
+    // Re-apply canvas crop for any images that have CSS crops from saved HTML
+    editor.querySelectorAll('img').forEach(img => {
+      if (img.style.objectFit === 'cover' && img.style.aspectRatio) {
+        img.classList.add('img-cropped');
+        img.dataset.originalSrc = img.src;
+        img.dataset.crop = img.style.aspectRatio.replace(/\s/g, '');
+        const pos = (img.style.objectPosition || '50% 50%').split(' ');
+        img.dataset.cropX = (parseFloat(pos[0]) / 100).toFixed(3);
+        img.dataset.cropY = (parseFloat(pos[1]) / 100).toFixed(3);
+        img.style.aspectRatio = '';
+        img.style.objectFit = '';
+        img.style.objectPosition = '';
+        applyCanvasCrop(img);
+      } else if (img.style.objectFit === 'cover') {
+        img.classList.add('img-cropped');
+      }
     });
 
-    editor.innerHTML = clone.innerHTML;
     editor.contentEditable = 'true';
+    editor.spellcheck = true;
     editor.style.display = 'block';
     document.getElementById('empty-state').style.display = 'none';
-    document.getElementById('notice').style.display = 'block';
+    document.getElementById('notice').style.display = 'none';
 
     setDirty(false);
-
     editor.addEventListener('input', () => setDirty(true), { once: false });
   }
 
@@ -520,47 +940,42 @@
   async function saveFile() {
     const editor = document.getElementById('editor');
 
-    // Parse original HTML
     const parser = new DOMParser();
     const doc = parser.parseFromString(originalHTML, 'text/html');
     const originalBody = doc.querySelector('.article-body');
     if (!originalBody) return;
 
-    // Get editor HTML and merge back
-    // Strategy: walk through original article-body children and editor children
-    // Replace text/paragraph nodes with edited versions, keep non-text nodes (imgs, divs) as-is
-    const editorEl = document.createElement('div');
-    editorEl.innerHTML = editor.innerHTML;
-
-    // Remove placeholder divs from editor content
-    editorEl.querySelectorAll('[data-non-editable]').forEach(el => el.remove());
-
-    // Rebuild article body: interleave original non-text elements with edited text
-    const origChildren = Array.from(originalBody.childNodes);
-    const editChildren = Array.from(editorEl.childNodes);
-
-    // Simple approach: collect text-type nodes from original, replace with edited equivalents
-    const origTextNodes = origChildren.filter(n =>
-      n.nodeType === Node.ELEMENT_NODE && !['IMG','DIV','SECTION','FIGURE'].includes(n.tagName)
-    );
-    const editTextNodes = Array.from(editorEl.querySelectorAll('p, h1, h2, h3, h4, ul, ol, blockquote'))
-      .filter(el => !el.hasAttribute('data-non-editable'));
-
-    // Replace each original text node with its edited counterpart
-    origTextNodes.forEach((orig, i) => {
-      if (editTextNodes[i]) {
-        orig.parentNode.replaceChild(
-          doc.adoptNode(editTextNodes[i].cloneNode(true)),
-          orig
-        );
-      }
+    // Clone editor content and prepare for saving
+    const saveEl = document.createElement('div');
+    saveEl.innerHTML = editor.innerHTML;
+    // Swap blob URLs back to real relative paths
+    saveEl.querySelectorAll('img[data-path]').forEach(img => {
+      img.setAttribute('src', img.getAttribute('data-path'));
+      img.removeAttribute('data-path');
+    });
+    // Strip editor-only classes
+    saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
+    saveEl.querySelectorAll('.img-cropped').forEach(el => el.classList.remove('img-cropped'));
+    saveEl.querySelectorAll('.img-panning').forEach(el => el.classList.remove('img-panning'));
+    // For canvas-cropped images: restore CSS crop styles for website display, remove editor-only data attrs
+    saveEl.querySelectorAll('img[data-crop]').forEach(img => {
+      const ratio = img.getAttribute('data-crop');
+      const cx = (parseFloat(img.getAttribute('data-crop-x') || '0.5') * 100).toFixed(1);
+      const cy = (parseFloat(img.getAttribute('data-crop-y') || '0.5') * 100).toFixed(1);
+      img.style.aspectRatio = ratio;
+      img.style.objectFit = 'cover';
+      img.style.objectPosition = `${cx}% ${cy}%`;
+      img.removeAttribute('data-crop');
+      img.removeAttribute('data-crop-x');
+      img.removeAttribute('data-crop-y');
+      img.removeAttribute('data-original-src');
     });
 
-    // Serialize back to HTML string
+    originalBody.innerHTML = saveEl.innerHTML;
+
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
 
-    // Write file
     try {
       const writable = await fileHandle.createWritable();
       await writable.write(newHTML);
@@ -587,8 +1002,505 @@
     if (url) fmt('createLink', url);
   }
 
+  let _imgSavedRange = null;
+  let _imgBlobUrl = null;
+  let _savedRange = null;
+
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) _savedRange = sel.getRangeAt(0).cloneRange();
+  }
+  function restoreSelection() {
+    const editor = document.getElementById('editor');
+    editor.focus({ preventScroll: true });
+    if (_savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(_savedRange);
+    }
+  }
+
+  async function insertImage() {
+    const editor = document.getElementById('editor');
+    const sel = window.getSelection();
+    _imgSavedRange = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+
+    // Ensure we have folder access for path resolution
+    await ensureFolderHandle();
+
+    try {
+      const [imgHandle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'Images',
+          accept: {
+            'image/jpeg': ['.jpg', '.jpeg', '.JPG', '.JPEG'],
+            'image/png':  ['.png', '.PNG'],
+            'image/webp': ['.webp', '.WEBP'],
+            'image/gif':  ['.gif', '.GIF'],
+          }
+        }],
+        multiple: false
+      });
+
+      // Blob URL for editor preview (always works)
+      const file = await imgHandle.getFile();
+      if (_imgBlobUrl) URL.revokeObjectURL(_imgBlobUrl);
+      _imgBlobUrl = URL.createObjectURL(file);
+
+      // Resolve relative path from site root using folder handle
+      let suggestedPath = '';
+      if (folderHandle) {
+        try {
+          const parts = await folderHandle.resolve(imgHandle);
+          if (parts) suggestedPath = parts.join('/');
+        } catch(e) {}
+      }
+      if (!suggestedPath) suggestedPath = 'Images/' + imgHandle.name;
+
+      // Show modal
+      const preview = document.getElementById('img-modal-preview');
+      preview.src = _imgBlobUrl;
+      preview.style.display = 'block';
+      document.getElementById('img-path-input').value = suggestedPath;
+      document.getElementById('img-alt-input').value = '';
+      document.getElementById('img-modal-backdrop').classList.add('open');
+      document.getElementById('img-alt-input').focus();
+    } catch(e) {
+      if (e.name !== 'AbortError') alert('Error: ' + e.message);
+    }
+  }
+
+  function confirmInsertImage() {
+    const src = document.getElementById('img-path-input').value.trim();
+    const alt = document.getElementById('img-alt-input').value.trim();
+    if (!src) { document.getElementById('img-path-input').focus(); return; }
+
+    // Capture blob URL BEFORE closing modal (closing would revoke it)
+    const displaySrc = _imgBlobUrl || src;
+    _imgBlobUrl = null; // clear reference without revoking — blob stays alive so image renders
+
+    // Hide modal without revoking
+    document.getElementById('img-modal-backdrop').classList.remove('open');
+    document.getElementById('img-modal-preview').style.display = 'none';
+
+    const imgHTML = `<img src="${displaySrc}" data-path="${src}" alt="${alt}" style="display:block;max-width:100%;height:auto;aspect-ratio:auto;border-radius:2px;margin:1rem auto">`;
+    const editor = document.getElementById('editor');
+    editor.focus();
+    const sel = window.getSelection();
+    if (_imgSavedRange) { sel.removeAllRanges(); sel.addRange(_imgSavedRange); }
+    document.execCommand('insertHTML', false, imgHTML);
+    setDirty(true);
+  }
+
+  function closeImgModal() {
+    // Only called on cancel — safe to revoke blob URL
+    document.getElementById('img-modal-backdrop').classList.remove('open');
+    if (_imgBlobUrl) { URL.revokeObjectURL(_imgBlobUrl); _imgBlobUrl = null; }
+    document.getElementById('img-modal-preview').style.display = 'none';
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('img-modal-backdrop').addEventListener('click', function(e) {
+    if (e.target === this) closeImgModal();
+  });
+
   function undo() { fmt('undo'); }
   function redo() { fmt('redo'); }
+
+  // ---- Heading + text alignment ----
+  function insertHeading(tag) {
+    document.getElementById('editor').focus();
+    document.execCommand('formatBlock', false, tag);
+    if (tag === 'h2' || tag === 'h3') {
+      const sel = window.getSelection();
+      if (sel.anchorNode) {
+        const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+        const h = node.tagName && node.tagName.toLowerCase() === tag ? node : node.closest(tag);
+        if (h) h.className = tag === 'h2' ? 'article-h2' : 'article-h3';
+      }
+    }
+  }
+  function textAlign(dir) {
+    document.getElementById('editor').focus();
+    const map = { left: 'justifyLeft', center: 'justifyCenter', right: 'justifyRight' };
+    document.execCommand(map[dir], false, null);
+  }
+  function applyFontFamily(sel, family) {
+    if (!family) return;
+    restoreSelection();
+    if (family === '__jost-bold__') {
+      const s = window.getSelection();
+      if (s && s.rangeCount && !s.isCollapsed) {
+        const range = s.getRangeAt(0);
+        const strong = document.createElement('strong');
+        strong.style.color = 'var(--ink)';
+        range.surroundContents(strong);
+        s.removeAllRanges();
+      }
+    } else {
+      document.execCommand('fontName', false, family);
+    }
+    sel.value = '';
+  }
+  function applyFontSize(sel, size) {
+    if (!size) return;
+    restoreSelection();
+    // execCommand fontSize only accepts 1-7; use a marker span approach
+    document.execCommand('fontSize', false, '7');
+    const s = window.getSelection();
+    if (s && s.anchorNode) {
+      document.getElementById('editor').querySelectorAll('font[size="7"]').forEach(el => {
+        el.removeAttribute('size');
+        el.style.fontSize = size;
+      });
+    }
+    sel.value = '';
+  }
+
+  function insertTermList() {
+    const editor = document.getElementById('editor');
+    editor.focus();
+    const ul = document.createElement('ul');
+    ul.style.cssText = 'list-style:none;padding:0;margin:1rem 0 1.5rem';
+    const li = document.createElement('li');
+    li.style.cssText = "padding:.7rem 0;border-bottom:1px solid rgba(26,22,16,.1);font-family:'Jost',sans-serif;font-weight:300";
+    li.innerHTML = '<strong style="color:var(--ink)">Term</strong> — Description';
+    ul.appendChild(li);
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(ul);
+      // place cursor inside the li
+      const newRange = document.createRange();
+      newRange.selectNodeContents(li);
+      newRange.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+    } else {
+      editor.appendChild(ul);
+    }
+  }
+
+  // ---- Image selection + floating toolbar ----
+  let _selImg = null;
+
+  document.getElementById('editor').addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+      selectImg(e.target);
+    } else {
+      deselectImg();
+    }
+  }, true);
+
+  document.addEventListener('click', function(e) {
+    const tb = document.getElementById('img-floating-toolbar');
+    const rh = document.getElementById('img-resize-handle');
+    if (tb && !tb.contains(e.target) && rh && !rh.contains(e.target) && e.target.tagName !== 'IMG') {
+      deselectImg();
+    }
+  });
+
+  function selectImg(img) {
+    if (_selImg && _selImg !== img) _selImg.classList.remove('img-selected');
+    _selImg = img;
+    img.classList.add('img-selected');
+    updateImgUI();
+    // Fill width input with current width
+    const w = img.style.width || img.getAttribute('width') || '';
+    document.getElementById('img-width-input').value = w;
+  }
+
+  function deselectImg() {
+    if (_selImg) _selImg.classList.remove('img-selected');
+    _selImg = null;
+    document.getElementById('img-floating-toolbar').style.display = 'none';
+    document.getElementById('img-resize-handle').style.display = 'none';
+  }
+
+  function updateImgUI() {
+    if (!_selImg) return;
+    const rect = _selImg.getBoundingClientRect();
+    const tb = document.getElementById('img-floating-toolbar');
+    tb.style.display = 'flex';
+    // Position above image, clamped to stay on screen
+    const tbH = tb.offsetHeight || 32;
+    tb.style.top = Math.max(4, rect.top - tbH - 6) + 'px';
+    tb.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - tb.offsetWidth - 4)) + 'px';
+    // Resize handle at bottom-right corner
+    const rh = document.getElementById('img-resize-handle');
+    rh.style.display = 'block';
+    rh.style.left = (rect.right - 6) + 'px';
+    rh.style.top = (rect.bottom - 6) + 'px';
+  }
+
+  document.querySelector('.editor-scroll').addEventListener('scroll', () => { if (_selImg) updateImgUI(); });
+  window.addEventListener('resize', () => { if (_selImg) updateImgUI(); });
+
+  function imgAlign(align) {
+    if (!_selImg) return;
+    _selImg.style.float = '';
+    _selImg.style.display = 'block';
+    _selImg.style.marginLeft = '0';
+    _selImg.style.marginRight = '0';
+    if (align === 'center') { _selImg.style.marginLeft = 'auto'; _selImg.style.marginRight = 'auto'; }
+    else if (align === 'right') { _selImg.style.float = 'right'; _selImg.style.marginLeft = '1rem'; }
+    else if (align === 'left') { _selImg.style.float = 'left'; _selImg.style.marginRight = '1rem'; }
+    setTimeout(updateImgUI, 30);
+    setDirty(true);
+  }
+
+  function imgSetWidth(w) {
+    if (!_selImg) return;
+    _selImg.style.width = w;
+    _selImg.style.maxWidth = '100%';
+    _selImg.style.height = 'auto';
+    document.getElementById('img-width-input').value = w;
+    setTimeout(updateImgUI, 30);
+    setDirty(true);
+  }
+
+  document.getElementById('img-width-input').addEventListener('change', function() {
+    if (_selImg && this.value) imgSetWidth(this.value);
+  });
+
+  function imgDelete() {
+    if (!_selImg) return;
+    _selImg.remove();
+    deselectImg();
+    setDirty(true);
+  }
+
+  function imgPan() {
+    if (!_selImg) return;
+    _selImg.style.aspectRatio = '';   // remove any shape change so no zoom occurs
+    _selImg.style.objectFit = 'cover';
+    _selImg.style.objectPosition = _selImg.style.objectPosition || 'center';
+    _selImg.classList.add('img-cropped');
+    setTimeout(updateImgUI, 30);
+    setDirty(true);
+  }
+
+  // Canvas-based crop — cuts actual pixels so there's no quality loss from CSS zoom
+  function applyCanvasCrop(img) {
+    const ratio = img.dataset.crop;
+    if (!ratio) return;
+    const [rw, rh] = ratio.split('/').map(Number);
+    const targetRatio = rw / rh;
+    const posX = parseFloat(img.dataset.cropX || '0.5');
+    const posY = parseFloat(img.dataset.cropY || '0.5');
+    const srcImg = new Image();
+    srcImg.onload = () => {
+      const nw = srcImg.naturalWidth, nh = srcImg.naturalHeight;
+      if (!nw || !nh) return;
+      const naturalRatio = nw / nh;
+      let cropW, cropH, cropX, cropY;
+      if (naturalRatio > targetRatio) {
+        cropH = nh; cropW = nh * targetRatio;
+        cropX = (nw - cropW) * posX; cropY = 0;
+      } else {
+        cropW = nw; cropH = nw / targetRatio;
+        cropX = 0; cropY = (nh - cropH) * posY;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(cropW);
+      canvas.height = Math.round(cropH);
+      canvas.getContext('2d').drawImage(srcImg, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        const oldSrc = img.src;
+        img.src = URL.createObjectURL(blob);
+        if (oldSrc && oldSrc.startsWith('blob:') && oldSrc !== img.dataset.originalSrc) URL.revokeObjectURL(oldSrc);
+        setTimeout(updateImgUI, 30);
+      }, 'image/jpeg', 0.95);
+    };
+    srcImg.src = img.dataset.originalSrc || img.src;
+  }
+
+  function imgCrop(ratio) {
+    if (!_selImg) return;
+    if (ratio === 'none') {
+      const prev = _selImg.src;
+      if (_selImg.dataset.originalSrc) {
+        _selImg.src = _selImg.dataset.originalSrc;
+        if (prev !== _selImg.dataset.originalSrc && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
+      }
+      _selImg.style.aspectRatio = '';
+      _selImg.style.objectFit = '';
+      _selImg.style.objectPosition = '';
+      delete _selImg.dataset.crop;
+      delete _selImg.dataset.cropX;
+      delete _selImg.dataset.cropY;
+      delete _selImg.dataset.originalSrc;
+      _selImg.classList.remove('img-cropped');
+    } else {
+      if (!_selImg.dataset.originalSrc) _selImg.dataset.originalSrc = _selImg.src;
+      _selImg.dataset.crop = ratio;
+      _selImg.dataset.cropX = _selImg.dataset.cropX || '0.5';
+      _selImg.dataset.cropY = _selImg.dataset.cropY || '0.5';
+      _selImg.style.aspectRatio = '';
+      _selImg.style.objectFit = '';
+      _selImg.style.objectPosition = '';
+      applyCanvasCrop(_selImg);
+      _selImg.classList.add('img-cropped');
+    }
+    setDirty(true);
+  }
+
+  // Drag-to-resize
+  document.getElementById('img-resize-handle').addEventListener('mousedown', function(e) {
+    if (!_selImg) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = _selImg.getBoundingClientRect().width;
+    function onMove(e) {
+      const newW = Math.max(40, startW + (e.clientX - startX));
+      _selImg.style.width = newW + 'px';
+      _selImg.style.maxWidth = '100%';
+      _selImg.style.height = 'auto';
+      document.getElementById('img-width-input').value = Math.round(newW) + 'px';
+      updateImgUI();
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      setDirty(true);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Drag-to-pan crop position
+  let _panImg = null, _panStart = null, _panStartPos = null;
+
+  document.getElementById('editor').addEventListener('mousedown', function(e) {
+    if (e.target.tagName !== 'IMG') return;
+    const img = e.target;
+    if (!img.classList.contains('img-cropped')) return;
+    e.preventDefault();
+    _panImg = img;
+    img.classList.add('img-panning');
+    _panStart = { x: e.clientX, y: e.clientY };
+    if (img.dataset.crop) {
+      // Switch to CSS preview for smooth drag; canvas crop re-applied on mouseup
+      const posX = parseFloat(img.dataset.cropX || '0.5') * 100;
+      const posY = parseFloat(img.dataset.cropY || '0.5') * 100;
+      const prevSrc = img.src;
+      img.src = img.dataset.originalSrc;
+      if (prevSrc !== img.dataset.originalSrc && prevSrc.startsWith('blob:')) URL.revokeObjectURL(prevSrc);
+      img.style.aspectRatio = img.dataset.crop;
+      img.style.objectFit = 'cover';
+      img.style.objectPosition = `${posX}% ${posY}%`;
+      _panStartPos = { x: posX, y: posY };
+    } else {
+      const pos = (img.style.objectPosition || '50% 50%').split(' ');
+      _panStartPos = { x: parseFloat(pos[0]) || 50, y: parseFloat(pos[1]) || 50 };
+    }
+    document.addEventListener('mousemove', onPanMove);
+    document.addEventListener('mouseup', onPanUp);
+  });
+
+  function onPanMove(e) {
+    if (!_panImg) return;
+    const rect = _panImg.getBoundingClientRect();
+    const nw = _panImg.naturalWidth, nh = _panImg.naturalHeight;
+    if (!nw || !nh) return;
+    const scale = Math.max(rect.width / nw, rect.height / nh);
+    const overflowX = nw * scale - rect.width;
+    const overflowY = nh * scale - rect.height;
+    const dx = e.clientX - _panStart.x;
+    const dy = e.clientY - _panStart.y;
+    const nx = overflowX > 0 ? Math.max(0, Math.min(100, _panStartPos.x - dx / overflowX * 100)) : 50;
+    const ny = overflowY > 0 ? Math.max(0, Math.min(100, _panStartPos.y - dy / overflowY * 100)) : 50;
+    _panImg.style.objectPosition = `${nx.toFixed(1)}% ${ny.toFixed(1)}%`;
+  }
+
+  function onPanUp() {
+    if (_panImg) {
+      _panImg.classList.remove('img-panning');
+      if (_panImg.dataset.crop) {
+        // Capture final CSS position, then re-apply canvas crop
+        const pos = (_panImg.style.objectPosition || '50% 50%').split(' ');
+        _panImg.dataset.cropX = (parseFloat(pos[0]) / 100).toFixed(3);
+        _panImg.dataset.cropY = (parseFloat(pos[1]) / 100).toFixed(3);
+        _panImg.style.aspectRatio = '';
+        _panImg.style.objectFit = '';
+        _panImg.style.objectPosition = '';
+        applyCanvasCrop(_panImg);
+      }
+      setDirty(true);
+    }
+    _panImg = null; _panStart = null; _panStartPos = null;
+    document.removeEventListener('mousemove', onPanMove);
+    document.removeEventListener('mouseup', onPanUp);
+  }
+
+  // Color picker — theme colors
+  const THEME_COLORS = [
+    { hex: '#1C2821', name: 'Ink' },
+    { hex: '#555E59', name: 'Body text' },
+    { hex: '#2D6B50', name: 'Terra (links)' },
+    { hex: '#5E9A78', name: 'Gold' },
+    { hex: '#7ED4A8', name: 'Light green' },
+    { hex: '#EDF0EC', name: 'Void text' },
+    { hex: '#F2C124', name: 'Dark accent' },
+  ];
+
+  const themeGrid = document.getElementById('color-theme-grid');
+  THEME_COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = 'color-dot';
+    dot.style.background = c.hex;
+    dot.style.border = '1.5px solid rgba(0,0,0,.12)';
+    dot.title = `${c.name} ${c.hex}`;
+    dot.onclick = () => applyColor(c.hex);
+    themeGrid.appendChild(dot);
+  });
+
+  const COLORS = [
+    '#000000','#1C2821','#374151','#6B7280','#9CA3AF','#D1D5DB','#ffffff',
+    '#e63946','#c1121f','#9b2226','#e76f51','#f4a261','#e9c46a','#f1faee',
+    '#2D6B50','#40916c','#52b788','#74c69d','#b7e4c7','#d8f3dc','#95d5b2',
+    '#023e8a','#0077b6','#0096c7','#00b4d8','#48cae4','#90e0ef','#caf0f8',
+    '#7b2d8b','#9d4edd','#c77dff','#e0aaff','#f72585','#b5179e','#7209b7',
+  ];
+
+  const grid = document.getElementById('color-swatches-grid');
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = 'color-dot';
+    dot.style.background = c;
+    if (c === '#ffffff') dot.style.border = '1.5px solid #d1d5db';
+    dot.title = c;
+    dot.onclick = () => applyColor(c);
+    grid.appendChild(dot);
+  });
+
+  document.getElementById('color-input').addEventListener('input', function() {
+    applyColor(this.value);
+  });
+
+  function applyColor(color) {
+    document.getElementById('color-swatch-bar').style.background = color;
+    document.getElementById('color-input').value = color;
+    document.getElementById('editor').focus();
+    document.execCommand('foreColor', false, color);
+    closeColorPicker();
+  }
+
+  function toggleColorPicker() {
+    document.getElementById('color-dropdown').classList.toggle('open');
+  }
+
+  function closeColorPicker() {
+    document.getElementById('color-dropdown').classList.remove('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('color-picker-wrap').contains(e.target)) {
+      closeColorPicker();
+    }
+  });
 </script>
 </body>
 </html>
