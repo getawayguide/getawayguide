@@ -108,7 +108,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .hero-image-inner{position:absolute;inset:5% 5% 5% -5%;background:url('Images/Index/fitzroy island - main photo.JPG') center/cover no-repeat;border-radius:2px;overflow:hidden}
 .hero-image-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(20,32,24,.15) 0%,transparent 60%)}
 .hero-image-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(20,32,24,.45))}
-.hero-image-label{position:absolute;right:1.5rem;bottom:3rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(237,232,220,.4);writing-mode:vertical-rl}
+.hero-image-label{position:absolute;right:6%;bottom:10%;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(237,232,220,.7);writing-mode:vertical-rl;z-index:1}
 .hero-scroll{position:absolute;bottom:3rem;left:6rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);opacity:.3;display:flex;align-items:center;gap:1rem}
 .hero-scroll::before{content:'';width:40px;height:1px;background:var(--ink);display:inline-block;animation:scrollLine 2s infinite}
 
@@ -149,6 +149,10 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .img-kyoto::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 40% 60% at 60% 20%,rgba(255,220,180,.4) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 50% 100%,#3D5230 0%,transparent 60%)}
 .img-patagonia{background:linear-gradient(180deg,#6B8FA8 0%,#4A6B7A 40%,#8A9E6E 70%,#4A5C3A 100%)}
 .img-morocco{background:linear-gradient(160deg,#E8C882 0%,#C4893A 40%,#8B5230 70%,#3A2415 100%)}
+.img-ruta{background:url('Images/El Salvador/La Ruta de las Flores/Ataco/Ataco Church Dome.JPEG') center 50%/cover no-repeat}
+.img-ruta-card{background:url('Images/El Salvador/La Ruta de las Flores/Ataco/Ataco Church Dome.JPEG') center 50%/cover no-repeat}
+.img-eltunco{background:url('Images/El Salvador/El Tunco and Taquillo/El Tunco Mural.JPEG') center 70%/cover no-repeat}
+.img-waterfalls{background:url('Images/El Salvador/La Ruta de las Flores/Waterfalls/Main Waterfalls.JPEG') center 50%/cover no-repeat}
 .img-iceland{background:linear-gradient(180deg,#2A3A4A 0%,#1A2830 30%,#3A5A3A 60%,#1E2E1E 100%)}
 .img-vietnam{background:linear-gradient(180deg,#A8C882 0%,#7A9E5A 40%,#4A6A3A 70%,#2A3A1E 100%)}
 
@@ -247,6 +251,14 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .bg-newzealand{background:linear-gradient(160deg,#8AB8C8 0%,#5A8898 30%,#7A9878 55%,#4A6848 100%)}
 
 /* RESOURCES */
+.posts-page{padding-top:5rem}
+.posts-page-eyebrow{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--terra);opacity:.7;margin-bottom:.5rem}
+.posts-page-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(2.5rem,5vw,4.5rem);font-weight:700;line-height:1;letter-spacing:-.02em;margin-bottom:0}
+.posts-page-title em{color:var(--terra);font-style:italic}
+@media(max-width:768px){
+  .posts-grid-full{grid-template-columns:1fr}
+  .posts-grid-full .post-card-image{aspect-ratio:16/9}
+}
 .resources-section{padding:5rem 6rem 7rem}
 .resource-category{margin-bottom:5rem}
 .resource-category-header{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:1px solid var(--b-subtle)}
@@ -418,13 +430,16 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .marquee-item{font-size:.95rem}
   .hero-title{font-size:clamp(2.8rem,10vw,5rem)}
   .section-title{font-size:2rem}
-  .article-hero{aspect-ratio:unset!important;min-height:72vw!important;padding:2rem 1.25rem 3rem!important}
+  .article-hero{aspect-ratio:unset!important;min-height:unset!important}
+  .article-h2,.article-h3{scroll-margin-top:60px}
   .article-body{padding:1.5rem 1.25rem 4rem!important}
   .article-body div[style*="display:flex"],.article-body div[style*="display: flex"]{flex-direction:column!important;align-items:center!important}
   .article-body div[style*="display:flex"] > img,.article-body div[style*="display: flex"] > img{width:88%!important;max-width:88%!important}
   .article-body div[style*="display:grid"]{grid-template-columns:1fr!important}
   .article-body div[style*="display:grid"] > img{max-width:88%;margin-left:auto;margin-right:auto}
   .country-articles-grid{grid-template-columns:repeat(2,1fr)}
+  .country-article-card{aspect-ratio:3/4}
+  .country-article-card-title{font-size:.9rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
 }
 
@@ -435,6 +450,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .about-big-title{font-size:2.2rem}
   .newsletter-title{font-size:2rem}
   .country-articles-grid{grid-template-columns:1fr}
+  .country-article-card{aspect-ratio:16/9}
+  .country-article-card-title{font-size:1rem}
   .country-facts-grid{grid-template-columns:1fr}
 }
 
@@ -453,8 +470,9 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .country-hero-desc{position:relative;z-index:2;font-size:1.15rem;line-height:1.75;color:rgba(237,232,220,.6);max-width:540px;margin:0 auto 2.5rem}
 .country-places-row{position:relative;z-index:2;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:center}
 .country-places-label{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.25em;text-transform:uppercase;color:var(--void-text);opacity:.3}
-.country-place-btn{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1.1rem;border:1px solid var(--b-strong);background:transparent;color:var(--void-text);transition:all .2s;opacity:.7;white-space:nowrap;cursor:pointer}
-.country-place-btn:hover{border-color:var(--terra);color:var(--terra);opacity:1;background:rgba(212,132,90,.06)}
+.country-place-btn{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;padding:.45rem 1.1rem;border:1px solid rgba(237,232,220,.35);background:transparent;color:rgba(237,232,220,.6);transition:all .2s;white-space:nowrap;cursor:pointer}
+.country-place-btn:hover{border-color:rgba(237,232,220,.8);color:rgba(237,232,220,.9);background:rgba(237,232,220,.06)}
+.country-place-btn.active{border-color:rgba(237,232,220,.8);color:rgba(237,232,220,.95);background:rgba(237,232,220,.08)}
 
 /* ARTICLE PAGE */
 .article-hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10rem 6rem 5rem;background:var(--void);position:relative;overflow:hidden}
@@ -474,8 +492,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-lead{font-family:'Source Serif 4',serif;font-size:1.25rem;line-height:1.85;opacity:.85;margin-bottom:2.5rem;font-weight:400}
 .article-body p{font-family:'Jost',sans-serif;font-size:1rem;line-height:1.85;color:rgba(28,40,33,.75);margin-bottom:1.1rem;font-weight:300}
 .article-body li{font-family:'Jost',sans-serif;font-size:1rem;line-height:1.85;font-weight:300;color:rgba(28,40,33,.75);margin-bottom:.4rem}
-.article-h2{font-family:'Fraunces',Georgia,serif;font-size:1.7rem;font-weight:400;margin:2.5rem 0 1rem;letter-spacing:-.01em;border-bottom:1px solid var(--b-subtle);padding-bottom:.75rem}
-.article-h3{font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:var(--terra);margin:1.75rem 0 .6rem;padding-left:.75rem;border-left:2px solid var(--terra)}
+.article-h2{font-family:'Fraunces',Georgia,serif;font-size:1.7rem;font-weight:400;margin:2.5rem 0 1rem;letter-spacing:-.01em;border-bottom:1px solid var(--b-subtle);padding-bottom:.75rem;scroll-margin-top:80px}
+.article-h3{font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:var(--terra);margin:1.75rem 0 .6rem;padding-left:.75rem;border-left:2px solid var(--terra);scroll-margin-top:80px}
 .article-divider{height:1px;background:var(--b-subtle);margin:3rem 0}
 .article-tip{background:var(--mist);padding:1.5rem 2rem;border-left:3px solid var(--terra);margin:2rem 0}
 .article-tip p{margin:0;font-size:.95rem}
@@ -504,7 +522,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .country-fact-value{font-family:'Jost',sans-serif;font-size:1rem;font-weight:300;line-height:1.65;opacity:.85}
 .country-info-divider{grid-column:1/-1;height:1px;background:var(--b-faint);margin:0.5rem 0}
 .country-facts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:1.5rem}
-.country-fact-item{background:var(--mist);padding:1.5rem 1.75rem}
+.country-fact-item{background:none;padding:.85rem 0;border-bottom:1px solid var(--b-subtle)}
+.country-facts-grid .country-fact-item:last-child{border-bottom:none}
 .country-fact-label{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;opacity:.4;margin-bottom:.6rem}
 
 .country-article{position:relative;margin:0;overflow:hidden;cursor:pointer}

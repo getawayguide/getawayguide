@@ -1,8 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Browse all travel guides by region.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Getawayguide">
+<meta property="og:title" content="Destinations â€” Getawayguide">
+<meta property="og:description" content="Browse all travel guides by region.">
+<meta property="og:image" content="og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="og-image.svg">
 <title>All Destinations &mdash; getawayguide</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -92,26 +100,6 @@
     <li><a href="about.html"  id="nav-about">About Me</a></li>
   </ul>
 </nav>
-
-<!-- MOBILE NAV DRAWER -->
-<div class="mobile-nav-drawer" id="mobile-nav-drawer">
-  <ul class="mobile-nav-links">
-    <li><a href="#" href="index.html">Home</a></li>
-    <li>
-      <a href="#" href="destinations.html">Destinations</a>
-      <div class="mobile-nav-continents">
-        <a href="#" href="destinations.html#europe">Europe</a>
-        <a href="#" href="destinations.html#americas">Americas</a>
-        <a href="#" href="destinations.html#asia">Asia</a>
-        <a href="#" href="destinations.html#africa">Africa</a>
-        <a href="#" href="destinations.html#oceania">Oceania</a>
-      </div>
-    </li>
-    <li><a href="#" href="resources.html">Resources</a></li>
-    <li><a href="#" href="about.html">About Me</a></li>
-  </ul>
-  <div class="mobile-drawer-footer">© 2026 getawayguide</div>
-</div>
 
 <!-- MOBILE NAV DRAWER -->
 <div class="mobile-nav-drawer" id="mobile-nav-drawer">
@@ -243,8 +231,7 @@ function closeMobileMenu(){
 }
 (function(){
   var p=window.location.pathname.split('/').pop()||'index.html';
-  var m={'index.html':'nav-home','':'nav-home','destinations.html':'nav-destinations',
-         'resources.html':'nav-resources','about.html':'nav-about'};
+  var m={'index.html':'nav-home','':'nav-home','destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
   var id=m[p];
   if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
 })();

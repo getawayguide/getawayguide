@@ -711,6 +711,8 @@
     { name: 'El Salvador', file: 'el-salvador.html' },
     { name: 'El Salvador Itinerary', file: 'el-salvador-itinerary.html' },
     { name: 'Santa Ana Guide', file: 'santa-ana.html' },
+    { name: 'Ruta de las Flores', file: 'ruta-de-las-flores.html' },
+    { name: 'Posts', file: 'posts.html' },
     { name: 'Destinations', file: 'destinations.html' },
     { name: 'Resources', file: 'resources.html' },
     { name: 'Contact', file: 'contact.html' },
@@ -909,6 +911,9 @@
 
     setDirty(false);
     editor.addEventListener('input', () => setDirty(true), { once: false });
+
+    // Focus the editor so Chrome activates spellcheck on the loaded content
+    editor.focus();
   }
 
   function setDirty(dirty) {
