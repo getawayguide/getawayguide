@@ -576,11 +576,14 @@
   <button class="img-tool-btn" onclick="imgSetWidth('25%')">25%</button>
   <button class="img-tool-btn" onclick="imgSetWidth('50%')">50%</button>
   <button class="img-tool-btn" onclick="imgSetWidth('100%')">100%</button>
+  <button class="img-tool-btn" onclick="imgSetWidth('calc(39% - 0.5rem)')" title="Portrait article photo width">Art↕</button>
+  <button class="img-tool-btn" onclick="imgSetWidth('calc(55.5% - 0.85rem)')" title="Wide article photo width">Art↔</button>
   <input id="img-width-input" type="text" placeholder="width" title="e.g. 300px or 50%">
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgPan()" title="Pan/reposition without changing shape">↔ Pan</button>
   <button class="img-tool-btn" onclick="imgCrop('4/5')" title="Reshape to portrait 4:5">⬜ 4:5</button>
   <button class="img-tool-btn" onclick="imgCrop('7/5')" title="Reshape to landscape 7:5">⬜ 7:5</button>
+  <button class="img-tool-btn" onclick="imgCrop('16/8.5')" title="Reshape to wide banner 16:8.5">⬜ Wide</button>
   <button class="img-tool-btn" onclick="imgCrop('1/1')" title="Reshape to square 1:1">⬜ 1:1</button>
   <button class="img-tool-btn" onclick="imgCrop('none')" title="Remove crop/reshape">✂ Off</button>
   <div class="img-tool-divider"></div>
@@ -712,6 +715,7 @@
     { name: 'El Salvador Itinerary', file: 'el-salvador-itinerary.html' },
     { name: 'Santa Ana Guide', file: 'santa-ana.html' },
     { name: 'Ruta de las Flores', file: 'ruta-de-las-flores.html' },
+    { name: '7 Waterfalls Hike', file: '7-waterfalls-hike.html' },
     { name: 'Posts', file: 'posts.html' },
     { name: 'Destinations', file: 'destinations.html' },
     { name: 'Resources', file: 'resources.html' },
@@ -719,16 +723,31 @@
     { name: 'Privacy', file: 'privacy.html' },
   ];
 
-  // Populate sidebar
-  const list = document.getElementById('article-list');
-  list.innerHTML = '';
-  KNOWN_ARTICLES.forEach((art, i) => {
-    const item = document.createElement('div');
-    item.className = 'article-item';
-    item.innerHTML = `<div class="article-item-name">${art.name}</div><div class="article-item-file">${art.file}</div>`;
-    item.onclick = () => openKnownArticle(art, item);
-    list.appendChild(item);
-  });
+  // Populate sidebar — merges KNOWN_ARTICLES with any extra HTML files found in the connected folder
+  async function refreshArticleList() {
+    const list = document.getElementById('article-list');
+    list.innerHTML = '';
+    const knownFiles = new Set(KNOWN_ARTICLES.map(a => a.file));
+    const items = [...KNOWN_ARTICLES];
+    if (folderHandle) {
+      try {
+        for await (const [name, handle] of folderHandle.entries()) {
+          if (handle.kind === 'file' && name.endsWith('.html') && !knownFiles.has(name)) {
+            const label = name.replace('.html', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            items.push({ name: label, file: name });
+          }
+        }
+      } catch(e) {}
+    }
+    items.forEach(art => {
+      const item = document.createElement('div');
+      item.className = 'article-item';
+      item.innerHTML = `<div class="article-item-name">${art.name}</div><div class="article-item-file">${art.file}</div>`;
+      item.onclick = () => openKnownArticle(art, item);
+      list.appendChild(item);
+    });
+  }
+  refreshArticleList();
 
   let folderHandle = null;
   let lastFileHandle = null;
@@ -792,6 +811,7 @@
       folderHandle = h;
       await saveFolderHandle(h);
       updateFolderUI();
+      refreshArticleList();
     } catch(e) {}
   }
 
@@ -962,18 +982,31 @@
     saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
     saveEl.querySelectorAll('.img-cropped').forEach(el => el.classList.remove('img-cropped'));
     saveEl.querySelectorAll('.img-panning').forEach(el => el.classList.remove('img-panning'));
-    // For canvas-cropped images: restore CSS crop styles for website display, remove editor-only data attrs
+    // For canvas-cropped images: wrap in a positioned span so aspect-ratio lives on a non-img element,
+    // avoiding the browser bug where .article-body img { aspect-ratio: auto } ignores EXIF orientation.
     saveEl.querySelectorAll('img[data-crop]').forEach(img => {
       const ratio = img.getAttribute('data-crop');
       const cx = (parseFloat(img.getAttribute('data-crop-x') || '0.5') * 100).toFixed(1);
       const cy = (parseFloat(img.getAttribute('data-crop-y') || '0.5') * 100).toFixed(1);
-      img.style.aspectRatio = ratio;
-      img.style.objectFit = 'cover';
-      img.style.objectPosition = `${cx}% ${cy}%`;
+      // Grab sizing from existing inline style (width / max-width set by the editor)
+      const w = img.style.width || '100%';
+      const mw = img.style.maxWidth || '100%';
+      const margin = img.style.margin || '1rem auto';
+      const br = img.style.borderRadius || '2px';
+      // Build wrapper span
+      const wrapper = document.createElement('span');
+      wrapper.style.cssText = 'display:block;position:relative;overflow:hidden;' +
+        'width:' + w + ';max-width:' + mw + ';aspect-ratio:' + ratio + ';' +
+        'margin:' + margin + ';border-radius:' + br + ';';
+      // Reset img to fill wrapper
+      img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
+        'object-fit:cover;object-position:' + cx + '% ' + cy + '%;';
       img.removeAttribute('data-crop');
       img.removeAttribute('data-crop-x');
       img.removeAttribute('data-crop-y');
       img.removeAttribute('data-original-src');
+      img.parentNode.insertBefore(wrapper, img);
+      wrapper.appendChild(img);
     });
 
     originalBody.innerHTML = saveEl.innerHTML;
@@ -1287,7 +1320,7 @@
     setDirty(true);
   }
 
-  // Canvas-based crop — cuts actual pixels so there's no quality loss from CSS zoom
+  // Canvas-based crop — respects EXIF orientation via createImageBitmap
   function applyCanvasCrop(img) {
     const ratio = img.dataset.crop;
     if (!ratio) return;
@@ -1295,31 +1328,62 @@
     const targetRatio = rw / rh;
     const posX = parseFloat(img.dataset.cropX || '0.5');
     const posY = parseFloat(img.dataset.cropY || '0.5');
-    const srcImg = new Image();
-    srcImg.onload = () => {
-      const nw = srcImg.naturalWidth, nh = srcImg.naturalHeight;
-      if (!nw || !nh) return;
-      const naturalRatio = nw / nh;
-      let cropW, cropH, cropX, cropY;
-      if (naturalRatio > targetRatio) {
-        cropH = nh; cropW = nh * targetRatio;
-        cropX = (nw - cropW) * posX; cropY = 0;
-      } else {
-        cropW = nw; cropH = nw / targetRatio;
-        cropX = 0; cropY = (nh - cropH) * posY;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(cropW);
-      canvas.height = Math.round(cropH);
-      canvas.getContext('2d').drawImage(srcImg, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(blob => {
-        const oldSrc = img.src;
-        img.src = URL.createObjectURL(blob);
-        if (oldSrc && oldSrc.startsWith('blob:') && oldSrc !== img.dataset.originalSrc) URL.revokeObjectURL(oldSrc);
-        setTimeout(updateImgUI, 30);
-      }, 'image/jpeg', 0.95);
-    };
-    srcImg.src = img.dataset.originalSrc || img.src;
+    const src = img.dataset.originalSrc || img.src;
+    fetch(src)
+      .then(r => r.blob())
+      .then(blob => createImageBitmap(blob))
+      .then(bitmap => {
+        const nw = bitmap.width, nh = bitmap.height;
+        if (!nw || !nh) return;
+        const naturalRatio = nw / nh;
+        let cropW, cropH, cropX, cropY;
+        if (naturalRatio > targetRatio) {
+          cropH = nh; cropW = nh * targetRatio;
+          cropX = (nw - cropW) * posX; cropY = 0;
+        } else {
+          cropW = nw; cropH = nw / targetRatio;
+          cropX = 0; cropY = (nh - cropH) * posY;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(cropW);
+        canvas.height = Math.round(cropH);
+        canvas.getContext('2d').drawImage(bitmap, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        canvas.toBlob(blob => {
+          const oldSrc = img.src;
+          img.src = URL.createObjectURL(blob);
+          if (oldSrc && oldSrc.startsWith('blob:') && oldSrc !== img.dataset.originalSrc) URL.revokeObjectURL(oldSrc);
+          setTimeout(updateImgUI, 30);
+        }, 'image/jpeg', 0.95);
+      })
+      .catch(() => {
+        // Fallback to old Image() path if fetch/createImageBitmap unavailable
+        const srcImg = new Image();
+        srcImg.onload = () => {
+          const nw = srcImg.naturalWidth, nh = srcImg.naturalHeight;
+          if (!nw || !nh) return;
+          const naturalRatio = nw / nh;
+          let cropW, cropH, cropX, cropY;
+          if (naturalRatio > targetRatio) {
+            cropH = nh; cropW = nh * targetRatio;
+            cropX = (nw - cropW) * posX; cropY = 0;
+          } else {
+            cropW = nw; cropH = nw / targetRatio;
+            cropX = 0; cropY = (nh - cropH) * posY;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(cropW);
+          canvas.height = Math.round(cropH);
+          canvas.getContext('2d').drawImage(srcImg, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            const oldSrc = img.src;
+            img.src = URL.createObjectURL(blob);
+            if (oldSrc && oldSrc.startsWith('blob:') && oldSrc !== img.dataset.originalSrc) URL.revokeObjectURL(oldSrc);
+            setTimeout(updateImgUI, 30);
+          }, 'image/jpeg', 0.95);
+        };
+        srcImg.src = src;
+      });
   }
 
   function imgCrop(ratio) {
