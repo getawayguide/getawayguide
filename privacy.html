@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,79 +21,37 @@
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo" >Getawayguide</a>
+  <a href="index.html" class="nav-logo">Getawayguide</a>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
     <span></span><span></span><span></span>
   </button>
   <ul class="nav-links" id="nav-links">
-    <li><a href="index.html"  id="nav-home" class="active">Home</a></li>
+    <li><a href="index.html"  id="nav-home">Home</a></li>
     <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
       <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='destinations.html'">Destinations <span class="nav-caret">↓</span></a>
-      <div class="nav-dropdown">
+      <div class="nav-dropdown" style="grid-template-columns:210px 170px;min-width:380px">
         <div class="nav-dropdown-col">
-          <a href="destinations.html#europe" class="nav-dropdown-continent" onclick="">Europe</a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/be.png" width="16" height="12" alt=""><span class="country-name">Belgium</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/hr.png" width="16" height="12" alt=""><span class="country-name">Croatia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ee.png" width="16" height="12" alt=""><span class="country-name">Estonia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/fi.png" width="16" height="12" alt=""><span class="country-name">Finland</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/fr.png" width="16" height="12" alt=""><span class="country-name">France</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/de.png" width="16" height="12" alt=""><span class="country-name">Germany</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/it.png" width="16" height="12" alt=""><span class="country-name">Italy</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/lv.png" width="16" height="12" alt=""><span class="country-name">Latvia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/mc.png" width="16" height="12" alt=""><span class="country-name">Monaco</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/nl.png" width="16" height="12" alt=""><span class="country-name">Netherlands</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/pt.png" width="16" height="12" alt=""><span class="country-name">Portugal</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/si.png" width="16" height="12" alt=""><span class="country-name">Slovenia</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt=""><span class="country-name">Spain</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/se.png" width="16" height="12" alt=""><span class="country-name">Sweden</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
-          <a href="destinations.html#europe" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt=""><span class="country-name">United Kingdom</span></a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Currently Available Guides</span>
+          <a href="el-salvador.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
+          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
         </div>
         <div class="nav-dropdown-col">
-          <a href="destinations.html#americas" class="nav-dropdown-continent" onclick="">Americas</a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ar.png" width="16" height="12" alt=""><span class="country-name">Argentina</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/cl.png" width="16" height="12" alt=""><span class="country-name">Chile</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/cu.png" width="16" height="12" alt=""><span class="country-name">Cuba</span></a>
-          <a href="el-salvador.html" class="nav-dropdown-item" ><img src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/gt.png" width="16" height="12" alt=""><span class="country-name">Guatemala</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ni.png" width="16" height="12" alt=""><span class="country-name">Nicaragua</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/py.png" width="16" height="12" alt=""><span class="country-name">Paraguay</span></a>
-          <a href="destinations.html#americas" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
-          <div class="nav-dropdown-spacer"></div>
-          <a href="destinations.html#africa" class="nav-dropdown-continent" onclick="">Africa</a>
-          <a href="destinations.html#africa" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/eg.png" width="16" height="12" alt=""><span class="country-name">Egypt</span></a>
-          <a href="destinations.html#africa" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ma.png" width="16" height="12" alt=""><span class="country-name">Morocco</span></a>
-          <a href="destinations.html#africa" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
+          <a href="destinations.html" class="nav-dropdown-continent">&#127758; Explore Map</a>
+          <a href="destinations.html#africa" class="nav-dropdown-continent">Africa</a>
+          <a href="destinations.html#americas" class="nav-dropdown-continent">Americas</a>
+          <a href="destinations.html#asia" class="nav-dropdown-continent">Asia</a>
+          <a href="destinations.html#europe" class="nav-dropdown-continent">Europe</a>
+          <a href="destinations.html#oceania" class="nav-dropdown-continent">Oceania</a>
+          <a href="destinations.html" class="nav-dropdown-continent" style="color:#1C2821;white-space:nowrap">All Destinations</a>
         </div>
-        <div class="nav-dropdown-col">
-          <a href="destinations.html#asia" class="nav-dropdown-continent" onclick="">Asia</a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/in.png" width="16" height="12" alt=""><span class="country-name">India</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/id.png" width="16" height="12" alt=""><span class="country-name">Indonesia</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/jp.png" width="16" height="12" alt=""><span class="country-name">Japan</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/jo.png" width="16" height="12" alt=""><span class="country-name">Jordan</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/th.png" width="16" height="12" alt=""><span class="country-name">Thailand</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkey</span></a>
-          <a href="destinations.html#asia" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/vn.png" width="16" height="12" alt=""><span class="country-name">Vietnam</span></a>
-          <div class="nav-dropdown-spacer"></div>
-          <a href="destinations.html#oceania" class="nav-dropdown-continent" onclick="">Oceania</a>
-          <a href="destinations.html#oceania" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/au.png" width="16" height="12" alt=""><span class="country-name">Australia</span></a>
-          <a href="destinations.html#oceania" class="nav-dropdown-item" onclick=""><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
-          <div class="nav-dropdown-spacer"></div>
-          <a href="destinations.html" class="nav-dropdown-all" >→ All destinations</a>
-        </div>
+          
       </div>
     </li>
     <li><a href="resources.html"  id="nav-resources">Resources</a></li>
@@ -138,7 +96,7 @@
   </section>
   <footer>
     <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
-    <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="contact.html" >Contact</a></li><li><a href="privacy.html" >Privacy</a></li></ul><div class="footer-copy">© 2026 getawayguide</div></div>
+    <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="contact.html">Contact</a></li><li><a href="privacy.html">Privacy</a></li></ul><div class="footer-copy">&copy; 2026 getawayguide</div></div>
   </footer>
 </div>
 
@@ -147,11 +105,6 @@ function toggleMobileMenu(){
   var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');
   d.classList.toggle('open');b.classList.toggle('open');
   document.body.style.overflow=d.classList.contains('open')?'hidden':'';
-}
-function closeMobileMenu(){
-  var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');
-  d.classList.remove('open');b.classList.remove('open');
-  document.body.style.overflow='';
 }
 (function(){
   var p=window.location.pathname.split('/').pop()||'index.html';
