@@ -66,6 +66,16 @@ credentials.json, token.json  # Google OAuth (gitignored)
 
 **Core principle:** Local files are just for processing. Anything I need to see or use lives in cloud services. Everything in `.tmp/` is disposable.
 
+## Visual QA — Screenshot Rule
+
+**After every change to HTML or CSS, you must:**
+1. Run `python tools/screenshot.py <affected-page>.html` to capture desktop, tablet, and mobile screenshots
+2. Read all three images and inspect them for layout issues
+3. Fix any problems found, then re-screenshot to confirm
+4. Only report the task as done once all three platforms look correct
+
+Use `--all` only when changes affect site-wide styles (e.g. styles.css). For page-specific changes, screenshot just the affected page(s).
+
 ## Bottom Line
 
 You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
