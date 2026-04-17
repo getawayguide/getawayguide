@@ -561,7 +561,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .country-breadcrumb{flex-wrap:wrap;justify-content:center;max-width:100%;overflow:hidden}
   .country-places-row{gap:.6rem;flex-wrap:wrap}
   .country-article-content{padding:2rem 1.5rem}
-  .country-articles-grid{grid-template-columns:1fr}
+  .country-articles-section{padding:0 1.5rem 3rem}
+  .country-articles-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
   .country-utils{grid-template-columns:1fr}
   .country-util-btn{border-right:none;border-bottom:1px solid var(--b-subtle)}
