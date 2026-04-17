@@ -90,7 +90,7 @@ async def screenshot_pages(pages):
                 except Exception:
                     await page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
-                await page.wait_for_timeout(600)  # let animations settle
+                await page.wait_for_timeout(2000)  # let fonts and animations load
 
                 out_path = SCREENSHOTS_DIR / f"{name}-{vp_name}.png"
                 await page.screenshot(path=str(out_path), full_page=True)

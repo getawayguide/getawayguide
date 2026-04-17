@@ -445,7 +445,6 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .article-body div[style*="display:grid"] > span,.article-body div[style*="display:grid"] > img{width:100%!important;max-width:100%!important}
   .article-body p > span[style*="display: block"],.article-body p > span[style*="display:block"]{width:90%!important;max-width:90%!important}
   .country-articles-section{padding:0 1.5rem 3rem}
-  .country-articles-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
   .country-article-card{aspect-ratio:3/2}
   .country-article-card-title{font-size:1rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
@@ -458,7 +457,6 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .about-big-title{font-size:2.2rem}
   .newsletter-title{font-size:2rem}
   .country-articles-section{padding:0 1.5rem 3rem}
-  .country-articles-grid{grid-template-columns:1fr;gap:1rem}
   .country-article-card{aspect-ratio:3/2}
   .country-article-card-title{font-size:1rem}
   .country-facts-grid{grid-template-columns:1fr}
@@ -513,7 +511,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 
 /* COUNTRY ARTICLE CARDS */
 .country-articles-section{padding:4rem 6rem;background:var(--mist)}
-.country-articles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+.country-articles-grid{display:grid;grid-template-columns:1fr;gap:1rem}
 .country-article-card{position:relative;aspect-ratio:2/3;overflow:hidden;cursor:pointer;transition:transform .4s}
 .country-article-card:hover{transform:translateY(-8px)}
 .country-article-card-overlay{position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(6,10,8,.88))}
@@ -561,12 +559,16 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .country-breadcrumb{flex-wrap:wrap;justify-content:center;max-width:100%;overflow:hidden}
   .country-places-row{gap:.6rem;flex-wrap:wrap}
   .country-article-content{padding:2rem 1.5rem}
-  .country-articles-section{padding:0 1.5rem 3rem}
-  .country-articles-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
   .country-utils{grid-template-columns:1fr}
   .country-util-btn{border-right:none;border-bottom:1px solid var(--b-subtle)}
   .country-util-btn:last-child{border-bottom:none}
+}
+@media(min-width:481px){
+  .country-articles-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
+}
+@media(min-width:769px){
+  .country-articles-grid{grid-template-columns:repeat(4,1fr);gap:1.5rem}
 }
 
 /* =====================================================
