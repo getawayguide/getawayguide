@@ -393,6 +393,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .hero-image{min-height:55vw;position:relative}
   .hero-scroll{display:none}
   .home-destinations{padding:4rem 1.5rem}
+  .marquee-wrap{margin-top:4rem}
   .home-dest-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
   .posts-grid{grid-template-columns:1fr}
   .post-card-image{aspect-ratio:16/9}
