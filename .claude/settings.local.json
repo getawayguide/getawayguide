@@ -90,7 +90,27 @@
       "Bash(start python:*)",
       "Bash(python -m http.server 8080)",
       "Bash(npx --version)",
-      "Bash(where php:*)"
+      "Bash(where php:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python -m pip install playwright)",
+      "Bash(python3 -m pip install playwright)",
+      "Bash(py -3 -m pip install playwright)",
+      "Bash(npm --version)",
+      "Bash(powershell.exe -Command \"python --version\")",
+      "Bash(powershell.exe -Command \"python3 --version\")",
+      "Bash(powershell.exe -Command \"node --version\")",
+      "Bash(powershell.exe -Command \"& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Microsoft\\\\WindowsApps\\\\python.exe' --version\")",
+      "Bash(pip install:*)",
+      "Bash(python -m playwright install chromium)",
+      "Bash(python tools/screenshot.py el-salvador.html)",
+      "Bash(python -c \"from playwright.sync_api import sync_playwright; p = sync_playwright\\(\\).start\\(\\); print\\([d for d in p.devices.keys\\(\\) if '14' in d]\\); p.stop\\(\\)\")",
+      "Bash(python -c \"from playwright.sync_api import sync_playwright; p = sync_playwright\\(\\).start\\(\\); print\\([d for d in p.devices.keys\\(\\) if 'ipad' in d.lower\\(\\) or 'iPad' in d]\\); p.stop\\(\\)\")",
+      "Bash(python -m playwright install webkit)",
+      "Bash(python tools/migrate_folders.py)",
+      "Bash(python tools/screenshot.py index.html posts.html)",
+      "Bash(python tools/screenshot.py el-salvador/index.html el-salvador/santa-ana.html)",
+      "Bash(python tools/screenshot.py index.html el-salvador/index.html el-salvador/santa-ana.html)",
+      "Bash(python -m pip install flask)"
     ]
   }
 }

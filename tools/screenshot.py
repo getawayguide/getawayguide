@@ -76,7 +76,8 @@ async def screenshot_pages(pages):
         }
 
         for page_file in pages:
-            name = Path(page_file).stem
+            # Use full path slug to avoid collisions (e.g. el-salvador/index → el-salvador-index)
+            name = page_file.replace("/", "-").replace("\\", "-").removesuffix(".html")
             url = f"http://127.0.0.1:{PORT}/{page_file}"
             print(f"\n{page_file}")
 
@@ -93,7 +94,11 @@ async def screenshot_pages(pages):
                 await page.wait_for_timeout(2000)  # let fonts and animations load
 
                 out_path = SCREENSHOTS_DIR / f"{name}-{vp_name}.png"
-                await page.screenshot(path=str(out_path), full_page=True)
+                try:
+                    await page.screenshot(path=str(out_path), full_page=True, timeout=20000)
+                except Exception:
+                    # WebKit can timeout on full-page screenshots for long pages; fall back to viewport
+                    await page.screenshot(path=str(out_path), full_page=False, timeout=20000)
                 print(f"  [ok] {vp_name:<8} -> {out_path.name}")
                 await ctx.close()
 

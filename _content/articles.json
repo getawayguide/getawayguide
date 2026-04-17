@@ -1,0 +1,70 @@
+{
+  "articles": [
+    {
+      "id": "el-salvador-itinerary",
+      "title": "El Salvador Travel Guide with Perfect 1-2 Week Itinerary",
+      "country": "el-salvador",
+      "path": "el-salvador/el-salvador-itinerary.html",
+      "thumbnail": "Images/El Salvador/El Tunco and Taquillo/Taquillo View.JPEG",
+      "tag": "Itinerary",
+      "date": "Apr 5, 2026",
+      "status": "published",
+      "notes": ""
+    },
+    {
+      "id": "top-10-el-salvador",
+      "title": "Top 10 Things to Do in El Salvador",
+      "country": "el-salvador",
+      "path": "el-salvador/top-10-el-salvador.html",
+      "thumbnail": "Images/El Salvador/La Ruta de las Flores/Waterfalls/Waterfall Main.JPEG",
+      "tag": "Top 10",
+      "date": "Apr 16, 2026",
+      "status": "published",
+      "notes": ""
+    },
+    {
+      "id": "santa-ana",
+      "title": "The Ultimate Guide to Santa Ana, El Salvador's Second City",
+      "country": "el-salvador",
+      "path": "el-salvador/santa-ana.html",
+      "thumbnail": "Images/El Salvador/Santa Ana/Santa Ana Cathedral.JPEG",
+      "tag": "City Guide",
+      "date": "Mar 22, 2026",
+      "status": "published",
+      "notes": ""
+    },
+    {
+      "id": "ruta-de-las-flores",
+      "title": "Ruta de las Flores — El Salvador's Historic Route",
+      "country": "el-salvador",
+      "path": "el-salvador/ruta-de-las-flores.html",
+      "thumbnail": "Images/El Salvador/La Ruta de las Flores/Ataco/Ataco Church Dome.JPEG",
+      "tag": "Route Guide",
+      "date": "Mar 25, 2026",
+      "status": "published",
+      "notes": ""
+    },
+    {
+      "id": "7-waterfalls-hike",
+      "title": "The 7 Waterfalls Hike — El Salvador's Most Spectacular Trail",
+      "country": "el-salvador",
+      "path": "el-salvador/7-waterfalls-hike.html",
+      "thumbnail": "Images/El Salvador/La Ruta de las Flores/Waterfalls/Main Waterfalls.JPEG",
+      "tag": "Hike Guide",
+      "date": "Mar 27, 2026",
+      "status": "published",
+      "notes": ""
+    },
+    {
+      "id": "el-tunco",
+      "title": "El Tunco & The Coast: The Best Beaches in El Salvador",
+      "country": "el-salvador",
+      "path": "el-salvador/el-tunco.html",
+      "thumbnail": "Images/El Salvador/El Tunco and Taquillo/El Tunco Mural.JPEG",
+      "tag": "Beach Guide",
+      "date": "Mar 30, 2026",
+      "status": "published",
+      "notes": ""
+    }
+  ]
+}
