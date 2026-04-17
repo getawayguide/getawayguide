@@ -387,8 +387,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .section-header,.continent-header{flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:2.5rem}
   .page-header{padding:7rem 1.5rem 3rem;grid-template-columns:1fr;gap:1.5rem}
   .page-desc{max-width:100%}
-  .hero{grid-template-columns:1fr;min-height:auto;padding-top:4rem}
-  .hero-text{padding:5rem 1.5rem 3rem;text-align:center;align-items:center}
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:0;gap:0}
+  .hero-text{padding:6rem 1.5rem 2rem;text-align:center;align-items:center}
   .hero-subtitle{max-width:100%}
   .hero-image{min-height:55vw;position:relative}
   .hero-scroll{display:none}
