@@ -138,14 +138,14 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 
 /* HOME POSTS */
 .posts-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
-.post-card{position:relative;overflow:hidden;background:var(--mist)}
+.post-card{position:relative;overflow:hidden;background:var(--mist);display:flex;flex-direction:column}
 .post-card-image{width:100%;aspect-ratio:4/3;position:relative;overflow:hidden;transition:transform .6s ease}
 .post-card:hover .post-card-image{transform:scale(1.04)}
-.post-card-body{padding:1.5rem 1.75rem 2rem}
+.post-card-body{padding:1.5rem 1.75rem 2rem;display:flex;flex-direction:column;flex:1}
 .post-tag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);margin-bottom:.75rem;display:block}
 .post-title{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;line-height:1.25;font-weight:400;margin-bottom:.75rem;transition:color .2s}
 .post-excerpt{font-size:.9rem;line-height:1.65;opacity:.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.post-meta{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--b-subtle);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;opacity:.35;text-transform:uppercase}
+.post-meta{margin-top:auto;padding-top:1rem;border-top:1px solid var(--b-subtle);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;opacity:.35;text-transform:uppercase}
 .post-card:hover .post-title{color:var(--terra)}
 .img-kyoto{background:linear-gradient(180deg,#B5C9D8 0%,#8FA8B8 30%,#C4A882 60%,#7A8C6E 100%)}.img-santaana{background:url('Images/El Salvador/Santa Ana/Santa Ana Cathedral.JPEG') 90% 50%/cover no-repeat}
 .img-kyoto::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 40% 60% at 60% 20%,rgba(255,220,180,.4) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 50% 100%,#3D5230 0%,transparent 60%)}
@@ -155,8 +155,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .img-ruta-card{background:url('Images/El Salvador/La Ruta de las Flores/Ataco/Ataco Church Dome.JPEG') center 50%/cover no-repeat}
 .img-eltunco{background:url('Images/El Salvador/El Tunco and Taquillo/El Tunco Mural.JPEG') center 70%/cover no-repeat}
 .img-waterfalls{background:url('Images/El Salvador/La Ruta de las Flores/Waterfalls/Main Waterfalls.JPEG') center 50%/cover no-repeat}
-.img-itinerary{background:url('Images/El Salvador/El Tunco and Taquillo/Taquillo View.JPEG') center 50%/cover no-repeat}
-.img-top10{background:url('Images/El Salvador/La Ruta de las Flores/Waterfalls/Waterfall Main.JPEG') center 50%/cover no-repeat}
+.img-itinerary{background:url('Images/El Salvador/El Tunco and Taquillo/Taquillo View.JPEG') center 80%/cover no-repeat}
+.img-top10{background:url('Images/El Salvador/La Ruta de las Flores/Waterfalls/Waterfall Main.JPEG') center 90%/cover no-repeat}
 .img-iceland{background:linear-gradient(180deg,#2A3A4A 0%,#1A2830 30%,#3A5A3A 60%,#1E2E1E 100%)}
 .img-vietnam{background:linear-gradient(180deg,#A8C882 0%,#7A9E5A 40%,#4A6A3A 70%,#2A3A1E 100%)}
 
