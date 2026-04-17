@@ -445,7 +445,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .article-body div[style*="display:grid"] > span,.article-body div[style*="display:grid"] > img{width:100%!important;max-width:100%!important}
   .article-body p > span[style*="display: block"],.article-body p > span[style*="display:block"]{width:90%!important;max-width:90%!important}
   .country-articles-section{padding:2rem 1.5rem}
-  .country-articles-grid{grid-template-columns:1fr;gap:1rem}
+  .country-articles-grid{grid-template-columns:repeat(2,1fr);gap:1rem}
   .country-article-card{aspect-ratio:3/2}
   .country-article-card-title{font-size:1rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
