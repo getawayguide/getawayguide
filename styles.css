@@ -507,7 +507,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-day-num{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:2.5rem;color:var(--terra);line-height:1;flex-shrink:0;width:60px;text-align:center;padding-top:.2rem;white-space:nowrap}
 .article-day-content{}
 .article-day-title{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:400;margin-bottom:.5rem}
-.article-day-body{font-family:'Jost',sans-serif;font-size:.98rem;line-height:1.85;opacity:.68;font-weight:300}
+.article-day-body{font-family:'Jost',sans-serif;font-size:.98rem;line-height:1.85;color:rgba(28,40,33,.68);font-weight:300}
 
 /* COUNTRY ARTICLE CARDS */
 .country-articles-section{padding:4rem 6rem;background:var(--mist)}
