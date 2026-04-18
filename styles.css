@@ -509,6 +509,10 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-day-title{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:400;margin-bottom:.5rem}
 .article-day-body{font-family:'Jost',sans-serif;font-size:.98rem;line-height:1.85;color:rgba(28,40,33,.68);font-weight:300}
 
+/* IMG PAIR — 2-col grid, stacks on mobile */
+.img-pair{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1.5rem auto;width:79%}
+@media(max-width:540px){.img-pair{grid-template-columns:1fr;width:100%}}
+
 /* COUNTRY ARTICLE CARDS */
 .country-articles-section{padding:4rem 6rem;background:var(--mist)}
 .country-articles-grid{display:grid;grid-template-columns:1fr;gap:1rem}
