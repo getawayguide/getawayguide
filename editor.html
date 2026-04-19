@@ -573,18 +573,15 @@
   <button class="img-tool-btn" onclick="imgAlign('center')" title="Center">⊡ Center</button>
   <button class="img-tool-btn" onclick="imgAlign('right')" title="Float right">Right →</button>
   <div class="img-tool-divider"></div>
-  <button class="img-tool-btn" onclick="imgSetWidth('25%')">25%</button>
   <button class="img-tool-btn" onclick="imgSetWidth('50%')">50%</button>
+  <button class="img-tool-btn" onclick="imgSetWidth('79%')" title="Match img-pair / img-landscape width">79%</button>
   <button class="img-tool-btn" onclick="imgSetWidth('100%')">100%</button>
-  <button class="img-tool-btn" onclick="imgSetWidth('calc(39% - 0.5rem)')" title="Portrait article photo width">Art↕</button>
-  <button class="img-tool-btn" onclick="imgSetWidth('calc(55.5% - 0.85rem)')" title="Wide article photo width">Art↔</button>
   <input id="img-width-input" type="text" placeholder="width" title="e.g. 300px or 50%">
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgPan()" title="Pan/reposition without changing shape">↔ Pan</button>
-  <button class="img-tool-btn" onclick="imgCrop('4/5')" title="Reshape to portrait 4:5">⬜ 4:5</button>
-  <button class="img-tool-btn" onclick="imgCrop('7/5')" title="Reshape to landscape 7:5">⬜ 7:5</button>
-  <button class="img-tool-btn" onclick="imgCrop('16/8.5')" title="Reshape to wide banner 16:8.5">⬜ Wide</button>
-  <button class="img-tool-btn" onclick="imgCrop('1/1')" title="Reshape to square 1:1">⬜ 1:1</button>
+  <button class="img-tool-btn" onclick="imgCrop('2/3')" title="Portrait 2:3">⬜ 2:3</button>
+  <button class="img-tool-btn" onclick="imgCrop('3/2')" title="Landscape 3:2">⬜ 3:2</button>
+  <button class="img-tool-btn" onclick="imgCrop('1/1')" title="Square 1:1">⬜ 1:1</button>
   <button class="img-tool-btn" onclick="imgCrop('none')" title="Remove crop/reshape">✂ Off</button>
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgDelete()" title="Delete image" style="color:#ff8080">✕</button>
@@ -982,22 +979,13 @@
     saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
     saveEl.querySelectorAll('.img-cropped').forEach(el => el.classList.remove('img-cropped'));
     saveEl.querySelectorAll('.img-panning').forEach(el => el.classList.remove('img-panning'));
-    // For canvas-cropped images: wrap in a positioned span so aspect-ratio lives on a non-img element,
-    // avoiding the browser bug where .article-body img { aspect-ratio: auto } ignores EXIF orientation.
+    // For canvas-cropped images: wrap in a positioned container.
+    // 3:2 landscape → <div class="img-landscape">
+    // 2:3 portrait / 1:1 square → <span> with inline aspect-ratio
     saveEl.querySelectorAll('img[data-crop]').forEach(img => {
       const ratio = img.getAttribute('data-crop');
       const cx = (parseFloat(img.getAttribute('data-crop-x') || '0.5') * 100).toFixed(1);
       const cy = (parseFloat(img.getAttribute('data-crop-y') || '0.5') * 100).toFixed(1);
-      // Grab sizing from existing inline style (width / max-width set by the editor)
-      const w = img.style.width || '100%';
-      const mw = img.style.maxWidth || '100%';
-      const margin = img.style.margin || '1rem auto';
-      const br = img.style.borderRadius || '2px';
-      // Build wrapper span
-      const wrapper = document.createElement('span');
-      wrapper.style.cssText = 'display:block;position:relative;overflow:hidden;' +
-        'width:' + w + ';max-width:' + mw + ';aspect-ratio:' + ratio + ';' +
-        'margin:' + margin + ';border-radius:' + br + ';';
       // Reset img to fill wrapper
       img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
         'object-fit:cover;object-position:' + cx + '% ' + cy + '%;';
@@ -1005,6 +993,22 @@
       img.removeAttribute('data-crop-x');
       img.removeAttribute('data-crop-y');
       img.removeAttribute('data-original-src');
+      let wrapper;
+      if (ratio === '3/2') {
+        // Landscape: use .img-landscape class (aspect-ratio + sizing from CSS)
+        wrapper = document.createElement('div');
+        wrapper.className = 'img-landscape';
+      } else {
+        // Portrait / square: use inline span so the ratio is preserved without CSS dependency
+        const w = img.style.width || '100%';
+        const mw = img.style.maxWidth || '100%';
+        const margin = img.style.margin || '1rem auto';
+        const br = img.style.borderRadius || '2px';
+        wrapper = document.createElement('span');
+        wrapper.style.cssText = 'display:block;position:relative;overflow:hidden;' +
+          'width:' + w + ';max-width:' + mw + ';aspect-ratio:' + ratio + ';' +
+          'margin:' + margin + ';border-radius:' + br + ';';
+      }
       img.parentNode.insertBefore(wrapper, img);
       wrapper.appendChild(img);
     });

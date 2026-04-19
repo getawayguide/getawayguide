@@ -107,7 +107,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .hero-cta svg{transition:transform .2s}
 .hero-cta:hover svg{transform:translateX(4px)}
 .hero-image{position:relative;overflow:hidden;opacity:0;animation:fadeIn 1.2s .3s forwards}
-.hero-image-inner{position:absolute;inset:5% 5% 5% -5%;background:url('Images/Index/fitzroy island - main photo.JPG') center/cover no-repeat;border-radius:2px;overflow:hidden}
+.hero-image-inner{position:absolute;inset:5% 5% 5% -5%;background:url('Images/web/Index/fitzroy island - main photo.jpg') center/cover no-repeat;border-radius:2px;overflow:hidden}
 .hero-image-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(20,32,24,.15) 0%,transparent 60%)}
 .hero-image-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(20,32,24,.45))}
 .hero-image-label{position:absolute;right:6%;bottom:10%;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(237,232,220,.7);writing-mode:vertical-rl;z-index:1}
@@ -435,7 +435,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .marquee-item{font-size:.95rem}
   .hero-title{font-size:clamp(2.8rem,10vw,5rem)}
   .section-title{font-size:2rem}
-  .article-hero{aspect-ratio:unset!important;min-height:unset!important}
+  .article-hero{aspect-ratio:unset!important;min-height:unset!important;margin-top:3.5rem!important}
   .article-h2,.article-h3{scroll-margin-top:60px}
   .article-body{padding:1.5rem 1.25rem 4rem!important}
   .article-body div[style*="display:flex"],.article-body div[style*="display: flex"]{flex-direction:column!important;align-items:center!important}
@@ -509,9 +509,19 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-day-title{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:400;margin-bottom:.5rem}
 .article-day-body{font-family:'Jost',sans-serif;font-size:.98rem;line-height:1.85;color:rgba(28,40,33,.68);font-weight:300}
 
-/* IMG PAIR — 2-col grid, stacks on mobile */
+/* IMG PAIR — 2-col portrait grid; full-bleed on mobile */
 .img-pair{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1.5rem auto;width:79%}
-@media(max-width:540px){.img-pair{grid-template-columns:1fr;width:100%}}
+@media(max-width:540px){
+  .img-pair{grid-template-columns:1fr 1fr;width:calc(100% + 2.5rem);margin-left:-1.25rem;gap:0.15rem;margin-top:0.15rem;margin-bottom:0.15rem}
+  .img-pair > span{border-radius:0!important}
+}
+
+/* IMG LANDSCAPE — full-width landscape; full-bleed on mobile */
+.img-landscape{display:block;width:79%;margin:0.15rem auto 1.5rem;position:relative;overflow:hidden;border-radius:2px;aspect-ratio:3/2}
+.img-landscape img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:540px){
+  .img-landscape{width:calc(100% + 2.5rem);margin-left:-1.25rem;border-radius:0;margin-bottom:0.5rem;margin-top:0.15rem}
+}
 
 /* COUNTRY ARTICLE CARDS */
 .country-articles-section{padding:4rem 6rem;background:var(--mist)}

@@ -67,13 +67,6 @@ async def screenshot_pages(pages):
         ]
 
         chromium = await p.chromium.launch()
-        webkit = await p.webkit.launch()
-
-        browsers = {
-            "desktop": chromium,
-            "tablet":  chromium,
-            "mobile":  webkit,
-        }
 
         for page_file in pages:
             # Use full path slug to avoid collisions (e.g. el-salvador/index → el-salvador-index)
@@ -82,8 +75,7 @@ async def screenshot_pages(pages):
             print(f"\n{page_file}")
 
             for vp_name, ctx_opts in viewports:
-                browser = browsers[vp_name]
-                ctx = await browser.new_context(**ctx_opts)
+                ctx = await chromium.new_context(**ctx_opts)
                 page = await ctx.new_page()
 
                 try:
@@ -93,17 +85,27 @@ async def screenshot_pages(pages):
 
                 await page.wait_for_timeout(2000)  # let fonts and animations load
 
+                # overflow-x:hidden on body causes Playwright to miscalculate scroll height
+                # Also force-reveal any IntersectionObserver-hidden elements (opacity:0)
+                await page.evaluate("""() => {
+                    document.documentElement.style.overflowX = 'visible';
+                    document.body.style.overflowX = 'visible';
+                    // Reveal elements hidden by IntersectionObserver scroll animations
+                    document.querySelectorAll('*').forEach(function(el) {
+                        var s = el.style;
+                        if (s.opacity === '0' && s.transform && s.transform.includes('translateY')) {
+                            s.opacity = '1';
+                            s.transform = 'translateY(0)';
+                        }
+                    });
+                }""")
+
                 out_path = SCREENSHOTS_DIR / f"{name}-{vp_name}.png"
-                try:
-                    await page.screenshot(path=str(out_path), full_page=True, timeout=20000)
-                except Exception:
-                    # WebKit can timeout on full-page screenshots for long pages; fall back to viewport
-                    await page.screenshot(path=str(out_path), full_page=False, timeout=20000)
+                await page.screenshot(path=str(out_path), full_page=True, timeout=60000)
                 print(f"  [ok] {vp_name:<8} -> {out_path.name}")
                 await ctx.close()
 
         await chromium.close()
-        await webkit.close()
 
 
 def main():
