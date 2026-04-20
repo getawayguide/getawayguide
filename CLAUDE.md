@@ -70,7 +70,9 @@ credentials.json, token.json  # Google OAuth (gitignored)
 
 **After every change to HTML or CSS, you must:**
 1. Run `python tools/screenshot.py <affected-page>.html` to capture desktop, tablet, and mobile screenshots
-2. Read all three images and inspect them for layout issues
+2. Read all three images and inspect them for layout issues, including:
+   - Layout structure (spacing, alignment, responsive breakpoints)
+   - Image quality — check that photos look sharp, not blurry or grainy. Hero/cover photos must use originals; article body images use `Images/web/` compressed versions
 3. Fix any problems found, then re-screenshot to confirm
 4. Only report the task as done once all three platforms look correct
 
