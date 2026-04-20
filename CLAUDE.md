@@ -66,6 +66,32 @@ credentials.json, token.json  # Google OAuth (gitignored)
 
 **Core principle:** Local files are just for processing. Anything I need to see or use lives in cloud services. Everything in `.tmp/` is disposable.
 
+## Image System — Two Versions Required
+
+Every article body image must always have two versions:
+
+| Version | Path | Dimensions | Quality | Loads on |
+|---------|------|------------|---------|----------|
+| Desktop compressed | `Images/web/El Salvador/...` | Portrait 600×900 · Landscape 1200×800 | 85 | Desktop (≥769px) |
+| Mobile original | `Images/El Salvador/...` | Full resolution original | Original | Mobile (<769px) |
+
+This is implemented via `<picture>` elements in the article HTML:
+```html
+<picture>
+  <source media="(min-width:769px)" srcset="../Images/web/El Salvador/X/Y.jpg">
+  <img src="../Images/El Salvador/X/Y.ORIG_EXT" style="position:absolute;...">
+</picture>
+```
+
+**Hero/cover photos** always use the full-resolution original on all devices — no compression.
+
+**Whenever new photos are added to an article page, you must:**
+1. Run `python tools/recompress_desktop.py` — generates/updates the `Images/web/` compressed version
+2. Run `python tools/add_picture_mobile.py` — wraps any unwrapped `<img>` tags in `<picture>` elements
+3. Run `python tools/fix_case.py` — fixes case-sensitivity for GitHub Pages (Linux)
+
+Run all three scripts in that order any time photos are added or changed.
+
 ## Visual QA — Screenshot Rule
 
 **After every change to HTML or CSS, you must:**
