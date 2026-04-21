@@ -34,7 +34,7 @@ def compress(src_path, dst_path):
         else:       box = (900, 900)
         img = img.convert('RGB')
         img.thumbnail(box, Image.LANCZOS)
-        kw = {'format': 'JPEG', 'quality': 70, 'optimize': True}
+        kw = {'format': 'JPEG', 'quality': 90, 'optimize': True}
         if icc: kw['icc_profile'] = icc
         img.save(dst_path, **kw)
     return src_path.stat().st_size // 1024, dst_path.stat().st_size // 1024
