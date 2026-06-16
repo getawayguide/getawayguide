@@ -468,7 +468,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .country-hero{position:relative;min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:9rem 4rem 5rem;overflow:hidden;background:var(--void)}
 .country-hero-map{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;user-select:none}
 .map-style-b{opacity:1}
-.map-style-b svg{width:min(55vw,480px);height:auto;fill:rgba(237,232,220,.09);stroke:none}
+.map-style-b svg{width:min(44vw,384px);height:auto;fill:rgba(237,232,220,.09);stroke:none}
 .country-breadcrumb{position:relative;z-index:2;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--void-text);opacity:.4;margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
 .country-breadcrumb a{color:var(--void-text);text-decoration:none;opacity:.6;transition:opacity .2s}
 .country-breadcrumb a:hover{opacity:1}

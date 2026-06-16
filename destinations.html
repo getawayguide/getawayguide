@@ -72,11 +72,13 @@ a[href*="amcharts.com"]{display:none!important}
           <a href="el-salvador/index.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
-          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
+          <a href="new-zealand/index.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821;margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(28,40,33,.08)">Field Notes</span>
+          <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
         </div>
         <div class="nav-dropdown-col">
           <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
@@ -127,6 +129,7 @@ a[href*="amcharts.com"]{display:none!important}
   <section class="dest-map-wrap">
     <div class="map-legend">
       <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Guides Available</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#B87A3D"></span>Field Notes</span>
       <span class="legend-item"><span class="legend-dot" style="background:#c8ddd5"></span>Countries Visited</span>
     </div>
     <div id="world-map"></div>
@@ -146,7 +149,7 @@ a[href*="amcharts.com"]{display:none!important}
     </div>
     <div class="home-dest-grid" id="articles-grid">
 
-      <!-- El Salvador � live article -->
+      <!-- El Salvador -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='el-salvador/index.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:center"></div>
         <div class="dest-overlay"></div>
@@ -156,7 +159,17 @@ a[href*="amcharts.com"]{display:none!important}
         </div>
       </div>
 
-      <!-- Albania � placeholder -->
+      <!-- New Zealand -->
+      <div class="home-dest-card" data-continent="oceania" onclick="location.href='new-zealand/index.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">New Zealand</p>
+          <span class="art-card-btn">Explore</span>
+        </div>
+      </div>
+
+      <!-- Albania -->
       <div class="home-dest-card" data-continent="europe">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/albania.jpg');background-size:cover;background-position:center"></div>
         <div class="dest-overlay"></div>
@@ -166,22 +179,12 @@ a[href*="amcharts.com"]{display:none!important}
         </div>
       </div>
 
-      <!-- Greece � placeholder -->
+      <!-- Greece -->
       <div class="home-dest-card" data-continent="europe">
         <div class="dest-bg bg-greece"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Greece</p>
-          <span class="art-card-btn art-card-soon">Coming Soon</span>
-        </div>
-      </div>
-
-      <!-- New Zealand � placeholder -->
-      <div class="home-dest-card" data-continent="oceania">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:center"></div>
-        <div class="dest-overlay"></div>
-        <div class="art-card-info">
-          <p class="art-card-name">New Zealand</p>
           <span class="art-card-btn art-card-soon">Coming Soon</span>
         </div>
       </div>
@@ -223,6 +226,28 @@ a[href*="amcharts.com"]{display:none!important}
         <div class="art-card-info">
           <p class="art-card-name">Philippines</p>
           <span class="art-card-btn art-card-soon">Coming Soon</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Field Notes -->
+  <section class="dest-articles-section" id="field-notes-section" style="padding-top:0">
+    <h2 class="dest-section-heading" style="display:flex;align-items:center;gap:.75rem">
+      Field Notes
+      <span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(28,40,33,.4);font-weight:400;background:rgba(28,40,33,.05);padding:.2rem .65rem;border-radius:2px">Quick impressions, not full guides</span>
+    </h2>
+    <div class="home-dest-grid" id="field-notes-grid">
+
+      <!-- North Macedonia -->
+      <div class="home-dest-card" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer;background:#1E2D40">
+        <div class="dest-overlay" style="background:linear-gradient(160deg,rgba(184,122,61,.15) 0%,rgba(30,45,64,.6) 100%);opacity:1"></div>
+        <div class="art-card-info">
+          <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:#B87A3D;border:1px solid rgba(184,122,61,.45);padding:.18rem .6rem;border-radius:2px;margin-bottom:.7rem">Field Notes</div>
+          <p class="art-card-name">North Macedonia</p>
+          <p style="font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.85rem">Skopje · Ohrid · Krushevo · Bitola</p>
+          <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
 
@@ -374,12 +399,51 @@ vTpl.adapter.add("tooltipHTML", function(html, target) {
   return '<div style="display:flex;align-items:center;gap:6px"><img src="https://flagcdn.com/16x12/' + id.toLowerCase() + '.png" width="16" height="12" style="vertical-align:middle;border-radius:1px"><span style="color:#fff;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
 });
 
-// -- Layer 3: Featured countries (article or coming soon) ---------------------
+// -- Layer 3: Field Notes countries ------------------------------------------
+var fieldNotesMap = {
+  "MK": { name: "North Macedonia", url: "north-macedonia/field-notes.html" }
+};
+
+var fieldNotesSeries = chart.series.push(new am4maps.MapPolygonSeries());
+fieldNotesSeries.useGeodata = true;
+fieldNotesSeries.include = Object.keys(fieldNotesMap);
+fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
+  var c = fieldNotesMap[id];
+  var iso = id.toLowerCase();
+  var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
+    '<img src="https://flagcdn.com/16x12/' + iso + '.png" width="16" height="12" style="vertical-align:middle;border-radius:1px">' +
+    '<div>' +
+      '<div style="color:#fff;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Field Notes</div>' +
+    '</div>' +
+  '</div>';
+  return { id: id, tipHtml: tipHtml };
+});
+
+var fnTpl = fieldNotesSeries.mapPolygons.template;
+fnTpl.fill = am4core.color("#B87A3D");
+fnTpl.stroke = am4core.color("#ffffff");
+fnTpl.strokeWidth = 0.4;
+fieldNotesSeries.tooltip.background.fill = am4core.color("#1C2821");
+fieldNotesSeries.tooltip.background.strokeWidth = 0;
+fieldNotesSeries.tooltip.background.cornerRadius = 6;
+fieldNotesSeries.tooltip.getFillFromObject = false;
+fieldNotesSeries.tooltip.label.padding(10, 14, 10, 14);
+fnTpl.tooltipHTML = "{tipHtml}";
+fnTpl.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+fnTpl.states.create("hover").properties.fill = am4core.color("#C9914F");
+fnTpl.events.on("hit", function(ev) {
+  var id = ev.target.dataItem && ev.target.dataItem.dataContext && ev.target.dataItem.dataContext.id;
+  if (!id || !fieldNotesMap[id]) return;
+  window.location.href = fieldNotesMap[id].url;
+});
+
+// -- Layer 4: Featured countries (article or coming soon) ---------------------
 var featuredMap = {
   "SV": { name: "El Salvador",  url: "el-salvador/index.html" },
   "AL": { name: "Albania",      url: null },
   "GR": { name: "Greece",       url: null },
-  "NZ": { name: "New Zealand",  url: null },
+  "NZ": { name: "New Zealand",  url: "new-zealand/index.html" },
   "PE": { name: "Peru",         url: null },
   "TZ": { name: "Tanzania",     url: null },
   "TR": { name: "Turkiye",      url: null },

@@ -45,7 +45,7 @@ def start_server():
     return server
 
 
-async def screenshot_pages(pages):
+async def screenshot_pages(pages, selector=None):
     try:
         from playwright.async_api import async_playwright
     except ImportError:
@@ -101,7 +101,11 @@ async def screenshot_pages(pages):
                 }""")
 
                 out_path = SCREENSHOTS_DIR / f"{name}-{vp_name}.png"
-                await page.screenshot(path=str(out_path), full_page=True, timeout=60000)
+                if selector:
+                    el = page.locator(selector).first
+                    await el.screenshot(path=str(out_path), timeout=60000)
+                else:
+                    await page.screenshot(path=str(out_path), full_page=True, timeout=60000)
                 print(f"  [ok] {vp_name:<8} -> {out_path.name}")
                 await ctx.close()
 
@@ -112,6 +116,7 @@ def main():
     parser = argparse.ArgumentParser(description="Screenshot tool for getawayguide")
     parser.add_argument("pages", nargs="*", help="HTML files to screenshot")
     parser.add_argument("--all", action="store_true", help="Screenshot all HTML files")
+    parser.add_argument("--selector", default=None, help="CSS selector to crop screenshot to (e.g. '.cc-wrap')")
     args = parser.parse_args()
 
     if args.all:
@@ -126,7 +131,7 @@ def main():
     time.sleep(0.4)
 
     try:
-        asyncio.run(screenshot_pages(pages))
+        asyncio.run(screenshot_pages(pages, selector=args.selector))
     finally:
         server.shutdown()
 

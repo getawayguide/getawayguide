@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Milford Sound, the Routeburn Track, skydiving, bungee jumping and the best burger in New Zealand — your guide to Queenstown.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Getawayguide">
+<meta property="og:title" content="Queenstown — The Adventure Capital of the World — Getawayguide">
+<meta property="og:description" content="Milford Sound, the Routeburn Track, skydiving, bungee jumping and the best burger in New Zealand.">
+<meta property="og:image" content="og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="og-image.svg">
+<title>Queenstown — The Adventure Capital of the World — getawayguide</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'&gt;g&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&amp;family=Space+Mono:ital,wght@0,400;1,400&amp;family=Jost:ital,wght@0,300;0,400;1,300&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=8">
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">Getawayguide</a>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html" id="nav-home">Home</a></li>
+    <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
+      <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='../destinations.html'">Destinations <span class="nav-caret">↓</span></a>
+      <div class="nav-dropdown" style="grid-template-columns:210px 170px;min-width:380px">
+        <div class="nav-dropdown-col">
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span>
+          <a href="../el-salvador/index.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
+          <a href="index.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
+          <a href="../destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821;margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(28,40,33,.08)">Field Notes</span>
+          <a href="../north-macedonia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
+        </div>
+        <div class="nav-dropdown-col">
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
+          <a href="../destinations.html" class="nav-dropdown-continent">&#127758; Explore Map</a>
+          <a href="../destinations.html#africa" class="nav-dropdown-continent">Africa</a>
+          <a href="../destinations.html#americas" class="nav-dropdown-continent">Americas</a>
+          <a href="../destinations.html#asia" class="nav-dropdown-continent">Asia</a>
+          <a href="../destinations.html#europe" class="nav-dropdown-continent">Europe</a>
+          <a href="../destinations.html#oceania" class="nav-dropdown-continent">Oceania</a>
+          <a href="../destinations.html" class="nav-dropdown-continent" style="color:#1C2821;white-space:nowrap">All Destinations</a>
+        </div>
+      </div>
+    </li>
+    <li><a href="../resources.html" id="nav-resources">Resources</a></li>
+    <li><a href="../about.html" id="nav-about">About Me</a></li>
+  </ul>
+</nav>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <ul class="mobile-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="../destinations.html">Destinations</a>
+      <div class="mobile-nav-continents">
+        <a href="../destinations.html#europe">Europe</a>
+        <a href="../destinations.html#americas">Americas</a>
+        <a href="../destinations.html#asia">Asia</a>
+        <a href="../destinations.html#africa">Africa</a>
+        <a href="../destinations.html#oceania">Oceania</a>
+      </div>
+    </li>
+    <li><a href="../resources.html">Resources</a></li>
+    <li><a href="../about.html">About Me</a></li>
+  </ul>
+  <div class="mobile-drawer-footer">&copy; 2026 getawayguide</div>
+</div>
+
+<div class="page active fade-in" id="page-article-nz-queenstown">
+  <section class="article-hero" style="background:#1a3d2e;padding:clamp(3rem,6vh,5rem) clamp(1.5rem,6vw,6rem) clamp(3rem,5vh,5rem);aspect-ratio:16/7;min-height:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.5rem;position:relative;text-align:center;overflow:hidden;width:100%;box-sizing:border-box">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.45);pointer-events:none;z-index:0"></div>
+    <div style="position:relative;z-index:1;margin-bottom:.4rem"><span onclick="location.href='index.html'" style="cursor:pointer;background:#1C2821;color:#EDF0EC;padding:.3rem .9rem;border-radius:20px;display:inline-block;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase">New Zealand</span></div>
+    <p style="font-family:'Space Mono',monospace;position:relative;z-index:1;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#7ED4A8;opacity:1;margin-bottom:.3rem">Destination Guide</p>
+    <h1 class="article-title" style="position:relative;z-index:1;font-family:'Fraunces',serif;font-size:clamp(1.6rem,4vw,3.2rem);font-weight:300;color:var(--cream);line-height:1.15;max-width:min(700px,90%);width:100%;box-sizing:border-box;margin-bottom:1.1rem;overflow-wrap:break-word;word-break:normal">Queenstown — The Adventure Capital of the World</h1>
+    <p class="article-lead" style="position:relative;z-index:1;font-family:'Jost',sans-serif;font-weight:300;color:var(--cream);font-size:1.05rem;max-width:min(600px,90%);margin-top:.5rem;line-height:1.65">Milford Sound, the Routeburn Track, a lake the color of glaciers, and more adventure sports than you have days to try them</p>
+    <div style="position:relative;z-index:1;margin-top:.6rem;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream)">May 2026</div>
+  </section>
+
+  <div class="article-body" style="max-width:825px;margin:0 auto;padding:1.5rem 3rem 6rem">
+
+    <h2 class="article-h2" id="intro">The Town</h2>
+    <p>Queenstown is where most people on the New Zealand circuit end up spending the most time, and it earns every day of it. The town sits on the edge of Lake Wakatipu — a deep, Z-shaped glacial lake carved out during the last ice age, roughly 80 km long and 380 metres deep, with The Remarkables mountain range rising dramatically on the far shore. The combination of the lake, the mountains, and the compact town centre creates a setting that is hard to beat at any time of year.</p>
+    <p>One curious detail about the lake: it has a natural seiche, a standing wave that causes the water level to rise and fall about 20 cm every 27 minutes, like a slow, deep breath. Māori legend attributes this to Matau, a giant demon sleeping in the depths, his curled body forming the lake's Z-shape — the seiche being his heartbeat. The name Wakatipu itself comes from the Māori "Whakatipu-waka-tāne." You probably won't notice it just looking at the water, but tide gauges on the lake record it continuously.</p>
+    <p>It is also the base for two of the best day experiences in the entire country: the Milford Sound cruise and the Routeburn Track. Plan everything else around those two.</p>
+    <div class="img-landscape" style="background:#edeae4;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+
+    <h2 class="article-h2" id="milford">Milford Sound</h2>
+    <div class="img-pair">
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+    </div>
+    <p>Milford Sound is often called the eighth wonder of the natural world, and the hype is fully justified. Technically it is a fiord, not a sound — glacier-carved rather than river-carved, making the name a famous geographic misnomer. It stretches 16 km from its head to the Tasman Sea, reaches depths of up to 512 metres, and has sheer rock walls rising hundreds of metres straight from the dark water on both sides.</p>
+    <p>The drive from Queenstown takes around four hours each way and is genuinely spectacular before you even reach the water. The route passes the Mirror Lakes — still, dark pools beside the road that reflect the Earl Mountains above them with uncanny precision — and then The Chasm, where the Cleddau River has carved extraordinary swirling formations into solid rock over centuries of extraordinary rainfall. Then comes the Homer Tunnel: 1.2 km of single-lane road blasted through the Darran Mountains at 945 metres elevation. Construction started in 1935, was interrupted by the Second World War, and only opened to traffic in 1954 — nearly 20 years of work, three lives lost. Traffic alternates direction using timed traffic lights. In winter the approach is avalanche country.</p>
+    <p>On the water, Mitre Peak dominates everything — a single spike of rock rising 1,692 metres straight from the waterline, one of the most photographed mountains on Earth. Stirling Falls drops 146 metres from a hanging valley; cruise boats pull close enough for passengers to get completely soaked in the mist. The region receives rain on around 182 days a year, which sounds discouraging until you realize that rain is what makes the waterfalls multiply. On wet days, hundreds of temporary cascades appear on every cliff face that simply don't exist when it is dry. Don't let a bad forecast put you off going — it is often more dramatic in the rain.</p>
+    <p>RealNZ operates the main cruise fleet out of the Milford Sound terminal (from around NZD $145 for the classic cruise, $175 for the Signature experience with a nature guide and barista coffee). If you want something more active, Rosco's Milford Kayaks has been running sea kayak tours on the fiord for over 30 years — their Morning Glory tour goes all the way to the open sea and back. Book everything well in advance in summer.</p>
+    <div class="article-tip"><strong>Tip:</strong> Leave Queenstown by 7am to reach the fiord for the 10:30am cruise. The drive is half the experience — build in stops for Mirror Lakes and The Chasm.</div>
+    <div class="img-landscape" style="background:#edeae4;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+
+    <h2 class="article-h2" id="routeburn">Routeburn Track</h2>
+    <div class="img-pair">
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+    </div>
+    <p>The Routeburn Track is one of New Zealand's nine Great Walks — a 32 km point-to-point trail that crosses the boundary between Fiordland and Mount Aspiring National Parks. Done as a multi-day walk with hut stays, it is one of the finest backcountry experiences in the Southern Hemisphere. Done as a long day hike from Queenstown, it is still well worth the drive.</p>
+    <p>The trail climbs through beech forest, past suspension bridges over bright rivers, and up to Routeburn Falls — a dramatic tiered cascade where the hut perches above the water with a view that justifies the entire trip on its own. Further up, the track reaches Harris Saddle at 1,255 metres, the high point where you cross into Fiordland. Just below the saddle is Lake Harris: a black, tannin-dark alpine tarn ringed by cirque walls, completely still, and completely unlike anything you'd expect to find this high. I did the full trail in about 7 hours, turning around at the saddle for the day version. It is genuinely tiring but never technical — anyone with reasonable fitness can do it.</p>
+    <p>Tracknet Transport runs shuttles from Queenstown departing at 8am, arriving at the Routeburn Shelter trailhead around 9:30am (NZD $50–60 return). Day walkers don't need hut passes. If you want the overnight version, DOC Great Walk hut passes open for booking in June for the following season and sell out fast — Routeburn Falls Hut and Lake Mackenzie Hut are the two most popular stops.</p>
+    <div class="article-tip"><strong>Tip:</strong> Even if you don't want the full track, the section from the Routeburn Shelter to Routeburn Falls Hut and back (about 7 km return, 3–4 hours) is one of the best short hikes in New Zealand.</div>
+    <div class="img-landscape" style="background:#edeae4;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+
+    <h2 class="article-h2" id="activities">Adventure Sports</h2>
+    <p>Queenstown didn't earn the "adventure capital" title by accident. The list of things you can throw yourself off or out of is genuinely long. Here are the highlights:</p>
+    <ul style="list-style:none;padding:0;margin:1rem 0 1.5rem">
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Kawarau Bridge Bungee (43m) — NZD $220</strong> — this is the one that started it all. AJ Hackett commercialised the world's first bungee jump here in 1988, on a Victorian suspension bridge over the Kawarau River. You can choose to dip into the river at the bottom. The heritage bridge and the surrounding canyon make it the most atmospheric of the options.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Nevis Bungee (134m) — NZD $275</strong> — New Zealand's highest bungee jump, suspended mid-canyon above the Nevis River. Freefall is approximately 8.5 seconds. The whole experience takes around 4 hours including the 4WD transfer into the valley. Significantly more intense than Kawarau.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Shotover Jet — NZD $179</strong> — 25 minutes in a jet boat through the Shotover River canyon at up to 90 km/h in as little as 10 cm of water, with 360-degree spins in the narrows. Boats depart every 15 minutes; shuttle from town is included.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Skydiving — from NZD $395 (12,000ft)</strong> — NZONE Skydive has been operating here for over 30 years. On a clear day the freefall gives you uninterrupted views of Lake Wakatipu, The Remarkables and the surrounding Alps. The 15,000ft jump gives around 60 seconds of freefall.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Queenstown Hill Walk (Te Tapu-nui)</strong> — a 5.6 km return trail rising 500m to a 907m summit, 20 minutes walk from the waterfront. Two to three hours return. The summit gives 360-degree views over the lake and town. Free, no booking required, and an excellent way to orient yourself on arrival.</li>
+      <li style="padding:.7rem 0;font-family:'Jost',sans-serif;font-weight:300"><strong>Sunset at the Lakefront</strong> — this costs nothing and is worth scheduling every evening. When the light hits The Remarkables across the lake, the colour is extraordinary.</li>
+    </ul>
+
+    <h2 class="article-h2" id="arrowtown">Arrowtown</h2>
+    <div class="img-pair">
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+    </div>
+    <p>Twenty minutes east of Queenstown along the Arrow River valley, Arrowtown is one of the best-preserved gold rush towns in the Southern Hemisphere. The 1862 gold rush brought thousands of miners through this valley; many of the original 19th-century schist stone and cob buildings on Buckingham Street are still standing and still in use as shops and cafes.</p>
+    <p>The most moving part of Arrowtown is the Chinese Settlement on Bush Creek — a row of rudimentary huts at the edge of town where Chinese miners (mostly Cantonese, recruited after European miners moved on to the West Coast fields in 1865) were required to live, segregated from the European community. The settlement was in use until 1928. The partially reconstructed huts and interpretive panels tell a story of discrimination and resilience that gives real context to the town's history. In April and May, the European deciduous trees planted throughout Arrowtown — oaks, sycamores, rowans, poplars — turn gold, orange and red. Peak colour is typically mid-April; photographers come from across New Zealand for it.</p>
+    <div class="article-tip"><strong>Tip:</strong> Amisfield Winery is five minutes from Arrowtown and serves one of New Zealand's best winery lunches. The "Trust the Chef" set menu is excellent.</div>
+
+    <h2 class="article-h2" id="food">Where to Eat</h2>
+    <div class="img-pair">
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+      <div style="aspect-ratio:2/3;background:#edeae4;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb">[photo]</div>
+    </div>
+    <ul style="list-style:none;padding:0;margin:1rem 0 1.5rem">
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Ferg Burger</strong> — 42 Shotover Street, open 7am to 2:30am every day of the year. The most famous burger in New Zealand, started in 2001, and the reputation is earned. The menu is enormous: the Sweet Bambi (wild Fiordland venison with Thai plum chutney) is the one to try, though the Little Lamby (NZ lamb with mint jelly) and Chief Wiggum (slow-cooked pork belly) are both excellent. Queues can reach an hour in peak summer — phone ordering skips the line.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Fergbaker</strong> — directly next door, open 6am to 2am. The bakery arm of the Ferg empire. NZ meat pies (steak, mince &amp; cheese), fresh pastries, Boston bun, lolly cake, Afghan biscuits. The best place in town for breakfast before a big hike day.</li>
+      <li style="padding:.7rem 0;border-bottom:1px solid rgba(28,40,33,.1);font-family:'Jost',sans-serif;font-weight:300"><strong>Rata</strong> — chef Josh Emett's fine-diner in a heritage building. Strong NZ provenance menu — local game, fish, produce. Worth booking for a special evening.</li>
+      <li style="padding:.7rem 0;font-family:'Jost',sans-serif;font-weight:300"><strong>The Bunker</strong> — a tucked-away steakhouse accessed through an unmarked door. Small, intimate, and good. The kind of place you feel like you've discovered even though everyone knows about it.</li>
+    </ul>
+
+    <h2 class="article-h2" id="farewell">The Last Night</h2>
+    <p>For many people on the Kiwi Experience route, Queenstown is the final stop before flying out — often to Bali via Sydney or home via Auckland. That makes for some genuinely memorable farewell nights. The bar scene on the main strip runs late, there is a mechanical bull bar that is exactly what it sounds like, and the energy is that particular mix of nostalgia and elation that only happens at the end of a long trip.</p>
+    <p>My last morning in New Zealand I had a steak pie at Ferg Bakery before the taxi to the airport. It was the right way to end it.</p>
+
+  </div>
+</div>
+
+<style>
+@media(max-width:768px){
+  #page-article-nz-queenstown .article-hero{
+    margin-top:3.5rem!important;
+    min-height:clamp(280px,78vw,480px)!important;
+    justify-content:center!important;
+    padding:clamp(1.2rem,3vw,2.5rem) 1.25rem clamp(1.2rem,3vw,2.5rem)!important;
+    gap:clamp(.2rem,.6vw,.4rem)!important;
+  }
+  #page-article-nz-queenstown .article-hero h1{
+    font-size:clamp(1.3rem,6vw,2rem)!important;
+    margin-bottom:clamp(.3rem,1vw,.6rem)!important;
+  }
+  #page-article-nz-queenstown .article-hero .article-lead{
+    font-size:clamp(.82rem,2.8vw,1rem)!important;
+    margin-top:0!important;
+    line-height:1.5!important;
+  }
+}
+#toc-b{border:1px solid var(--b-medium);border-radius:6px;padding:1.5rem 1.75rem;margin:0 0 2.5rem;background:var(--mist)}
+#toc-b .toc-label{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--terra);opacity:.7;margin-bottom:.5rem}
+#toc-b .toc-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:1.2rem;line-height:1.2}
+#toc-b .toc-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 2.5rem;align-items:start}
+#toc-b .toc-row{display:flex;align-items:baseline;gap:.55rem;padding:.38rem 0;border-bottom:1px solid var(--b-subtle)}
+#toc-b .toc-row:last-child{border-bottom:none}
+#toc-b .toc-num{font-family:'Space Mono',monospace;font-size:.65rem;font-weight:400;color:var(--terra);flex-shrink:0;line-height:1.6}
+#toc-b a.toc-link{font-family:'Jost',sans-serif;font-size:.85rem;font-weight:400;color:rgba(28,40,33,.85);text-decoration:none;transition:color .15s;line-height:1.5}
+#toc-b a.toc-link:hover{color:var(--terra)}
+@media(max-width:600px){
+  #toc-b .toc-cols{grid-template-columns:1fr}
+  #toc-b .toc-col{display:contents}
+  #toc-b .toc-row{padding:.55rem 0;border-bottom:1px solid var(--b-subtle)!important}
+}
+</style>
+
+<script>
+(function() {
+  const body = document.querySelector('#page-article-nz-queenstown .article-body');
+  const firstH2 = body && body.querySelector('h2');
+  if (!firstH2) return;
+  const toc = document.createElement('div');
+  toc.id = 'toc-b';
+  toc.innerHTML = `
+    <div class="toc-label">In this guide</div>
+    <div class="toc-title">Queenstown, New Zealand</div>
+    <div class="toc-cols">
+      <div class="toc-col">
+        <div class="toc-row"><span class="toc-num">01</span><a href="#intro" class="toc-link">The Town</a></div>
+        <div class="toc-row"><span class="toc-num">02</span><a href="#milford" class="toc-link">Milford Sound</a></div>
+        <div class="toc-row"><span class="toc-num">03</span><a href="#routeburn" class="toc-link">Routeburn Track</a></div>
+      </div>
+      <div class="toc-col">
+        <div class="toc-row"><span class="toc-num">04</span><a href="#activities" class="toc-link">Adventure Sports</a></div>
+        <div class="toc-row"><span class="toc-num">05</span><a href="#food" class="toc-link">Where to Eat</a></div>
+        <div class="toc-row"><span class="toc-num">06</span><a href="#farewell" class="toc-link">The Last Night</a></div>
+      </div>
+    </div>`;
+  body.insertBefore(toc, firstH2);
+})();
+</script>
+
+<footer>
+  <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+  <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank">Instagram</a></li><li><a href="../contact.html">Contact</a></li><li><a href="../privacy.html">Privacy</a></li></ul><div class="footer-copy">&copy; 2026 getawayguide</div></div>
+</footer>
+
+<script>
+function toggleMobileMenu(){
+  var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');
+  d.classList.toggle('open');b.classList.toggle('open');
+  document.body.style.overflow=d.classList.contains('open')?'hidden':'';
+}
+(function(){
+  var p=window.location.pathname.split('/').pop()||'index.html';
+  var m={'destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
+  var id=m[p];
+  if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+})();
+</script>
+
+</body></html>
