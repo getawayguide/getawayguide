@@ -75,10 +75,12 @@ a[href*="amcharts.com"]{display:none!important}
           <a href="new-zealand/index.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
-          <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
           <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821;margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(28,40,33,.08)">Field Notes</span>
+          <a href="armenia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
           <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
+          <a href="serbia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
+          <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
         </div>
         <div class="nav-dropdown-col">
           <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
@@ -121,15 +123,15 @@ a[href*="amcharts.com"]{display:none!important}
   <header class="page-header">
     <div>
       <h1 class="page-title">All <em>destinations</em></h1>
-      <p class="dest-subhead">Every country I've explored <span class="dest-count-highlight">(58 countries and counting...)</span> from quick getaways to months-long adventures across multiple continents</p>
+      <p class="dest-subhead">Every country I've explored <span class="dest-count-highlight">(60 countries and counting...)</span> from quick getaways to months-long adventures across multiple continents</p>
     </div>
   </header>
 
   <!-- World Map -->
   <section class="dest-map-wrap">
     <div class="map-legend">
-      <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Guides Available</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#B87A3D"></span>Field Notes</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Articles Available</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#8FAF7E"></span>Field Notes</span>
       <span class="legend-item"><span class="legend-dot" style="background:#c8ddd5"></span>Countries Visited</span>
     </div>
     <div id="world-map"></div>
@@ -137,7 +139,10 @@ a[href*="amcharts.com"]{display:none!important}
 
   <!-- Articles -->
   <section class="dest-articles-section" id="articles-section">
-    <h2 class="dest-section-heading">Available Guides</h2>
+    <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
+      Available Articles
+      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Thoughtfully Written and Researched Travel Guides</span>
+    </h2>
     <div class="filter-bar-inline">
       <span class="filter-label">Filter by</span>
       <button class="filter-btn active" onclick="filterArticles('all',this)">All</button>
@@ -210,14 +215,7 @@ a[href*="amcharts.com"]{display:none!important}
       </div>
 
       <!-- Turkiye � placeholder -->
-      <div class="home-dest-card" data-continent="asia">
-        <div class="dest-bg bg-turkey"></div>
-        <div class="dest-overlay"></div>
-        <div class="art-card-info">
-          <p class="art-card-name">Turkiye</p>
-          <span class="art-card-btn art-card-soon">Coming Soon</span>
-        </div>
-      </div>
+
 
       <!-- Philippines � placeholder -->
       <div class="home-dest-card" data-continent="asia">
@@ -234,19 +232,48 @@ a[href*="amcharts.com"]{display:none!important}
 
   <!-- Field Notes -->
   <section class="dest-articles-section" id="field-notes-section" style="padding-top:0">
-    <h2 class="dest-section-heading" style="display:flex;align-items:center;gap:.75rem">
+    <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
       Field Notes
-      <span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(28,40,33,.4);font-weight:400;background:rgba(28,40,33,.05);padding:.2rem .65rem;border-radius:2px">Quick impressions, not full guides</span>
+      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Quick and Dirty Travel Recommendations</span>
     </h2>
     <div class="home-dest-grid" id="field-notes-grid">
 
       <!-- North Macedonia -->
-      <div class="home-dest-card" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer;background:#1E2D40">
-        <div class="dest-overlay" style="background:linear-gradient(160deg,rgba(184,122,61,.15) 0%,rgba(30,45,64,.6) 100%);opacity:1"></div>
+      <div class="home-dest-card" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg bg-north-macedonia"></div>
+        <div class="dest-overlay"></div>
         <div class="art-card-info">
-          <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:#B87A3D;border:1px solid rgba(184,122,61,.45);padding:.18rem .6rem;border-radius:2px;margin-bottom:.7rem">Field Notes</div>
           <p class="art-card-name">North Macedonia</p>
-          <p style="font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.85rem">Skopje · Ohrid · Krushevo · Bitola</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Armenia -->
+      <div class="home-dest-card" onclick="location.href='armenia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg bg-armenia"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Armenia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Turkiye -->
+      <div class="home-dest-card" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg bg-turkey"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Turkiye</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Serbia -->
+      <div class="home-dest-card" onclick="location.href='serbia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg bg-serbia"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Serbia</p>
           <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
@@ -367,7 +394,7 @@ allTpl.adapter.add("tooltipHTML", function(html, target) {
 // -- Layer 2: Visited countries (not featured) --------------------------------
 var visitedISO = [
   // Europe
-  "AT","BE","BA","HR","CZ","DK","GB","EE","FI","FR","DE","HU","IT","XK","LV","MC","ME","NL","PT","RS","SI","ES","SE","CH",
+  "AT","BE","BA","HR","CZ","DK","GB","EE","FI","FR","DE","HU","IT","XK","LV","MC","ME","NL","PT","SI","ES","SE","CH",
   // Asia
   "KH","CN","ID","JP","TH","VN","GE","IL","JO","IN",
   // Africa
@@ -401,7 +428,10 @@ vTpl.adapter.add("tooltipHTML", function(html, target) {
 
 // -- Layer 3: Field Notes countries ------------------------------------------
 var fieldNotesMap = {
-  "MK": { name: "North Macedonia", url: "north-macedonia/field-notes.html" }
+  "AM": { name: "Armenia", url: "armenia/field-notes.html" },
+  "MK": { name: "North Macedonia", url: "north-macedonia/field-notes.html" },
+  "RS": { name: "Serbia", url: "serbia/field-notes.html" },
+  "TR": { name: "Turkiye", url: "turkiye/field-notes.html" }
 };
 
 var fieldNotesSeries = chart.series.push(new am4maps.MapPolygonSeries());
@@ -421,7 +451,7 @@ fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
 });
 
 var fnTpl = fieldNotesSeries.mapPolygons.template;
-fnTpl.fill = am4core.color("#B87A3D");
+fnTpl.fill = am4core.color("#8FAF7E");
 fnTpl.stroke = am4core.color("#ffffff");
 fnTpl.strokeWidth = 0.4;
 fieldNotesSeries.tooltip.background.fill = am4core.color("#1C2821");
@@ -431,7 +461,7 @@ fieldNotesSeries.tooltip.getFillFromObject = false;
 fieldNotesSeries.tooltip.label.padding(10, 14, 10, 14);
 fnTpl.tooltipHTML = "{tipHtml}";
 fnTpl.cursorOverStyle = am4core.MouseCursorStyle.pointer;
-fnTpl.states.create("hover").properties.fill = am4core.color("#C9914F");
+fnTpl.states.create("hover").properties.fill = am4core.color("#A3C292");
 fnTpl.events.on("hit", function(ev) {
   var id = ev.target.dataItem && ev.target.dataItem.dataContext && ev.target.dataItem.dataContext.id;
   if (!id || !fieldNotesMap[id]) return;
@@ -446,7 +476,6 @@ var featuredMap = {
   "NZ": { name: "New Zealand",  url: "new-zealand/index.html" },
   "PE": { name: "Peru",         url: null },
   "TZ": { name: "Tanzania",     url: null },
-  "TR": { name: "Turkiye",      url: null },
   "PH": { name: "Philippines",  url: null }
 };
 

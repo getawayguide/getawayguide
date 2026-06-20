@@ -207,14 +207,17 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .bg-thailand{background:linear-gradient(160deg,#A8C882 0%,#7A9E5A 35%,#4A8A6A 60%,#2A5A3A 100%)}
 .bg-vietnam{background:linear-gradient(160deg,#B8D890 0%,#6A9E5A 35%,#3A7A4A 60%,#1A4A2A 100%)}
 .bg-indonesia{background:linear-gradient(160deg,#78B888 0%,#488858 35%,#C8A858 65%,#684820 100%)}
-.bg-philippines{background:linear-gradient(160deg,#88C8D8 0%,#4898A8 30%,#A8C878 60%,#3A5A2A 100%)}
+.bg-philippines{background:linear-gradient(160deg,#0038A8 0%,#0050D0 35%,#CE1126 65%,#FCD116 100%)}
 .bg-india{background:linear-gradient(160deg,#E8C870 0%,#C89840 35%,#A85820 60%,#582810 100%)}
 .bg-japan{background:linear-gradient(160deg,#C8D8E8 0%,#A8B8C8 25%,#D4C8A8 55%,#7A8C6E 100%)}
-.bg-turkey{background:linear-gradient(160deg,#D82818 0%,#A80808 25%,#E8C848 55%,#C8A828 100%)}
+.bg-turkey{background:linear-gradient(160deg,#E30A17 0%,#C0050F 40%,#E87080 70%,#F5C8CB 100%)}
+.bg-north-macedonia{background:linear-gradient(160deg,#CE2028 0%,#B01820 40%,#D4A000 70%,#FFD700 100%)}
+.bg-armenia{background:linear-gradient(160deg,#D90012 0%,#C0000E 28%,#003399 55%,#F2A800 82%,#FFB800 100%)}
+.bg-serbia{background:linear-gradient(160deg,#C6363C 0%,#A02030 28%,#0C4076 58%,#5A90C0 82%,#C8D8E8 100%)}
 .bg-jordan{background:linear-gradient(160deg,#181818 0%,#383838 20%,#F8F8F8 40%,#188838 60%,#D81818 85%,#A80808 100%)}
 .bg-morocco{background:linear-gradient(160deg,#E8C882 0%,#D4943A 35%,#A86830 60%,#5A3018 100%)}
 .bg-egypt{background:linear-gradient(160deg,#E8C870 0%,#C89840 30%,#D8A040 55%,#A87020 100%)}
-.bg-tanzania{background:linear-gradient(160deg,#188838 0%,#086818 25%,#E8C850 50%,#C89820 75%,#181818 100%)}
+.bg-tanzania{background:linear-gradient(160deg,#1EB53A 0%,#0A8A28 25%,#FCD116 55%,#00A3DD 78%,#1A1A1A 100%)}
 .bg-portugal{background:linear-gradient(160deg,#D87848 0%,#A85828 35%,#88B878 60%,#487838 100%)}
 .bg-spain{background:linear-gradient(160deg,#E89848 0%,#C86820 35%,#F8C848 60%,#C89828 100%)}
 .bg-france{background:linear-gradient(160deg,#88A8C8 0%,#587898 30%,#D8C880 55%,#A89850 100%)}
@@ -230,7 +233,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .bg-hungary{background:linear-gradient(160deg,#D82818 0%,#A80808 25%,#F8F8F8 50%,#188838 80%,#086818 100%)}
 .bg-croatia{background:linear-gradient(160deg,#68B8D8 0%,#388898 30%,#C8D870 55%,#789840 100%)}
 .bg-montenegro{background:linear-gradient(160deg,#D89828 0%,#A87010 25%,#C83818 55%,#981808 100%)}
-.bg-greece{background:linear-gradient(160deg,#A8C8D8 0%,#7898B8 25%,#E8D8B8 50%,#C8A878 100%)}
+.bg-greece{background:linear-gradient(160deg,#0D5EAF 0%,#1A72CC 35%,#5A9FDE 65%,#CADFF5 100%)}
 .bg-germany{background:linear-gradient(160deg,#181818 0%,#383838 25%,#C83818 50%,#F8C818 100%)}
 .bg-italy{background:linear-gradient(160deg,#88B8D8 0%,#587898 30%,#D8C880 55%,#A89850 100%)}
 .bg-london{background:linear-gradient(160deg,#889898 0%,#586868 30%,#C8C8D8 60%,#9898A8 100%)}
@@ -495,8 +498,10 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-body{max-width:950px;margin:0 auto;padding:5rem 3rem 6rem}
 .article-body a{color:var(--terra)}
 .article-body ul,.article-body ol{padding-left:1.5rem;margin:1rem 0 1.5rem}
+.article-body li>ul,.article-body li>ol,.article-body ul>ul,.article-body ul>ol,.article-body ol>ul,.article-body ol>ol{margin:.25rem 0 .5rem}
 .article-lead{font-family:'Source Serif 4',serif;font-size:1.25rem;line-height:1.85;opacity:.85;margin-bottom:2.5rem;font-weight:400}
 .article-body p{font-family:'Jost',sans-serif;font-size:1rem;line-height:1.85;color:rgba(28,40,33,.75);margin-bottom:1.1rem;font-weight:300}
+.article-body p.fn-sub-label{font-family:'Jost',sans-serif;font-weight:700;color:var(--ink);margin:1.5rem 0 .25rem}
 .article-body li{font-family:'Jost',sans-serif;font-size:1rem;line-height:1.85;font-weight:300;color:rgba(28,40,33,.75);margin-bottom:.4rem}
 .article-h2{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:400;margin:2.5rem 0 1rem;letter-spacing:-.01em;border-bottom:1px solid var(--b-subtle);padding-bottom:.75rem;scroll-margin-top:80px}
 .article-h3{font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:var(--terra);margin:1.75rem 0 .6rem;padding-left:.75rem;border-left:2px solid var(--terra);scroll-margin-top:80px}

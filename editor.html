@@ -369,7 +369,10 @@
     #editor strong { font-weight: 500; color: var(--ink); }
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
+    #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
     #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 300; }
+    #editor h3.fn-sub-hd { font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
+    #editor p.fn-sub-label { font-family: 'Jost', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
     #editor img { max-width: 100%; height: auto; cursor: pointer; }
     #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
     #editor img.img-cropped { cursor: grab; }
@@ -643,6 +646,8 @@
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
       <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
+      <button class="tool-btn" onclick="fmt('indent')" title="Indent / sub-bullet (Tab)">⇥ In</button>
+      <button class="tool-btn" onclick="fmt('outdent')" title="Outdent (Shift+Tab)">⇤ Out</button>
       <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="undo()" title="Undo">↩ Undo</button>
@@ -957,6 +962,47 @@
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
       if (fileHandle) await saveFile();
+    }
+  });
+
+  // List keyboard behavior: Tab=indent, Shift+Tab=outdent, Enter on empty item=exit list
+  document.getElementById('editor').addEventListener('keydown', function(e) {
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode) return;
+    const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+    const li = node ? node.closest('li') : null;
+    if (!li) return;
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
+      setDirty(true);
+      return;
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const isEmpty = li.textContent.trim() === '';
+      if (!isEmpty) return;
+      e.preventDefault();
+      const parentList = li.parentElement;
+      const isNested = parentList && parentList.parentElement && parentList.parentElement.closest('li');
+      if (isNested) {
+        // In a nested list — outdent back to parent level
+        document.execCommand('outdent', false, null);
+      } else {
+        // Top-level list — exit into a new paragraph
+        const p = document.createElement('p');
+        p.innerHTML = '<br>';
+        parentList.insertAdjacentElement('afterend', p);
+        li.remove();
+        if (parentList.children.length === 0) parentList.remove();
+        const range = document.createRange();
+        range.setStart(p, 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      setDirty(true);
     }
   });
 
