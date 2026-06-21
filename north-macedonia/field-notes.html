@@ -16,10 +16,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&amp;family=Space+Mono:ital,wght@0,400;1,400&amp;family=Jost:ital,wght@0,300;0,400;1,300&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css?v=8">
 <style>
-.fn-hero{min-height:38vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 3rem 4.5rem;background:#1E2D40;position:relative;overflow:hidden}
+.fn-hero{min-height:38vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 3rem 4.5rem;background:var(--void);position:relative;overflow:hidden}
 .fn-hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,rgba(184,122,61,.15) 0%,transparent 65%);pointer-events:none}
 .fn-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:#B87A3D;border:1px solid rgba(184,122,61,.45);padding:.28rem .85rem;margin-bottom:1.25rem;border-radius:2px}
-.fn-hero-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:300;color:#EDE8DC;line-height:1.1;margin-bottom:.8rem;font-optical-sizing:auto}
+.fn-hero-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:400;color:var(--void-text);line-height:1.1;margin-bottom:2rem;font-optical-sizing:auto;position:relative;z-index:2}
 .fn-hero-cities{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(237,232,220,.35)}
 .fn-disclaimer{background:rgba(184,122,61,.07);border-left:3px solid rgba(184,122,61,.6);padding:1rem 1.5rem;margin-bottom:2.5rem;border-radius:0 3px 3px 0}
 .fn-disclaimer p{margin:0;font-size:.9rem;font-style:italic;color:rgba(28,40,33,.55)}
@@ -100,10 +100,21 @@
 
 <!-- Hero -->
 <div class="fn-hero">
-  <div class="fn-hero-glow"></div>
-  <span class="fn-badge">Field Notes</span>
+  <p class="country-breadcrumb">
+    <a href="../destinations.html">Destinations</a>
+    <span>›</span>
+    <a href="../destinations.html#europe">Europe</a>
+    <span>›</span>
+    Balkans
+  </p>
   <h1 class="fn-hero-title">North Macedonia</h1>
-  <p class="fn-hero-cities">Skopje &nbsp;·&nbsp; Ohrid &nbsp;·&nbsp; Krushevo &nbsp;·&nbsp; Bitola</p>
+  <div class="country-places-row">
+    <span class="country-places-label">Places to visit</span>
+    <button class="country-place-btn" onclick="location.href='#skopje'">Skopje</button>
+    <button class="country-place-btn" onclick="location.href='#ohrid'">Ohrid</button>
+    <button class="country-place-btn" onclick="location.href='#krushevo'">Krushevo</button>
+    <button class="country-place-btn" onclick="location.href='#bitola'">Bitola</button>
+  </div>
 </div>
 
 <!-- Content -->
