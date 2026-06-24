@@ -78,6 +78,7 @@ a[href*="amcharts.com"]{display:none!important}
           <a href="destinations.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
           <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821;margin-top:.4rem;padding-top:.4rem;border-top:1px solid rgba(28,40,33,.08)">Field Notes</span>
           <a href="armenia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
+          <a href="kosovo/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
           <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
           <a href="serbia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
           <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
@@ -278,6 +279,16 @@ a[href*="amcharts.com"]{display:none!important}
         </div>
       </div>
 
+      <!-- Kosovo -->
+      <div class="home-dest-card" onclick="location.href='kosovo/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg bg-kosovo"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Kosovo</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -429,6 +440,7 @@ vTpl.adapter.add("tooltipHTML", function(html, target) {
 // -- Layer 3: Field Notes countries ------------------------------------------
 var fieldNotesMap = {
   "AM": { name: "Armenia", url: "armenia/field-notes.html" },
+  "XK": { name: "Kosovo", url: "kosovo/field-notes.html" },
   "MK": { name: "North Macedonia", url: "north-macedonia/field-notes.html" },
   "RS": { name: "Serbia", url: "serbia/field-notes.html" },
   "TR": { name: "Turkiye", url: "turkiye/field-notes.html" }
