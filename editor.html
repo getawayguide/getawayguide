@@ -372,6 +372,7 @@
     #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
     #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 300; }
     #editor h3.fn-sub-hd { font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
+    #editor div.fn-sub-hd { font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; }
     #editor p.fn-sub-label { font-family: 'Jost', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
     #editor img { max-width: 100%; height: auto; cursor: pointer; }
     #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
@@ -649,6 +650,7 @@
       <button class="tool-btn" onclick="fmt('indent')" title="Indent / sub-bullet (Tab)">⇥ In</button>
       <button class="tool-btn" onclick="fmt('outdent')" title="Outdent (Shift+Tab)">⇤ Out</button>
       <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
+      <button class="tool-btn" onclick="insertFnSubHd()" title="Field notes sub-heading">Sub Hd</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="undo()" title="Undo">↩ Undo</button>
       <button class="tool-btn" onclick="redo()" title="Redo">↪ Redo</button>
@@ -1006,6 +1008,54 @@
     }
   });
 
+  // Strip editor artifacts before saving to disk
+  function cleanArtifacts(el) {
+    // Unwrap all <font> tags — keep inner content, discard the tag
+    let fonts;
+    while ((fonts = [...el.querySelectorAll('font')]).length) {
+      fonts.forEach(font => {
+        const parent = font.parentNode;
+        if (!parent) return;
+        while (font.firstChild) parent.insertBefore(font.firstChild, font);
+        parent.removeChild(font);
+      });
+    }
+    // Strip inline color styles from <a> tags — links get color from CSS
+    el.querySelectorAll('a[style]').forEach(a => {
+      const cleaned = a.getAttribute('style')
+        .replace(/\bcolor\s*:[^;]+;?/gi, '')
+        .trim().replace(/^;+|;+$/g, '').trim();
+      if (cleaned) a.setAttribute('style', cleaned);
+      else a.removeAttribute('style');
+    });
+    // Normalize non-breaking spaces ( ) to regular spaces in text nodes
+    (function walk(node) {
+      if (node.nodeType === 3 && node.textContent.includes(' ')) {
+        node.textContent = node.textContent.replace(/ /g, ' ');
+      } else {
+        node.childNodes.forEach(walk);
+      }
+    })(el);
+  }
+
+  function insertFnSubHd() {
+    const editor = document.getElementById('editor');
+    editor.focus();
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const div = document.createElement('div');
+    div.className = 'fn-sub-hd';
+    div.textContent = 'Sub Heading';
+    range.deleteContents();
+    range.insertNode(div);
+    const newRange = document.createRange();
+    newRange.selectNodeContents(div);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    setDirty(true);
+  }
+
   async function saveFile() {
     const editor = document.getElementById('editor');
 
@@ -1060,6 +1110,7 @@
       wrapper.appendChild(img);
     });
 
+    cleanArtifacts(saveEl);
     originalBody.innerHTML = saveEl.innerHTML;
 
     const serializer = new XMLSerializer();
@@ -1603,9 +1654,22 @@
   function applyColor(color) {
     document.getElementById('color-swatch-bar').style.background = color;
     document.getElementById('color-input').value = color;
-    document.getElementById('editor').focus();
-    document.execCommand('foreColor', false, color);
+    const editor = document.getElementById('editor');
+    editor.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount && !sel.isCollapsed) {
+      try {
+        const range = sel.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.color = color;
+        range.surroundContents(span);
+      } catch(e) {
+        // Cross-element selection fallback
+        document.execCommand('foreColor', false, color);
+      }
+    }
     closeColorPicker();
+    setDirty(true);
   }
 
   function toggleColorPicker() {
