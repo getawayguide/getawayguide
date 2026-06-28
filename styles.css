@@ -764,3 +764,12 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
   #toc-b .toc-cols{grid-template-columns:1fr}
   #toc-b .toc-row{padding:.55rem 0}
 }
+
+/* Field Notes flag grid (home page) */
+.fn-flag-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.9rem}
+.fn-flag-card{display:flex;flex-direction:column;align-items:center;gap:.65rem;text-decoration:none;color:#1C2821;background:#fff;border:1px solid rgba(28,40,33,.1);border-radius:8px;padding:1.5rem .75rem 1.25rem;transition:border-color .18s,box-shadow .18s}
+.fn-flag-card:hover{border-color:#2D6B50;box-shadow:0 2px 14px rgba(44,107,80,.08)}
+.fn-flag-card img{border-radius:2px}
+.fn-flag-name{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.11em;text-transform:uppercase;text-align:center;line-height:1.4;color:#1C2821}
+@media(max-width:900px){.fn-flag-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.fn-flag-grid{grid-template-columns:repeat(3,1fr);gap:.6rem}}
