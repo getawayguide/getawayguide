@@ -14,7 +14,7 @@
 <title>All Destinations &mdash; getawayguide</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:ital,wght@0,400;1,400&family=Jost:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:ital,wght@0,400;1,400&family=Jost:ital,wght@0,300;0,400;1,300&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=8">
 <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
@@ -39,8 +39,8 @@ a[href*="amcharts.com"]{display:none!important}
 .dest-articles-section .filter-bar-inline{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;padding-bottom:.5rem}
 .dest-articles-section .dest-bg{background-size:cover;background-position:center}
 .art-card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
-.art-card-name{font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
-.art-card-btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
+.art-card-name{font-family:'Montserrat',sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.art-card-btn{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
 .art-card-soon{}
 @media(max-width:1024px){
   .dest-map-wrap{padding:.75rem 3rem 0}
@@ -80,7 +80,7 @@ a[href*="amcharts.com"]{display:none!important}
           <a href="peru/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
           <a href="philippines/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
           <a href="serbia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
-          <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Turkiye</span></a>
+          <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Türkiye</span></a>
         </div>
         <div class="nav-dropdown-col">
           <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
@@ -274,12 +274,12 @@ a[href*="amcharts.com"]{display:none!important}
         </div>
       </div>
 
-      <!-- Turkiye -->
+      <!-- Türkiye -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg bg-turkey"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
-          <p class="art-card-name">Turkiye</p>
+          <p class="art-card-name">Türkiye</p>
           <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
@@ -453,7 +453,7 @@ var fieldNotesMap = {
   "PE": { name: "Peru",            url: "peru/field-notes.html" },
   "PH": { name: "Philippines",     url: "philippines/field-notes.html" },
   "RS": { name: "Serbia",          url: "serbia/field-notes.html" },
-  "TR": { name: "Turkiye",         url: "turkiye/field-notes.html" }
+  "TR": { name: "Türkiye",         url: "turkiye/field-notes.html" }
 };
 
 var fieldNotesSeries = chart.series.push(new am4maps.MapPolygonSeries());
