@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Article Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300..500&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -182,6 +183,29 @@
       color: rgba(28,40,33,.35);
       margin-top: .2rem;
     }
+
+    /* TO-DO LIST */
+    .todo-list { overflow-y:auto; flex:1; padding:.4rem .45rem .5rem; }
+    .todo-row { display:flex; align-items:flex-start; gap:.4rem; padding:.2rem .3rem; border-radius:4px; position:relative; }
+    .todo-row:hover { background:var(--mist); }
+    .todo-row.section { margin-top:.9rem; }
+    .todo-row.section:first-child { margin-top:.1rem; }
+    .todo-check { width:14px; height:14px; margin-top:.15rem; border:1.5px solid rgba(28,40,33,.35); border-radius:3px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; font-size:.62rem; line-height:1; color:#fff; }
+    .todo-check.done { background:var(--terra); border-color:var(--terra); }
+    .todo-check.done::after { content:'\2713'; }
+    .todo-text { font-family:'Jost',sans-serif; font-size:.82rem; font-weight:400; line-height:1.35; color:var(--ink); flex:1; outline:none; word-break:break-word; min-width:0; }
+    .todo-text:focus { background:#fff; box-shadow:0 0 0 2px rgba(45,107,80,.3); border-radius:3px; }
+    .todo-row.done .todo-text { text-decoration:line-through; color:rgba(28,40,33,.4); }
+    .todo-row.section .todo-text { font-family:'Montserrat',sans-serif; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--terra); font-weight:600; }
+    .todo-row.note .todo-text { font-style:italic; color:rgba(28,40,33,.5); font-size:.74rem; }
+    .todo-controls { display:none; gap:.05rem; margin-left:auto; flex-shrink:0; align-items:center; }
+    .todo-row:hover .todo-controls { display:flex; }
+    .todo-ctrl { border:none; background:none; cursor:pointer; font-size:.68rem; color:rgba(28,40,33,.35); padding:0 .12rem; line-height:1; }
+    .todo-ctrl:hover { color:var(--ink); }
+    .todo-footer { display:flex; gap:.4rem; align-items:center; padding:.5rem .6rem; border-top:1px solid var(--b-subtle); }
+    .todo-footer button { font-family:'Montserrat',sans-serif; font-size:.5rem; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--b-medium); background:#fff; border-radius:3px; padding:.4rem .55rem; cursor:pointer; color:var(--ink); }
+    .todo-footer button:hover { background:var(--mist); }
+    .sidebar-foot { padding:.7rem .8rem; border-top:1px solid var(--b-subtle); }
 
     /* TOOLBAR */
     .toolbar {
@@ -364,13 +388,13 @@
     #editor h1, #editor h2 { font-family: 'Fraunces', serif; font-weight: 400; }
     #editor h2 { font-size: 1.7rem; margin: 2.5rem 0 1rem; letter-spacing: -.01em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
     #editor h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: var(--terra); margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
-    #editor p { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 300; }
+    #editor p { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 350; }
     #editor a { color: var(--terra); }
     #editor strong { font-weight: 500; color: var(--ink); }
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
     #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
-    #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 300; }
+    #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 350; }
     #editor h3.fn-sub-hd { font-family: 'Montserrat', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
     #editor div.fn-sub-hd { font-family: 'Montserrat', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; }
     #editor p.fn-sub-label { font-family: 'Jost', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
@@ -600,6 +624,7 @@
     <span id="file-name">no file open</span>
   </div>
   <div class="header-actions">
+    <span id="word-count" style="font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.4)"></span>
     <span class="save-status" id="save-status"></span>
     <button class="btn btn-open" id="btn-open">Open Article</button>
     <button class="btn btn-save" id="btn-save" disabled>Save</button>
@@ -618,21 +643,47 @@
 
   <aside class="sidebar">
     <div class="sidebar-head">
-      <div class="sidebar-label">Articles</div>
-      <div id="folder-status" style="margin-top:.6rem">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div class="sidebar-label">To Do List</div>
+        <div class="sidebar-label" id="todo-progress" style="letter-spacing:.1em;color:var(--terra)"></div>
+      </div>
+    </div>
+    <div class="todo-list" id="todo-list"></div>
+    <div class="todo-footer">
+      <button onclick="todoAdd('task')" title="Add a task">+ Task</button>
+      <button onclick="todoAdd('section')" title="Add a section heading">+ Section</button>
+      <button onclick="todoReset()" title="Reset to the default list" style="margin-left:auto">Reset</button>
+    </div>
+    <div class="sidebar-foot">
+      <div class="sidebar-label" style="margin-bottom:.45rem">Site Folder · for images</div>
+      <div id="folder-status">
         <button id="btn-connect-folder" onclick="connectFolder()" style="width:100%;font-family:'Montserrat',sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">
           ⚙ Connect Site Folder
         </button>
       </div>
     </div>
-    <div class="article-list" id="article-list"></div>
   </aside>
 
   <div class="editor-wrap">
     <div class="toolbar" id="toolbar">
-      <button class="tool-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
-      <button class="tool-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
-      <button class="tool-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+      <button class="tool-btn" onclick="fmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button class="tool-btn" onclick="fmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button class="tool-btn" onclick="fmt('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+      <button class="tool-btn" onclick="fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
+      <div class="color-picker-wrap" id="hilite-wrap" style="position:relative">
+        <button class="tool-btn" onclick="toggleHilitePicker()" title="Highlight"><span style="background:#FFF3B0;padding:0 .3rem">H</span></button>
+        <div class="color-dropdown" id="hilite-dropdown" style="min-width:130px">
+          <span class="color-dropdown-label">Highlight</span>
+          <div class="color-swatches-grid">
+            <div class="color-dot" style="background:#FFF3B0" title="Yellow" onclick="applyHilite('#FFF3B0')"></div>
+            <div class="color-dot" style="background:#DFF2E4" title="Green" onclick="applyHilite('#DFF2E4')"></div>
+            <div class="color-dot" style="background:#DBEAFE" title="Blue" onclick="applyHilite('#DBEAFE')"></div>
+            <div class="color-dot" style="background:#FDE2E2" title="Red" onclick="applyHilite('#FDE2E2')"></div>
+            <div class="color-dot" style="background:#fff;border:1.5px solid #d1d5db;position:relative" title="Remove highlight" onclick="applyHilite('transparent')"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#c00">✕</span></div>
+          </div>
+        </div>
+      </div>
+      <button class="tool-btn" onclick="clearFormatting()" title="Clear formatting">⌫<small>Aa</small></button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
       <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
@@ -642,8 +693,9 @@
       <button class="tool-btn" onclick="textAlign('center')" title="Align center">≡</button>
       <button class="tool-btn" onclick="textAlign('right')" title="Align right">≡→</button>
       <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="insertLink()" title="Insert Link">Link</button>
+      <button class="tool-btn" onclick="insertLink()" title="Insert Link (Ctrl+K)">Link</button>
       <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
+      <button class="tool-btn" onclick="fmt('insertHorizontalRule')" title="Horizontal rule">―</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
       <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
@@ -657,6 +709,7 @@
       <div class="tool-divider"></div>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
         <option value="">Font</option>
+        <option value="'Source Sans 3', sans-serif">Source Sans 3</option>
         <option value="Jost, sans-serif">Jost</option>
         <option value="__jost-bold__">Jost Bold</option>
         <option value="Fraunces, serif">Fraunces</option>
@@ -687,6 +740,22 @@
           </div>
         </div>
       </div>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" onclick="toggleFindPanel()" title="Find &amp; Replace (Ctrl+F)">🔍 Find</button>
+      <button class="tool-btn" id="spell-toggle" onclick="toggleSpellcheck()" title="Toggle spell check">✓ Spell</button>
+    </div>
+
+    <!-- Find & Replace panel -->
+    <div id="find-panel" style="display:none;background:#fff;border-bottom:1px solid var(--b-medium);padding:.5rem 2rem;align-items:center;gap:.5rem;flex-wrap:wrap;font-family:'Montserrat',sans-serif;font-size:.65rem">
+      <input id="find-input" type="text" placeholder="Find…" style="border:1px solid var(--b-medium);border-radius:3px;padding:.35rem .6rem;font-family:'Jost',sans-serif;font-size:.8rem;width:180px" oninput="runFind()">
+      <span id="find-count" style="color:rgba(28,40,33,.45);min-width:56px"></span>
+      <button class="tool-btn" onclick="findNav(-1)" title="Previous">↑</button>
+      <button class="tool-btn" onclick="findNav(1)" title="Next">↓</button>
+      <span style="width:1rem"></span>
+      <input id="replace-input" type="text" placeholder="Replace with…" style="border:1px solid var(--b-medium);border-radius:3px;padding:.35rem .6rem;font-family:'Jost',sans-serif;font-size:.8rem;width:180px">
+      <button class="tool-btn" onclick="replaceCurrent()">Replace</button>
+      <button class="tool-btn" onclick="replaceAll()">Replace All</button>
+      <button class="tool-btn" onclick="closeFindPanel()" title="Close" style="margin-left:auto">✕</button>
     </div>
 
     <div class="editor-scroll">
@@ -713,46 +782,198 @@
   let originalHTML = '';
   let isDirty = false;
 
+  // All pages with an editable .article-body (field notes + destination articles)
   const KNOWN_ARTICLES = [
-    { name: 'Home', file: 'index.html' },
-    { name: 'About', file: 'about.html' },
-    { name: 'El Salvador', file: 'el-salvador.html' },
-    { name: 'El Salvador Itinerary', file: 'el-salvador-itinerary.html' },
-    { name: 'Santa Ana Guide', file: 'santa-ana.html' },
-    { name: 'Ruta de las Flores', file: 'ruta-de-las-flores.html' },
-    { name: '7 Waterfalls Hike', file: '7-waterfalls-hike.html' },
-    { name: 'Posts', file: 'posts.html' },
-    { name: 'Destinations', file: 'destinations.html' },
-    { name: 'Resources', file: 'resources.html' },
-    { name: 'Contact', file: 'contact.html' },
-    { name: 'Privacy', file: 'privacy.html' },
+    { name: 'Albania — Field Notes', file: 'albania/field-notes.html' },
+    { name: 'Armenia — Field Notes', file: 'armenia/field-notes.html' },
+    { name: 'Brazil — Field Notes', file: 'brazil/field-notes.html' },
+    { name: 'Greece — Field Notes', file: 'greece/field-notes.html' },
+    { name: 'Kosovo — Field Notes', file: 'kosovo/field-notes.html' },
+    { name: 'North Macedonia — Field Notes', file: 'north-macedonia/field-notes.html' },
+    { name: 'Peru — Field Notes', file: 'peru/field-notes.html' },
+    { name: 'Philippines — Field Notes', file: 'philippines/field-notes.html' },
+    { name: 'Serbia — Field Notes', file: 'serbia/field-notes.html' },
+    { name: 'Türkiye — Field Notes', file: 'turkiye/field-notes.html' },
+    { name: 'El Salvador Itinerary', file: 'el-salvador/el-salvador-itinerary.html' },
+    { name: 'Top 10 El Salvador', file: 'el-salvador/top-10-el-salvador.html' },
+    { name: 'Santa Ana Guide', file: 'el-salvador/santa-ana.html' },
+    { name: 'Ruta de las Flores', file: 'el-salvador/ruta-de-las-flores.html' },
+    { name: '7 Waterfalls Hike', file: 'el-salvador/7-waterfalls-hike.html' },
+    { name: 'El Tunco & The Coast', file: 'el-salvador/el-tunco.html' },
+    { name: 'NZ Itinerary', file: 'new-zealand/new-zealand-itinerary.html' },
+    { name: 'Top 10 New Zealand', file: 'new-zealand/top-10-new-zealand.html' },
+    { name: 'Queenstown', file: 'new-zealand/queenstown.html' },
+    { name: 'Rotorua', file: 'new-zealand/rotorua.html' },
+    { name: 'Taupo', file: 'new-zealand/taupo.html' },
+    { name: 'Tongariro Crossing', file: 'new-zealand/tongariro-crossing.html' },
+    { name: 'Franz Josef', file: 'new-zealand/franz-josef.html' },
   ];
 
-  // Populate sidebar — merges KNOWN_ARTICLES with any extra HTML files found in the connected folder
-  async function refreshArticleList() {
-    const list = document.getElementById('article-list');
-    list.innerHTML = '';
-    const knownFiles = new Set(KNOWN_ARTICLES.map(a => a.file));
-    const items = [...KNOWN_ARTICLES];
-    if (folderHandle) {
-      try {
-        for await (const [name, handle] of folderHandle.entries()) {
-          if (handle.kind === 'file' && name.endsWith('.html') && !knownFiles.has(name)) {
-            const label = name.replace('.html', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            items.push({ name: label, file: name });
-          }
-        }
-      } catch(e) {}
+  // Resolve a relative path like "brazil/field-notes.html" from the connected folder
+  async function getHandleByPath(path) {
+    const parts = path.split('/');
+    let dir = folderHandle;
+    for (let i = 0; i < parts.length - 1; i++) {
+      dir = await dir.getDirectoryHandle(parts[i]);
     }
-    items.forEach(art => {
-      const item = document.createElement('div');
-      item.className = 'article-item';
-      item.innerHTML = `<div class="article-item-name">${art.name}</div><div class="article-item-file">${art.file}</div>`;
-      item.onclick = () => openKnownArticle(art, item);
-      list.appendChild(item);
-    });
+    return dir.getFileHandle(parts[parts.length - 1]);
   }
-  refreshArticleList();
+
+  // The sidebar article list was replaced by the to-do list; keep this a
+  // no-op so legacy callers (connectFolder) don't error.
+  async function refreshArticleList() {}
+
+  // ================= TO-DO LIST =================
+  const TODO_KEY = 'editor-todo-v1';
+  let todoItems = [];
+  let _todoFocus = null;
+
+  // Default list (t=type, x=text, i=indent, d=done). Seeded on first run.
+  const TODO_SEED = [
+    {t:'section', x:'Immediate Goals'},
+    {t:'task', x:'Add photo thumbnails for countries'},
+    {t:'task', x:'Transfer All Existing Recommendations to Field Notes (7/16)'},
+    {t:'note', i:1, x:'1/2 Long Country / 1 Short Country Article Per Day'},
+    {t:'task', i:1, d:1, x:'North Macedonia - 6/20'},
+    {t:'task', i:1, d:1, x:'Armenia - 6/22'},
+    {t:'task', i:1, d:1, x:'Turkiye - 6/23 to 6/24'},
+    {t:'task', i:1, d:1, x:'Kosovo - 6/25'},
+    {t:'task', i:1, d:1, x:'Philippines - 6/26 to 6/27'},
+    {t:'task', i:1, d:1, x:'Peru - 6/27'},
+    {t:'task', i:1, d:1, x:'Greece - 6/28 to 6/29'},
+    {t:'task', i:1, d:1, x:'Albania - 6/30 to 7/3'},
+    {t:'task', i:1, x:'Brazil - 7/3 to'},
+    {t:'task', i:1, x:'Bosnia'},
+    {t:'task', i:1, x:'Japan'},
+    {t:'task', i:1, x:'Portugal'},
+    {t:'task', i:1, x:'Croatia'},
+    {t:'task', i:1, x:'Georgia'},
+    {t:'task', i:1, x:'Australia'},
+    {t:'task', i:1, x:'Colombia'},
+    {t:'task', i:1, x:'Mexico'},
+    {t:'task', x:'Run spell check on all Articles'},
+    {t:'section', x:'Medium Term'},
+    {t:'task', x:'Redesign site to be less vibe coded'},
+    {t:'task', x:'Transform Journal Notes into existing countries'},
+    {t:'task', i:1, x:'Word Doc'},
+    {t:'task', i:1, x:'Field Notes Pages'},
+    {t:'task', i:1, x:'Refine into polished Field Notes pages'},
+    {t:'task', x:'Figure out photo compression settings'},
+    {t:'section', x:'Longer Term Goals'},
+    {t:'task', x:'Final Pass of El Salvador Photos'},
+    {t:'task', x:'Finish New Zealand Articles'},
+    {t:'task', x:'Write 3 countries by end of Q3'},
+    {t:'task', x:'Launch blog - when done with 6 Countries'},
+    {t:'task', x:'Mobile map?'},
+  ];
+
+  const todoUid = () => Math.random().toString(36).slice(2, 9);
+  const todoEscape = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  function loadTodo() {
+    try {
+      const raw = localStorage.getItem(TODO_KEY);
+      if (raw) { todoItems = JSON.parse(raw); return; }
+    } catch(e) {}
+    todoItems = TODO_SEED.map(s => ({ id: todoUid(), type: s.t, text: s.x, done: !!s.d, indent: s.i || 0 }));
+  }
+  function saveTodo() { try { localStorage.setItem(TODO_KEY, JSON.stringify(todoItems)); } catch(e) {} }
+
+  function updateTodoProgress() {
+    let d = 0, t = 0;
+    todoItems.forEach(it => { if (it.type === 'task') { t++; if (it.done) d++; } });
+    const el = document.getElementById('todo-progress');
+    if (el) el.textContent = t ? d + '/' + t : '';
+  }
+
+  function placeCaretEnd(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el); r.collapse(false);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+
+  function renderTodo() {
+    const list = document.getElementById('todo-list');
+    if (!list) return;
+    list.innerHTML = '';
+    todoItems.forEach((it, idx) => {
+      const row = document.createElement('div');
+      row.className = 'todo-row ' + it.type + (it.done ? ' done' : '');
+      row.style.paddingLeft = (0.3 + (it.indent || 0) * 1.05) + 'rem';
+      let html = '';
+      if (it.type === 'task') html += '<div class="todo-check ' + (it.done ? 'done' : '') + '" onclick="todoToggle(' + idx + ')"></div>';
+      html += '<div class="todo-text" contenteditable="true" data-idx="' + idx + '" spellcheck="false" ' +
+              'onblur="todoEdit(' + idx + ', this)" onkeydown="todoKey(event, ' + idx + ')">' + todoEscape(it.text) + '</div>';
+      html += '<div class="todo-controls">' +
+        '<button class="todo-ctrl" onclick="todoMove(' + idx + ',-1)" title="Move up">▲</button>' +
+        '<button class="todo-ctrl" onclick="todoMove(' + idx + ',1)" title="Move down">▼</button>' +
+        '<button class="todo-ctrl" onclick="todoIndent(' + idx + ',1)" title="Indent">⇥</button>' +
+        '<button class="todo-ctrl" onclick="todoIndent(' + idx + ',-1)" title="Outdent">⇤</button>' +
+        '<button class="todo-ctrl" onclick="todoDel(' + idx + ')" title="Delete">✕</button>' +
+        '</div>';
+      row.innerHTML = html;
+      list.appendChild(row);
+    });
+    updateTodoProgress();
+    saveTodo();
+    if (_todoFocus != null) {
+      const el = list.querySelector('.todo-text[data-idx="' + _todoFocus + '"]');
+      if (el) { el.focus(); placeCaretEnd(el); }
+      _todoFocus = null;
+    }
+  }
+
+  function todoToggle(i) { if (todoItems[i] && todoItems[i].type === 'task') { todoItems[i].done = !todoItems[i].done; renderTodo(); } }
+  function todoEdit(i, el) { if (todoItems[i]) { todoItems[i].text = el.textContent.trim(); saveTodo(); updateTodoProgress(); } }
+  function todoDel(i) { todoItems.splice(i, 1); renderTodo(); }
+  function todoMove(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= todoItems.length) return;
+    const t = todoItems[i]; todoItems[i] = todoItems[j]; todoItems[j] = t;
+    renderTodo();
+  }
+  function todoIndent(i, dir) {
+    const it = todoItems[i]; if (!it) return;
+    it.indent = Math.max(0, Math.min(3, (it.indent || 0) + dir));
+    renderTodo();
+  }
+  function todoAdd(type) {
+    todoItems.push({ id: todoUid(), type, text: type === 'section' ? 'New Section' : '', done: false, indent: 0 });
+    _todoFocus = todoItems.length - 1;
+    renderTodo();
+  }
+  function todoKey(e, i) {
+    const it = todoItems[i]; if (!it) return;
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      it.text = e.target.textContent.trim();
+      todoItems.splice(i + 1, 0, { id: todoUid(), type: 'task', text: '', done: false, indent: it.indent || 0 });
+      _todoFocus = i + 1;
+      renderTodo();
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      it.text = e.target.textContent.trim();
+      it.indent = Math.max(0, Math.min(3, (it.indent || 0) + (e.shiftKey ? -1 : 1)));
+      _todoFocus = i;
+      renderTodo();
+    } else if (e.key === 'Backspace' && e.target.textContent.trim() === '') {
+      e.preventDefault();
+      if (todoItems.length <= 1) return;
+      todoItems.splice(i, 1);
+      _todoFocus = Math.max(0, i - 1);
+      renderTodo();
+    }
+  }
+  function todoReset() {
+    if (confirm('Reset the to-do list to the original default? Any changes you made will be lost.')) {
+      try { localStorage.removeItem(TODO_KEY); } catch(e) {}
+      loadTodo();
+      renderTodo();
+    }
+  }
+
+  loadTodo();
+  renderTodo();
 
   let folderHandle = null;
   let lastFileHandle = null;
@@ -842,7 +1063,7 @@
     const ok = await ensureFolderHandle();
     if (!ok) return;
     try {
-      const fh = await folderHandle.getFileHandle(art.file);
+      const fh = await getHandleByPath(art.file);
       await loadFile(fh);
       document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
       itemEl.classList.add('active');
@@ -895,8 +1116,8 @@
       img.setAttribute('data-path', rawSrc); // preserve original path for saving
       if (folderHandle) {
         try {
-          // rawSrc is like "Images/El Salvador/Santa Ana/foo.JPEG" — traverse the folder tree
-          const parts = rawSrc.split('/');
+          // rawSrc is like "Images/..." or "../Images/..." — traverse from the site root
+          const parts = decodeURIComponent(rawSrc).split('/').filter(p => p !== '..' && p !== '.');
           let handle = folderHandle;
           for (let i = 0; i < parts.length - 1; i++) {
             handle = await handle.getDirectoryHandle(parts[i]);
@@ -930,12 +1151,20 @@
 
     editor.contentEditable = 'true';
     editor.spellcheck = true;
+    editor.setAttribute('lang', 'en');
     editor.style.display = 'block';
     document.getElementById('empty-state').style.display = 'none';
     document.getElementById('notice').style.display = 'none';
 
+    // Clean editing engine: Enter creates <p> (not <div>), formatting uses tags (not spans)
+    try {
+      document.execCommand('defaultParagraphSeparator', false, 'p');
+      document.execCommand('styleWithCSS', false, false);
+    } catch(e) {}
+
     setDirty(false);
-    editor.addEventListener('input', () => setDirty(true), { once: false });
+    editor.addEventListener('input', () => { setDirty(true); updateWordCount(); }, { once: false });
+    updateWordCount();
 
     // Focus the editor so Chrome activates spellcheck on the loaded content
     editor.focus();
@@ -1007,6 +1236,160 @@
       setDirty(true);
     }
   });
+
+  // ================= SAVE NORMALIZER =================
+  // Converts contenteditable output into the site's clean hand-written idiom.
+  function unwrapEl(el) {
+    const parent = el.parentNode;
+    if (!parent) return;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+  }
+
+  function normalizeForSave(el) {
+    // 0. Leftover find-marks (defensive)
+    el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
+
+    // 1. strong→b, em→i (site convention)
+    const retag = (from, to) => {
+      let list;
+      while ((list = [...el.querySelectorAll(from)]).length) {
+        list.forEach(old => {
+          const nu = document.createElement(to);
+          [...old.attributes].forEach(a => nu.setAttribute(a.name, a.value));
+          while (old.firstChild) nu.appendChild(old.firstChild);
+          old.parentNode.replaceChild(nu, old);
+        });
+      }
+    };
+    retag('strong', 'b');
+    retag('em', 'i');
+
+    // 2. Clean style attributes: drop editor-noise props, keep deliberate ones
+    el.querySelectorAll('[style]').forEach(node => {
+      if (node.tagName === 'IMG' || node.closest('picture')) return; // image styling is deliberate
+      let style = node.getAttribute('style')
+        .replace(/\bfont-family\s*:[^;]+;?/gi, '')
+        .replace(/\bbackground-color\s*:\s*transparent\s*;?/gi, '')
+        .replace(/\bwhite-space\s*:[^;]+;?/gi, '')
+        .replace(/\btext-align\s*:\s*start\s*;?/gi, '');
+      style = style.trim().replace(/^;+|;+$/g, '').trim();
+      if (style) node.setAttribute('style', style);
+      else node.removeAttribute('style');
+    });
+
+    // 3. Unwrap spans with no attributes left
+    let spans;
+    while ((spans = [...el.querySelectorAll('span:not([style]):not([class]):not([id])')]).length) {
+      spans.forEach(unwrapEl);
+    }
+
+    // 4. Bare <div> → <p> (contenteditable legacy), keep classed/styled divs
+    [...el.querySelectorAll('div:not([class]):not([style]):not([id])')].forEach(div => {
+      if (div.querySelector('div,ul,ol,h2,h3,picture,img')) { unwrapEl(div); return; }
+      const p = document.createElement('p');
+      while (div.firstChild) p.appendChild(div.firstChild);
+      div.parentNode.replaceChild(p, div);
+    });
+
+    // 5. Remove junk attributes everywhere
+    el.querySelectorAll('[contenteditable],[spellcheck],[dir],[role],[aria-level]').forEach(node => {
+      ['contenteditable','spellcheck','dir','role','aria-level'].forEach(a => node.removeAttribute(a));
+    });
+    el.querySelectorAll('[class=""]').forEach(n => n.removeAttribute('class'));
+    el.querySelectorAll('[lang]').forEach(n => n.removeAttribute('lang'));
+
+    // 6. Remove empty inline elements and empty paragraphs/list items
+    let removed = true;
+    while (removed) {
+      removed = false;
+      el.querySelectorAll('b,i,u,s,span,a').forEach(node => {
+        if (!node.textContent.trim() && !node.querySelector('img,br')) { node.remove(); removed = true; }
+      });
+      el.querySelectorAll('p,li').forEach(node => {
+        if (!node.textContent.trim() && !node.querySelector('img,br,picture')) { node.remove(); removed = true; }
+      });
+    }
+    // Remove <p><br></p> spacers
+    el.querySelectorAll('p').forEach(p => {
+      if (p.innerHTML.trim().toLowerCase() === '<br>') p.remove();
+    });
+
+    // 7. Shared legacy cleanup (font tags, link colors, nbsp)
+    cleanArtifacts(el);
+  }
+
+  // ================= PRETTY PRINTER =================
+  // Re-serializes the article body with hand-written-style indentation.
+  const PP_BLOCK = new Set(['P','DIV','UL','OL','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','HR','TABLE','THEAD','TBODY','TR','FIGURE']);
+  const PP_ATOMIC = new Set(['PICTURE']);   // keep on one line exactly as-is
+  const PP_VOID = new Set(['BR','HR','IMG','SOURCE']);
+
+  function ppAttrs(node) {
+    return [...node.attributes].map(a =>
+      ' ' + a.name + '="' + a.value.replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"').join('');
+  }
+  function ppEscape(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function ppSerializeInlineEl(child) {
+    const tag = child.tagName.toLowerCase();
+    if (PP_VOID.has(child.tagName)) return '<' + tag + ppAttrs(child) + '>';
+    return '<' + tag + ppAttrs(child) + '>' + ppInline(child) + '</' + tag + '>';
+  }
+  function ppInline(node) {
+    let out = '';
+    node.childNodes.forEach(child => {
+      if (child.nodeType === 3) out += ppEscape(child.textContent.replace(/\s+/g, ' '));
+      else if (child.nodeType === 8) out += '<!--' + child.textContent + '-->';
+      else if (child.nodeType === 1) out += ppSerializeInlineEl(child);
+    });
+    return out;
+  }
+  function ppIsBlock(node) {
+    return node.nodeType === 1 && (PP_BLOCK.has(node.tagName) || PP_ATOMIC.has(node.tagName) ||
+      (node.tagName === 'SPAN' && /display\s*:\s*block/.test(node.getAttribute('style') || '')));
+  }
+  function ppNode(node, depth, lines) {
+    const indent = '  '.repeat(depth);
+    if (node.nodeType === 8) { lines.push(indent + '<!--' + node.textContent + '-->'); return; }
+    if (node.nodeType === 3) {
+      const t = node.textContent.replace(/\s+/g, ' ').trim();
+      if (t) lines.push(indent + ppEscape(t));
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    const tag = node.tagName.toLowerCase();
+    if (PP_ATOMIC.has(node.tagName)) { lines.push(indent + node.outerHTML); return; }
+    if (PP_VOID.has(node.tagName)) { lines.push(indent + '<' + tag + ppAttrs(node) + '>'); return; }
+    if (!ppIsBlock(node)) { lines.push(indent + ppSerializeInlineEl(node)); return; }
+
+    const hasBlockChild = [...node.childNodes].some(ppIsBlock);
+    if (!hasBlockChild) {
+      lines.push(indent + '<' + tag + ppAttrs(node) + '>' + ppInline(node).trim() + '</' + tag + '>');
+      return;
+    }
+    // Mixed content: inline runs and block children each on their own line
+    lines.push(indent + '<' + tag + ppAttrs(node) + '>');
+    let run = [];
+    const flush = () => {
+      const s = run.map(n => n.nodeType === 3 ? ppEscape(n.textContent.replace(/\s+/g,' ')) :
+        (n.nodeType === 1 ? ppSerializeInlineEl(n) : '')).join('').trim();
+      if (s) lines.push('  '.repeat(depth + 1) + s);
+      run = [];
+    };
+    node.childNodes.forEach(child => {
+      if (ppIsBlock(child)) { flush(); ppNode(child, depth + 1, lines); }
+      else run.push(child);
+    });
+    flush();
+    lines.push(indent + '</' + tag + '>');
+  }
+  function prettyPrintBody(el) {
+    const lines = [];
+    el.childNodes.forEach(child => ppNode(child, 1, lines));
+    return '\n' + lines.join('\n') + '\n';
+  }
 
   // Strip editor artifacts before saving to disk
   function cleanArtifacts(el) {
@@ -1110,8 +1493,8 @@
       wrapper.appendChild(img);
     });
 
-    cleanArtifacts(saveEl);
-    originalBody.innerHTML = saveEl.innerHTML;
+    normalizeForSave(saveEl);
+    originalBody.innerHTML = prettyPrintBody(saveEl);
 
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -1126,6 +1509,13 @@
       status.textContent = '✓ Saved';
       status.className = 'save-status saved';
       setTimeout(() => { if (!isDirty) { status.textContent = ''; status.className = 'save-status'; } }, 2500);
+
+      // Image pipeline reminder: new body images need the two-version treatment
+      const unwrapped = [...saveEl.querySelectorAll('img')].filter(img => {
+        const src = img.getAttribute('src') || '';
+        return /(\.\.\/)?Images\//.test(src) && !/Images\/web\//.test(src) && !img.closest('picture');
+      });
+      if (unwrapped.length) showImgPipelineToast(unwrapped.length);
     } catch (e) {
       alert('Save failed: ' + e.message);
     }
@@ -1684,6 +2074,217 @@
     if (!document.getElementById('color-picker-wrap').contains(e.target)) {
       closeColorPicker();
     }
+    if (!document.getElementById('hilite-wrap').contains(e.target)) {
+      document.getElementById('hilite-dropdown').classList.remove('open');
+    }
+  });
+
+  // ================= PASTE SANITIZER =================
+  // Cleans HTML pasted from Word / Google Docs / web pages down to the site's idiom.
+  const PASTE_KEEP = { B:'b', STRONG:'b', I:'i', EM:'i', U:'u', S:'s', STRIKE:'s',
+                       A:'a', UL:'ul', OL:'ol', LI:'li', P:'p', BR:'br',
+                       H1:'h2', H2:'h2', H3:'h3', H4:'h3', BLOCKQUOTE:'blockquote' };
+
+  function sanitizePasted(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html
+      .replace(/<!--[\s\S]*?-->/g, '')          // comments (incl. Word conditionals)
+      .replace(/<(meta|link|style|script|title|xml|o:p)[^>]*>[\s\S]*?<\/\1>/gi, '')
+      .replace(/<(meta|link|br\s*class="Apple-interchange-newline")[^>]*\/?>/gi, '');
+
+    (function clean(node) {
+      [...node.childNodes].forEach(child => {
+        if (child.nodeType === 8) { child.remove(); return; }
+        if (child.nodeType !== 1) return;
+        clean(child);                            // depth-first
+        const tag = child.tagName;
+        const keep = PASTE_KEEP[tag];
+        if (!keep) {
+          // unwrap: promote children, drop the element (DIV, SPAN, FONT, TABLE...)
+          while (child.firstChild) node.insertBefore(child.firstChild, child);
+          child.remove();
+          return;
+        }
+        // rebuild as clean element with only allowed attributes
+        const el = document.createElement(keep);
+        if (keep === 'a') {
+          const href = child.getAttribute('href');
+          if (href && !href.startsWith('javascript:')) el.setAttribute('href', href);
+          if (/^https?:/i.test(href || '')) { el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer'); }
+        }
+        while (child.firstChild) el.appendChild(child.firstChild);
+        node.replaceChild(el, child);
+      });
+    })(tmp);
+
+    // normalize nbsp and collapse whitespace
+    tmp.innerHTML = tmp.innerHTML.replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
+    return tmp.innerHTML;
+  }
+
+  document.getElementById('editor').addEventListener('paste', function(e) {
+    const html = e.clipboardData.getData('text/html');
+    const text = e.clipboardData.getData('text/plain');
+    if (!html && !text) return;
+    e.preventDefault();
+    if (html) {
+      document.execCommand('insertHTML', false, sanitizePasted(html));
+    } else {
+      // plain text: preserve paragraph breaks
+      const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const parts = safe.split(/\n{2,}/).map(p => p.replace(/\n/g,'<br>'));
+      document.execCommand('insertHTML', false, parts.length > 1 ? '<p>' + parts.join('</p><p>') + '</p>' : parts[0]);
+    }
+    setDirty(true);
+  });
+
+  // ================= HIGHLIGHT / CLEAR FORMATTING =================
+  function toggleHilitePicker() {
+    saveSelection();
+    document.getElementById('hilite-dropdown').classList.toggle('open');
+  }
+  function applyHilite(color) {
+    restoreSelection();
+    try { document.execCommand('styleWithCSS', false, true); } catch(e) {}
+    document.execCommand('hiliteColor', false, color);
+    try { document.execCommand('styleWithCSS', false, false); } catch(e) {}
+    document.getElementById('hilite-dropdown').classList.remove('open');
+    setDirty(true);
+  }
+  function clearFormatting() {
+    document.getElementById('editor').focus();
+    document.execCommand('removeFormat', false, null);
+    setDirty(true);
+  }
+
+  // ================= SPELLCHECK TOGGLE =================
+  function toggleSpellcheck() {
+    const editor = document.getElementById('editor');
+    editor.spellcheck = !editor.spellcheck;
+    document.getElementById('spell-toggle').style.opacity = editor.spellcheck ? '1' : '.4';
+    // re-focus to force the browser to re-evaluate squiggles
+    editor.blur(); editor.focus();
+  }
+
+  // ================= WORD COUNT =================
+  let _wcTimer = null;
+  function updateWordCount() {
+    clearTimeout(_wcTimer);
+    _wcTimer = setTimeout(() => {
+      const text = document.getElementById('editor').innerText || '';
+      const words = (text.match(/[A-Za-zÀ-ÿ0-9’']+/g) || []).length;
+      document.getElementById('word-count').textContent = words ? words.toLocaleString() + ' words' : '';
+    }, 300);
+  }
+
+  // ================= FIND & REPLACE =================
+  let _findHits = [], _findIdx = -1;
+
+  function toggleFindPanel() {
+    const p = document.getElementById('find-panel');
+    if (p.style.display === 'flex') { closeFindPanel(); return; }
+    p.style.display = 'flex';
+    document.getElementById('find-input').focus();
+    runFind();
+  }
+  function closeFindPanel() {
+    document.getElementById('find-panel').style.display = 'none';
+    clearFindMarks();
+  }
+  function clearFindMarks() {
+    document.querySelectorAll('#editor mark.find-hit').forEach(m => {
+      const parent = m.parentNode;
+      while (m.firstChild) parent.insertBefore(m.firstChild, m);
+      parent.removeChild(m);
+      parent.normalize();
+    });
+    _findHits = []; _findIdx = -1;
+    document.getElementById('find-count').textContent = '';
+  }
+  function runFind() {
+    clearFindMarks();
+    const q = document.getElementById('find-input').value;
+    if (!q) return;
+    const editor = document.getElementById('editor');
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let n; while ((n = walker.nextNode())) nodes.push(n);
+    const ql = q.toLowerCase();
+    nodes.forEach(node => {
+      let text = node.textContent, idx, offset = 0, current = node;
+      while ((idx = current.textContent.toLowerCase().indexOf(ql)) !== -1) {
+        const range = document.createRange();
+        range.setStart(current, idx);
+        range.setEnd(current, idx + q.length);
+        const mark = document.createElement('mark');
+        mark.className = 'find-hit';
+        mark.style.cssText = 'background:#FFE58A;padding:0';
+        try { range.surroundContents(mark); } catch(e) { break; }
+        _findHits.push(mark);
+        current = mark.nextSibling;   // continue searching the remainder
+        if (!current || current.nodeType !== 3) break;
+      }
+    });
+    document.getElementById('find-count').textContent = _findHits.length ? '0 / ' + _findHits.length : 'No results';
+    if (_findHits.length) findNav(1);
+  }
+  function findNav(dir) {
+    if (!_findHits.length) return;
+    if (_findIdx >= 0) _findHits[_findIdx].style.background = '#FFE58A';
+    _findIdx = (_findIdx + dir + _findHits.length) % _findHits.length;
+    const hit = _findHits[_findIdx];
+    hit.style.background = '#F4A261';
+    hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    document.getElementById('find-count').textContent = (_findIdx + 1) + ' / ' + _findHits.length;
+  }
+  function replaceCurrent() {
+    if (_findIdx < 0 || !_findHits.length) return;
+    const rep = document.getElementById('replace-input').value;
+    const mark = _findHits[_findIdx];
+    mark.replaceWith(document.createTextNode(rep));
+    setDirty(true);
+    runFind();
+  }
+  function replaceAll() {
+    if (!_findHits.length) return;
+    const rep = document.getElementById('replace-input').value;
+    const count = _findHits.length;
+    _findHits.forEach(m => m.replaceWith(document.createTextNode(rep)));
+    _findHits = []; _findIdx = -1;
+    document.getElementById('editor').normalize();
+    document.getElementById('find-count').textContent = count + ' replaced';
+    setDirty(true);
+  }
+
+  // ================= IMAGE PIPELINE TOAST =================
+  function showImgPipelineToast(count) {
+    let toast = document.getElementById('img-pipeline-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'img-pipeline-toast';
+      toast.style.cssText = 'position:fixed;bottom:1.25rem;right:1.25rem;z-index:500;background:#1C2821;color:#F7F7F3;' +
+        'padding:1rem 1.25rem;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:380px;' +
+        "font-family:'Jost',sans-serif;font-size:.85rem;line-height:1.5";
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML =
+      '<div style="font-family:\'Montserrat\',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#F2C124;margin-bottom:.4rem">⚠ ' +
+      count + ' new image' + (count > 1 ? 's' : '') + ' need processing</div>' +
+      'Run the image pipeline to create desktop-compressed versions:' +
+      '<pre style="background:rgba(255,255,255,.08);padding:.5rem .65rem;border-radius:4px;margin:.5rem 0;font-size:.72rem;overflow-x:auto">py tools/recompress_desktop.py\npy tools/add_picture_mobile.py\npy tools/fix_case.py</pre>' +
+      '<button onclick="this.parentNode.remove()" style="background:none;border:1px solid rgba(255,255,255,.25);color:#F7F7F3;border-radius:3px;padding:.3rem .8rem;cursor:pointer;font-family:\'Montserrat\',sans-serif;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase">Dismiss</button>';
+  }
+
+  // ================= KEYBOARD SHORTCUTS =================
+  document.addEventListener('keydown', function(e) {
+    if (!(e.ctrlKey || e.metaKey)) {
+      if (e.key === 'Escape') closeFindPanel();
+      return;
+    }
+    const k = e.key.toLowerCase();
+    if (k === 'f') { e.preventDefault(); toggleFindPanel(); }
+    else if (k === 'h') { e.preventDefault(); toggleFindPanel(); document.getElementById('replace-input').focus(); }
+    else if (k === 'k') { e.preventDefault(); insertLink(); }
   });
 </script>
 </body>

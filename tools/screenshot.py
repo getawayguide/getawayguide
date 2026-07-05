@@ -81,7 +81,12 @@ async def screenshot_pages(pages, selector=None):
                 try:
                     await page.goto(url, wait_until="networkidle", timeout=15000)
                 except Exception:
-                    await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                    try:
+                        await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                    except Exception:
+                        # external resources (CDNs/fonts) can stall intermittently;
+                        # capture whatever has rendered rather than failing outright
+                        pass
 
                 await page.wait_for_timeout(2000)  # let fonts and animations load
 
@@ -120,7 +125,12 @@ def main():
     args = parser.parse_args()
 
     if args.all:
-        pages = sorted(p.name for p in PROJECT_DIR.glob("*.html"))
+        # recursive: include subdirectory pages (el-salvador/, new-zealand/, */field-notes.html)
+        pages = sorted(
+            str(p.relative_to(PROJECT_DIR)).replace("\\", "/")
+            for p in PROJECT_DIR.rglob("*.html")
+            if not any(part.startswith(".") for part in p.relative_to(PROJECT_DIR).parts)
+        )
     elif args.pages:
         pages = args.pages
     else:

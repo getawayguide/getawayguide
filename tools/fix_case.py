@@ -6,7 +6,7 @@ written paths like hectors-tour-2.JPG when the real file is hectors-tour-2.jpg.
 GitHub Pages (Linux) is case-sensitive and will 404 on the wrong case.
 
 This script:
-1. Scans all src="../Images/..." refs in el-salvador/*.html
+1. Scans all src="../Images/..." refs in every country's article pages (*/*.html)
 2. For each, does a case-sensitive lookup of the real filename on disk
 3. Rewrites the path with the exact on-disk filename and extension
 """
@@ -50,7 +50,7 @@ def fix_src(src: str) -> str:
     return src
 
 
-pages = list((BASE / 'el-salvador').glob('*.html'))
+pages = list(BASE.glob('*/*.html'))   # all country/article pages
 SRC_PAT = re.compile(r'src="(\.\./Images/[^"]+)"')
 
 total_fixed = 0

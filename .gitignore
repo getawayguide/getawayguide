@@ -1,0 +1,15 @@
+# Disposable working files (scraped data, test scripts, screenshots, caches)
+.tmp/
+
+# Raw source photos for destination cards (bulky; only the compressed
+# Images/web/dest-cards/ versions are deployed). Kept locally, not in git.
+Images/dest-cards/
+
+# Python build artifacts
+__pycache__/
+*.pyc
+
+# Secrets / OAuth (never commit)
+.env
+credentials.json
+token.json

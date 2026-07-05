@@ -1,5 +1,26 @@
 {
   "permissions": {
-    "allow": ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)", "Glob(*)", "Grep(*)", "WebFetch(*)", "WebSearch(*)"]
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "Bash(python tools/screenshot.py greece/field-notes.html)",
+      "PowerShell(& \"C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe\" C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\read_georgia.py)",
+      "PowerShell(& \"C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe\" C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\find_stalin.py)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\find_japan_section.py' 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\extract_japan_more.py' 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\extract_australia_section.py' 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\extract_aus2.py' 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\extract_cairns.py' 2>&1)",
+      "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\find_sa_journal.py' 2>&1)",
+      "PowerShell(git -C \"c:\\\\Users\\\\kevin\\\\OneDrive\\\\Documents\\\\Travel Blog\" status --short 2>&1)",
+      "Bash(py tools/screenshot.py brazil/field-notes.html)",
+      "Bash(py tools/screenshot.py el-salvador/el-salvador-itinerary.html)"
+    ]
   }
 }
