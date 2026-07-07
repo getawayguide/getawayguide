@@ -202,6 +202,12 @@
     .todo-row:hover .todo-controls { display:flex; }
     .todo-ctrl { border:none; background:none; cursor:pointer; font-size:.68rem; color:rgba(28,40,33,.35); padding:0 .12rem; line-height:1; }
     .todo-ctrl:hover { color:var(--ink); }
+    .todo-drag { cursor:grab; color:rgba(28,40,33,.22); font-size:.62rem; line-height:1.4; padding-right:.05rem; user-select:none; flex-shrink:0; opacity:0; letter-spacing:-1px; }
+    .todo-row:hover .todo-drag { opacity:1; }
+    .todo-drag:active { cursor:grabbing; }
+    .todo-row.dragging { opacity:.35; }
+    .todo-row.drop-before { box-shadow:0 -2px 0 var(--terra); }
+    .todo-row.drop-after { box-shadow:0 2px 0 var(--terra); }
     .todo-footer { display:flex; gap:.4rem; align-items:center; padding:.5rem .6rem; border-top:1px solid var(--b-subtle); }
     .todo-footer button { font-family:'Montserrat',sans-serif; font-size:.5rem; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--b-medium); background:#fff; border-radius:3px; padding:.4rem .55rem; cursor:pointer; color:var(--ink); }
     .todo-footer button:hover { background:var(--mist); }
@@ -643,16 +649,12 @@
 
   <aside class="sidebar">
     <div class="sidebar-head">
-      <div style="display:flex;align-items:baseline;justify-content:space-between">
-        <div class="sidebar-label">To Do List</div>
-        <div class="sidebar-label" id="todo-progress" style="letter-spacing:.1em;color:var(--terra)"></div>
-      </div>
+      <div class="sidebar-label">To Do List</div>
     </div>
     <div class="todo-list" id="todo-list"></div>
     <div class="todo-footer">
       <button onclick="todoAdd('task')" title="Add a task">+ Task</button>
       <button onclick="todoAdd('section')" title="Add a section heading">+ Section</button>
-      <button onclick="todoReset()" title="Reset to the default list" style="margin-left:auto">Reset</button>
     </div>
     <div class="sidebar-foot">
       <div class="sidebar-label" style="margin-bottom:.45rem">Site Folder · for images</div>
@@ -683,7 +685,6 @@
           </div>
         </div>
       </div>
-      <button class="tool-btn" onclick="clearFormatting()" title="Clear formatting">⌫<small>Aa</small></button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
       <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
@@ -703,9 +704,6 @@
       <button class="tool-btn" onclick="fmt('outdent')" title="Outdent (Shift+Tab)">⇤ Out</button>
       <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
       <button class="tool-btn" onclick="insertFnSubHd()" title="Field notes sub-heading">Sub Hd</button>
-      <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="undo()" title="Undo">↩ Undo</button>
-      <button class="tool-btn" onclick="redo()" title="Redo">↪ Redo</button>
       <div class="tool-divider"></div>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
         <option value="">Font</option>
@@ -740,22 +738,6 @@
           </div>
         </div>
       </div>
-      <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="toggleFindPanel()" title="Find &amp; Replace (Ctrl+F)">🔍 Find</button>
-      <button class="tool-btn" id="spell-toggle" onclick="toggleSpellcheck()" title="Toggle spell check">✓ Spell</button>
-    </div>
-
-    <!-- Find & Replace panel -->
-    <div id="find-panel" style="display:none;background:#fff;border-bottom:1px solid var(--b-medium);padding:.5rem 2rem;align-items:center;gap:.5rem;flex-wrap:wrap;font-family:'Montserrat',sans-serif;font-size:.65rem">
-      <input id="find-input" type="text" placeholder="Find…" style="border:1px solid var(--b-medium);border-radius:3px;padding:.35rem .6rem;font-family:'Jost',sans-serif;font-size:.8rem;width:180px" oninput="runFind()">
-      <span id="find-count" style="color:rgba(28,40,33,.45);min-width:56px"></span>
-      <button class="tool-btn" onclick="findNav(-1)" title="Previous">↑</button>
-      <button class="tool-btn" onclick="findNav(1)" title="Next">↓</button>
-      <span style="width:1rem"></span>
-      <input id="replace-input" type="text" placeholder="Replace with…" style="border:1px solid var(--b-medium);border-radius:3px;padding:.35rem .6rem;font-family:'Jost',sans-serif;font-size:.8rem;width:180px">
-      <button class="tool-btn" onclick="replaceCurrent()">Replace</button>
-      <button class="tool-btn" onclick="replaceAll()">Replace All</button>
-      <button class="tool-btn" onclick="closeFindPanel()" title="Close" style="margin-left:auto">✕</button>
     </div>
 
     <div class="editor-scroll">
@@ -879,13 +861,6 @@
   }
   function saveTodo() { try { localStorage.setItem(TODO_KEY, JSON.stringify(todoItems)); } catch(e) {} }
 
-  function updateTodoProgress() {
-    let d = 0, t = 0;
-    todoItems.forEach(it => { if (it.type === 'task') { t++; if (it.done) d++; } });
-    const el = document.getElementById('todo-progress');
-    if (el) el.textContent = t ? d + '/' + t : '';
-  }
-
   function placeCaretEnd(el) {
     const r = document.createRange();
     r.selectNodeContents(el); r.collapse(false);
@@ -900,13 +875,16 @@
       const row = document.createElement('div');
       row.className = 'todo-row ' + it.type + (it.done ? ' done' : '');
       row.style.paddingLeft = (0.3 + (it.indent || 0) * 1.05) + 'rem';
-      let html = '';
+      row.dataset.idx = idx;
+      // Drag starts only from the ⋮⋮ handle so text selection inside the
+      // contenteditable rows keeps working normally.
+      let html = '<div class="todo-drag" title="Drag to reorder" ' +
+        'onmousedown="this.closest(\'.todo-row\').draggable=true" ' +
+        'onmouseup="this.closest(\'.todo-row\').draggable=false">⋮⋮</div>';
       if (it.type === 'task') html += '<div class="todo-check ' + (it.done ? 'done' : '') + '" onclick="todoToggle(' + idx + ')"></div>';
       html += '<div class="todo-text" contenteditable="true" data-idx="' + idx + '" spellcheck="false" ' +
               'onblur="todoEdit(' + idx + ', this)" onkeydown="todoKey(event, ' + idx + ')">' + todoEscape(it.text) + '</div>';
       html += '<div class="todo-controls">' +
-        '<button class="todo-ctrl" onclick="todoMove(' + idx + ',-1)" title="Move up">▲</button>' +
-        '<button class="todo-ctrl" onclick="todoMove(' + idx + ',1)" title="Move down">▼</button>' +
         '<button class="todo-ctrl" onclick="todoIndent(' + idx + ',1)" title="Indent">⇥</button>' +
         '<button class="todo-ctrl" onclick="todoIndent(' + idx + ',-1)" title="Outdent">⇤</button>' +
         '<button class="todo-ctrl" onclick="todoDel(' + idx + ')" title="Delete">✕</button>' +
@@ -914,7 +892,6 @@
       row.innerHTML = html;
       list.appendChild(row);
     });
-    updateTodoProgress();
     saveTodo();
     if (_todoFocus != null) {
       const el = list.querySelector('.todo-text[data-idx="' + _todoFocus + '"]');
@@ -924,14 +901,8 @@
   }
 
   function todoToggle(i) { if (todoItems[i] && todoItems[i].type === 'task') { todoItems[i].done = !todoItems[i].done; renderTodo(); } }
-  function todoEdit(i, el) { if (todoItems[i]) { todoItems[i].text = el.textContent.trim(); saveTodo(); updateTodoProgress(); } }
+  function todoEdit(i, el) { if (todoItems[i]) { todoItems[i].text = el.textContent.trim(); saveTodo(); } }
   function todoDel(i) { todoItems.splice(i, 1); renderTodo(); }
-  function todoMove(i, dir) {
-    const j = i + dir;
-    if (j < 0 || j >= todoItems.length) return;
-    const t = todoItems[i]; todoItems[i] = todoItems[j]; todoItems[j] = t;
-    renderTodo();
-  }
   function todoIndent(i, dir) {
     const it = todoItems[i]; if (!it) return;
     it.indent = Math.max(0, Math.min(3, (it.indent || 0) + dir));
@@ -964,16 +935,62 @@
       renderTodo();
     }
   }
-  function todoReset() {
-    if (confirm('Reset the to-do list to the original default? Any changes you made will be lost.')) {
-      try { localStorage.removeItem(TODO_KEY); } catch(e) {}
-      loadTodo();
-      renderTodo();
-    }
-  }
-
   loadTodo();
   renderTodo();
+
+  // --- To-do drag & drop reordering (grab the ⋮⋮ handle) ---
+  const _todoListEl = document.getElementById('todo-list');
+  let _dragIdx = null;
+
+  function _clearDropMarks() {
+    _todoListEl.querySelectorAll('.drop-before,.drop-after').forEach(r => r.classList.remove('drop-before', 'drop-after'));
+  }
+
+  _todoListEl.addEventListener('dragstart', e => {
+    const row = e.target.closest('.todo-row');
+    // Only rows armed by the handle's mousedown are draggable; this keeps
+    // native text-selection drags inside the contenteditable rows untouched.
+    if (!row || row.getAttribute('draggable') !== 'true') return;
+    _dragIdx = +row.dataset.idx;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', ''); } catch(_) {}
+  });
+
+  _todoListEl.addEventListener('dragover', e => {
+    if (_dragIdx == null) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    _clearDropMarks();
+    const row = e.target.closest('.todo-row');
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    row.classList.add(e.clientY - rect.top < rect.height / 2 ? 'drop-before' : 'drop-after');
+  });
+
+  _todoListEl.addEventListener('drop', e => {
+    if (_dragIdx == null) return;
+    e.preventDefault();
+    const row = e.target.closest('.todo-row');
+    let insertAt;
+    if (row) {
+      const rect = row.getBoundingClientRect();
+      insertAt = +row.dataset.idx + (e.clientY - rect.top < rect.height / 2 ? 0 : 1);
+    } else {
+      insertAt = todoItems.length; // dropped on the empty space below the rows
+    }
+    if (insertAt > _dragIdx) insertAt--;
+    const moved = todoItems.splice(_dragIdx, 1)[0];
+    todoItems.splice(insertAt, 0, moved);
+    _dragIdx = null;
+    renderTodo();
+  });
+
+  _todoListEl.addEventListener('dragend', () => {
+    _dragIdx = null;
+    _clearDropMarks();
+    _todoListEl.querySelectorAll('.todo-row').forEach(r => { r.classList.remove('dragging'); r.draggable = false; });
+  });
 
   let folderHandle = null;
   let lastFileHandle = null;
@@ -1166,8 +1183,8 @@
     editor.addEventListener('input', () => { setDirty(true); updateWordCount(); }, { once: false });
     updateWordCount();
 
-    // Focus the editor so Chrome activates spellcheck on the loaded content
-    editor.focus();
+    // Force a full spellcheck pass so squiggles appear on the loaded content
+    forceSpellcheckPass();
   }
 
   function setDirty(dirty) {
@@ -1634,8 +1651,6 @@
     if (e.target === this) closeImgModal();
   });
 
-  function undo() { fmt('undo'); }
-  function redo() { fmt('redo'); }
 
   // ---- Heading + text alignment ----
   function insertHeading(tag) {
@@ -2151,19 +2166,63 @@
     document.getElementById('hilite-dropdown').classList.remove('open');
     setDirty(true);
   }
-  function clearFormatting() {
-    document.getElementById('editor').focus();
-    document.execCommand('removeFormat', false, null);
-    setDirty(true);
-  }
-
-  // ================= SPELLCHECK TOGGLE =================
-  function toggleSpellcheck() {
+  // ================= SPELLCHECK =================
+  // Spellcheck is always on (no toggle).
+  //
+  // Chromium only spell-checks the paragraph under the caret ("hot mode") or
+  // text you actively type. It never sweeps text loaded via innerHTML, and its
+  // idle "cold mode" full-document sweep doesn't reliably fire for injected
+  // content — so an opened article shows no red squiggles until you edit each
+  // block yourself.
+  //
+  // Fix: reproduce the one thing that works — hot-mode checking — for every
+  // block. We walk a collapsed caret through each paragraph / list item once;
+  // entering a block hot-checks that whole paragraph and the underlines persist
+  // after the caret moves on. A steady delay lets the async checker process
+  // each block before we move to the next, and we keep the scroll position
+  // pinned so the walk is invisible.
+  let _spellWalkToken = 0;
+  function forceSpellcheckPass() {
     const editor = document.getElementById('editor');
-    editor.spellcheck = !editor.spellcheck;
-    document.getElementById('spell-toggle').style.opacity = editor.spellcheck ? '1' : '.4';
-    // re-focus to force the browser to re-evaluate squiggles
-    editor.blur(); editor.focus();
+    if (!editor || editor.style.display === 'none') return;
+    editor.spellcheck = true;
+    editor.setAttribute('spellcheck', 'true');
+    editor.contentEditable = 'true';
+
+    const blocks = Array.from(editor.querySelectorAll(
+      'p, li, h1, h2, h3, h4, h5, h6, blockquote, dt, dd, td, th, figcaption'
+    )).filter(b => b.textContent.trim());
+    if (!blocks.length) { editor.focus(); return; }
+
+    const scroller = document.querySelector('.editor-wrap') || editor.parentElement;
+    const savedScroll = scroller ? scroller.scrollTop : 0;
+    const sel = window.getSelection();
+    const token = ++_spellWalkToken;   // cancels any earlier walk still running
+    editor.focus();
+
+    const pin = () => { if (scroller) scroller.scrollTop = savedScroll; };
+    let i = 0;
+    function step() {
+      if (token !== _spellWalkToken) return;     // a newer article started
+      if (i >= blocks.length) {
+        try {
+          const r = document.createRange();
+          r.selectNodeContents(editor); r.collapse(true);
+          sel.removeAllRanges(); sel.addRange(r);
+        } catch (e) {}
+        pin();
+        return;
+      }
+      const b = blocks[i++];
+      try {
+        const r = document.createRange();
+        r.selectNodeContents(b); r.collapse(true);   // caret at start of block
+        sel.removeAllRanges(); sel.addRange(r);
+      } catch (e) {}
+      pin();
+      setTimeout(step, 30);
+    }
+    setTimeout(step, 30);
   }
 
   // ================= WORD COUNT =================
@@ -2175,85 +2234,6 @@
       const words = (text.match(/[A-Za-zÀ-ÿ0-9’']+/g) || []).length;
       document.getElementById('word-count').textContent = words ? words.toLocaleString() + ' words' : '';
     }, 300);
-  }
-
-  // ================= FIND & REPLACE =================
-  let _findHits = [], _findIdx = -1;
-
-  function toggleFindPanel() {
-    const p = document.getElementById('find-panel');
-    if (p.style.display === 'flex') { closeFindPanel(); return; }
-    p.style.display = 'flex';
-    document.getElementById('find-input').focus();
-    runFind();
-  }
-  function closeFindPanel() {
-    document.getElementById('find-panel').style.display = 'none';
-    clearFindMarks();
-  }
-  function clearFindMarks() {
-    document.querySelectorAll('#editor mark.find-hit').forEach(m => {
-      const parent = m.parentNode;
-      while (m.firstChild) parent.insertBefore(m.firstChild, m);
-      parent.removeChild(m);
-      parent.normalize();
-    });
-    _findHits = []; _findIdx = -1;
-    document.getElementById('find-count').textContent = '';
-  }
-  function runFind() {
-    clearFindMarks();
-    const q = document.getElementById('find-input').value;
-    if (!q) return;
-    const editor = document.getElementById('editor');
-    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    let n; while ((n = walker.nextNode())) nodes.push(n);
-    const ql = q.toLowerCase();
-    nodes.forEach(node => {
-      let text = node.textContent, idx, offset = 0, current = node;
-      while ((idx = current.textContent.toLowerCase().indexOf(ql)) !== -1) {
-        const range = document.createRange();
-        range.setStart(current, idx);
-        range.setEnd(current, idx + q.length);
-        const mark = document.createElement('mark');
-        mark.className = 'find-hit';
-        mark.style.cssText = 'background:#FFE58A;padding:0';
-        try { range.surroundContents(mark); } catch(e) { break; }
-        _findHits.push(mark);
-        current = mark.nextSibling;   // continue searching the remainder
-        if (!current || current.nodeType !== 3) break;
-      }
-    });
-    document.getElementById('find-count').textContent = _findHits.length ? '0 / ' + _findHits.length : 'No results';
-    if (_findHits.length) findNav(1);
-  }
-  function findNav(dir) {
-    if (!_findHits.length) return;
-    if (_findIdx >= 0) _findHits[_findIdx].style.background = '#FFE58A';
-    _findIdx = (_findIdx + dir + _findHits.length) % _findHits.length;
-    const hit = _findHits[_findIdx];
-    hit.style.background = '#F4A261';
-    hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    document.getElementById('find-count').textContent = (_findIdx + 1) + ' / ' + _findHits.length;
-  }
-  function replaceCurrent() {
-    if (_findIdx < 0 || !_findHits.length) return;
-    const rep = document.getElementById('replace-input').value;
-    const mark = _findHits[_findIdx];
-    mark.replaceWith(document.createTextNode(rep));
-    setDirty(true);
-    runFind();
-  }
-  function replaceAll() {
-    if (!_findHits.length) return;
-    const rep = document.getElementById('replace-input').value;
-    const count = _findHits.length;
-    _findHits.forEach(m => m.replaceWith(document.createTextNode(rep)));
-    _findHits = []; _findIdx = -1;
-    document.getElementById('editor').normalize();
-    document.getElementById('find-count').textContent = count + ' replaced';
-    setDirty(true);
   }
 
   // ================= IMAGE PIPELINE TOAST =================
@@ -2277,14 +2257,8 @@
 
   // ================= KEYBOARD SHORTCUTS =================
   document.addEventListener('keydown', function(e) {
-    if (!(e.ctrlKey || e.metaKey)) {
-      if (e.key === 'Escape') closeFindPanel();
-      return;
-    }
-    const k = e.key.toLowerCase();
-    if (k === 'f') { e.preventDefault(); toggleFindPanel(); }
-    else if (k === 'h') { e.preventDefault(); toggleFindPanel(); document.getElementById('replace-input').focus(); }
-    else if (k === 'k') { e.preventDefault(); insertLink(); }
+    if (!(e.ctrlKey || e.metaKey)) return;
+    if (e.key.toLowerCase() === 'k') { e.preventDefault(); insertLink(); }
   });
 </script>
 </body>
