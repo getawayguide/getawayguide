@@ -16,7 +16,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:ital,wght@0,400;1,400&family=Jost:ital,wght@0,300..400;1,300..400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=13">
 <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
@@ -31,6 +31,8 @@ a[href*="amcharts.com"]{display:none!important}
 /* map */
 .dest-map-wrap{padding:.75rem 6rem 3rem;max-width:100%}
 #world-map{width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3}
+.map-mobile-hd,.map-close-btn{display:none}
+body.dest-map-open nav{display:none}
 .map-legend{display:flex;gap:2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:.45rem;font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#555}
 .legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;display:inline-block}
@@ -48,7 +50,20 @@ a[href*="amcharts.com"]{display:none!important}
   .dest-articles-section{padding:2rem 3rem 5rem}
 }
 @media(max-width:768px){
-  .dest-map-wrap{display:none}
+  /* Compact, tappable map on top */
+  .dest-map-wrap{display:block;padding:.5rem 1.25rem 1.4rem;position:relative}
+  .map-mobile-hd{display:flex;justify-content:space-between;align-items:center;padding:.1rem .1rem .7rem;cursor:pointer}
+  .map-mobile-hd .mmh-t{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:600}
+  .map-mobile-hd .mmh-x{font-family:'Montserrat',sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra)}
+  .map-legend{gap:1rem;margin-bottom:.7rem}
+  .map-legend .legend-item{font-size:.6rem}
+  #world-map{height:250px!important}
+  /* Full-screen expanded state */
+  .dest-map-wrap.map-fs{position:fixed;inset:0;z-index:4000;background:#fff;padding:0;margin:0;max-width:none;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  .dest-map-wrap.map-fs .map-mobile-hd{display:none}
+  .dest-map-wrap.map-fs .map-legend{margin:0;padding:1rem 3.2rem .65rem 1rem;background:#fff;border-bottom:1px solid rgba(28,40,33,.08);justify-content:center;flex:0 0 auto}
+  .dest-map-wrap.map-fs #world-map{flex:1 1 auto;min-height:0;height:auto!important;border-radius:0}
+  .dest-map-wrap.map-fs .map-close-btn{display:flex;align-items:center;justify-content:center;position:absolute;right:.9rem;top:.7rem;z-index:6;width:34px;height:34px;border-radius:50%;background:rgba(28,40,33,.85);color:#fff;border:none;font-size:1.05rem;cursor:pointer}
   .dest-articles-section{padding:2rem 1.25rem 5rem}
 }
 @media(max-width:480px){
@@ -77,6 +92,7 @@ a[href*="amcharts.com"]{display:none!important}
           <a href="armenia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
           <a href="bosnia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
           <a href="brazil/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
+          <a href="georgia/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
           <a href="greece/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
           <a href="kosovo/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
           <a href="mexico/field-notes.html" class="nav-dropdown-item"><img src="https://flagcdn.com/16x12/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
@@ -110,6 +126,7 @@ a[href*="amcharts.com"]{display:none!important}
     <li>
       <a href="destinations.html">Destinations</a>
       <div class="mobile-nav-continents">
+        <a href="destinations.html#explore-map" style="color:var(--terra);font-weight:600">&#128506; Explore Map</a>
         <a href="destinations.html#europe">Europe</a>
         <a href="destinations.html#americas">Americas</a>
         <a href="destinations.html#asia">Asia</a>
@@ -132,7 +149,12 @@ a[href*="amcharts.com"]{display:none!important}
   </header>
 
   <!-- World Map -->
-  <section class="dest-map-wrap">
+  <section class="dest-map-wrap" id="explore-map">
+    <div class="map-mobile-hd" onclick="toggleMapFS()">
+      <span class="mmh-t">Explore the Map</span>
+      <span class="mmh-x">Tap to expand ⤢</span>
+    </div>
+    <button class="map-close-btn" onclick="toggleMapFS()" aria-label="Close map">✕</button>
     <div class="map-legend">
       <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Articles Available</span>
       <span class="legend-item"><span class="legend-dot" style="background:#8FAF7E"></span>Field Notes</span>
@@ -160,7 +182,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- El Salvador -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='el-salvador/index.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:50% 78%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">El Salvador</p>
@@ -170,7 +192,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- New Zealand -->
       <div class="home-dest-card" data-continent="oceania" onclick="location.href='new-zealand/index.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:50% 60%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">New Zealand</p>
@@ -200,7 +222,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Albania -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='albania/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/albania.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/albania.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Albania</p>
@@ -210,7 +232,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Armenia -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='armenia/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/armenia.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/armenia.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Armenia</p>
@@ -220,7 +242,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Bosnia -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='bosnia/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/bosnia.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/bosnia.jpg');background-size:cover;background-position:50% 30%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Bosnia</p>
@@ -230,7 +252,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Brazil -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='brazil/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/brazil.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/brazil.jpg');background-size:cover;background-position:50% 20%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Brazil</p>
@@ -238,9 +260,19 @@ a[href*="amcharts.com"]{display:none!important}
         </div>
       </div>
 
+      <!-- Georgia -->
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='georgia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/georgia.jpg');background-size:cover;background-position:50% 45%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Georgia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
       <!-- Greece -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='greece/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/greece.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/greece.jpg');background-size:cover;background-position:50% 32%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Greece</p>
@@ -250,7 +282,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Kosovo -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='kosovo/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/kosovo.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/kosovo.jpg');background-size:cover;background-position:50% 58%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Kosovo</p>
@@ -260,7 +292,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Mexico -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='mexico/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/mexico.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/mexico.jpg');background-size:cover;background-position:50% 52%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Mexico</p>
@@ -270,7 +302,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- North Macedonia -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/north-macedonia.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/north-macedonia.jpg');background-size:cover;background-position:50% 45%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">North Macedonia</p>
@@ -280,7 +312,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Peru -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='peru/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/peru.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/peru.jpg');background-size:cover;background-position:50% 42%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Peru</p>
@@ -290,7 +322,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Philippines -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='philippines/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/philippines.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/philippines.jpg');background-size:cover;background-position:50% 78%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Philippines</p>
@@ -300,7 +332,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Serbia -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='serbia/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/serbia.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/serbia.jpg');background-size:cover;background-position:50% 38%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Serbia</p>
@@ -310,7 +342,7 @@ a[href*="amcharts.com"]{display:none!important}
 
       <!-- Türkiye -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/turkiye.jpg');background-size:cover;background-position:center"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/turkiye.jpg');background-size:cover;background-position:50% 40%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Türkiye</p>
@@ -334,6 +366,22 @@ function toggleMobileMenu(){
   d.classList.toggle('open');b.classList.toggle('open');
   document.body.style.overflow=d.classList.contains('open')?'hidden':'';
 }
+// Mobile: expand the compact map to full screen (and back)
+function toggleMapFS(){
+  var m=document.getElementById('explore-map');
+  var open=m.classList.toggle('map-fs');
+  document.body.classList.toggle('dest-map-open',open);
+  document.body.style.overflow=open?'hidden':'';
+  // let the layout settle, then force amCharts to remeasure its container
+  setTimeout(function(){
+    window.dispatchEvent(new Event('resize'));
+    if(window.__destMap){ window.__destMap.svgContainer.measure(); window.__destMap.goHome(0); }
+  },90);
+}
+// Close full-screen map with Escape
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){var m=document.getElementById('explore-map');if(m&&m.classList.contains('map-fs'))toggleMapFS();}
+});
 function filterArticles(continent, btn) {
   document.querySelectorAll('#articles-section .filter-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
@@ -390,6 +438,7 @@ window.addEventListener('hashchange',applyHashFilter);
 am4core.useTheme(am4themes_animated);
 
 var chart = am4core.create("world-map", am4maps.MapChart);
+window.__destMap = chart;
 // Fix Russia antimeridian: clone geodata and shift Chukotka coords to +360
 var fixedGeodata = JSON.parse(JSON.stringify(am4geodata_worldLow));
 (function() {
@@ -483,6 +532,7 @@ var fieldNotesMap = {
   "AM": { name: "Armenia",         url: "armenia/field-notes.html" },
   "BA": { name: "Bosnia",          url: "bosnia/field-notes.html" },
   "BR": { name: "Brazil",          url: "brazil/field-notes.html" },
+  "GE": { name: "Georgia",         url: "georgia/field-notes.html" },
   "GR": { name: "Greece",          url: "greece/field-notes.html" },
   "XK": { name: "Kosovo",          url: "kosovo/field-notes.html" },
   "MX": { name: "Mexico",          url: "mexico/field-notes.html" },
