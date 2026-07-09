@@ -365,43 +365,54 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   }
   .mobile-nav-drawer.open{transform:translateX(0)}
   .mobile-nav-links{list-style:none;display:flex;flex-direction:column;gap:0}
-  .mobile-nav-links li a{
-    display:block;
+  .mobile-nav-links > li > a,
+  .mobile-nav-links > li > .mnav-parent{
+    display:flex;align-items:center;justify-content:space-between;width:100%;
     font-family:'Fraunces',Georgia,serif;
-    font-size:1.5rem;
+    font-size:1.4rem;
     font-weight:400;
     color:var(--ink);
     text-decoration:none;
     padding:.5rem 0;
     border-bottom:1px solid var(--b-subtle);
     opacity:.8;
+    background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;text-align:left;
   }
-  .mobile-nav-links li a:hover{color:var(--terra);opacity:1}
-  .mobile-nav-continents{display:flex;flex-direction:column;gap:0;padding-left:.75rem;margin-top:.1rem;margin-bottom:.1rem}
-  .mobile-nav-continents a{
+  .mobile-nav-links > li > a:hover,
+  .mobile-nav-links > li > .mnav-parent:hover{color:var(--terra);opacity:1}
+  .mnav-chev{font-family:'Jost',sans-serif;font-size:1.1rem;transition:transform .25s;opacity:.5}
+  .mnav-parent.open .mnav-chev{transform:rotate(90deg)}
+  /* Collapsible submenu under Destinations */
+  .mobile-nav-continents{display:flex;flex-direction:column;gap:0;padding-left:.9rem;
+    max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .mobile-nav-continents.open{max-height:420px;margin:.15rem 0 .35rem}
+  .mobile-nav-links > li > .mnav-parent + .mobile-nav-continents a{
     font-family:'Montserrat',sans-serif;
-    font-size:.5rem;
-    letter-spacing:.18em;
+    font-size:.64rem;
+    letter-spacing:.16em;
     text-transform:uppercase;
     color:var(--ink);
     text-decoration:none;
-    padding:.18rem 0;
+    padding:.5rem 0;
     border-bottom:1px solid var(--b-faint);
-    opacity:.45;
+    opacity:.6;
   }
   .mobile-nav-continents a:hover{opacity:1;color:var(--terra)}
+  .mobile-nav-continents a.mnc-map{color:var(--terra);opacity:.85;font-weight:600}
   .mobile-drawer-footer{margin-top:3rem;font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;opacity:.25}
 
-  .section{padding:4rem 1.5rem}
+  .section{padding:2.5rem 1.5rem}
   .section-header,.continent-header{flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:2.5rem}
   .page-header{padding:7rem 1.5rem 3rem;grid-template-columns:1fr;gap:1.5rem}
   .page-desc{max-width:100%}
   .hero{grid-template-columns:1fr;min-height:auto;padding-top:0;gap:0}
   .hero-text{padding:6rem 1.5rem 2rem;text-align:center;align-items:center}
-  .hero-subtitle{max-width:100%}
+  .hero-subtitle{max-width:100%;font-size:1rem;line-height:1.6}
+  .dest-subhead{font-size:.95rem;line-height:1.6}
   .hero-image{min-height:55vw;position:relative}
   .hero-scroll{display:none}
-  .home-destinations{padding:0 1.5rem 4rem}
+  .home-destinations{padding:0 1.5rem 2.5rem}
+  .home-destinations .section-title{margin-bottom:.25rem}
   .marquee-wrap{margin-top:1.5rem;margin-bottom:1.5rem}
   /* Landscape cards on mobile: single column, wide + short, less scrolling */
   .home-dest-grid{grid-template-columns:1fr;gap:.85rem}
@@ -585,7 +596,9 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .country-hero-title{font-size:clamp(2.5rem,11vw,5rem)}
   .country-hero-desc{font-size:1rem;padding:0 .25rem}
   .country-breadcrumb{flex-wrap:wrap;justify-content:center;max-width:100%;overflow:hidden}
-  .country-places-row{gap:.6rem;flex-wrap:wrap}
+  .country-places-row{gap:.45rem;flex-wrap:wrap}
+  .country-place-btn{padding:.42rem .7rem;font-size:.56rem;letter-spacing:.1em}
+  .country-places-label{width:100%;text-align:center;margin-bottom:.15rem}
   .country-article-content{padding:2rem 1.5rem}
   .country-facts-grid{grid-template-columns:repeat(2,1fr)}
   .country-utils{grid-template-columns:1fr}
@@ -770,6 +783,8 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
 @media(max-width:600px){
   #toc-b .toc-cols{grid-template-columns:1fr}
   #toc-b .toc-row{padding:.55rem 0}
+  /* stacked to one column: restore divider under the last row of column 1 */
+  #toc-b .toc-col:first-child .toc-row:last-child{border-bottom:1px solid var(--b-subtle)}
 }
 
 /* Field Notes flag grid (home page) */

@@ -15,7 +15,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'&gt;g&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&amp;family=Space+Mono:ital,wght@0,400;1,400&amp;family=Jost:ital,wght@0,300..400;1,300..400&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=13">
+<link rel="stylesheet" href="../styles.css?v=14">
 <style>
 .fn-hero{min-height:38vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 3rem 4.5rem;background:var(--void);position:relative;overflow:hidden}
 .fn-hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,rgba(184,122,61,.15) 0%,transparent 65%);pointer-events:none}
@@ -88,14 +88,15 @@
   <ul class="mobile-nav-links">
     <li><a href="../index.html">Home</a></li>
     <li>
-      <a href="../destinations.html">Destinations</a>
-      <div class="mobile-nav-continents">
-        <a href="../destinations.html#explore-map" style="color:var(--terra);font-weight:600">&#128506; Explore Map</a>
+      <button type="button" class="mnav-parent open" onclick="this.classList.toggle(&#39;open&#39;);this.nextElementSibling.classList.toggle(&#39;open&#39;)">Destinations <span class="mnav-chev">&rsaquo;</span></button>
+      <div class="mobile-nav-continents open">
+        <a href="../destinations.html#explore-map" style="color:var(--terra);font-weight:600">🗺 Explore Map</a>
         <a href="../destinations.html#europe">Europe</a>
         <a href="../destinations.html#americas">Americas</a>
         <a href="../destinations.html#asia">Asia</a>
         <a href="../destinations.html#africa">Africa</a>
         <a href="../destinations.html#oceania">Oceania</a>
+        <a href="../destinations.html">All Destinations</a>
       </div>
     </li>
     <li><a href="../resources.html">Resources</a></li>
@@ -113,7 +114,7 @@
     </svg>
   </div>
   <p class="country-breadcrumb">
-    <a href="../destinations.html">Destinations</a>
+    <button type="button" class="mnav-parent open" onclick="this.classList.toggle(&#39;open&#39;);this.nextElementSibling.classList.toggle(&#39;open&#39;)">Destinations <span class="mnav-chev">&rsaquo;</span></button>
     <span>›</span>
     <a href="../destinations.html#asia">Asia</a>
     <span>›</span>
@@ -155,53 +156,80 @@
     <div class="fn-city-hd">
       <h2>General</h2>
     </div>
-    <p>Georgia is one of the most underrated countries in the world — ancient churches, Soviet monuments, incredible food and jaw-dropping mountain scenery all packed into a small country. It's very safe, very cheap and very welcoming to foreigners, and still nowhere near as touristed as it deserves to be.</p>
+    <p>Georgia is one of the most underrated countries in the world and is starting to become very popular in the backpacker community. The small country is located in the Southern Caucuses lodged between Russia, Turkey and it's other Caucasian neighbors Armenia and Azerbaijan.</p>
+    <p>Georgia hosts jaw-dropping mountain scenery, ancient churches as the first Christian nation in the world, an incredible cuisine and Soviet Era history all packed into a small country. <span style="font-size: 1rem">It's safe, affordable and welcoming to foreigners, yet still nowhere near as touristed as it deserves to be.</span></p>
     <ul>
-      <li><b>Getting around</b> — Bolt and Yandex both work well for taxis and are super cheap; a 30-minute ride can cost less than $6. For the mountains (Kazbegi, Kakheti, Svaneti), book a day tour or a shared marshrutka (minibus)</li>
-      <li>
-        <b>Food</b> — Georgian food is incredible and one of the best reasons to come. A few must-tries:
+      <li><b>Getting around</b></li>
+      <ul>
+        <li><b>Flights </b> — there are non-stop flights to Tbilisi from 32 countries including most major European cities and key hubs like Istanbul, Dubai and Qatar</li>
+        <li><b style="font-size: 1rem">Ridesharing </b><span style="font-size: 1rem">— Bolt and Yandex both work well for taxis and are super cheap. A 30-minute ride can run you less than 15 Georgian Lari or $6 USD</span></li>
+        <li><b>Public Transport</b> — despite how small the country is, it takes surprising long to get around. The country is covered in mountainous terrain and</li>
         <ul>
-          <li><b>Khinkali</b> — soup dumplings; grab them by the topknot, bite a hole, sip the broth</li>
-          <li><b>Khachapuri</b> — cheese bread, in a dozen regional forms (the Adjarian one is a boat of cheese with an egg cracked on top)</li>
-          <li>Anything with <b>walnut sauce</b> — it turns up everywhere and it's always good</li>
+          <li><b style="font-size: 1rem">Shared Marshrutka (Minibus)</b><span style="font-size: 1rem"> — the cheapest way to get around Georgia is the "Marshrutka" or a shared Minibus that leaves when it is full. Find times online on <a href="https://wander-lush.org/georgia-travel-guide/">Wander Lush</a></span><a href="https://wander-lush.org/georgia-travel-guide/">'s Transport Tips section</a> <span style="font-size: 1rem">(the absolute best travel blog on Georgia), </span><a href="https://marshrutka.info/" style="font-size: 1rem"><b>marshrutka.info</b></a><span style="font-size: 1rem">, or ask a local! Budget travel time with Marshrutkas as they aren't known for their timelines</span></li>
+          <li><b>Trains</b> — Georgia has a train network connecting it's major cities. There are a mix of ultra modern trains that were built in the last few years and old Soviet Trains that move at a snails pace. View schedules online at the official <a href="https://tre.ge/en">Georgian Railway</a> website</li>
+        </ul>
+        <li><b><a href="https://gotrip.ge/en/tours?utm_source=google&amp;utm_medium=cpc&amp;utm_campaign_id=9282974057&amp;utm_adgroup_id=92816988383&amp;utm_content_id=417236570110&amp;utm_extension_id=&amp;term_match_type=&amp;utm_term=&amp;network=g&amp;placement=&amp;position=&amp;device=c.&amp;geo=.9061268&amp;p=googleeng&amp;gad_source=1&amp;gad_campaignid=9282974057&amp;gbraid=0AAAAADJSmztyT5QKqqVYt3OxvOyjRs6Iq&amp;gclid=CjwKCAjw6rfSBhAqEiwA_yocpvvY49Brb-jX-HQrJkFQsaNOIQ5tWhsGBGuK3ZvoFmgGtFHE_94anRoCPZcQAvD_BwE">GoTrip</a></b> — a unique private taxi service that is surprisingly affordable and allows you unlimited stops along the way. I used this service to from <a href="https://www.google.com/maps/place/Kutaisi,+Georgia/@42.2459636,42.6268538,13z/data=!3m1!4b1!4m6!3m5!1s0x405c8ce30e54af2d:0xfbec41b2d626656f!8m2!3d42.2718339!4d42.7059437!16zL20vMDI3Nnpn?entry=ttu&amp;g_ep=EgoyMDI2MDcwNi4wIKXMDSoASAFQAw%3D%3D">Kutaisi</a> to <a href="https://www.google.com/maps/place/Tbilisi,+Georgia/@41.7278602,44.6416129,11z/data=!3m1!4b1!4m6!3m5!1s0x40440cd7e64f626b:0x61d084ede2576ea3!8m2!3d41.6938026!4d44.8015168!16zL20vMGJtNGo?entry=ttu&amp;g_ep=EgoyMDI2MDcwNi4wIKXMDSoASAFQAw%3D%3D">Tbilisi</a> and made 4 stops along the way. I highly recommend this option if you're short on time and want to pack your day with activities. Expect to pay ~$100 per day</li>
+        <li><b>Day Tours </b>— these are a great way to avoid travel logistics and there are many that go to Georgia's more remote mountains regions like <a href="https://www.google.com/maps/place/Mkinvartsveri/@42.7360514,44.548775,10.17z/data=!4m6!3m5!1s0x405acbc1cf745771:0x5767800fbf47922d!8m2!3d42.6947216!4d44.5111983!16s%2Fg%2F1q62c4tzz?entry=ttu&amp;g_ep=EgoyMDI2MDcwNi4wIKXMDSoASAFQAw%3D%3D">Kazbegi</a> or <a href="https://www.google.com/maps/place/Svaneti+Range/@42.9773072,42.6227244,9.7z/data=!4m6!3m5!1s0x405bc26d1403d193:0xf65261abe13d6e62!8m2!3d42.9040781!4d42.7684577!16s%2Fg%2F120xcvlx?entry=ttu&amp;g_ep=EgoyMDI2MDcwNi4wIKXMDSoASAFQAw%3D%3D">Svaneti</a>. Tours are generally very affordable from $20 - $30</li>
+      </ul>
+      <li>
+        <b>Food</b> — Georgian food is incredible, unlike the food I've had elsewhere and one of the best reasons to come. Here are a few of the highlights:
+        <ul>
+          <li><b>Khinkali</b> — large soup dumplings stuffed with lamb and beef. Grab them by the topknot, bite a hole, sip the broth</li>
+          <li><b>Khachapuri</b> — a bread boat of with pool of cheese and an egg cracked on top. Break off the pieces of the bread and dip them in the cheese to eat them</li>
+          <li><b>Kubdari (or "Svan Pie")</b> — a large meat pie stuffed with tenderized beef or pork, onions, garlic, and spices</li>
+          <li><b style="font-size: 1rem">Wine</b><span style="font-size: 1rem"> — Georgia is considered the birthplace of wine and still uses its own ancient method of fermenting in clay pots (qvevri) buried in the ground. The amber "orange" wines are especially unique and the main type of wine they're famous for</span></li>
+          <li><span style="font-size: 1rem"><b>Chacha</b> — </span><span style="font-size: 1rem">is the local grape brandy which is very strong at 40% to 60% ABV. It is rude to refuse Chacha when it is offered to you and may be the reasons why Georgians drink the second most in the world!</span></li>
         </ul>
       </li>
-      <li><b>Wine</b> — a huge deal here. Georgia is considered the birthplace of wine and still uses its own ancient method of fermenting in clay pots (qvevri) buried in the ground. The amber "orange" wines are especially unique. <b>Chacha</b> is the local grape brandy — stronger than it looks</li>
-      <li><b>Language</b> — Georgian has its own beautiful alphabet. A lot of Georgians know Russian but may refuse to speak it for political reasons; English is common enough with younger people</li>
-      <li><b>Money</b> — extremely affordable. The average wage is around $400/month, so tipping well goes a long way</li>
-      <li><b>Safety</b> — Georgia feels very safe. The government cleaned up organized crime in the mid-2000s by giving all the mob bosses 48 hours to leave the country or face 7 years in jail — even once released they had 24 hours to leave again. The country went from genuinely dangerous to safe almost overnight (our guide compared it to what Bukele is doing in El Salvador). One real caveat: the stray dogs. I got surrounded by six of them near the central bus station and had to sprint to a random government building — they probably wouldn't have bitten, but it got the adrenaline going</li>
+      <li><b>Language</b> — Georgian has its own beautiful alphabet. There is tremendous ethnic diversity within Georgians themselves so there are 4 different Georgian languages with many local dialects on top of that. A lot of Georgians know Russian and English is common enough with younger people</li>
+      <li><b>Money</b> — Georgia is extremely affordable for tourists. I found Georgians also extremely fair with no "tourist tax" or scams that you'll find in other countries</li>
+      <li><b>Safety</b> — Georgia today is very safe and the country has made tremendous strides from the 1990's when it struggled with organized crime. However, Georgia has continuously had territorial disputes with separatist groups supported by Russia. Over 20% of it's land is occupied since the 2008 Russo-Georgian War. When I visited, these areas were very well defined and fortified so there wasn't any fear of another conflict breaking out</li>
+      <li><b>How to long to stay</b> — for first timers, I'd recommend at least 10 to 14 days to thoroughly explore the country. You can also combine Georgia with a trip to <b>Armenia </b>(<a href="https://getawayguide.io/armenia/field-notes">read my guide here</a>) which is only a three hour bus ride or <a href="https://wander-lush.org/train-from-tbilisi-to-yerevan/">overnight train from Tbilisi</a></li>
     </ul>
   </div>
   <!-- Tbilisi -->
   <div class="fn-section" id="tbilisi">
     <div class="fn-city-hd">
       <h2>Tbilisi</h2>
-      <span class="fn-time">3+ days recommended</span>
+      <span class="fn-time">3 days recommended and add on additional days for day trips</span>
     </div>
-    <p>Give the capital at least 3 days. Tbilisi rewards wandering — old-town churches, Soviet brutalism, modern sculptures and great restaurants are all within walking distance of each other, and the city looks completely different depending on which hillside you're standing on.</p>
+    <p>Tbilisi is one of my favorite cities in the world. It is the type of place where you could just spend days wandering or relaxing in a cafe. Officially founded in the 5th century AD, Tbilisi is one of the world's oldest cities and important hub on the Silk Road.<span style="font-size: 1rem">Ancient churches, Soviet brutalism, ultra-modern sculptures and great restaurants are all within walking distance of each other. </span></p>
+    <p><span style="font-size: 1rem">I would dedicate </span><b style="font-size: 1rem">at least 3 days to exploring the city</b><span style="font-size: 1rem">. It is also a great place to base yourself for day tours around the country so add on extra days here for each day tour.</span></p>
     <div class="fn-sub-hd">What to Do</div>
     <ul>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Sololaki+Old+Town+Tbilisi">Old Town / Sololaki</a></b> — super pretty, with cobblestone streets, carved wooden balconies and ancient churches tucked everywhere. Best in the morning before the crowds arrive</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Anchiskhati+Basilica+Tbilisi">Anchiskhati Basilica</a></b> — one of the oldest churches in Tbilisi. Small, dark, flickering candles; a polyphonic choir performs at 10AM</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Holy+Trinity+Cathedral+Tbilisi+Sameba">Holy Trinity Cathedral (Sameba)</a></b> — an enormous Georgian cathedral with a gold dome that towers over the whole city. The courtyard with huge carved crosses is impressive too</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Narikala+Fortress+Tbilisi">Narikala Fortress &amp; Mother of Georgia</a></b> — the castle overlooking old town. Take the cable car up from Rike Park; lit up at night it looks magical</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Clock+Tower+Gabriadze+Tbilisi">Clock Tower</a></b> — the leaning clock tower covered in little tile paintings, right next to Anchiskhati Basilica</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Rike+Park+Tbilisi">Rike Park</a></b> — a modern riverside park with bizarre alien-shaped sculptures and the wavy "Peace Bridge." A cool contrast to the old town right across the water</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=St+Abo+Tbileli+Church+Tbilisi">St. Abo Tbileli Church</a></b> — a small one-room church on the riverfront near Europe Square, with two side chapels and golden frescos. Almost no one there</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Queen+Darejan+Palace+Tbilisi">Queen Darejan Palace balcony</a></b> — a really pretty garden with a wide balcony overlooking the far side of the river. Again, almost no one there</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Dry+Bridge+Flea+Market+Tbilisi">Dry Bridge Flea Market</a></b> — old Soviet items, art and random antiques. Great for browsing</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Fabrika+Tbilisi">Fabrika</a></b> — a converted Soviet clothing factory, now full of hip shops, bars and street art. Good grungy creative energy</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Georgian+National+Museum+Tbilisi">Georgian National Museum</a></b> — a good overview of Georgian history (the Soviet occupation hall is worth your time)</li>
-      <li>
-        <b>Soviet-era relics</b> — Tbilisi is full of them, and hunting them down is half the fun:
+      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Sololaki+Old+Town+Tbilisi">Old Town (Sololaki</a>)</b> — super pretty, with cobblestone streets, carved wooden balconies and ancient churches tucked everywhere. Best in the morning before the crowds arrive</li>
+      <ul>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Clock+Tower+Gabriadze+Tbilisi" target="_blank" rel="noopener noreferrer">Clock Tower</a></b><span style="font-size: 1rem"> — the leaning clock tower covered in little tile paintings</span></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Queen+Darejan+Palace+Tbilisi" target="_blank" rel="noopener noreferrer">Queen Darejan Palace balcony</a></b><span style="font-size: 1rem"> — a really pretty garden with a wide balcony overlooking the river</span></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Dry+Bridge+Flea+Market+Tbilisi" target="_blank" rel="noopener noreferrer">Dry Bridge Flea Market</a></b><span style="font-size: 1rem"> — old Soviet items, art and random antiques. Great for browsing, daily</span></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Holy+Trinity+Cathedral+Tbilisi+Sameba" target="_blank" rel="noopener noreferrer">Holy Trinity Cathedral (Sameba)</a></b><span style="font-size: 1rem"> — an enormous Georgian cathedral with a gold dome that towers over the whole city. The courtyard with huge carved crosses is impressive too</span></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Anchiskhati+Basilica+Tbilisi" target="_blank" rel="noopener noreferrer">Anchiskhati Basilica</a></b><span style="font-size: 1rem"> — one of the oldest churches in Tbilisi. Small, dark, flickering candles; a polyphonic choir performs at 10AM</span></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=St+Abo+Tbileli+Church+Tbilisi" target="_blank" rel="noopener noreferrer">St. Abo Tbileli Church</a></b><span style="font-size: 1rem"> — a small one-room church on the riverfront near Europe Square, with two side chapels and golden frescos. Almost no one there</span></li>
+      </ul>
+      <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Rike+Park+Tbilisi" target="_blank" rel="noopener noreferrer">Rike Park</a></b><span style="font-size: 1rem"> — a modern riverside park with bizarre alien-shaped sculptures and the wavy "Peace Bridge." A cool contrast to the old town right across the water. The beginning of the cable car up to the next location called </span>Sololaki Street</li>
+      <li><b><a href="https://www.google.com/maps/place/Sololaki+St,+T'bilisi,+Georgia/@41.6894469,44.7989063,16z/data=!4m16!1m9!3m8!1s0x40440cef543a5e2f:0x1d2e538dc87da98e!2sGeorgian+National+Museum!8m2!3d41.6960103!4d44.8002318!9m1!1b1!16s%2Fm%2F02w82_j!3m5!1s0x40440cf301279b71:0x9013ad407862a3c2!8m2!3d41.6880023!4d44.8004061!16s%2Fg%2F11h04vf1h?entry=ttu&amp;g_ep=EgoyMDI2MDcwNi4wIKXMDSoASAFQAw%3D%3D">Sololaki Street</a></b> — located on a hill overlooking old town. This is a great place to spend the afternoon and visit all the attractions on top of the hill. You can hike up here or take the cable car from <a href="https://www.google.com/maps/search/?api=1&amp;query=Rike+Park+Tbilisi" target="_blank" rel="noopener noreferrer">Rike Park</a></li>
+      <ul>
+        <li><b style="font-size: 1rem">Mother of Georgia</b></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Tabor+Monastery+viewpoint+Tbilisi" target="_blank" rel="noopener noreferrer">Tabor Monastery viewpoint</a></b></li>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Betlemi+Rise+viewpoint+Tbilisi" target="_blank" rel="noopener noreferrer">Betlemi Rise viewpoint</a></b><span style="font-size: 1rem"> — a great place to watch the sunset over old town</span></li>
+        <li><span style="font-size: 1rem"><b>National Botanical Garden</b> </span></li>
+      </ul>
+      <li><b style="font-size: 1rem">Soviet-era relics</b><span style="font-size: 1rem"> — Tbilisi is full of them, and hunting them down is half the fun:</span></li>
+      <ul>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Chronicles+of+Georgia+Tbilisi" target="_blank" rel="noopener noreferrer">Chronicles of Georgia</a></b><span style="font-size: 1rem"> — 20 minutes from the center but worth it. A massive, unfinished Soviet monument covered in metal biblical reliefs — like Egyptian hieroglyphic pillars, but Soviet. Mesmerizing, and almost no tourists</span></li>
+        <li><b style="font-size: 1rem">Soviet Mosaics</b></li>
         <ul>
-          <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Chronicles+of+Georgia+Tbilisi">Chronicles of Georgia</a></b> — 20 minutes from the center but worth it. A massive, unfinished Soviet monument covered in metal biblical reliefs — like Egyptian hieroglyphic pillars, but Soviet. Mesmerizing, and almost no tourists</li>
-          <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Nutsubidze+Skybridge+Tbilisi">Nutsubidze Skybridge</a></b> (Saburtalo) — a hardcore Soviet apartment complex with a checkered skybridge connecting the towers. Take the original coin-operated elevator; it feels completely forgotten by time</li>
-          <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Former+Ministry+of+Highway+Construction+Tbilisi">Former Laboratory of the Ministry of Forestry</a></b> — nearby in Saburtalo, with a stunning 5-story "Tree of Life" mosaic on the exterior</li>
-          <li><b>Emergency Management mural</b> — an impressive Soviet-era mosaic on the side of the active fire station by the central bus station. Stand in the parking lot next door for the best view</li>
+          <li><b style="font-size: 1rem">Hunt for Soviet Relics — <a href="https://www.google.com/maps/search/?api=1&amp;query=Former+Ministry+of+Highway+Construction+Tbilisi" target="_blank" rel="noopener noreferrer">Former Laboratory of the Ministry of Forestry</a></b><span style="font-size: 1rem"> — nearby in Saburtalo, with a stunning 5-story "Tree of Life" mosaic on the exterior</span></li>
+          <li><b style="font-size: 1rem">Emergency Management mural</b><span style="font-size: 1rem"> — an impressive Soviet-era mosaic on the side of the active fire station by the central bus station. Stand in the parking lot next door for the best view</span></li>
         </ul>
-      </li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Betlemi+Rise+viewpoint+Tbilisi">Betlemi Rise viewpoint</a></b> — the best sunset view over old town. <b><a href="https://www.google.com/maps/search/?api=1&amp;query=Tabor+Monastery+viewpoint+Tbilisi">Tabor Monastery viewpoint</a></b> and King Parnavaz Garden are also great for golden hour</li>
+        <li><span style="font-size: 1rem"><b>Brutalist Architecture</b></span> — I know brutalist architecture is an acquired taste (and not for everyone). Tbilisi is home to some of the most famous examples including</li>
+        <ul>
+          <li><span style="font-size: 1rem"><b>Nutsubidze Skybridge</b> — a checkered skybridge connecting connecting two massive Soviet-Era apartment towers. Take the original coin-operated elevator and admire the striking geometric shapes. It feels completely forgotten by time. Located a short car ride from old town</span></li>
+          <li><span style="font-size: 1rem">Palace of Rituals and </span>Bank of Georgia are also famous Brutalist architecture sites in Tbilisi</li>
+        </ul>
+        <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Fabrika+Tbilisi" target="_blank" rel="noopener noreferrer">Fabrika</a></b><span style="font-size: 1rem"> — a converted Soviet clothing factory that has been remodeled into a street art area. There is a hostel, coffee shop, hip clothing shops, bars and street art. A great stop for a morning coffee</span></li>
+      </ul>
+      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Georgian+National+Museum+Tbilisi">Georgian National Museum</a></b> — the national museum with the history of Georgia from prehistoric to modern times. The Soviet occupation hall is worth your time</li>
     </ul>
     <div class="fn-sub-hd">Where to Eat</div>
     <ul>
@@ -210,15 +238,20 @@
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Pasanauri+Restaurant+Tbilisi">Pasanauri</a></b> — try the deer meat cooked with pomegranate seeds, served with bread and the house Georgian beer</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Racha+Restaurant+Tbilisi">Racha</a></b> — a solid, no-frills spot for khinkali, popular with locals</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Sasadilo+canteen+Tbilisi">Sasadilo Canteen</a></b> — hidden inside a warehouse market near the main train station. An adventure to find, but worth it — bread with dips and cheese dumplings in a herb-oil sauce</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Amra+Abkhazian+restaurant+Tbilisi">Amra</a></b> — Abkhazian cuisine; unique regional dishes you won't find elsewhere</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Shavi+Coffee+Tbilisi">Shavi Coffee Roasters</a></b> — the best coffee in the city, in a super trendy space inside an old building</li>
+      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Amra+Abkhazian+restaurant+Tbilisi">Amra</a></b> — Abkhazian cuisine, unique regional dishes that are hard to find elsewhere in Georgia</li>
     </ul>
     <div class="fn-sub-hd">Where to Drink</div>
     <ul>
+      <li><b style="font-size: 1rem"><a href="https://www.google.com/maps/search/?api=1&amp;query=Shavi+Coffee+Tbilisi" target="_blank" rel="noopener noreferrer">Shavi Coffee Roasters</a></b><span style="font-size: 1rem"> — the best coffee in the city, in a super trendy space inside an old building</span></li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Apotheka+bar+Tbilisi">Apotheka</a></b> — a popular bar in old town</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Wine+Factory+N1+Tbilisi">Wine Factory N1</a></b> — a good spot to work through a range of Georgian wines</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Graminea+wine+Tbilisi">Graminea</a></b> — a wine shop in old town with a great selection. A much more relaxed place to sit and try a few glasses than a bar</li>
+      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Graminea+wine+Tbilisi">Graminea</a></b> — a wine shop in old town with a great selection. A relaxed place to sit and try a few glasses of Georgian wine</li>
     </ul>
+    <div class="fn-sub-hd">Where to stay</div>
+    <ul>
+      <li><a href="https://www.hostelworld.com/hostels/p/59566/envoy-hostel-tbilisi/"><b>Envoy Hostel Tbilisi</b></a> — a hostel located right in Old Town Tbilisi, with an amazing rooftop overlooking the city. It is walking distance from all major historical sites. They also offer a number of <a href="https://www.envoytours.com/georgia/georgia-tours/">affordable tours</a> including unique one-way transfer tour to <a href="https://www.envoytours.com/tours/enlinking-caucasus-t-y/">Yerevan from Tbilisi</a> with a lot of interesting stops along the way</li>
+    </ul>
+    <ul></ul>
   </div>
   <!-- Kazbegi -->
   <div class="fn-section" id="kazbegi">
@@ -266,7 +299,8 @@
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Mestia+Georgia">Mestia town</a></b> — a tiny mountain town studded with Svan defensive towers. Walk the river, wander the side streets and just take it all in</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Mikheil+Khergiani+House+Museum+Mestia">Mikheil Khergiani House Museum</a></b> — dedicated to a legendary Soviet climber. Climb to the roof of the tower for one of the best views in the whole region; the stairs are sketchy but worth it</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Chalaadi+Glacier+Mestia">Chalaadi Glacier hike</a></b> — a 4WD ride to the trailhead, then a ~45-minute hike through forest and red/white rocks to the glacier</li>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Ushguli+Georgia">Ushguli</a></b> — 1.5 hours of extremely broken road from Mestia, but one of the most beautiful places I've ever visited: medieval villages in a valley of towers, wildflowers, roaming horses and huge white mountains
+      <li>
+        <b><a href="https://www.google.com/maps/search/?api=1&amp;query=Ushguli+Georgia">Ushguli</a></b> — 1.5 hours of extremely broken road from Mestia, but one of the most beautiful places I've ever visited: medieval villages in a valley of towers, wildflowers, roaming horses and huge white mountains
         <ul>
           <li><b>Queen Tamar's Tower</b> — the best viewpoint, overlooking both villages and the mountains behind</li>
           <li><b>Lamaria Church</b> — a small church on a flower-covered hill; the surrounding hillside is stunning</li>
@@ -275,7 +309,7 @@
     </ul>
     <div class="fn-sub-hd">Where to Eat</div>
     <ul>
-      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Cafe+Laila+Mestia">Cafe Laila</a></b> (Mestia) — get the kubdari (pita stuffed with beef and onion) and a mulled wine</li>
+      <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Cafe+Laila+Mestia">Cafe Laila</a></b> (Mestia) — get the Kubdari (pita stuffed with beef and onion) and a mulled wine</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Inna%27s+Corner+Mestia">Inna's Corner</a></b> (Mestia) — a tiny place run by an old woman and her daughter. Great for breakfast</li>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Cafe+in+Ushguli+Georgia">Agra Cafe</a></b> (Ushguli) — try the matsoni cheese soup and a glass of orange wine</li>
     </ul>
@@ -331,6 +365,7 @@ function toggleMobileMenu(){
   if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
 })();
 </script>
+
 
 
 </body></html>
