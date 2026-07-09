@@ -359,6 +359,7 @@ function toggleMobileMenu(){
   d.classList.toggle("open");b.classList.toggle("open");
   document.body.style.overflow=d.classList.contains("open")?"hidden":"";
 }
+document.addEventListener('click',function(e){var a=e.target.closest('#mobile-nav-drawer a');if(!a)return;var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';});
 (function(){
   var p=window.location.pathname.split("/").pop()||"index.html";
   var m={"index.html":"nav-home","":"nav-home","destinations.html":"nav-destinations","resources.html":"nav-resources","about.html":"nav-about"};

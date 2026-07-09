@@ -90,7 +90,7 @@
     <li>
       <div class="mnav-row"><a href="../destinations.html" class="mnav-parent">Destinations</a><button type="button" class="mnav-chev-btn open" aria-label="Toggle destinations menu" onclick="this.classList.toggle(&#39;open&#39;);this.closest(&#39;li&#39;).querySelector(&#39;.mobile-nav-continents&#39;).classList.toggle(&#39;open&#39;)"><span class="mnav-chev">&rsaquo;</span></button></div>
       <div class="mobile-nav-continents open">
-        <a href="../destinations.html#explore-map" style="color:var(--terra);font-weight:600">🗺 Explore Map</a>
+        <a href="../destinations.html#explore-map" class="mnc-map">Explore Map</a>
         <a href="../destinations.html#europe">Europe</a>
         <a href="../destinations.html#americas">Americas</a>
         <a href="../destinations.html#asia">Asia</a>
@@ -358,6 +358,7 @@ function toggleMobileMenu(){
   d.classList.toggle('open');b.classList.toggle('open');
   document.body.style.overflow=d.classList.contains('open')?'hidden':'';
 }
+document.addEventListener('click',function(e){var a=e.target.closest('#mobile-nav-drawer a');if(!a)return;var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';});
 (function(){
   var p=window.location.pathname.split('/').pop()||'index.html';
   var m={'destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
