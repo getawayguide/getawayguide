@@ -366,8 +366,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .mobile-nav-drawer.open{transform:translateX(0)}
   .mobile-nav-links{list-style:none;display:flex;flex-direction:column;gap:0}
   .mobile-nav-links > li > a,
-  .mobile-nav-links > li > .mnav-parent{
-    display:flex;align-items:center;justify-content:space-between;width:100%;
+  .mnav-row .mnav-parent{
+    display:block;
     font-family:'Fraunces',Georgia,serif;
     font-size:1.4rem;
     font-weight:400;
@@ -376,20 +376,25 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
     padding:.5rem 0;
     border-bottom:1px solid var(--b-subtle);
     opacity:.8;
-    background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;text-align:left;
   }
   .mobile-nav-links > li > a:hover,
-  .mobile-nav-links > li > .mnav-parent:hover{color:var(--terra);opacity:1}
-  .mnav-chev{font-family:'Jost',sans-serif;font-size:1.1rem;transition:transform .25s;opacity:.5}
-  .mnav-parent.open .mnav-chev{transform:rotate(90deg)}
+  .mnav-row .mnav-parent:hover{color:var(--terra);opacity:1}
+  /* Destinations: text navigates, chevron toggles the submenu */
+  .mnav-row{display:flex;align-items:center}
+  .mnav-row .mnav-parent{flex:1;border-bottom:none}
+  .mnav-chev-btn{background:none;border:none;cursor:pointer;color:var(--ink);opacity:.55;
+    padding:.5rem .2rem .5rem 1.3rem;line-height:1;align-self:stretch;display:flex;align-items:center}
+  .mnav-chev-btn:hover{opacity:1;color:var(--terra)}
+  .mnav-chev{font-family:'Jost',sans-serif;font-size:1.5rem;display:inline-block;transition:transform .25s}
+  .mnav-chev-btn.open .mnav-chev{transform:rotate(90deg)}
   /* Collapsible submenu under Destinations */
   .mobile-nav-continents{display:flex;flex-direction:column;gap:0;padding-left:.9rem;
     max-height:0;overflow:hidden;transition:max-height .3s ease}
-  .mobile-nav-continents.open{max-height:420px;margin:.15rem 0 .35rem}
-  .mobile-nav-links > li > .mnav-parent + .mobile-nav-continents a{
+  .mobile-nav-continents.open{max-height:460px;margin:.15rem 0 .35rem}
+  .mobile-nav-continents a{
     font-family:'Montserrat',sans-serif;
-    font-size:.64rem;
-    letter-spacing:.16em;
+    font-size:.74rem;
+    letter-spacing:.15em;
     text-transform:uppercase;
     color:var(--ink);
     text-decoration:none;

@@ -16,7 +16,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:ital,wght@0,400;1,400&family=Jost:ital,wght@0,300..400;1,300..400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 
 </head>
 <body>
@@ -73,7 +73,7 @@
   <ul class="mobile-nav-links">
     <li><a href="index.html">Home</a></li>
     <li>
-      <button type="button" class="mnav-parent open" onclick="this.classList.toggle(&#39;open&#39;);this.nextElementSibling.classList.toggle(&#39;open&#39;)">Destinations <span class="mnav-chev">&rsaquo;</span></button>
+      <div class="mnav-row"><a href="destinations.html" class="mnav-parent">Destinations</a><button type="button" class="mnav-chev-btn open" aria-label="Toggle destinations menu" onclick="this.classList.toggle(&#39;open&#39;);this.closest(&#39;li&#39;).querySelector(&#39;.mobile-nav-continents&#39;).classList.toggle(&#39;open&#39;)"><span class="mnav-chev">&rsaquo;</span></button></div>
       <div class="mobile-nav-continents open">
         <a href="destinations.html#explore-map" class="mnc-map">Explore Map</a>
         <a href="destinations.html#europe">Europe</a>
