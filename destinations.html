@@ -370,9 +370,21 @@ function toggleMobileMenu(){
 }
 document.addEventListener('click',function(e){var a=e.target.closest('#mobile-nav-drawer a');if(!a)return;var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';});
 // Mobile: expand the compact map to full screen (and back)
+var _mapHome=null; // remembers the map's spot in the page while it's full-screen
 function toggleMapFS(){
   var m=document.getElementById('explore-map');
-  var open=m.classList.toggle('map-fs');
+  var open=!m.classList.contains('map-fs');
+  if(open){
+    // Move the map to <body> so position:fixed is relative to the viewport
+    // regardless of scroll position or any transformed ancestor (the page
+    // fade-in). Otherwise expanding while scrolled down puts it off-screen.
+    _mapHome={parent:m.parentNode,next:m.nextSibling};
+    document.body.appendChild(m);
+    m.classList.add('map-fs');
+  }else{
+    m.classList.remove('map-fs');
+    if(_mapHome){ _mapHome.parent.insertBefore(m,_mapHome.next); _mapHome=null; }
+  }
   document.body.classList.toggle('dest-map-open',open);
   document.body.style.overflow=open?'hidden':'';
   // pan/zoom only in full screen (or on desktop) so the inline preview scrolls smoothly
