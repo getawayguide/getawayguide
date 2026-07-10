@@ -50,6 +50,7 @@ body.dest-map-open nav{display:none}
   .dest-articles-section{padding:2rem 3rem 5rem}
 }
 @media(max-width:768px){
+  .dest-subhead{font-size:.98rem;line-height:1.55;margin-top:.5rem}
   /* Compact, tappable map on top */
   .dest-map-wrap{display:block;padding:.5rem 1.25rem 1.4rem;position:relative}
   .map-mobile-hd{display:flex;justify-content:space-between;align-items:center;padding:.1rem .1rem .7rem;cursor:pointer}
@@ -374,6 +375,8 @@ function toggleMapFS(){
   var open=m.classList.toggle('map-fs');
   document.body.classList.toggle('dest-map-open',open);
   document.body.style.overflow=open?'hidden':'';
+  // pan/zoom only in full screen (or on desktop) so the inline preview scrolls smoothly
+  if(typeof setMapInteractive==='function') setMapInteractive(open || !isMobileMap());
   // let the layout settle, then force amCharts to remeasure its container
   setTimeout(function(){
     window.dispatchEvent(new Event('resize'));
@@ -635,6 +638,29 @@ zoomControl.valign = "bottom";
 zoomControl.marginBottom = 15;
 zoomControl.marginRight = 15;
 zoomControl.slider.height = 80;
+
+// -- Mobile smoothness --------------------------------------------------------
+// The tiny inline map used to capture touch drags, which fought with page
+// scrolling and felt buggy. On mobile the inline map is now a static preview
+// (page scrolls cleanly; tapping a highlighted country still opens its guide;
+// tap the header to expand). Full pan/zoom is enabled only in the full-screen
+// view, where there's no scroll to conflict with.
+function isMobileMap(){ return window.matchMedia('(max-width: 768px)').matches; }
+function setMapInteractive(on){
+  chart.panBehavior = on ? "move" : "none";
+  chart.maxZoomLevel = on ? 32 : 1;
+  if (zoomControl) zoomControl.disabled = !on;
+  if (!on && chart.zoomLevel !== 1) chart.goHome(0);
+}
+chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map
+function syncMapInteractive(){
+  var fs = document.getElementById('explore-map').classList.contains('map-fs');
+  setMapInteractive(fs || !isMobileMap());
+}
+syncMapInteractive();
+window.addEventListener('resize', function(){
+  if (!document.getElementById('explore-map').classList.contains('map-fs')) syncMapInteractive();
+});
 </script>
 
 </body>
