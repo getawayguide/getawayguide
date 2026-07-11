@@ -286,7 +286,7 @@ body.dest-map-open nav{display:none}
 
       <!-- Hungary -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='hungary/field-notes.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/hungary.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/hungary.jpg?v=2');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Hungary</p>
@@ -409,8 +409,8 @@ function toggleMapFS(){
   }
   document.body.classList.toggle('dest-map-open',open);
   document.body.style.overflow=open?'hidden':'';
-  // pan/zoom only in full screen (or on desktop) so the inline preview scrolls smoothly
-  if(typeof setMapInteractive==='function') setMapInteractive(open || !isMobileMap());
+  // full pan+zoom in full screen / on desktop; mobile inline gets zoom-only
+  if(typeof setMapInteractive==='function') setMapInteractive(open ? "full" : mapMode());
   // let the layout settle, then force amCharts to remeasure its container
   setTimeout(function(){
     window.dispatchEvent(new Event('resize'));
@@ -676,23 +676,35 @@ zoomControl.marginRight = 15;
 zoomControl.slider.height = 80;
 
 // -- Mobile smoothness --------------------------------------------------------
-// The tiny inline map used to capture touch drags, which fought with page
-// scrolling and felt buggy. On mobile the inline map is now a static preview
-// (page scrolls cleanly; tapping a highlighted country still opens its guide;
-// tap the header to expand). Full pan/zoom is enabled only in the full-screen
-// view, where there's no scroll to conflict with.
+// The tiny inline map used to capture single-finger drags, which fought with
+// page scrolling and felt buggy. Interaction modes:
+//   "full" — pan + zoom (desktop, or the mobile full-screen view)
+//   "zoom" — mobile inline: pinch / zoom-buttons work, but a single-finger
+//            drag only pans the map once you've zoomed in. At rest (zoom 1) a
+//            drag scrolls the page, so the inline preview stays smooth.
+//   "off"  — no interaction
 function isMobileMap(){ return window.matchMedia('(max-width: 768px)').matches; }
-function setMapInteractive(on){
-  chart.panBehavior = on ? "move" : "none";
-  chart.maxZoomLevel = on ? 32 : 1;
-  if (zoomControl) zoomControl.disabled = !on;
-  if (!on && chart.zoomLevel !== 1) chart.goHome(0);
+var _mapMode = "full";
+function applyInlinePan(){ chart.panBehavior = (chart.zoomLevel > 1.01) ? "move" : "none"; }
+function setMapInteractive(mode){
+  if (mode === true)  mode = "full";
+  if (mode === false) mode = "off";
+  _mapMode = mode;
+  chart.maxZoomLevel = (mode === "off") ? 1 : 32;
+  if (zoomControl) zoomControl.disabled = (mode === "off");
+  if (mode === "full") chart.panBehavior = "move";
+  else if (mode === "off"){ chart.panBehavior = "none"; if (chart.zoomLevel !== 1) chart.goHome(0); }
+  else applyInlinePan(); // "zoom"
 }
 chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map
-function syncMapInteractive(){
+// In "zoom" mode, flip panning on/off as the zoom crosses 1 so the page stays
+// scrollable when the map is at rest but pannable once the user zooms in.
+chart.events.on("zoomlevelchanged", function(){ if (_mapMode === "zoom") applyInlinePan(); });
+function mapMode(){
   var fs = document.getElementById('explore-map').classList.contains('map-fs');
-  setMapInteractive(fs || !isMobileMap());
+  return (fs || !isMobileMap()) ? "full" : "zoom";
 }
+function syncMapInteractive(){ setMapInteractive(mapMode()); }
 syncMapInteractive();
 window.addEventListener('resize', function(){
   if (!document.getElementById('explore-map').classList.contains('map-fs')) syncMapInteractive();
