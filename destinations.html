@@ -64,6 +64,12 @@ body.dest-map-open nav{display:none}
   .dest-map-wrap.map-fs .map-mobile-hd{display:none}
   .dest-map-wrap.map-fs .map-legend{margin:0;padding:1rem 3.2rem .65rem 1rem;background:#fff;border-bottom:1px solid rgba(28,40,33,.08);justify-content:center;flex:0 0 auto}
   .dest-map-wrap.map-fs #world-map{flex:1 1 auto;min-height:0;height:auto!important;border-radius:0}
+  /* Touch ownership (mobile): at zoom 1 vertical swipes scroll the page over
+     the inline map; once zoomed (or full-screen) the map owns all touches.
+     !important beats amCharts' inline touch-action styles. */
+  #world-map, #world-map *{touch-action:pan-y!important}
+  .dest-map-wrap.map-zoomed #world-map, .dest-map-wrap.map-zoomed #world-map *,
+  .dest-map-wrap.map-fs #world-map, .dest-map-wrap.map-fs #world-map *{touch-action:none!important}
   .dest-map-wrap.map-fs .map-close-btn{display:flex;align-items:center;justify-content:center;position:absolute;right:.9rem;top:.7rem;z-index:6;width:34px;height:34px;border-radius:50%;background:rgba(28,40,33,.85);color:#fff;border:none;font-size:1.05rem;cursor:pointer}
   .dest-articles-section{padding:2rem 1.25rem 5rem}
 }
@@ -409,8 +415,8 @@ function toggleMapFS(){
   }
   document.body.classList.toggle('dest-map-open',open);
   document.body.style.overflow=open?'hidden':'';
-  // full pan+zoom in full screen / on desktop; mobile inline gets zoom-only
-  if(typeof setMapInteractive==='function') setMapInteractive(open ? "full" : mapMode());
+  // re-evaluate single-finger pan policy for the new fs state (between gestures)
+  if(window.__syncMapPan) window.__syncMapPan();
   // let the layout settle, then force amCharts to remeasure its container
   setTimeout(function(){
     window.dispatchEvent(new Event('resize'));
@@ -675,40 +681,94 @@ zoomControl.marginBottom = 15;
 zoomControl.marginRight = 15;
 zoomControl.slider.height = 80;
 
-// -- Mobile smoothness --------------------------------------------------------
-// The tiny inline map used to capture single-finger drags, which fought with
-// page scrolling and felt buggy. Interaction modes:
-//   "full" — pan + zoom (desktop, or the mobile full-screen view)
-//   "zoom" — mobile inline: pinch / zoom-buttons work, but a single-finger
-//            drag only pans the map once you've zoomed in. At rest (zoom 1) a
-//            drag scrolls the page, so the inline preview stays smooth.
-//   "off"  — no interaction
-function isMobileMap(){ return window.matchMedia('(max-width: 768px)').matches; }
-var _mapMode = "full";
-function applyInlinePan(){ chart.panBehavior = (chart.zoomLevel > 1.01) ? "move" : "none"; }
-function setMapInteractive(mode){
-  if (mode === true)  mode = "full";
-  if (mode === false) mode = "off";
-  _mapMode = mode;
-  chart.maxZoomLevel = (mode === "off") ? 1 : 32;
-  if (zoomControl) zoomControl.disabled = (mode === "off");
-  if (mode === "full") chart.panBehavior = "move";
-  else if (mode === "off"){ chart.panBehavior = "none"; if (chart.zoomLevel !== 1) chart.goHome(0); }
-  else applyInlinePan(); // "zoom"
-}
-chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map
-// In "zoom" mode, flip panning on/off as the zoom crosses 1 so the page stays
-// scrollable when the map is at rest but pannable once the user zooms in.
-chart.events.on("zoomlevelchanged", function(){ if (_mapMode === "zoom") applyInlinePan(); });
-function mapMode(){
-  var fs = document.getElementById('explore-map').classList.contains('map-fs');
-  return (fs || !isMobileMap()) ? "full" : "zoom";
-}
-function syncMapInteractive(){ setMapInteractive(mapMode()); }
-syncMapInteractive();
-window.addEventListener('resize', function(){
-  if (!document.getElementById('explore-map').classList.contains('map-fs')) syncMapInteractive();
-});
+// -- Mobile touch handling ------------------------------------------------------
+// Deterministic touch policy. Two hard-won rules from debugging "stuck" maps:
+//  1. NEVER change amCharts interaction properties at runtime (panBehavior,
+//     tapToActivate, ...). Flipping them mid-gesture corrupts in-flight
+//     pinches, and amCharts' tapToActivate protection doesn't reliably lift
+//     when toggled off. Everything below is CSS classes + our own listeners.
+//  2. amCharts v4's built-in pinch-zoom doesn't work reliably, so pinch is
+//     implemented manually from raw touch events and drives zoomToGeoPoint().
+// The CSS side (see the mobile media query): at zoom 1 the map allows
+// vertical swipes through to the page (touch-action:pan-y), so scrolling over
+// the inline map is never hijacked; once zoomed (.map-zoomed) or full-screen
+// (.map-fs) the map owns all touches (touch-action:none).
+chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map (desktop)
+chart.zoomDuration = 250;          // snappier zooms; long animations queue up under rapid pinching
+(function(){
+  var el = document.getElementById('world-map');
+  var wrap = document.getElementById('explore-map');
+  var mob = window.matchMedia('(max-width: 768px)');
+  var touchActive = false;   // any finger currently on the map
+  var pinching = false, startDist = 0, startZoom = 1, anchor = null;
+
+  // Single-finger policy: on mobile, amCharts drag-pan is enabled only when
+  // it's useful (zoomed in, or full screen). At zoom 1 panBehavior is "none",
+  // so amCharts doesn't preventDefault the touch and the page scrolls
+  // naturally over the inline map. The flip happens ONLY between gestures —
+  // flipping mid-gesture is what corrupted pinches and froze the old map.
+  function desiredPan(){
+    if (!mob.matches || wrap.classList.contains('map-fs')) return "move";
+    return chart.zoomLevel > 1.05 ? "move" : "none";
+  }
+  function applyPan(){
+    if (touchActive) return; // never mid-gesture; re-applied on touchend
+    var d = desiredPan();
+    if (chart.panBehavior !== d) chart.panBehavior = d;
+  }
+  chart.events.on("zoomlevelchanged", function(){
+    wrap.classList.toggle('map-zoomed', chart.zoomLevel > 1.05); // CSS touch ownership
+    applyPan(); // no-ops while a finger is down (e.g. mid-pinch)
+  });
+  window.addEventListener('resize', applyPan);
+  window.__syncMapPan = applyPan; // called by toggleMapFS after the fs class flips
+
+  // At rest, amCharts preventDefaults touchstart on its polygons (part of its
+  // click handling), which disables page scrolling for the whole gesture even
+  // with panning off. Its real hit/click logic rides on pointer events, which
+  // still fire — so swallowing the touchstart before it reaches amCharts
+  // keeps country taps working while letting the page scroll over the map.
+  el.addEventListener('touchstart', function(e){
+    if (mob.matches && !wrap.classList.contains('map-fs') && chart.zoomLevel <= 1.05 && e.touches.length === 1){
+      e.stopPropagation();
+    }
+  }, {capture:true, passive:true});
+
+  // Manual pinch-to-zoom: amCharts v4's built-in pinch is unreliable, so
+  // pinch is driven from raw touch events into zoomToGeoPoint(), anchored
+  // (center:false) so the point between your fingers stays put. Works the
+  // same on the inline and full-screen map, at any zoom level.
+  function dist(t){ var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.sqrt(dx*dx + dy*dy); }
+  el.addEventListener('touchstart', function(e){
+    touchActive = true;
+    if (e.touches.length === 2){
+      pinching = true;
+      startDist = dist(e.touches);
+      startZoom = chart.zoomLevel;
+      var r = el.getBoundingClientRect();
+      anchor = chart.svgPointToGeo({
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top
+      });
+      e.preventDefault(); // keep the browser from page-zooming
+    }
+  }, {passive:false});
+  el.addEventListener('touchmove', function(e){
+    if (pinching && e.touches.length >= 2){
+      var z = startZoom * dist(e.touches) / startDist;
+      z = Math.max(chart.minZoomLevel || 1, Math.min(chart.maxZoomLevel, z));
+      chart.zoomToGeoPoint(anchor, z, false, 0); // center:false — anchor stays under your fingers
+      e.preventDefault();
+    }
+  }, {passive:false});
+  function endTouch(e){
+    if (e.touches.length < 2) pinching = false;
+    if (e.touches.length === 0){ touchActive = false; applyPan(); }
+  }
+  el.addEventListener('touchend', endTouch);
+  el.addEventListener('touchcancel', endTouch);
+  applyPan();
+})();
 </script>
 
 </body>
