@@ -682,19 +682,23 @@ zoomControl.marginRight = 15;
 zoomControl.slider.height = 80;
 
 // -- Mobile touch handling ------------------------------------------------------
-// On mobile, amCharts handles NO touch gestures at all (panBehavior "none"):
-// its drag depends on what element is under the finger (dead over open
-// ocean), its built-in pinch doesn't work, and flipping its settings at
-// runtime corrupts gestures. Instead, single-finger pan AND two-finger pinch
-// are implemented from raw touch events, and every step clamps the view so
-// the map can never be zoomed/panned into blank space and strand you (the
-// "stuck in the Atlantic" bug). amCharts still does taps (via pointer
-// events), zoom buttons and rendering. Desktop is untouched (mouse drag).
-// CSS (mobile media query): at zoom 1 vertical swipes scroll the page over
-// the inline map (touch-action:pan-y); zoomed (.map-zoomed) or full-screen
-// (.map-fs) the map owns all touches (touch-action:none).
+// On mobile, amCharts handles NO touch gestures (panBehavior "none"): its
+// drag depends on what's under the finger (dead over ocean), its pinch is
+// broken, and its settings can't be flipped at runtime safely. Pan and pinch
+// are implemented below following how mature map libraries do it:
+//  - pinch pair = the two MOST RECENTLY placed fingers (Google Maps style),
+//    so a gripping thumb resting on a full-screen map never joins the pinch
+//    (that mispairing read as sudden zoom-out "resets")
+//  - touches landing within EDGE px of the map's sides/bottom are palm/grip
+//    territory and never count as gesture fingers
+//  - zoom is INCREMENTAL, re-baselined every move and on any finger change
+//    (Leaflet style), so lifting/replacing fingers to "ratchet" deeper zoom
+//    continues smoothly and no stale baseline can ever snap the zoom back
+//  - every step clamps the view to the map bounds — no blank-void stranding
+// amCharts still does taps (pointer events), zoom buttons and rendering.
+// Desktop (mouse) is untouched.
 chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map (desktop)
-chart.zoomDuration = 250;          // snappier zooms; long animations queue up under rapid pinching
+chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
 (function(){
   var el = document.getElementById('world-map');
   var wrap = document.getElementById('explore-map');
@@ -703,17 +707,37 @@ chart.zoomDuration = 250;          // snappier zooms; long animations queue up u
   function syncPanMode(){ chart.panBehavior = mob.matches ? "none" : "move"; }
   syncPanMode();
   window.addEventListener('resize', syncPanMode);
-  window.__syncMapPan = syncPanMode; // called by toggleMapFS (kept in sync on fs toggle)
+  window.__syncMapPan = syncPanMode; // called by toggleMapFS on fs toggle
 
   chart.events.on("zoomlevelchanged", function(){
     wrap.classList.toggle('map-zoomed', chart.zoomLevel > 1.05); // CSS touch ownership
   });
 
+  // amCharts must not see touch input AT ALL on mobile — neither pointer
+  // events nor raw touch events (it listens to both): when it tracks multiple
+  // held touches (a gripping thumb + pinch fingers) its internal multi-pointer
+  // machinery arms and silently fights zoomToGeoPoint until the zoom freezes.
+  // The +/- zoom buttons are the one exception. Taps (country navigation +
+  // tooltips) are re-implemented below from touch events.
+  function allowAmchartsTarget(target){
+    var zc = chart.zoomControl;
+    return zc && zc.dom && target && zc.dom.contains(target);
+  }
+  function blockTouchPointer(e){
+    if (!mob.matches || e.pointerType !== 'touch') return;
+    if (allowAmchartsTarget(e.target)) return;
+    e.stopPropagation();
+  }
+  el.addEventListener('pointerdown', blockTouchPointer, true);
+  el.addEventListener('pointermove', blockTouchPointer, true);
+  el.addEventListener('touchend', function(e){
+    if (mob.matches && !allowAmchartsTarget(e.target)) e.stopPropagation();
+  }, true);
+
   function interactive(){ return wrap.classList.contains('map-fs') || chart.zoomLevel > 1.05; }
 
-  // Keep the map content covering the viewport (per axis; when the content is
-  // smaller than the viewport, center it). Runs after every manual pan/pinch
-  // step, so no gesture can strand the view in empty space.
+  // Keep the map content covering the viewport (per axis; center when the
+  // content is smaller). Runs after every manual pan/pinch step.
   var MAP_NW = { latitude: 84,    longitude: -169.9 }; // world excl. Antarctica,
   var MAP_SE = { latitude: -55.8, longitude: 189.9 };  // deltaLongitude -10
   function clampView(){
@@ -731,20 +755,46 @@ chart.zoomDuration = 250;          // snappier zooms; long animations queue up u
     }
   }
 
-  // Touch bookkeeping: only touches that BEGAN on the map count (a thumb
-  // resting elsewhere must not affect gestures), and cleanup lives on
-  // document so every lift is seen wherever the finger ends up.
-  var mapTouches = {};
-  var pinching = false, startDist = 0, startZoom = 1, anchor = null;
-  var panArmed = false, panMoved = false, panStartPt = null, contStart = null;
-  function mapTouchList(e){
-    var out = [];
-    for (var i = 0; i < e.touches.length; i++){
-      if (mapTouches[e.touches[i].identifier]) out.push(e.touches[i]);
-    }
-    return out;
+  // --- touch registry --------------------------------------------------------
+  var EDGE = 16;
+  var order = [];  // gesture-eligible map-touch ids, in landing order
+  var known = {};  // id -> {x, y, t} for every touch that began on the map
+  var hadPinch = false; // true once any pinch happened in this touch group
+  function eligible(t, r){
+    return t.clientX >= r.left + EDGE && t.clientX <= r.right - EDGE && t.clientY <= r.bottom - EDGE;
   }
-  function dist(t){ var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.sqrt(dx*dx + dy*dy); }
+  function pairTouches(e){ // the two most recently placed eligible fingers
+    if (order.length < 2) return null;
+    var idA = order[order.length - 2], idB = order[order.length - 1], a = null, b = null;
+    for (var i = 0; i < e.touches.length; i++){
+      var t = e.touches[i];
+      if (t.identifier === idA) a = t;
+      else if (t.identifier === idB) b = t;
+    }
+    return (a && b) ? [a, b] : null;
+  }
+  function soleTouch(e){
+    if (order.length !== 1) return null;
+    for (var i = 0; i < e.touches.length; i++){
+      if (e.touches[i].identifier === order[0]) return e.touches[i];
+    }
+    return null;
+  }
+  function dist(p){ var dx = p[0].clientX - p[1].clientX, dy = p[0].clientY - p[1].clientY; return Math.sqrt(dx * dx + dy * dy); }
+
+  // --- gesture state -----------------------------------------------------------
+  var pinching = false, lastDist = 0, pinchZoom = 1, anchor = null;
+  var panArmed = false, panMoved = false, panStartPt = null, contStart = null;
+
+  function baselinePinch(p, keepZoom){
+    lastDist = dist(p);
+    if (!keepZoom) pinchZoom = chart.zoomLevel; // our own tally during the gesture
+    var r = el.getBoundingClientRect();
+    anchor = chart.svgPointToGeo({
+      x: (p[0].clientX + p[1].clientX) / 2 - r.left,
+      y: (p[0].clientY + p[1].clientY) / 2 - r.top
+    });
+  }
   function armPan(t){
     panArmed = true; panMoved = false;
     panStartPt = { x: t.clientX, y: t.clientY };
@@ -752,43 +802,51 @@ chart.zoomDuration = 250;          // snappier zooms; long animations queue up u
   }
 
   el.addEventListener('touchstart', function(e){
-    // self-heal: if every current touch is new, previous bookkeeping is stale
-    if (e.touches.length === e.changedTouches.length){ mapTouches = {}; pinching = false; panArmed = false; }
-    for (var i = 0; i < e.changedTouches.length; i++) mapTouches[e.changedTouches[i].identifier] = true;
-    var mine = mapTouchList(e);
-    if (mine.length === 2 && mob.matches){
-      panArmed = false;
-      pinching = true;
-      startDist = dist(mine);
-      startZoom = chart.zoomLevel;
-      var r = el.getBoundingClientRect();
-      anchor = chart.svgPointToGeo({
-        x: (mine[0].clientX + mine[1].clientX) / 2 - r.left,
-        y: (mine[0].clientY + mine[1].clientY) / 2 - r.top
-      });
-      e.preventDefault(); // keep the browser from page-zooming
-    } else if (mine.length === 1 && mob.matches && interactive()){
-      armPan(mine[0]); // taps still click: pan engages only after 6px of travel
-    } else if (mine.length === 1 && mob.matches && !wrap.classList.contains('map-fs') && chart.zoomLevel <= 1.05){
-      // At rest, amCharts preventDefaults touchstart on its polygons (part of
-      // its click handling), which kills page scrolling for the whole
-      // gesture. Its hit/click logic rides on pointer events, which still
-      // fire — so swallowing the touchstart keeps country taps working while
-      // letting the page scroll over the map.
-      e.stopPropagation();
+    // self-heal: if every touch on screen is new, previous bookkeeping is stale
+    if (e.touches.length === e.changedTouches.length){ order = []; known = {}; pinching = false; panArmed = false; hadPinch = false; }
+    if (window.__lastTipPoly){ try{ window.__lastTipPoly.hideTooltip(); }catch(err){} window.__lastTipPoly = null; }
+    var r = el.getBoundingClientRect();
+    for (var i = 0; i < e.changedTouches.length; i++){
+      var t = e.changedTouches[i];
+      known[t.identifier] = { x: t.clientX, y: t.clientY, t: Date.now() };
+      if (eligible(t, r)) order.push(t.identifier);
     }
+    if (!mob.matches) return;
+    var p = pairTouches(e);
+    if (p){
+      panArmed = false;
+      var wasPinching = pinching;
+      pinching = true;
+      hadPinch = true;
+      baselinePinch(p, wasPinching); // extra finger mid-pinch: keep the zoom tally
+      e.preventDefault();            // keep the browser from page-zooming
+    } else if (order.length === 1 && interactive()){
+      var t1 = soleTouch(e);
+      if (t1) armPan(t1);            // taps still click: pan engages after 6px travel
+    }
+    // amCharts stays touch-blind (see note above); zoom buttons excepted.
+    // stopPropagation does NOT stop browser defaults, so at rest (zoom 1,
+    // touch-action pan-y) vertical swipes still scroll the page.
+    if (!allowAmchartsTarget(e.target)) e.stopPropagation();
   }, {capture:true, passive:false});
 
   el.addEventListener('touchmove', function(e){
-    var mine = mapTouchList(e);
-    if (pinching && mine.length >= 2){
-      var z = startZoom * dist(mine) / startDist;
-      z = Math.max(chart.minZoomLevel || 1, Math.min(chart.maxZoomLevel, z));
-      chart.zoomToGeoPoint(anchor, z, false, 0); // center:false — anchor stays under your fingers
-      clampView();
+    if (!mob.matches) return;
+    if (!allowAmchartsTarget(e.target)) e.stopPropagation();
+    if (pinching){
+      var p = pairTouches(e);
+      if (!p) return;
+      var d = dist(p);
+      if (d > 0 && lastDist > 0){
+        pinchZoom = Math.max(chart.minZoomLevel || 1, Math.min(chart.maxZoomLevel, pinchZoom * d / lastDist));
+        chart.zoomToGeoPoint(anchor, pinchZoom, false, 0); // anchor stays under your fingers
+        clampView();
+      }
+      lastDist = d; // incremental re-baseline every move
       e.preventDefault();
-    } else if (panArmed && !pinching && mine.length === 1){
-      var t = mine[0];
+    } else if (panArmed){
+      var t = soleTouch(e);
+      if (!t) return;
       var dx = t.clientX - panStartPt.x, dy = t.clientY - panStartPt.y;
       if (!panMoved && (dx * dx + dy * dy) > 36) panMoved = true;
       if (panMoved){
@@ -798,23 +856,71 @@ chart.zoomDuration = 250;          // snappier zooms; long animations queue up u
         e.preventDefault();
       }
     }
-  }, {passive:false});
+  }, {capture:true, passive:false});
 
-  function endTouch(e){
-    for (var i = 0; i < e.changedTouches.length; i++) delete mapTouches[e.changedTouches[i].identifier];
-    var ids = [], k;
-    for (k in mapTouches) ids.push(k);
-    if (ids.length < 2) pinching = false;
-    if (ids.length === 1 && mob.matches && interactive()){
-      // pinch -> pan handoff: keep following the surviving finger
-      for (var j = 0; j < e.touches.length; j++){
-        if (mapTouches[e.touches[j].identifier]){ armPan(e.touches[j]); break; }
-      }
+  // Taps are re-implemented here since amCharts never sees touch pointers:
+  // find the polygon under the tap and fire its hit (navigation) + tooltip.
+  function doTap(x, y){
+    var node = document.elementFromPoint(x, y);
+    if (!node || !el.contains(node)) return;
+    var zc = chart.zoomControl;
+    if (zc && zc.dom && zc.dom.contains(node)) return;
+    var found = null;
+    chart.series.each(function(sr){
+      if (found || !sr.mapPolygons) return;
+      sr.mapPolygons.each(function(pl){
+        if (!found && pl.dom && (pl.dom === node || pl.dom.contains(node))) found = pl;
+      });
+    });
+    if (found){
+      window.__lastTipPoly = found;
+      try{ found.showTooltip(); }catch(err){}
+      found.dispatchImmediately("hit", { type: "hit", target: found });
     }
-    if (ids.length === 0){ panArmed = false; panMoved = false; }
+  }
+
+  // Document-level cleanup: sees every lift, wherever the finger ends up.
+  function endTouch(e){
+    var lifted = {};
+    for (var i = 0; i < e.changedTouches.length; i++){
+      var ct = e.changedTouches[i];
+      var id = ct.identifier;
+      lifted[id] = true;
+      // tap = the sole gesture finger, barely moved, quick, no pinch involved
+      var rec = known[id];
+      if (rec && mob.matches && !hadPinch && !panMoved &&
+          order.length === 1 && order[0] === id &&
+          (Date.now() - rec.t) < 500){
+        var mx = ct.clientX - rec.x, my = ct.clientY - rec.y;
+        if ((mx * mx + my * my) < 144) doTap(ct.clientX, ct.clientY);
+      }
+      delete known[id];
+    }
+    var keep = [];
+    for (var j = 0; j < order.length; j++) if (!lifted[order[j]]) keep.push(order[j]);
+    order = keep;
+    if (order.length >= 2){
+      if (pinching){
+        var p = pairTouches(e);
+        if (p) baselinePinch(p, true); // pair changed: re-baseline, keep zoom tally
+      }
+    } else if (order.length === 1){
+      pinching = false;
+      if (mob.matches && interactive()){
+        var t = soleTouch(e);          // pinch -> pan handoff to the survivor
+        if (t) armPan(t);
+      }
+    } else {
+      pinching = false; panArmed = false; panMoved = false; hadPinch = false;
+    }
   }
   document.addEventListener('touchend', endTouch, true);
   document.addEventListener('touchcancel', endTouch, true);
+  // test/debug hook (harmless): inspect gesture state from the console
+  window.__mapGestureState = function(){
+    return { order: order.slice(), pinching: pinching, lastDist: lastDist,
+             pinchZoom: pinchZoom, panArmed: panArmed, panMoved: panMoved, hadPinch: hadPinch };
+  };
 })();
 </script>
 
