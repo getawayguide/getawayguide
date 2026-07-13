@@ -717,6 +717,10 @@ zoomControl.slider.height = 80;
 // Desktop (mouse) is untouched.
 chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map (desktop)
 chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
+// Snap tooltips into place (no fade/slide). The animated theme otherwise leaves
+// the tab mid-transition, so its measured position lags where it's drawn — the
+// second tap then can't reliably hit-test it.
+chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; } });
 (function(){
   var el = document.getElementById('world-map');
   var wrap = document.getElementById('explore-map');
@@ -835,7 +839,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
     var r = el.getBoundingClientRect();
     for (var i = 0; i < e.changedTouches.length; i++){
       var t = e.changedTouches[i];
-      known[t.identifier] = { x: t.clientX, y: t.clientY, t: Date.now() };
+      known[t.identifier] = { x: t.clientX, y: t.clientY, t: Date.now(), maxd: 0 };
       if (eligible(t, r)) order.push(t.identifier);
     }
     if (!mob.matches) return;
@@ -861,6 +865,13 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
   el.addEventListener('touchmove', function(e){
     if (!mob.matches) return;
     if (e.touches.length >= 2){ multiTouch = true; } // a second finger arrived mid-move
+    // Track how far each finger has strayed from where it landed. A drag that
+    // loops back near its start still has a large maxd, so it won't be mistaken
+    // for a tap on lift (this catches pans at zoom 1, where panMoved never arms).
+    for (var mi = 0; mi < e.changedTouches.length; mi++){
+      var mt = e.changedTouches[mi], mk = known[mt.identifier];
+      if (mk){ var ddx = mt.clientX - mk.x, ddy = mt.clientY - mk.y, d2 = ddx * ddx + ddy * ddy; if (d2 > mk.maxd) mk.maxd = d2; }
+    }
     if (!allowAmchartsTarget(e.target)) e.stopPropagation();
     if (pinching){
       var p = pairTouches(e);
@@ -915,6 +926,34 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
     return r && r.width > 0 && x >= r.left - pad && x <= r.right + pad &&
                               y >= r.top  - pad && y <= r.bottom + pad;
   }
+  // Client rect of the name tab currently on screen (the visible tooltip's own
+  // group box — reliable, unlike its inner foreignObject whose measured position
+  // can lag the paint). Only one tooltip is ever visible at a time.
+  function visibleTabRect(){
+    var best = null;
+    chart.series.each(function(sr){
+      var tt = sr.tooltip;
+      if (!tt || !tt.visible || !tt.dom) return;
+      try{
+        var r = tt.dom.getBoundingClientRect();
+        if (r.width > 2 && r.height > 2) best = r;
+      }catch(e){}
+    });
+    return best;
+  }
+  // Is (x,y) on the armed country's name tab? The tab sits above the country
+  // (or below, when amCharts flips it near the top edge). We take the tab's real
+  // horizontal span but clamp the vertical reach to the country's near edge, so
+  // a neighbour sitting BESIDE or just past the country (e.g. Peru under Brazil's
+  // tab at world zoom) is never swept in, while wide names and flipped tabs are.
+  function onTab(x, y, pr, tabR){
+    if (!tabR) return false;
+    var tabMid = (tabR.top + tabR.bottom) / 2, cMid = (pr.top + pr.bottom) / 2;
+    var inX = (x >= tabR.left - 10 && x <= tabR.right + 10);
+    if (!inX) return false;
+    if (tabMid < cMid) return (y >= tabR.top - 10 && y <= pr.top + 6);       // tab above
+    return (y >= pr.bottom - 6 && y <= tabR.bottom + 10);                    // tab flipped below
+  }
   function doTap(x, y){
     var node = document.elementFromPoint(x, y);
     if (!node || !el.contains(node)){ disarmTap(); return; }
@@ -922,31 +961,24 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
     if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
     var found = polyAt(node);
 
-    // SECOND TAP — armed country gets priority. elementFromPoint can drift to a
-    // neighbour or resolve to the tooltip on the second tap, so we don't rely on
-    // it alone. The name tab BELONGS to the armed country even when it floats
-    // over a neighbour (e.g. Bosnia's tab sits over Croatia), and it's pointer-
-    // transparent so elementFromPoint reports the country beneath it — so a tap
-    // inside the tab always opens the armed country, regardless of what's under.
-    // Otherwise navigate on the armed shape / nearby, UNLESS the tap squarely
-    // landed on a DIFFERENT country's fill (then re-arm that one instead).
+    // SECOND TAP — armed country gets priority. The name tab BELONGS to the
+    // armed country even when it floats over a neighbour (e.g. Bosnia's tab sits
+    // over Croatia), and it's pointer-transparent, so elementFromPoint reports
+    // the country beneath it. We therefore hit-test the tab by its own on-screen
+    // rectangle (whichever way amCharts oriented it), so a tap inside the tab
+    // always opens the armed country. Otherwise navigate on the armed shape or
+    // nearby, UNLESS the tap squarely landed on a DIFFERENT country (re-arm it).
     if (_armedPoly && _armedPoly.dom){
       var pr = _armedPoly.dom.getBoundingClientRect();
       var onArmed = (found === _armedPoly);
       var onOther = (found && found !== _armedPoly);
       var inShape = inRect(x, y, pr, 10);
-      // The name tab floats just ABOVE the armed country (amCharts' default
-      // tooltip orientation). Instead of hit-testing the tooltip DOM — whose
-      // position is unreliable (fade/slide animation, and countries that live
-      // in two overlapping series have two tooltips) — treat a band directly
-      // above the polygon's top edge as "the tab". It's a little wider than the
-      // shape since long names overhang. Crucially the band sits ABOVE the top
-      // edge, so a neighbour BESIDE or BELOW the country (e.g. Peru just under
-      // Brazil's tab) is NOT swept in, while Bosnia's tab floating over Croatia
-      // still opens Bosnia.
-      var TABH = 58, PADX = 66, PADY = 6;
-      var inTab = (x >= pr.left - PADX && x <= pr.right + PADX &&
-                   y >= pr.top - TABH  && y <= pr.top + PADY);
+      // Primary: the real tab, hit-tested on the correct side. Fallback (if the
+      // tooltip isn't measurable): a band just above the polygon's top edge.
+      var tabR = visibleTabRect();
+      var inTab = tabR ? onTab(x, y, pr, tabR)
+                       : (x >= pr.left - 66 && x <= pr.right + 66 &&
+                          y >= pr.top - 58  && y <= pr.top + 6);
       var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
       if (onArmed || inTab || (!onOther && (inShape || near))){
         var poly = _armedPoly;
@@ -981,7 +1013,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
       var rec = known[id];
       if (rec && mob.matches && !hadPinch && !multiTouch && !panMoved &&
           order.length === 1 && order[0] === id &&
-          (Date.now() - rec.t) < 500){
+          (Date.now() - rec.t) < 500 && (rec.maxd || 0) < 144){
         var mx = ct.clientX - rec.x, my = ct.clientY - rec.y;
         if ((mx * mx + my * my) < 144) doTap(ct.clientX, ct.clientY);
       }
