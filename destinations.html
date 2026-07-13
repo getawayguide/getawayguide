@@ -30,7 +30,8 @@ a[href*="amcharts.com"]{display:none!important}
 .dest-subhead{font-size:1.2rem;line-height:1.75;opacity:.65;margin-top:.75rem}
 /* map */
 .dest-map-wrap{padding:.75rem 6rem 3rem;max-width:100%}
-#world-map{width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3}
+#world-map{width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3;-webkit-tap-highlight-color:transparent}
+#world-map :focus,#world-map :focus-visible{outline:none!important}
 .map-mobile-hd,.map-close-btn{display:none}
 body.dest-map-open nav{display:none}
 .map-legend{display:flex;gap:2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
@@ -282,7 +283,7 @@ body.dest-map-open nav{display:none}
       </div>
 
       <!-- Georgia -->
-      <div class="home-dest-card" data-continent="asia" onclick="location.href='georgia/field-notes.html'" style="cursor:pointer">
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='georgia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/georgia.jpg');background-size:cover;background-position:50% 45%"></div>
         <div class="dest-overlay"></div>
         <div class="art-card-info">
@@ -380,6 +381,7 @@ body.dest-map-open nav{display:none}
           <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
+
 
       <!-- Türkiye -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
@@ -532,6 +534,7 @@ var allTpl = allSeries.mapPolygons.template;
 allTpl.fill = am4core.color("#e4e4e0");
 allTpl.stroke = am4core.color("#ffffff");
 allTpl.strokeWidth = 0.4;
+allTpl.focusable = false; // no blue a11y focus rectangle on tap
 allTpl.states.create("hover").properties.fill = am4core.color("#d0d0cc");
 allSeries.tooltip.background.fill = am4core.color("#1C2821");
 allSeries.tooltip.background.strokeWidth = 0;
@@ -567,6 +570,7 @@ var vTpl = visitedSeries.mapPolygons.template;
 vTpl.fill = am4core.color("#c8ddd5");
 vTpl.stroke = am4core.color("#ffffff");
 vTpl.strokeWidth = 0.4;
+vTpl.focusable = false; // no blue a11y focus rectangle on tap
 vTpl.states.create("hover").properties.fill = am4core.color("#aecec3");
 visitedSeries.tooltip.background.fill = am4core.color("#1C2821");
 visitedSeries.tooltip.background.strokeWidth = 0;
@@ -622,6 +626,7 @@ var fnTpl = fieldNotesSeries.mapPolygons.template;
 fnTpl.fill = am4core.color("#8FAF7E");
 fnTpl.stroke = am4core.color("#ffffff");
 fnTpl.strokeWidth = 0.4;
+fnTpl.focusable = false; // no blue a11y focus rectangle on tap
 fieldNotesSeries.tooltip.background.fill = am4core.color("#1C2821");
 fieldNotesSeries.tooltip.background.strokeWidth = 0;
 fieldNotesSeries.tooltip.background.cornerRadius = 6;
@@ -663,6 +668,7 @@ var fTpl = featuredSeries.mapPolygons.template;
 fTpl.fill = am4core.color("#2D6B50");
 fTpl.stroke = am4core.color("#ffffff");
 fTpl.strokeWidth = 0.4;
+fTpl.focusable = false; // no blue a11y focus rectangle on tap
 featuredSeries.tooltip.background.fill = am4core.color("#1C2821");
 featuredSeries.tooltip.background.strokeWidth = 0;
 featuredSeries.tooltip.background.cornerRadius = 6;
@@ -877,17 +883,14 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
   // arm times out after a few seconds. This prevents an accidental tap from
   // redirecting straight to a page. (Desktop is unaffected — its taps go
   // through amCharts directly and still open on a single click.)
-  var _armedPoly = null, _armTimer = null;
+  var _armedPoly = null, _armTimer = null, _armTip = null, _armPt = null;
   function disarmTap(){
-    _armedPoly = null;
+    _armedPoly = null; _armTip = null; _armPt = null;
     if (_armTimer){ clearTimeout(_armTimer); _armTimer = null; }
     if (window.__lastTipPoly){ try{ window.__lastTipPoly.hideTooltip(); }catch(e){} window.__lastTipPoly = null; }
   }
-  function doTap(x, y){
-    var node = document.elementFromPoint(x, y);
-    if (!node || !el.contains(node)){ disarmTap(); return; }
-    var zc = chart.zoomControl;
-    if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
+  // Which map polygon (if any) sits under this DOM node.
+  function polyAt(node){
     var found = null;
     chart.series.each(function(sr){
       if (found || !sr.mapPolygons) return;
@@ -895,26 +898,45 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
         if (!found && pl.dom && (pl.dom === node || pl.dom.contains(node))) found = pl;
       });
     });
-    // Second tap: navigate if it landed on the armed country's shape, or its
-    // name tab / just inside its box — as long as it wasn't a clear tap on a
-    // DIFFERENT country. Checking the shape AND the bounding box makes this
-    // robust whether the tap hits the polygon or the tooltip sitting over it.
+    return found;
+  }
+  function inRect(x, y, r, pad){
+    return r && r.width > 0 && x >= r.left - pad && x <= r.right + pad &&
+                              y >= r.top  - pad && y <= r.bottom + pad;
+  }
+  function doTap(x, y){
+    var node = document.elementFromPoint(x, y);
+    if (!node || !el.contains(node)){ disarmTap(); return; }
+    var zc = chart.zoomControl;
+    if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
+    var found = polyAt(node);
+
+    // SECOND TAP — armed country gets priority. elementFromPoint can drift to a
+    // neighbour or resolve to the tooltip on the second tap, so we don't rely on
+    // it alone: navigate when the tap lands on the armed shape, on its name tab,
+    // within (a padded) either box, or simply near where the first tap armed it —
+    // UNLESS the tap clearly landed squarely on a DIFFERENT country's fill.
     if (_armedPoly && _armedPoly.dom){
-      var ad = _armedPoly.dom;
-      var onShape = (ad === node || ad.contains(node));
-      var r = ad.getBoundingClientRect();
-      var inBox = (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
-      if (onShape || (inBox && (!found || found === _armedPoly))){
+      var onArmed = (found === _armedPoly);
+      var onOther = (found && found !== _armedPoly);
+      var inShape = inRect(x, y, _armedPoly.dom.getBoundingClientRect(), 10);
+      var inTab   = false;
+      if (_armTip && _armTip.dom){ try{ inTab = inRect(x, y, _armTip.dom.getBoundingClientRect(), 10); }catch(e){} }
+      var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
+      if (onArmed || (!onOther && (inShape || inTab || near))){
         var poly = _armedPoly;
         disarmTap();
         poly.dispatchImmediately("hit", { type: "hit", target: poly }); // navigate
         return;
       }
     }
+
     if (!found){ disarmTap(); return; } // tapped empty ocean — reset
-    // First tap on a (new) country: reveal its name tab and arm it
+    // FIRST TAP on a (new) country: reveal its name tab and arm it.
     disarmTap();
     _armedPoly = found;
+    _armPt = { x: x, y: y };
+    _armTip = found.tooltip || null; // remember its name-tab so tap #2 can target it
     window.__lastTipPoly = found;
     try{ found.showTooltip(); }catch(e){}
     _armTimer = setTimeout(disarmTap, 4000);
