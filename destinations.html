@@ -941,18 +941,19 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
     });
     return best;
   }
-  // Is (x,y) on the armed country's name tab? The tab sits above the country
-  // (or below, when amCharts flips it near the top edge). We take the tab's real
-  // horizontal span but clamp the vertical reach to the country's near edge, so
-  // a neighbour sitting BESIDE or just past the country (e.g. Peru under Brazil's
-  // tab at world zoom) is never swept in, while wide names and flipped tabs are.
+  // Is (x,y) on the armed country's name tab, given the tab's real client rect?
+  // The tab sits above the country (or below, when amCharts flips it near the top
+  // edge). Side is decided by the tab's TOP edge vs the country centre (the tab's
+  // bottom is unreliable — a long pointer tail reaches down to the country). We
+  // take the tab's real horizontal span but clamp the vertical reach to the
+  // country's near edge, so a neighbour BESIDE/below (Peru under Brazil's tab) is
+  // never swept in, while wide names and flipped tabs are.
   function onTab(x, y, pr, tabR){
     if (!tabR) return false;
-    var tabMid = (tabR.top + tabR.bottom) / 2, cMid = (pr.top + pr.bottom) / 2;
-    var inX = (x >= tabR.left - 10 && x <= tabR.right + 10);
-    if (!inX) return false;
-    if (tabMid < cMid) return (y >= tabR.top - 10 && y <= pr.top + 6);       // tab above
-    return (y >= pr.bottom - 6 && y <= tabR.bottom + 10);                    // tab flipped below
+    var L = Math.min(tabR.left, pr.left) - 12, R = Math.max(tabR.right, pr.right) + 12;
+    if (x < L || x > R) return false;
+    if (tabR.top < (pr.top + pr.bottom) / 2) return (y >= tabR.top - 10 && y <= pr.top + 8); // above
+    return (y >= pr.bottom - 8 && y <= tabR.bottom + 10);                                    // flipped below
   }
   function doTap(x, y){
     var node = document.elementFromPoint(x, y);
@@ -973,12 +974,15 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
       var onArmed = (found === _armedPoly);
       var onOther = (found && found !== _armedPoly);
       var inShape = inRect(x, y, pr, 10);
-      // Primary: the real tab, hit-tested on the correct side. Fallback (if the
-      // tooltip isn't measurable): a band just above the polygon's top edge.
-      var tabR = visibleTabRect();
-      var inTab = tabR ? onTab(x, y, pr, tabR)
-                       : (x >= pr.left - 66 && x <= pr.right + 66 &&
-                          y >= pr.top - 58  && y <= pr.top + 6);
+      // The tab floats just above the country (centred on it). PRIMARY test is a
+      // device-independent band above the polygon — needs only the country's own
+      // position, so it works even when the tooltip geometry can't be measured on
+      // the device. Its vertical reach stops at the top edge, so a neighbour
+      // beside/below (Peru under Brazil's tab) isn't swept in. The tab-rect test
+      // is ORed in to also catch extra-wide names and the flipped-below case.
+      var bandAbove = (x >= pr.left - 60 && x <= pr.right + 60 &&
+                       y >= pr.top - 62  && y <= pr.top + 8);
+      var inTab = bandAbove || onTab(x, y, pr, visibleTabRect());
       var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
       if (onArmed || inTab || (!onOther && (inShape || near))){
         var poly = _armedPoly;
