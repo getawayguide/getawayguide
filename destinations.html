@@ -870,13 +870,24 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
     }
   }, {capture:true, passive:false});
 
-  // Taps are re-implemented here since amCharts never sees touch pointers:
-  // find the polygon under the tap and fire its hit (navigation) + tooltip.
+  // Taps are re-implemented here since amCharts never sees touch pointers.
+  // TWO-TAP TO OPEN: the first tap on a country only reveals its name tab
+  // (tooltip); a second tap on the SAME country (or its tab) opens the
+  // article. Tapping empty ocean or a different country resets it, and the
+  // arm times out after a few seconds. This prevents an accidental tap from
+  // redirecting straight to a page. (Desktop is unaffected — its taps go
+  // through amCharts directly and still open on a single click.)
+  var _armedPoly = null, _armTimer = null;
+  function disarmTap(){
+    _armedPoly = null;
+    if (_armTimer){ clearTimeout(_armTimer); _armTimer = null; }
+    if (window.__lastTipPoly){ try{ window.__lastTipPoly.hideTooltip(); }catch(e){} window.__lastTipPoly = null; }
+  }
   function doTap(x, y){
     var node = document.elementFromPoint(x, y);
-    if (!node || !el.contains(node)) return;
+    if (!node || !el.contains(node)){ disarmTap(); return; }
     var zc = chart.zoomControl;
-    if (zc && zc.dom && zc.dom.contains(node)) return;
+    if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
     var found = null;
     chart.series.each(function(sr){
       if (found || !sr.mapPolygons) return;
@@ -884,11 +895,29 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
         if (!found && pl.dom && (pl.dom === node || pl.dom.contains(node))) found = pl;
       });
     });
-    if (found){
-      window.__lastTipPoly = found;
-      try{ found.showTooltip(); }catch(err){}
-      found.dispatchImmediately("hit", { type: "hit", target: found });
+    // Second tap: navigate if it landed on the armed country's shape, or its
+    // name tab / just inside its box — as long as it wasn't a clear tap on a
+    // DIFFERENT country. Checking the shape AND the bounding box makes this
+    // robust whether the tap hits the polygon or the tooltip sitting over it.
+    if (_armedPoly && _armedPoly.dom){
+      var ad = _armedPoly.dom;
+      var onShape = (ad === node || ad.contains(node));
+      var r = ad.getBoundingClientRect();
+      var inBox = (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
+      if (onShape || (inBox && (!found || found === _armedPoly))){
+        var poly = _armedPoly;
+        disarmTap();
+        poly.dispatchImmediately("hit", { type: "hit", target: poly }); // navigate
+        return;
+      }
     }
+    if (!found){ disarmTap(); return; } // tapped empty ocean — reset
+    // First tap on a (new) country: reveal its name tab and arm it
+    disarmTap();
+    _armedPoly = found;
+    window.__lastTipPoly = found;
+    try{ found.showTooltip(); }catch(e){}
+    _armTimer = setTimeout(disarmTap, 4000);
   }
 
   // Document-level cleanup: sees every lift, wherever the finger ends up.
