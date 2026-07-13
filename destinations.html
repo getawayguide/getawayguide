@@ -777,7 +777,8 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
   var EDGE = 16;
   var order = [];  // gesture-eligible map-touch ids, in landing order
   var known = {};  // id -> {x, y, t} for every touch that began on the map
-  var hadPinch = false; // true once any pinch happened in this touch group
+  var hadPinch = false;   // true once any pinch happened in this touch group
+  var multiTouch = false; // true once >=2 fingers were down in this touch group
   function eligible(t, r){
     return t.clientX >= r.left + EDGE && t.clientX <= r.right - EDGE && t.clientY <= r.bottom - EDGE;
   }
@@ -821,7 +822,11 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
 
   el.addEventListener('touchstart', function(e){
     // self-heal: if every touch on screen is new, previous bookkeeping is stale
-    if (e.touches.length === e.changedTouches.length){ order = []; known = {}; pinching = false; panArmed = false; hadPinch = false; }
+    if (e.touches.length === e.changedTouches.length){ order = []; known = {}; pinching = false; panArmed = false; hadPinch = false; multiTouch = false; }
+    // Any moment two fingers are down, this is a pinch/zoom, never a tap — so no
+    // country tab should appear. Latches for the whole touch group (until every
+    // finger lifts and a fresh gesture resets it above).
+    if (e.touches.length >= 2){ multiTouch = true; disarmTap(); }
     // NOTE: the armed country's name tab is intentionally NOT hidden here. The
     // second tap of the two-tap gesture needs it alive so doTap can hit-test it;
     // hiding on touchstart tore it down before touchend and made tab taps fall
@@ -855,6 +860,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
 
   el.addEventListener('touchmove', function(e){
     if (!mob.matches) return;
+    if (e.touches.length >= 2){ multiTouch = true; } // a second finger arrived mid-move
     if (!allowAmchartsTarget(e.target)) e.stopPropagation();
     if (pinching){
       var p = pairTouches(e);
@@ -944,7 +950,10 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
       var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
       if (onArmed || inTab || (!onOther && (inShape || near))){
         var poly = _armedPoly;
-        disarmTap();
+        // We're navigating away — leave the tab frozen exactly where it is.
+        // (Calling disarmTap() here animated the tab out mid-redirect, which
+        // read as the tab "jumping" just before the page changed.) The 4s
+        // arm timer stays armed to clean up in the rare no-URL case.
         poly.dispatchImmediately("hit", { type: "hit", target: poly }); // navigate
         return;
       }
@@ -970,7 +979,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
       lifted[id] = true;
       // tap = the sole gesture finger, barely moved, quick, no pinch involved
       var rec = known[id];
-      if (rec && mob.matches && !hadPinch && !panMoved &&
+      if (rec && mob.matches && !hadPinch && !multiTouch && !panMoved &&
           order.length === 1 && order[0] === id &&
           (Date.now() - rec.t) < 500){
         var mx = ct.clientX - rec.x, my = ct.clientY - rec.y;
