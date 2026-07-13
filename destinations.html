@@ -30,8 +30,14 @@ a[href*="amcharts.com"]{display:none!important}
 .dest-subhead{font-size:1.2rem;line-height:1.75;opacity:.65;margin-top:.75rem}
 /* map */
 .dest-map-wrap{padding:.75rem 6rem 3rem;max-width:100%}
-#world-map{width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3;-webkit-tap-highlight-color:transparent}
+#world-map{position:relative;width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3;-webkit-tap-highlight-color:transparent}
 #world-map :focus,#world-map :focus-visible{outline:none!important}
+/* Custom name tab (mobile two-tap). Rendered by us so nothing re-anchors it. */
+#map-tab{position:absolute;z-index:5;display:none;pointer-events:none;transform:translateX(-50%);background:#1C2821;border-radius:6px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.28);white-space:nowrap}
+#map-tab .mt-row{display:flex;align-items:center;gap:8px}
+#map-tab img{width:16px;height:12px;border-radius:1px;display:block;flex:0 0 auto}
+#map-tab .mt-name{color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:400;line-height:1.3}
+#map-tab .mt-sub{color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 .map-mobile-hd,.map-close-btn{display:none}
 body.dest-map-open nav{display:none}
 .map-legend{display:flex;gap:2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
@@ -731,6 +737,14 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
   window.addEventListener('resize', syncPanMode);
   window.__syncMapPan = syncPanMode; // called by toggleMapFS on fs toggle
 
+  // On mobile we draw our OWN name tab (see below) and suppress amCharts' tooltip
+  // entirely — amCharts re-anchors its tooltip to the touch point on touchstart,
+  // which made the tab visibly jump on the confirming tap. Desktop keeps its
+  // native hover tooltips.
+  function syncTooltips(){ chart.series.each(function(s){ if (s.tooltip) s.tooltip.disabled = mob.matches; }); }
+  syncTooltips();
+  window.addEventListener('resize', syncTooltips);
+
   chart.events.on("zoomlevelchanged", function(){
     wrap.classList.toggle('map-zoomed', chart.zoomLevel > 1.05); // CSS touch ownership
   });
@@ -899,17 +913,28 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
   }, {capture:true, passive:false});
 
   // Taps are re-implemented here since amCharts never sees touch pointers.
-  // TWO-TAP TO OPEN: the first tap on a country only reveals its name tab
-  // (tooltip); a second tap on the SAME country (or its tab) opens the
-  // article. Tapping empty ocean or a different country resets it, and the
-  // arm times out after a few seconds. This prevents an accidental tap from
-  // redirecting straight to a page. (Desktop is unaffected — its taps go
-  // through amCharts directly and still open on a single click.)
-  var _armedPoly = null, _armTimer = null, _armTip = null, _armPt = null;
+  // TWO-TAP TO OPEN: the first tap on a country reveals OUR OWN name tab (a
+  // plain div we position once — see #map-tab); a second tap on that tab, or on
+  // the same country, opens the article. Tapping empty ocean or a different
+  // country resets it, and the arm times out after a few seconds. This prevents
+  // an accidental tap from redirecting straight to a page, and — because the tab
+  // is our element, not amCharts' tooltip — nothing re-anchors it, so it never
+  // jumps on the confirming tap. (Desktop is unaffected: native hover + click.)
+  var tabEl = document.createElement('div');
+  tabEl.id = 'map-tab';
+  tabEl.innerHTML = '<div class="mt-row"><img alt=""><div><div class="mt-name"></div><div class="mt-sub"></div></div></div>';
+  el.appendChild(tabEl);
+  var tabImg = tabEl.querySelector('img'),
+      tabName = tabEl.querySelector('.mt-name'),
+      tabSub  = tabEl.querySelector('.mt-sub');
+
+  var _armedPoly = null, _armedUrl = null, _armTimer = null, _armPt = null;
+  function hideTab(){ tabEl.style.display = 'none'; }
   function disarmTap(){
-    _armedPoly = null; _armTip = null; _armPt = null;
+    _armedPoly = null; _armedUrl = null; _armPt = null;
     if (_armTimer){ clearTimeout(_armTimer); _armTimer = null; }
-    if (window.__lastTipPoly){ try{ window.__lastTipPoly.hideTooltip(); }catch(e){} window.__lastTipPoly = null; }
+    hideTab();
+    window.__lastTipPoly = null;
   }
   // Which map polygon (if any) sits under this DOM node.
   function polyAt(node){
@@ -922,38 +947,32 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
     });
     return found;
   }
-  function inRect(x, y, r, pad){
-    return r && r.width > 0 && x >= r.left - pad && x <= r.right + pad &&
-                              y >= r.top  - pad && y <= r.bottom + pad;
+  // Name + destination for a polygon (nice name/url for guides, plain name else).
+  function infoFor(poly){
+    var dc = poly.dataItem && poly.dataItem.dataContext;
+    var id = dc && dc.id; if (!id) return null;
+    var m = fieldNotesMap[id] || featuredMap[id];
+    if (m) return { id: id, name: m.name, url: m.url || null,
+                    sub: m.url ? (featuredMap[id] ? 'Read Guide' : 'Field Notes') : 'Coming Soon' };
+    return { id: id, name: (dc.name || ''), url: null, sub: '' };
   }
-  // Client rect of the name tab currently on screen (the visible tooltip's own
-  // group box — reliable, unlike its inner foreignObject whose measured position
-  // can lag the paint). Only one tooltip is ever visible at a time.
-  function visibleTabRect(){
-    var best = null;
-    chart.series.each(function(sr){
-      var tt = sr.tooltip;
-      if (!tt || !tt.visible || !tt.dom) return;
-      try{
-        var r = tt.dom.getBoundingClientRect();
-        if (r.width > 2 && r.height > 2) best = r;
-      }catch(e){}
-    });
-    return best;
-  }
-  // Is (x,y) on the armed country's name tab, given the tab's real client rect?
-  // The tab sits above the country (or below, when amCharts flips it near the top
-  // edge). Side is decided by the tab's TOP edge vs the country centre (the tab's
-  // bottom is unreliable — a long pointer tail reaches down to the country). We
-  // take the tab's real horizontal span but clamp the vertical reach to the
-  // country's near edge, so a neighbour BESIDE/below (Peru under Brazil's tab) is
-  // never swept in, while wide names and flipped tabs are.
-  function onTab(x, y, pr, tabR){
-    if (!tabR) return false;
-    var L = Math.min(tabR.left, pr.left) - 12, R = Math.max(tabR.right, pr.right) + 12;
-    if (x < L || x > R) return false;
-    if (tabR.top < (pr.top + pr.bottom) / 2) return (y >= tabR.top - 10 && y <= pr.top + 8); // above
-    return (y >= pr.bottom - 8 && y <= tabR.bottom + 10);                                    // flipped below
+  // Show our tab centred just above the country (flipped below if no room).
+  function showTab(poly){
+    var info = infoFor(poly); if (!info || !info.name) return null;
+    tabImg.src = 'https://flagcdn.com/16x12/' + info.id.toLowerCase() + '.png';
+    tabName.textContent = info.name;
+    tabSub.textContent = info.sub; tabSub.style.display = info.sub ? '' : 'none';
+    tabEl.style.display = 'block';
+    var mapR = el.getBoundingClientRect(), pr = poly.dom.getBoundingClientRect();
+    var th = tabEl.offsetHeight, tw = tabEl.offsetWidth;
+    var cx = pr.left + pr.width / 2 - mapR.left;
+    cx = Math.max(tw / 2 + 4, Math.min(mapR.width - tw / 2 - 4, cx));
+    var top = pr.top - mapR.top - th - 8;                 // above the country
+    if (top < 4) top = pr.bottom - mapR.top + 8;          // no room → below
+    top = Math.max(4, Math.min(mapR.height - th - 4, top));
+    tabEl.style.left = cx + 'px';
+    tabEl.style.top  = top + 'px';
+    return info;
   }
   function doTap(x, y){
     var node = document.elementFromPoint(x, y);
@@ -962,47 +981,31 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
     if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
     var found = polyAt(node);
 
-    // SECOND TAP — armed country gets priority. The name tab BELONGS to the
-    // armed country even when it floats over a neighbour (e.g. Bosnia's tab sits
-    // over Croatia), and it's pointer-transparent, so elementFromPoint reports
-    // the country beneath it. We therefore hit-test the tab by its own on-screen
-    // rectangle (whichever way amCharts oriented it), so a tap inside the tab
-    // always opens the armed country. Otherwise navigate on the armed shape or
-    // nearby, UNLESS the tap squarely landed on a DIFFERENT country (re-arm it).
-    if (_armedPoly && _armedPoly.dom){
-      var pr = _armedPoly.dom.getBoundingClientRect();
+    // SECOND TAP: open when it lands on our tab (its own exact, stable rect) or
+    // on the armed country itself — or just beside them, as long as it isn't
+    // squarely on a DIFFERENT country (then re-arm that one instead).
+    if (_armedPoly){
       var onArmed = (found === _armedPoly);
       var onOther = (found && found !== _armedPoly);
-      var inShape = inRect(x, y, pr, 10);
-      // The tab floats just above the country (centred on it). PRIMARY test is a
-      // device-independent band above the polygon — needs only the country's own
-      // position, so it works even when the tooltip geometry can't be measured on
-      // the device. Its vertical reach stops at the top edge, so a neighbour
-      // beside/below (Peru under Brazil's tab) isn't swept in. The tab-rect test
-      // is ORed in to also catch extra-wide names and the flipped-below case.
-      var bandAbove = (x >= pr.left - 60 && x <= pr.right + 60 &&
-                       y >= pr.top - 62  && y <= pr.top + 8);
-      var inTab = bandAbove || onTab(x, y, pr, visibleTabRect());
-      var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
-      if (onArmed || inTab || (!onOther && (inShape || near))){
-        var poly = _armedPoly;
-        // We're navigating away — leave the tab frozen exactly where it is.
-        // (Calling disarmTap() here animated the tab out mid-redirect, which
-        // read as the tab "jumping" just before the page changed.) The 4s
-        // arm timer stays armed to clean up in the rare no-URL case.
-        poly.dispatchImmediately("hit", { type: "hit", target: poly }); // navigate
+      var tr = tabEl.getBoundingClientRect();
+      var onTab = (x >= tr.left - 6 && x <= tr.right + 6 && y >= tr.top - 6 && y <= tr.bottom + 6);
+      var near  = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
+      if (onArmed || onTab || (!onOther && near)){
+        if (_armedUrl){ window.location.href = _armedUrl; } // navigate; tab stays put
+        else disarmTap();                                   // no article — just dismiss
         return;
       }
     }
 
     if (!found){ disarmTap(); return; } // tapped empty ocean — reset
-    // FIRST TAP on a (new) country: reveal its name tab and arm it.
+    // FIRST TAP on a (new) country: reveal our name tab and arm it.
     disarmTap();
+    var info = showTab(found);
+    if (!info) return;                  // nothing worth showing
     _armedPoly = found;
+    _armedUrl = info.url;
     _armPt = { x: x, y: y };
-    _armTip = found.tooltip || null; // remember its name-tab so tap #2 can target it
     window.__lastTipPoly = found;
-    try{ found.showTooltip(); }catch(e){}
     _armTimer = setTimeout(disarmTap, 4000);
   }
 
