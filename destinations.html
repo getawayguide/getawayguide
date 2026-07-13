@@ -822,7 +822,11 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
   el.addEventListener('touchstart', function(e){
     // self-heal: if every touch on screen is new, previous bookkeeping is stale
     if (e.touches.length === e.changedTouches.length){ order = []; known = {}; pinching = false; panArmed = false; hadPinch = false; }
-    if (window.__lastTipPoly){ try{ window.__lastTipPoly.hideTooltip(); }catch(err){} window.__lastTipPoly = null; }
+    // NOTE: the armed country's name tab is intentionally NOT hidden here. The
+    // second tap of the two-tap gesture needs it alive so doTap can hit-test it;
+    // hiding on touchstart tore it down before touchend and made tab taps fall
+    // through to the country beneath (e.g. Bosnia's tab over Croatia). It's
+    // instead dismissed when a pan or pinch actually begins (see below).
     var r = el.getBoundingClientRect();
     for (var i = 0; i < e.changedTouches.length; i++){
       var t = e.changedTouches[i];
@@ -833,6 +837,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
     var p = pairTouches(e);
     if (p){
       panArmed = false;
+      disarmTap();                   // a two-finger gesture is not a tap
       var wasPinching = pinching;
       pinching = true;
       hadPinch = true;
@@ -866,7 +871,7 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
       var t = soleTouch(e);
       if (!t) return;
       var dx = t.clientX - panStartPt.x, dy = t.clientY - panStartPt.y;
-      if (!panMoved && (dx * dx + dy * dy) > 36) panMoved = true;
+      if (!panMoved && (dx * dx + dy * dy) > 36){ panMoved = true; disarmTap(); } // pan started — drop the tab
       if (panMoved){
         chart.seriesContainer.x = contStart.x + dx;
         chart.seriesContainer.y = contStart.y + dy;
@@ -913,17 +918,31 @@ chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
 
     // SECOND TAP — armed country gets priority. elementFromPoint can drift to a
     // neighbour or resolve to the tooltip on the second tap, so we don't rely on
-    // it alone: navigate when the tap lands on the armed shape, on its name tab,
-    // within (a padded) either box, or simply near where the first tap armed it —
-    // UNLESS the tap clearly landed squarely on a DIFFERENT country's fill.
+    // it alone. The name tab BELONGS to the armed country even when it floats
+    // over a neighbour (e.g. Bosnia's tab sits over Croatia), and it's pointer-
+    // transparent so elementFromPoint reports the country beneath it — so a tap
+    // inside the tab always opens the armed country, regardless of what's under.
+    // Otherwise navigate on the armed shape / nearby, UNLESS the tap squarely
+    // landed on a DIFFERENT country's fill (then re-arm that one instead).
     if (_armedPoly && _armedPoly.dom){
+      var pr = _armedPoly.dom.getBoundingClientRect();
       var onArmed = (found === _armedPoly);
       var onOther = (found && found !== _armedPoly);
-      var inShape = inRect(x, y, _armedPoly.dom.getBoundingClientRect(), 10);
-      var inTab   = false;
-      if (_armTip && _armTip.dom){ try{ inTab = inRect(x, y, _armTip.dom.getBoundingClientRect(), 10); }catch(e){} }
+      var inShape = inRect(x, y, pr, 10);
+      // The name tab floats just ABOVE the armed country (amCharts' default
+      // tooltip orientation). Instead of hit-testing the tooltip DOM — whose
+      // position is unreliable (fade/slide animation, and countries that live
+      // in two overlapping series have two tooltips) — treat a band directly
+      // above the polygon's top edge as "the tab". It's a little wider than the
+      // shape since long names overhang. Crucially the band sits ABOVE the top
+      // edge, so a neighbour BESIDE or BELOW the country (e.g. Peru just under
+      // Brazil's tab) is NOT swept in, while Bosnia's tab floating over Croatia
+      // still opens Bosnia.
+      var TABH = 58, PADX = 66, PADY = 6;
+      var inTab = (x >= pr.left - PADX && x <= pr.right + PADX &&
+                   y >= pr.top - TABH  && y <= pr.top + PADY);
       var near    = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
-      if (onArmed || (!onOther && (inShape || inTab || near))){
+      if (onArmed || inTab || (!onOther && (inShape || near))){
         var poly = _armedPoly;
         disarmTap();
         poly.dispatchImmediately("hit", { type: "hit", target: poly }); // navigate
