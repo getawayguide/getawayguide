@@ -807,7 +807,7 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
    otherwise applying on mobile too and squeezing the cards into a narrow,
    centered column with large empty side margins. */
 @media(max-width:768px){
-  .country-articles-section{padding:0 1.25rem 3rem}
+  .country-articles-section{padding:1rem 1.25rem 3rem}
   .country-articles-grid{grid-template-columns:1fr;gap:1rem}
   .country-article-card{aspect-ratio:16/9}
   .country-article-card-body{padding:1.1rem 1.2rem}
