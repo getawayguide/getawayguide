@@ -1,0 +1,23 @@
+name: Lint site
+
+# Runs the site linter on every push / PR and fails the build on *breaking*
+# issues (broken internal links, duplicate IDs, broken anchors, nav-list drift).
+# Style warnings (em dashes, paste artifacts, missing alt) are reported but do
+# not fail CI. Run `python tools/lint_site.py` locally for the full report.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run site linter (CI severity)
+        run: python tools/lint_site.py --ci

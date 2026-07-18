@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Page not found — head back to the getawayguide homepage or explore the destinations map.">
+<meta name="robots" content="noindex">
+<title>Page Not Found — getawayguide</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'&gt;g&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&amp;family=Jost:ital,wght@0,300..400;1,300..400&amp;family=Montserrat:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=15">
+<style>
+.nf-hero{min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 1.5rem 5rem;background:var(--void);position:relative;overflow:hidden}
+.nf-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(184,122,61,.15) 0%,transparent 65%);pointer-events:none}
+.nf-404{font-family:'Fraunces',Georgia,serif;font-size:clamp(5rem,18vw,11rem);font-weight:300;line-height:.9;color:var(--void-text);position:relative;z-index:2;letter-spacing:-.02em}
+.nf-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.5rem,4vw,2.4rem);font-weight:400;color:var(--void-text);margin:1rem 0 .75rem;position:relative;z-index:2}
+.nf-sub{font-family:'Jost',sans-serif;font-size:1rem;line-height:1.6;color:rgba(237,240,236,.6);max-width:460px;margin:0 auto 2.25rem;position:relative;z-index:2}
+.nf-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative;z-index:2}
+.nf-btn{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:.8rem 1.6rem;border-radius:2px;text-decoration:none;transition:transform .2s,background .2s}
+.nf-btn-primary{background:#B87A3D;color:#1C2821}
+.nf-btn-primary:hover{transform:translateY(-2px)}
+.nf-btn-ghost{border:1px solid rgba(237,240,236,.45);color:rgba(237,240,236,.9)}
+.nf-btn-ghost:hover{border-color:rgba(237,240,236,.9)}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Page Not Found — getawayguide",
+  "url": "https://getawayguide.io/404.html",
+  "description": "Page not found — head back to the getawayguide homepage or explore the destinations map.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Getawayguide",
+    "url": "https://getawayguide.io/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://getawayguide.io/og-image.svg"
+    }
+  }
+}
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Getawayguide</a>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html" id="nav-home">Home</a></li>
+    <li><a href="destinations.html" id="nav-destinations">Destinations</a></li>
+    <li><a href="resources.html" id="nav-resources">Resources</a></li>
+    <li><a href="about.html" id="nav-about">About Me</a></li>
+  </ul>
+</nav>
+
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <ul class="mobile-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="destinations.html">Destinations</a></li>
+    <li><a href="resources.html">Resources</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+  <div class="mobile-drawer-footer">&copy; 2026 getawayguide</div>
+</div>
+
+<div class="nf-hero">
+  <div class="nf-glow"></div>
+  <div class="nf-404">404</div>
+  <h1 class="nf-title">This trail leads nowhere</h1>
+  <p class="nf-sub">The page you're looking for wandered off the map. Let's get you back on the road.</p>
+  <div class="nf-actions">
+    <a href="index.html" class="nf-btn nf-btn-primary">Back to Home</a>
+    <a href="destinations.html" class="nf-btn nf-btn-ghost">Explore Destinations</a>
+  </div>
+</div>
+
+<footer>
+  <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+  <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank" rel="noopener noreferrer">Instagram</a></li><li><a href="contact.html">Contact</a></li><li><a href="privacy.html">Privacy</a></li></ul><div class="footer-copy">&copy; 2026 getawayguide</div></div>
+</footer>
+
+<script>
+function toggleMobileMenu(){
+  var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');
+  d.classList.toggle('open');b.classList.toggle('open');
+  document.body.style.overflow=d.classList.contains('open')?'hidden':'';
+}
+document.addEventListener('click',function(e){var a=e.target.closest('#mobile-nav-drawer a');if(!a)return;var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';});
+</script>
+
+</body></html>
