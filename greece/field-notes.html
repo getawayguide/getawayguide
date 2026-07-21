@@ -17,7 +17,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'&gt;g&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&amp;family=Jost:ital,wght@0,300..400;1,300..400&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=15">
+<link rel="stylesheet" href="../styles.css?v=16">
 <style>
 .fn-hero{min-height:38vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 3rem 4.5rem;background:var(--void);position:relative;overflow:hidden}
 .fn-hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,rgba(200,168,88,.15) 0%,transparent 65%);pointer-events:none}
@@ -107,42 +107,61 @@
     <li><a href="../index.html" id="nav-home">Home</a></li>
     <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
       <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='../destinations.html'">Destinations <span class="nav-caret">↓</span></a>
-      <div class="nav-dropdown" style="grid-template-columns:210px 170px; min-width:380px">
+      <div class="nav-dropdown nav-dropdown-fn">
         <div class="nav-dropdown-col">
-          <span class="nav-dropdown-continent" style="pointer-events:none; cursor:default; white-space:nowrap; color:#1C2821">Available Guides</span>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span>
           <a href="../el-salvador/index.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
           <a href="../new-zealand/index.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
-          <span class="nav-dropdown-continent" style="pointer-events:none; cursor:default; white-space:nowrap; color:#1C2821; margin-top:.4rem; padding-top:.4rem; border-top:1px solid rgba(28,40,33,.08)">Field Notes</span>
-          <a href="../albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
-          <a href="../armenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
-          <a href="../bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
-          <a href="../brazil/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
-          <a href="../colombia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
-          <a href="../georgia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
-          <a href="../greece/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
-          <a href="../hungary/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
-          <a href="../india/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/in.png" width="16" height="12" alt=""><span class="country-name">India</span></a>
-          <a href="../indonesia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/id.png" width="16" height="12" alt=""><span class="country-name">Indonesia</span></a>
-          <a href="../kosovo/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
-          <a href="../mexico/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
-          <a href="../montenegro/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
-          <a href="../north-macedonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
-          <a href="../peru/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
-          <a href="../philippines/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
-          <a href="../serbia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
-          <a href="../switzerland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
-          <a href="../tanzania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
-          <a href="../turkiye/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Türkiye</span></a>
+          <span class="nav-dropdown-continent nav-fn-head" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Field Notes</span>
+          <div class="nav-fn-groups">
+            <div class="nav-fn-sub">
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Europe</span>
+              <a href="../albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
+              <a href="../bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
+              <a href="../georgia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
+              <a href="../greece/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
+              <a href="../hungary/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
+              <a href="../kosovo/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
+              <a href="../montenegro/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
+              <a href="../north-macedonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
+              <a href="../serbia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
+              <a href="../switzerland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
+            </div>
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Africa</span>
+              <a href="../tanzania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
+            </div>
+            </div>
+            <div class="nav-fn-sub">
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Asia</span>
+              <a href="../armenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
+              <a href="../india/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/in.png" width="16" height="12" alt=""><span class="country-name">India</span></a>
+              <a href="../indonesia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/id.png" width="16" height="12" alt=""><span class="country-name">Indonesia</span></a>
+              <a href="../philippines/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
+              <a href="../turkiye/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/tr.png" width="16" height="12" alt=""><span class="country-name">Türkiye</span></a>
+            </div>
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Americas</span>
+              <a href="../brazil/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
+              <a href="../chile/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/cl.png" width="16" height="12" alt=""><span class="country-name">Chile</span></a>
+              <a href="../colombia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
+              <a href="../mexico/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
+              <a href="../peru/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
+            </div>
+            </div>
+          </div>
         </div>
         <div class="nav-dropdown-col">
-          <span class="nav-dropdown-continent" style="pointer-events:none; cursor:default; white-space:nowrap; color:#1C2821">Explore Destinations</span>
-          <a href="../destinations.html" class="nav-dropdown-continent">🌎 Explore Map</a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore Destinations</span>
+          <a href="../destinations.html" class="nav-dropdown-continent" style="white-space:nowrap">&#127758; Explore Map</a>
           <a href="../destinations.html#africa" class="nav-dropdown-continent">Africa</a>
           <a href="../destinations.html#americas" class="nav-dropdown-continent">Americas</a>
           <a href="../destinations.html#asia" class="nav-dropdown-continent">Asia</a>
           <a href="../destinations.html#europe" class="nav-dropdown-continent">Europe</a>
           <a href="../destinations.html#oceania" class="nav-dropdown-continent">Oceania</a>
-          <a href="../destinations.html" class="nav-dropdown-continent" style="color:#1C2821; white-space:nowrap">All Destinations</a>
+          <a href="../destinations.html" class="nav-dropdown-continent" style="color:#1C2821;white-space:nowrap">All Destinations</a>
         </div>
       </div>
     </li>

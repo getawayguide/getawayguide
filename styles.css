@@ -36,7 +36,7 @@ em{font-style:italic;color:var(--terra)}
 html{scroll-padding-top:5.5rem}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 3rem 1.5rem 3rem;background:var(--nav-bg);backdrop-filter:blur(8px);border-bottom:1px solid var(--nav-border)}
 .nav-logo{font-family:'Fraunces',Georgia,serif;font-weight:300;font-style:italic;font-size:1.3rem;letter-spacing:-.01em;text-transform:lowercase;color:#1e4d38;opacity:1;text-decoration:none}
-.nav-links{display:flex;gap:2.5rem;list-style:none;align-items:center}
+.nav-links{display:flex;gap:2.5rem;list-style:none;align-items:baseline}
 .nav-links a{font-family:'Montserrat',sans-serif;font-weight:500;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;opacity:.45;transition:opacity .2s}
 .nav-links a:hover{opacity:1}
 .nav-links a.active{opacity:1;border-bottom:1px solid var(--terra);padding-bottom:2px}
@@ -59,6 +59,17 @@ a.nav-dropdown-continent[style*="color:#1C2821"]{color:#1C2821!important;font-we
 .nav-dropdown-item .country-name{text-transform:uppercase;letter-spacing:.07em}
 .nav-dropdown-spacer{height:1.2rem}
 .nav-dropdown-all{font-family:'Montserrat',sans-serif;font-weight:500;font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;color:var(--terra);text-decoration:none;padding:.3rem 0;margin-top:.25rem}
+/* Destinations dropdown — Field Notes grouped by continent under Available Guides */
+.nav-dropdown.nav-dropdown-fn{grid-template-columns:max-content 170px;min-width:0}
+.nav-dropdown-fn .nav-dropdown-col{padding:0}
+.nav-dropdown-fn .nav-dropdown-col:first-child{padding-right:1rem}
+.nav-dropdown-fn .nav-dropdown-col:last-child{padding-left:1.3rem}
+.nav-fn-head{margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(28,40,33,.1)}
+.nav-fn-groups{display:flex;gap:1.4rem;margin-top:-.15rem}
+.nav-fn-sub{display:flex;flex-direction:column}
+.nav-fn-grp{display:flex;flex-direction:column;gap:.1rem;padding-bottom:.3rem}
+.nav-fn-region{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400;font-size:.85rem;letter-spacing:0;text-transform:none;color:rgba(28,40,33,.4);padding:.2rem 0 .25rem}
+.nav-fn-sub .nav-fn-grp:first-child .nav-fn-region{padding-top:0}
 
 /* PAGE SYSTEM */
 .page{display:none}

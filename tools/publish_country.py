@@ -5,7 +5,7 @@ and wire it in everywhere. Formalizes the manual protocol (first used for Tanzan
 
 Does, in order:
   1. Move Drafts/<slug>/field-notes.html -> <slug>/field-notes.html (fix ../../ -> ../)
-  2. Insert the nav-dropdown "Field Notes" entry ALPHABETICALLY on every live page
+  2. Regenerate the grouped Field Notes nav dropdown on every page (grouped by continent)
   3. Insert the index.html flag-card (alphabetical)
   4. Insert the destinations.html grid card (data-continent) + fieldNotesMap entry
   5. Compress the thumbnail -> Images/web/dest-cards/<slug>.jpg (portrait 600x900, q85, keep ICC)
@@ -63,6 +63,62 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
         pos = target.end()
         return html[:pos] + "\n" + line + html[pos:], True
 
+# ---- grouped "Field Notes" nav dropdown, regenerated from destinations.html ----
+# The dropdown is identical on every page and changes on every publish, so we rebuild
+# it wholesale from a single source of truth rather than inserting into a flat list.
+AVAILABLE_GUIDES = [("El Salvador", "sv", "el-salvador/index.html"),
+                    ("New Zealand", "nz", "new-zealand/index.html")]
+NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
+CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
+              "africa": "Africa", "oceania": "Oceania"}
+_DARK = 'style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821"'
+NAV_RE = re.compile(r'<div class="nav-dropdown[ "].*?</div>\s*</li>', re.DOTALL)
+
+def _nav_a(pfx, name, iso2, href):
+    return ('<a href="%s%s" class="nav-dropdown-item"><img loading="lazy" '
+            'src="https://flagcdn.com/16x12/%s.png" width="16" height="12" alt="">'
+            '<span class="country-name">%s</span></a>') % (pfx, href, iso2, name)
+
+def parse_countries(dest_html):
+    """{continent: [(name, iso2, slug) alpha]} joined from destinations.html grid + fieldNotesMap."""
+    cont_by_slug = {m.group(2): m.group(1) for m in re.finditer(
+        r'data-continent="([a-z]+)" onclick="location\.href=\'([a-z-]+)/field-notes\.html\'"', dest_html)}
+    by_cont = {}
+    for m in re.finditer(r'"([A-Z]{2})": \{ name: "([^"]+)",\s*url: "([a-z-]+)/field-notes\.html"', dest_html):
+        c = cont_by_slug.get(m.group(3))
+        if c:
+            by_cont.setdefault(c, []).append((m.group(2), m.group(1).lower(), m.group(3)))
+    for c in by_cont:
+        by_cont[c].sort(key=lambda t: t[0].lower())
+    return by_cont
+
+def build_nav(pfx, by_cont):
+    L = ['<div class="nav-dropdown nav-dropdown-fn">',
+         '        <div class="nav-dropdown-col">',
+         '          <span class="nav-dropdown-continent" %s>Available Guides</span>' % _DARK]
+    L += ['          ' + _nav_a(pfx, n, iso, href) for n, iso, href in AVAILABLE_GUIDES]
+    L.append('          <span class="nav-dropdown-continent nav-fn-head" %s>Field Notes</span>' % _DARK)
+    L.append('          <div class="nav-fn-groups">')
+    for col in NAV_SUBCOLS:
+        cols = [c for c in col if by_cont.get(c)]
+        if not cols:
+            continue
+        L.append('            <div class="nav-fn-sub">')
+        for c in cols:
+            L.append('            <div class="nav-fn-grp">')
+            L.append('              <span class="nav-fn-region">%s</span>' % CONT_LABEL[c])
+            L += ['              ' + _nav_a(pfx, n, iso, '%s/field-notes.html' % sl) for n, iso, sl in by_cont[c]]
+            L.append('            </div>')
+        L.append('            </div>')
+    L += ['          </div>', '        </div>', '        <div class="nav-dropdown-col">',
+          '          <span class="nav-dropdown-continent" %s>Explore Destinations</span>' % _DARK,
+          '          <a href="%sdestinations.html" class="nav-dropdown-continent" style="white-space:nowrap">&#127758; Explore Map</a>' % pfx]
+    L += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s</a>' % (pfx, c, CONT_LABEL[c])
+          for c in ("africa", "americas", "asia", "europe", "oceania")]
+    L += ['          <a href="%sdestinations.html" class="nav-dropdown-continent" style="color:#1C2821;white-space:nowrap">All Destinations</a>' % pfx,
+          '        </div>', '      </div>']
+    return "\n".join(L)
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("slug")
@@ -91,20 +147,7 @@ def main():
         write(dst, html)
     log.append("moved draft -> %s (../../ -> ../)" % rel(dst))
 
-    # 2. nav across all live pages (+ the moved page itself)
-    nav_line = lambda indent, pfx: ('%s<a href="%s%s/field-notes.html" class="nav-dropdown-item">'
-        '<img src="https://flagcdn.com/16x12/%s.png" width="16" height="12" alt="">'
-        '<span class="country-name">%s</span></a>') % (indent, pfx, slug, iso2, name)
-    nav_item_re = (r'[ \t]*<a href="(?:\.\./)*[a-z-]+/field-notes\.html" class="nav-dropdown-item">'
-                   r'<img[^>]*><span class="country-name">(?P<n>[^<]+)</span></a>')
-    files = list(live_pages())
-    if DRY: files.append((dst, rel(dst)))   # simulate the moved page
-    changed = 0
-    for p, r in files:
-        s = read(p) if os.path.exists(p) else html
-        s2, ch = insert_after_alpha(s, nav_item_re, "n", name, nav_line)
-        if ch: write(p, s2); changed += 1
-    log.append("nav entry inserted on %d pages" % changed)
+    # 2. nav is regenerated for every page in step 4c (needs the updated destinations data first)
 
     # 3. index flag-card
     ip = os.path.join(ROOT, "index.html"); s = read(ip)
@@ -166,21 +209,27 @@ def main():
         log.append("fieldNotesMap already present")
     write(dp, s)
 
-    # 4b. Backfill the moved page's nav to the FULL current country set. An old draft
-    #     may predate recent ships (e.g. India's draft predated Switzerland & Tanzania),
-    #     so inserting only the new country leaves nav-drift. insert_after_alpha is idempotent.
-    if not DRY:
-        allc = re.findall(r'"([A-Z]{2})": \{ name: "([^"]+)",\s*url: "([a-z-]+)/field-notes\.html"', s)
-        mp = read(dst); added = 0
-        for iso, nm, sl in allc:
-            def mk(indent, pfx, _sl=sl, _iso=iso, _nm=nm):
-                return ('%s<a href="%s%s/field-notes.html" class="nav-dropdown-item">'
-                        '<img src="https://flagcdn.com/16x12/%s.png" width="16" height="12" alt="">'
-                        '<span class="country-name">%s</span></a>') % (indent, pfx, _sl, _iso.lower(), _nm)
-            mp, ch = insert_after_alpha(mp, nav_item_re, "n", nm, mk)
-            if ch: added += 1
-        if added: write(dst, mp)
-        log.append("backfilled moved-page nav (+%d missing countries)" % added)
+    # 4c. Regenerate the grouped Field Notes nav dropdown on every page from the
+    #     just-updated destinations.html (the single source of truth for the country set +
+    #     continents). This replaces the whole dropdown, so old drafts / prior layouts and
+    #     nav-drift are all resolved in one pass.
+    by_cont = parse_countries(s)
+    nfiles = list(live_pages())
+    override = {}
+    if DRY:                                   # moved page isn't written in dry-run
+        nfiles.append((dst, rel(dst))); override[dst] = html
+    nchanged = 0
+    for np, nr in nfiles:
+        cur = override.get(np) or (read(np) if os.path.exists(np) else None)
+        if not cur or '<div class="nav-dropdown' not in cur:
+            continue
+        pfx = "../" if "/" in nr else ""
+        new = NAV_RE.sub(build_nav(pfx, by_cont) + "\n    </li>", cur, count=1)
+        if new != cur:
+            if np not in override:
+                write(np, new)
+            nchanged += 1
+    log.append("regenerated grouped nav on %d pages" % nchanged)
 
     # 5. thumbnail
     thumb = a.thumb or "Images/dest-cards/%s_1.JPG" % name
@@ -188,8 +237,8 @@ def main():
     tdst = os.path.join(ROOT, "Images", "web", "dest-cards", "%s.jpg" % slug)
     if os.path.exists(tsrc):
         if not DRY:
-            from PIL import Image
-            im = Image.open(tsrc); W, H = im.size; icc = im.info.get("icc_profile")
+            from PIL import Image, ImageOps
+            im = ImageOps.exif_transpose(Image.open(tsrc)); W, H = im.size; icc = im.info.get("icc_profile")
             box = (600, 900) if H > W else ((1200, 800) if W > H else (900, 900))
             im = im.convert("RGB"); im.thumbnail(box, Image.LANCZOS)
             kw = {"format": "JPEG", "quality": 85, "optimize": True}

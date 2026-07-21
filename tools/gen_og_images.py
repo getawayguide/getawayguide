@@ -9,7 +9,7 @@ compressed portrait dest-card (flagged as lower-res). Output -> Images/web/og/<s
 Usage: python tools/gen_og_images.py [--dry-run]
 """
 import os, re, glob, sys
-from PIL import Image
+from PIL import Image, ImageOps
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
@@ -39,7 +39,7 @@ def vbias_for(slug):
     return int(m.group(1)) / 100 if m else 0.5
 
 def make_og(src, dst, vbias):
-    im = Image.open(src).convert("RGB"); W, H = im.size
+    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB"); W, H = im.size
     scale = max(OG_W / W, OG_H / H)
     rw, rh = round(W * scale), round(H * scale)
     im = im.resize((rw, rh), Image.LANCZOS)
