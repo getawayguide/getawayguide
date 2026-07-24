@@ -16,7 +16,13 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Jost:ital,wght@0,300..400;1,300..400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
+<style>
+.form-status{font-family:'Montserrat',sans-serif;font-size:.82rem;line-height:1.5;margin:1rem 0 0;min-height:1.2em}
+.form-status.success{color:#2D6B50}
+.form-status.error{color:#a1442f}
+.contact-submit[disabled]{opacity:.6;cursor:default}
+</style>
 
 <script type="application/ld+json">
 {
@@ -71,6 +77,7 @@
             </div>
             <div class="nav-fn-grp">
               <span class="nav-fn-region">Africa</span>
+              <a href="egypt/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/eg.png" width="16" height="12" alt=""><span class="country-name">Egypt</span></a>
               <a href="tanzania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
             </div>
             </div>
@@ -141,13 +148,19 @@
   </header>
   <section class="contact-section">
     <div class="contact-grid">
-      <div class="contact-form-side">
-        <div class="contact-field"><label class="contact-label">Your name</label><input type="text" class="contact-input" placeholder="Jane Smith"></div>
-        <div class="contact-field"><label class="contact-label">Email address</label><input type="email" class="contact-input" placeholder="jane@email.com"></div>
-        <div class="contact-field"><label class="contact-label">Subject</label><input type="text" class="contact-input" placeholder="Question about Japan itinerary"></div>
-        <div class="contact-field"><label class="contact-label">Message</label><textarea class="contact-input contact-textarea" placeholder="Write your message here..."></textarea></div>
-        <button class="contact-submit">Send message →</button>
-      </div>
+      <form class="contact-form-side" id="contact-form" action="https://api.web3forms.com/submit" method="POST">
+        <!-- Web3Forms access key (keeps your email out of the page source). Replace the value below with your key from https://web3forms.com -->
+        <input type="hidden" name="access_key" value="ceb7d479-a90f-4cee-a2cd-f9e6c2727361">
+        <input type="hidden" name="from_name" value="Getawayguide Contact Form">
+        <!-- Honeypot: hidden from real users, catches spam bots -->
+        <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none !important">
+        <div class="contact-field"><label class="contact-label" for="cf-name">Your name</label><input type="text" id="cf-name" name="name" class="contact-input" placeholder="Jane Smith" required></div>
+        <div class="contact-field"><label class="contact-label" for="cf-email">Email address</label><input type="email" id="cf-email" name="email" class="contact-input" placeholder="jane@email.com" required></div>
+        <div class="contact-field"><label class="contact-label" for="cf-subject">Subject</label><input type="text" id="cf-subject" name="subject" class="contact-input" placeholder="Question about Japan itinerary" required></div>
+        <div class="contact-field"><label class="contact-label" for="cf-message">Message</label><textarea id="cf-message" name="message" class="contact-input contact-textarea" placeholder="Write your message here..." required></textarea></div>
+        <button type="submit" class="contact-submit">Send message →</button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
       <div class="contact-info-side">
         <div class="contact-info-card"><p class="contact-info-label">Email</p><p class="contact-info-value"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e088858c8c8fa0878594819781998795898485ce838f8d">[email&#160;protected]</a></p></div>
         <div class="contact-info-card"><p class="contact-info-label">Instagram</p><a href="https://www.instagram.com/kphanthaman" target="_blank" rel="noopener noreferrer" class="contact-info-value contact-info-link">@kphanthaman</a></div>
@@ -174,6 +187,36 @@ document.addEventListener('click',function(e){var a=e.target.closest('#mobile-na
   var m={'index.html':'nav-home','':'nav-home','destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
   var id=m[p];
   if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+})();
+
+(function(){
+  var form=document.getElementById('contact-form');
+  if(!form)return;
+  var status=document.getElementById('form-status');
+  var btn=form.querySelector('.contact-submit');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var original=btn.textContent;
+    btn.disabled=true;btn.textContent='Sending…';
+    status.className='form-status';status.textContent='';
+    fetch(form.action,{method:'POST',headers:{'Accept':'application/json'},body:new FormData(form)})
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.success){
+          form.reset();
+          status.className='form-status success';
+          status.textContent='Thanks, your message is on its way. I’ll get back to you soon.';
+        }else{
+          status.className='form-status error';
+          status.textContent=(data.message||'Something went wrong.')+' Please try again, or reach me on Instagram.';
+        }
+      })
+      .catch(function(){
+        status.className='form-status error';
+        status.textContent='Something went wrong sending your message. Please try again, or reach me on Instagram.';
+      })
+      .finally(function(){btn.disabled=false;btn.textContent=original;});
+  });
 })();
 
 </script>
