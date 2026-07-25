@@ -1,0 +1,29 @@
+{
+  "iso3": "EGY",
+  "slug": "egypt",
+  "country_width": 560,
+  "margins": { "l": 270, "r": 210, "t": 120, "b": 120 },
+  "simplify": 170,
+  "smooth": true,
+
+  "stops": [
+    { "n": 1, "name": "Cairo & Giza", "lat": 30.0444, "lon": 31.2357, "days": "2–3 days", "anchor": "end", "dx": -16, "dy": 4 },
+    { "n": 2, "name": "Luxor",        "lat": 25.6872, "lon": 32.6396, "days": "2 days",   "anchor": "end", "dx": -16, "dy": 4 },
+    { "n": 3, "name": "Aswan",        "lat": 24.0889, "lon": 32.8998, "days": "2 days",   "anchor": "end", "dx": -16, "dy": 4 },
+    { "n": 4, "name": "Abu Simbel",   "lat": 22.3372, "lon": 31.6258, "days": "Day trip", "anchor": "end", "dx": -16, "dy": 4 }
+  ],
+
+  "dots": [
+    { "name": "Edfu",     "lat": 24.9781, "lon": 32.8730, "anchor": "start", "dx": 12, "dy": 4 },
+    { "name": "Kom Ombo", "lat": 24.4772, "lon": 32.9458, "anchor": "start", "dx": 12, "dy": 4 }
+  ],
+
+  "airport": { "name": "CAI Airport", "lat": 30.1219, "lon": 31.4056, "anchor": "start", "dx": 12, "dy": -6 },
+
+  "legs": [
+    { "a": "air", "b": 0, "label": "", "dash": true },
+    { "a": 0,     "b": 1, "label": "Flight · 1 hr", "dash": true },
+    { "a": 1,     "b": 2, "label": "Nile cruise · 3 days", "dash": true, "chip_off": 74, "bold": true },
+    { "a": 2,     "b": 3, "label": "3 hr drive" }
+  ]
+}

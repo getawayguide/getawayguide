@@ -1,0 +1,30 @@
+{
+  "iso3": "SLV",
+  "slug": "el-salvador",
+  "country_width": 780,
+  "margins": { "l": 250, "r": 250, "t": 130, "b": 140 },
+  "simplify": 150,
+  "smooth": true,
+
+  "stops": [
+    { "n": 1, "name": "San Salvador",       "lat": 13.6989, "lon": -89.1914, "days": "Day 1",     "anchor": "start",  "dx": 16, "dy": 4 },
+    { "n": 2, "name": "Santa Ana",          "lat": 13.9942, "lon": -89.5597, "days": "Days 2–4",  "anchor": "middle", "dx": 0,  "dy": -44 },
+    { "n": 3, "name": "Ruta de las Flores", "lat": 13.8600, "lon": -89.8080, "days": "Days 5–6",  "anchor": "end",    "dx": -18, "dy": 4 },
+    { "n": 4, "name": "El Tunco",           "lat": 13.4936, "lon": -89.3822, "days": "Days 7–8",  "anchor": "middle", "dx": 6,  "dy": -50 },
+    { "n": 5, "name": "Playa Shalpa",       "lat": 13.5019, "lon": -89.4426, "days": "Days 9–10", "anchor": "end",    "dx": -16, "dy": 4 }
+  ],
+
+  "dots": [
+    { "name": "Lago de Coatepeque", "lat": 13.868, "lon": -89.552, "anchor": "middle", "dx": 0, "dy": 17 }
+  ],
+
+  "airport": { "name": "SAL Airport", "lat": 13.4409, "lon": -89.0557, "anchor": "start", "dx": 14, "dy": 20 },
+
+  "legs": [
+    { "a": "air", "b": 0, "label": "40 min taxi",     "dash": true },
+    { "a": 0,     "b": 1, "label": "Bus · 1.5 hr" },
+    { "a": 1,     "b": 2, "label": "Bus · 1 hr" },
+    { "a": 2,     "b": 3, "label": "Bus · 2 hr" },
+    { "a": 3,     "b": 4, "label": "Shuttle · 30 min", "chip_off": 28, "chip_side": -1 }
+  ]
+}
