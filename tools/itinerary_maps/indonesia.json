@@ -1,0 +1,78 @@
+{
+  "airport": null,
+  "area_keep": 2e-05,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 14,
+      "lat": -8.8291,
+      "lon": 115.0849,
+      "name": "Uluwatu Temple"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 14,
+      "lat": -8.797,
+      "lon": 115.232,
+      "name": "Nusa Dua Beach"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": -4,
+      "lat": -8.2752,
+      "lon": 115.167,
+      "name": "Ulun Danu Beratan Temple"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": -8.4119,
+      "lon": 115.5872,
+      "name": "Tirta Gangga Temple"
+    }
+  ],
+  "country_width": 640,
+  "iso3": "IDN",
+  "keep_containing": [
+    -8.4,
+    115.15
+  ],
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "indonesia",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "1–2 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": -8.65,
+      "lon": 115.13,
+      "n": 1,
+      "name": "Canggu & Seminyak",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": -8.5069,
+      "lon": 115.2625,
+      "n": 2,
+      "name": "Ubud",
+      "no_number": true
+    }
+  ]
+}

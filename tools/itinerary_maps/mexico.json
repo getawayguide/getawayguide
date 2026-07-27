@@ -1,0 +1,74 @@
+{
+  "airport": null,
+  "country_width": 620,
+  "dots": [],
+  "iso3": "MEX",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 120,
+  "slug": "mexico",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "4–5 days",
+      "dx": -14,
+      "dy": -8,
+      "lat": 19.4326,
+      "lon": -99.1332,
+      "n": 1,
+      "name": "Mexico City"
+    },
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 15.1,
+      "dy": -15.4,
+      "lat": 19.0414,
+      "lon": -98.2063,
+      "n": 2,
+      "name": "Puebla"
+    },
+    {
+      "anchor": "start",
+      "days": "4 days",
+      "dx": 12.9,
+      "dy": -12,
+      "lat": 17.0732,
+      "lon": -96.7266,
+      "n": 3,
+      "name": "Oaxaca"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -14,
+      "dy": 14,
+      "lat": 15.872,
+      "lon": -97.0767,
+      "n": 4,
+      "name": "Puerto Escondido"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 40.5639,
+      "lon": 45.011,
+      "name": "Lake Sevan"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 40.1407,
+      "lon": 44.8178,
+      "name": "Garni & Geghard"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 39.8784,
+      "lon": 44.5761,
+      "name": "Khor Virap"
+    }
+  ],
+  "iso3": "ARM",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "chip_dy": -10.4,
+      "label": "Marshrutka · 2.5 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -20.2
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 110,
+  "slug": "armenia",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": 40.1792,
+      "lon": 44.4991,
+      "n": 1,
+      "name": "Yerevan"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": -14,
+      "lat": 40.7929,
+      "lon": 43.8465,
+      "n": 2,
+      "name": "Gyumri"
+    }
+  ]
+}

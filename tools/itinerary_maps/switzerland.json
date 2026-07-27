@@ -1,0 +1,83 @@
+{
+  "airport": {
+    "anchor": "start",
+    "dx": 12,
+    "dy": 4,
+    "lat": 47.4647,
+    "lon": 8.5492,
+    "name": "ZRH Airport"
+  },
+  "country_width": 560,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": 23.3,
+      "dy": 19.1,
+      "lat": 47.5596,
+      "lon": 7.5886,
+      "name": "Basel"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 46.0207,
+      "lon": 7.7491,
+      "name": "Zermatt"
+    }
+  ],
+  "iso3": "CHE",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "switzerland",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "3–4 days",
+      "dx": -14,
+      "dy": 14,
+      "lat": 46.6863,
+      "lon": 7.8632,
+      "n": 1,
+      "name": "Interlaken"
+    },
+    {
+      "anchor": "end",
+      "days": "1 day",
+      "dx": -14,
+      "dy": 4,
+      "lat": 46.948,
+      "lon": 7.4474,
+      "n": 2,
+      "name": "Bern"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": 47.0502,
+      "lon": 8.3093,
+      "n": 3,
+      "name": "Lucerne"
+    }
+  ]
+}

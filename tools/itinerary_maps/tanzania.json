@@ -1,0 +1,91 @@
+{
+  "airport": {
+    "anchor": "start",
+    "dx": 12,
+    "dy": 18,
+    "lat": -3.4245,
+    "lon": 37.0651,
+    "name": "JRO Airport"
+  },
+  "area_keep": 0.0008,
+  "country_width": 560,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": -3.0674,
+      "lon": 37.3556,
+      "name": "Mt. Kilimanjaro"
+    }
+  ],
+  "iso3": "TZA",
+  "legs": [
+    {
+      "a": "air",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "chip_dx": -54.2,
+      "chip_dy": 4.7,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Safari · 4x4"
+    },
+    {
+      "a": 1,
+      "b": "air",
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 2,
+      "dash": true,
+      "label": "Flight · 1.5 hr"
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 170,
+  "slug": "tanzania",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "3 days",
+      "dx": -13.3,
+      "dy": -15.5,
+      "lat": -2.43,
+      "lon": 34.83,
+      "n": 1,
+      "name": "Serengeti"
+    },
+    {
+      "anchor": "end",
+      "days": "1 day",
+      "dx": 0.8,
+      "dy": 14.3,
+      "lat": -3.1617,
+      "lon": 35.5877,
+      "n": 2,
+      "name": "Ngorongoro Crater"
+    },
+    {
+      "anchor": "start",
+      "days": "5–6 days",
+      "dx": 18.8,
+      "dy": -10.2,
+      "lat": -6.165,
+      "lon": 39.2,
+      "n": 3,
+      "name": "Zanzibar"
+    }
+  ]
+}

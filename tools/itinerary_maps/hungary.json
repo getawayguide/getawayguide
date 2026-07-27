@@ -1,0 +1,53 @@
+{
+  "airport": null,
+  "country_width": 540,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 47.7833,
+      "lon": 18.9667,
+      "name": "Danube Bend"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 47.9026,
+      "lon": 20.3772,
+      "name": "Eger"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 46.83,
+      "lon": 17.73,
+      "name": "Lake Balaton"
+    }
+  ],
+  "iso3": "HUN",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 55,
+  "slug": "hungary",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 47.4979,
+      "lon": 19.0402,
+      "n": 1,
+      "name": "Budapest",
+      "no_number": true
+    }
+  ]
+}

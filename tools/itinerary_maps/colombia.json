@@ -1,0 +1,74 @@
+{
+  "airport": null,
+  "country_width": 600,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 9.78,
+      "lon": -75.85,
+      "name": "San Bernardo Islands"
+    }
+  ],
+  "iso3": "COL",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "chip_off": 0,
+      "dash": true,
+      "label": "Flight · 1 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "chip_dx": 34.8,
+      "chip_dy": 10.4,
+      "label": "Bus · 4 hr",
+      "chip_off": 0,
+      "chip_side": 0
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 90,
+  "slug": "colombia",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "3–4 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": 6.2442,
+      "lon": -75.5812,
+      "n": 1,
+      "name": "Medellín"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -15.7,
+      "dy": -13.3,
+      "lat": 10.391,
+      "lon": -75.4794,
+      "n": 2,
+      "name": "Cartagena"
+    },
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 14,
+      "dy": -13.7,
+      "lat": 11.2408,
+      "lon": -74.199,
+      "n": 3,
+      "name": "Santa Marta & Tayrona"
+    }
+  ]
+}

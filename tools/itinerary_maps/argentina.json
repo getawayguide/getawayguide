@@ -1,0 +1,25 @@
+{
+  "iso3": "ARG",
+  "slug": "argentina",
+  "country_width": 300,
+  "margins": { "l": 240, "r": 240, "t": 120, "b": 120 },
+  "simplify": 150,
+  "smooth": true,
+
+  "stops": [
+    { "n": 1, "name": "Iguazu Falls",  "lat": -25.6953, "lon": -54.4367, "days": "2 days",   "anchor": "end",   "dx": -14, "dy": 4 },
+    { "n": 2, "name": "Buenos Aires",  "lat": -34.6037, "lon": -58.3816, "days": "3–4 days", "anchor": "end",   "dx": -14, "dy": 4 },
+    { "n": 3, "name": "El Calafate",   "lat": -50.3379, "lon": -72.2648, "days": "1–2 days", "anchor": "start", "dx": 14,  "dy": 4 },
+    { "n": 4, "name": "El Chaltén",    "lat": -49.3314, "lon": -72.8863, "days": "2–3 days", "anchor": "end",   "dx": -14, "dy": 4 }
+  ],
+
+  "dots": [],
+
+  "airport": { "name": "EZE Airport", "lat": -34.8222, "lon": -58.5358, "anchor": "start", "dx": 12, "dy": 6 },
+
+  "legs": [
+    { "a": 0, "b": 1, "label": "Flight · 2 hr", "dash": true },
+    { "a": 1, "b": 2, "label": "Flight · 3 hr", "dash": true },
+    { "a": 2, "b": 3, "label": "Bus · 3 hr", "chip_off": 0, "chip_dx": 4, "chip_dy": -42 }
+  ]
+}

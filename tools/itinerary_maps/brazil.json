@@ -1,0 +1,90 @@
+{
+  "airport": null,
+  "country_width": 560,
+  "dots": [],
+  "iso3": "BRA",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "dash": true,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 110,
+  "slug": "brazil",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "4–5 days",
+      "dx": 16,
+      "dy": -6,
+      "lat": -22.9068,
+      "lon": -43.1729,
+      "n": 1,
+      "name": "Rio de Janeiro"
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 0.3,
+      "dy": 28.7,
+      "lat": -23.14,
+      "lon": -44.17,
+      "n": 2,
+      "name": "Ilha Grande"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": -20.7,
+      "dy": -55.3,
+      "lat": -23.45,
+      "lon": -44.7131,
+      "n": 3,
+      "name": "Paraty"
+    },
+    {
+      "anchor": "middle",
+      "days": "2 days",
+      "dx": -57.4,
+      "dy": -35.5,
+      "lat": -23.5505,
+      "lon": -46.6333,
+      "n": 4,
+      "name": "São Paulo"
+    },
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -14,
+      "dy": 14,
+      "lat": -25.6953,
+      "lon": -54.4367,
+      "n": 5,
+      "name": "Iguazu Falls"
+    }
+  ]
+}

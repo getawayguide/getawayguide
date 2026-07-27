@@ -1,0 +1,81 @@
+{
+  "airport": {
+    "anchor": "start",
+    "dx": 12,
+    "dy": 4,
+    "lat": 41.9616,
+    "lon": 21.6214,
+    "name": "SKP Airport"
+  },
+  "country_width": 460,
+  "dots": [],
+  "iso3": "MKD",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 60,
+  "slug": "north-macedonia",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "n": 1,
+      "name": "Skopje"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -13.5,
+      "dy": -13.5,
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "n": 2,
+      "name": "Ohrid"
+    },
+    {
+      "anchor": "start",
+      "days": "1 day",
+      "dx": 11.7,
+      "dy": -13.6,
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "n": 3,
+      "name": "Bitola"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 15.8,
+      "dy": -15.8,
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "n": 4,
+      "name": "Krushevo"
+    }
+  ]
+}

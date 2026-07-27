@@ -1,29 +1,115 @@
 {
-  "iso3": "EGY",
-  "slug": "egypt",
+  "airport": {
+    "anchor": "start",
+    "dx": 12,
+    "dy": -6,
+    "lat": 30.1219,
+    "lon": 31.4056,
+    "name": "CAI Airport"
+  },
   "country_width": 560,
-  "margins": { "l": 270, "r": 210, "t": 120, "b": 120 },
-  "simplify": 170,
-  "smooth": true,
-
-  "stops": [
-    { "n": 1, "name": "Cairo & Giza", "lat": 30.0444, "lon": 31.2357, "days": "2–3 days", "anchor": "end", "dx": -16, "dy": 4 },
-    { "n": 2, "name": "Luxor",        "lat": 25.6872, "lon": 32.6396, "days": "2 days",   "anchor": "end", "dx": -16, "dy": 4 },
-    { "n": 3, "name": "Aswan",        "lat": 24.0889, "lon": 32.8998, "days": "2 days",   "anchor": "end", "dx": -16, "dy": 4 },
-    { "n": 4, "name": "Abu Simbel",   "lat": 22.3372, "lon": 31.6258, "days": "Day trip", "anchor": "end", "dx": -16, "dy": 4 }
-  ],
-
   "dots": [
-    { "name": "Edfu",     "lat": 24.9781, "lon": 32.8730, "anchor": "start", "dx": 12, "dy": 4 },
-    { "name": "Kom Ombo", "lat": 24.4772, "lon": 32.9458, "anchor": "start", "dx": 12, "dy": 4 }
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 24.9781,
+      "lon": 32.873,
+      "name": "Edfu"
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 24.4772,
+      "lon": 32.9458,
+      "name": "Kom Ombo"
+    }
   ],
-
-  "airport": { "name": "CAI Airport", "lat": 30.1219, "lon": 31.4056, "anchor": "start", "dx": 12, "dy": -6 },
-
+  "iso3": "EGY",
   "legs": [
-    { "a": "air", "b": 0, "label": "", "dash": true },
-    { "a": 0,     "b": 1, "label": "Flight · 1 hr", "dash": true },
-    { "a": 1,     "b": 2, "label": "Nile cruise · 3 days", "dash": true, "chip_off": 74, "bold": true },
-    { "a": 2,     "b": 3, "label": "3 hr drive" }
+    {
+      "a": "air",
+      "b": 0,
+      "dash": true,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "dash": true,
+      "label": "Flight · 1 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -6.2,
+      "chip_dy": -13.8
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "bold": true,
+      "chip_off": 0,
+      "dash": true,
+      "label": "Nile cruise · 3 days",
+      "chip_side": 0,
+      "chip_dx": -72.7,
+      "chip_dy": -1.9
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "3 hr drive"
+    }
+  ],
+  "margins": {
+    "b": 120,
+    "l": 270,
+    "r": 210,
+    "t": 120
+  },
+  "simplify": 170,
+  "slug": "egypt",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -16,
+      "dy": 4,
+      "lat": 30.0444,
+      "lon": 31.2357,
+      "n": 1,
+      "name": "Cairo & Giza"
+    },
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -16,
+      "dy": 4,
+      "lat": 25.6872,
+      "lon": 32.6396,
+      "n": 2,
+      "name": "Luxor"
+    },
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -16,
+      "dy": 4,
+      "lat": 24.0889,
+      "lon": 32.8998,
+      "n": 3,
+      "name": "Aswan"
+    },
+    {
+      "anchor": "end",
+      "days": "Day trip",
+      "dx": -16,
+      "dy": -14,
+      "lat": 22.3372,
+      "lon": 31.6258,
+      "n": 4,
+      "name": "Abu Simbel"
+    }
   ]
 }

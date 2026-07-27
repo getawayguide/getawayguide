@@ -1,0 +1,104 @@
+{
+  "airport": null,
+  "area_keep": 0.002,
+  "country_width": 560,
+  "dots": [],
+  "iso3": "PHL",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "dash": true,
+      "label": "Flight · 1 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -47.5,
+      "chip_dy": -19.4
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "chip_dx": -44.4,
+      "chip_dy": -22.4,
+      "label": "Boat · 3 days",
+      "chip_off": 0,
+      "chip_side": 0
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "chip_dx": 48.5,
+      "label": "Van · 3 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dy": -8.6
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "dash": true,
+      "label": "Flight · 3 hr"
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 5,
+  "slug": "philippines",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "1 day",
+      "dx": 14,
+      "dy": 4,
+      "lat": 14.5995,
+      "lon": 120.9842,
+      "n": 1,
+      "name": "Manila"
+    },
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 14.5,
+      "dy": -13.8,
+      "lat": 12.0053,
+      "lon": 120.2043,
+      "n": 2,
+      "name": "Coron"
+    },
+    {
+      "anchor": "end",
+      "days": "3–4 days",
+      "dx": -12.1,
+      "dy": -11.4,
+      "lat": 11.1949,
+      "lon": 119.4013,
+      "n": 3,
+      "name": "El Nido"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -13.5,
+      "dy": -7.6,
+      "lat": 10.4477,
+      "lon": 119.226,
+      "n": 4,
+      "name": "Port Barton"
+    },
+    {
+      "anchor": "start",
+      "days": "4–5 days",
+      "dx": 16.9,
+      "dy": -14.7,
+      "lat": 9.8482,
+      "lon": 126.0458,
+      "n": 5,
+      "name": "Siargao"
+    }
+  ]
+}

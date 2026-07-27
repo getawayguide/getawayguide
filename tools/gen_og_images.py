@@ -18,7 +18,7 @@ OG_W, OG_H = 1200, 630
 os.makedirs(os.path.join(ROOT, "Images", "web", "og"), exist_ok=True)
 
 # use a specific dest-card source instead of the default <Name>_1 (e.g. India's best shot is _3)
-SRC_OVERRIDE = {"india": "India_3.JPG", "indonesia": "Bali_2.JPG"}
+SRC_OVERRIDE = {"india": "India_3.JPG", "indonesia": "Bali_2.JPG", "australia": "Australia_3.JPG"}
 
 def hi_res(slug):
     if slug in SRC_OVERRIDE:

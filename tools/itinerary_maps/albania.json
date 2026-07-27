@@ -1,0 +1,93 @@
+{
+  "airport": {
+    "anchor": "end",
+    "dx": -12,
+    "dy": 3,
+    "lat": 41.4147,
+    "lon": 19.7206,
+    "name": "Tirana Airport"
+  },
+  "country_width": 300,
+  "dots": [],
+  "iso3": "ALB",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 4 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 42.9,
+      "chip_dy": 7.4
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Bus · 2.5 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 46.4,
+      "chip_dy": -14.2
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Bus + Ferry",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 39.7,
+      "chip_dy": 9.2
+    }
+  ],
+  "margins": {
+    "b": 120,
+    "l": 170,
+    "r": 250,
+    "t": 120
+  },
+  "simplify": 90,
+  "slug": "albania",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "3–4 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": 40.1017,
+      "lon": 19.745,
+      "n": 1,
+      "name": "Himarë"
+    },
+    {
+      "anchor": "start",
+      "days": "1 day",
+      "dx": 14,
+      "dy": 4,
+      "lat": 41.3275,
+      "lon": 19.8189,
+      "n": 2,
+      "name": "Tirana"
+    },
+    {
+      "anchor": "end",
+      "days": "1 day",
+      "dx": -13,
+      "dy": 4,
+      "lat": 42.0685,
+      "lon": 19.5127,
+      "n": 3,
+      "name": "Shkodër"
+    },
+    {
+      "anchor": "start",
+      "days": "4 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": 42.456,
+      "lon": 19.901,
+      "n": 4,
+      "name": "Valbona to Theth Hike"
+    }
+  ]
+}

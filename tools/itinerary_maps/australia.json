@@ -1,0 +1,156 @@
+{
+  "airport": null,
+  "area_keep": 0.002,
+  "crop_bounds": [
+    131,
+    -38.6,
+    159,
+    -10.3
+  ],
+  "dots": [],
+  "focus_span": 1000,
+  "iso3": "AUS",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 5,
+      "label": ""
+    },
+    {
+      "a": 5,
+      "b": 6,
+      "label": ""
+    },
+    {
+      "a": 6,
+      "b": 7,
+      "label": ""
+    },
+    {
+      "a": 7,
+      "b": 8,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 8000,
+  "slug": "australia",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "4–5 days",
+      "dx": 15.8,
+      "dy": -20.9,
+      "lat": -16.9186,
+      "lon": 145.7781,
+      "n": 1,
+      "name": "Cairns"
+    },
+    {
+      "anchor": "start",
+      "days": "3–4 days",
+      "dx": 15.4,
+      "dy": -17.7,
+      "lat": -20.2686,
+      "lon": 148.7186,
+      "n": 2,
+      "name": "Airlie Beach"
+    },
+    {
+      "anchor": "start",
+      "days": "3–4 days",
+      "dx": 14,
+      "dy": -19.4,
+      "lat": -25.24,
+      "lon": 153.13,
+      "n": 3,
+      "name": "K'gari"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -15.4,
+      "dy": -18.5,
+      "lat": -26.3959,
+      "lon": 153.0916,
+      "n": 4,
+      "name": "Noosa"
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 18.1,
+      "dy": -22.5,
+      "lat": -27.4698,
+      "lon": 153.0251,
+      "n": 5,
+      "name": "Brisbane"
+    },
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -17.2,
+      "dy": -8.2,
+      "lat": -28.0167,
+      "lon": 153.4,
+      "n": 6,
+      "name": "Gold Coast"
+    },
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 13.5,
+      "dy": -3.7,
+      "lat": -28.6474,
+      "lon": 153.602,
+      "n": 7,
+      "name": "Byron Bay"
+    },
+    {
+      "anchor": "start",
+      "days": "4–5 days",
+      "dx": 12.6,
+      "dy": 1.7,
+      "lat": -33.8688,
+      "lon": 151.2093,
+      "n": 8,
+      "name": "Sydney"
+    },
+    {
+      "anchor": "end",
+      "days": "4–5 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": -37.8136,
+      "lon": 144.9631,
+      "n": 9,
+      "name": "Melbourne"
+    }
+  ]
+}

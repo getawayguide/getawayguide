@@ -1,0 +1,85 @@
+{
+  "airport": null,
+  "area_keep": 0.02,
+  "country_width": 300,
+  "dots": [],
+  "focus": true,
+  "iso3": "CHL",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "dash": true,
+      "label": "Flight · 3.5 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "chip_dx": -40,
+      "chip_dy": 5.6,
+      "label": "Bus · 3 hr",
+      "chip_off": 0,
+      "chip_side": 0
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "chip_dx": -47.5,
+      "chip_dy": 6.2,
+      "label": "Bus · 1.5 hr",
+      "chip_off": 0,
+      "chip_side": 0
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 14,
+  "slug": "chile",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": -33.4489,
+      "lon": -70.6693,
+      "n": 1,
+      "name": "Santiago"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": -53.1638,
+      "lon": -70.9171,
+      "n": 2,
+      "name": "Punta Arenas"
+    },
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 38.4,
+      "dy": -31.2,
+      "lat": -51.7236,
+      "lon": -72.5069,
+      "n": 3,
+      "name": "Puerto Natales"
+    },
+    {
+      "anchor": "end",
+      "days": "3 days",
+      "dx": -25.4,
+      "dy": -15.8,
+      "lat": -50.9423,
+      "lon": -73.4068,
+      "n": 4,
+      "name": "Torres del Paine"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "airport": {
+    "anchor": "start",
+    "dx": 8,
+    "dy": -16,
+    "lat": 41.2753,
+    "lon": 28.7519,
+    "name": "IST Airport"
+  },
+  "country_width": 660,
+  "dots": [],
+  "iso3": "TUR",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "dash": true,
+      "label": "Flight · 1.5 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -0.1,
+      "chip_dy": -1.2
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Bus · 4 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 5.4,
+      "chip_dy": -6.6
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "chip_dy": 40.1,
+      "chip_off": 0,
+      "label": "Sailing · 4 days",
+      "chip_side": 0,
+      "chip_dx": 7.1
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 5,
+  "slug": "turkiye",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "3–5 days",
+      "dx": -14,
+      "dy": 4,
+      "lat": 41.0082,
+      "lon": 28.9784,
+      "n": 1,
+      "name": "Istanbul"
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": 38.6431,
+      "lon": 34.8283,
+      "n": 2,
+      "name": "Cappadocia"
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 14,
+      "dy": 4,
+      "lat": 36.8969,
+      "lon": 30.7133,
+      "n": 3,
+      "name": "Antalya"
+    },
+    {
+      "anchor": "end",
+      "days": "2–4 days",
+      "dx": -14,
+      "dy": 14,
+      "lat": 36.6567,
+      "lon": 29.1247,
+      "n": 4,
+      "name": "Fethiye & Ölüdeniz"
+    }
+  ]
+}

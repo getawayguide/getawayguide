@@ -1,0 +1,77 @@
+{
+  "airport": null,
+  "country_width": 540,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 43.3438,
+      "lon": 17.8078,
+      "name": "Mostar"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 43.2578,
+      "lon": 17.8853,
+      "name": "Blagaj"
+    },
+    {
+      "anchor": "start",
+      "dx": 7.6,
+      "dy": 14,
+      "lat": 43.13,
+      "lon": 17.74,
+      "name": "Počitelj"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 43.6519,
+      "lon": 17.9619,
+      "name": "Konjic"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 44.3417,
+      "lon": 17.2711,
+      "name": "Jajce"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 44.2264,
+      "lon": 17.6656,
+      "name": "Travnik"
+    }
+  ],
+  "iso3": "BIH",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 55,
+  "slug": "bosnia",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 43.8563,
+      "lon": 18.4131,
+      "n": 1,
+      "name": "Sarajevo",
+      "no_number": true
+    }
+  ]
+}

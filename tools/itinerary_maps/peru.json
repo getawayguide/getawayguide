@@ -1,0 +1,78 @@
+{
+  "airport": null,
+  "country_width": 380,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -8.1,
+      "dy": 17.3,
+      "lat": -13.1631,
+      "lon": -72.545,
+      "name": "Machu Picchu"
+    },
+    {
+      "anchor": "start",
+      "dx": -2.5,
+      "dy": -25,
+      "lat": -13.32,
+      "lon": -72.1,
+      "name": "Sacred Valley"
+    }
+  ],
+  "iso3": "PER",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "dash": true,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "dash": true,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 5,
+  "slug": "peru",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -17.3,
+      "dy": -13.6,
+      "lat": -12.0464,
+      "lon": -77.0428,
+      "n": 1,
+      "name": "Lima"
+    },
+    {
+      "anchor": "middle",
+      "days": "2 days",
+      "dx": 0,
+      "dy": 28,
+      "lat": -13.5319,
+      "lon": -71.9675,
+      "n": 2,
+      "name": "Cusco"
+    },
+    {
+      "anchor": "start",
+      "days": "3–4 days",
+      "dx": 14,
+      "dy": -13.2,
+      "lat": -12.5933,
+      "lon": -69.1891,
+      "n": 3,
+      "name": "Amazon"
+    }
+  ]
+}

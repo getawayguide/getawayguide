@@ -1,0 +1,57 @@
+{
+  "airport": null,
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 42.659,
+      "lon": 20.2883,
+      "name": "Peja"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 42.3803,
+      "lon": 20.4308,
+      "name": "Gjakova"
+    }
+  ],
+  "iso3": "KOS",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 45,
+  "slug": "kosovo",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "half day",
+      "dx": 14,
+      "dy": 4,
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "n": 1,
+      "name": "Prishtina",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 12,
+      "dy": 4,
+      "lat": 42.2139,
+      "lon": 20.7397,
+      "n": 2,
+      "name": "Prizren",
+      "no_number": true
+    }
+  ]
+}

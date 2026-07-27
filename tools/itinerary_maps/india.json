@@ -1,0 +1,75 @@
+{
+  "airport": null,
+  "country_width": 560,
+  "dots": [],
+  "iso3": "IND",
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "dash": true,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 5,
+  "slug": "india",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "middle",
+      "days": "2 days",
+      "dx": 0,
+      "dy": -46,
+      "lat": 28.6139,
+      "lon": 77.209,
+      "n": 1,
+      "name": "Delhi"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -12.6,
+      "dy": -0.6,
+      "lat": 26.9124,
+      "lon": 75.7873,
+      "n": 2,
+      "name": "Jaipur"
+    },
+    {
+      "anchor": "middle",
+      "days": "1–2 days",
+      "dx": 0.5,
+      "dy": 26.3,
+      "lat": 27.1767,
+      "lon": 78.0081,
+      "n": 3,
+      "name": "Agra"
+    },
+    {
+      "anchor": "middle",
+      "days": "2 days",
+      "dx": 0,
+      "dy": 21.5,
+      "lat": 25.3176,
+      "lon": 82.9739,
+      "n": 4,
+      "name": "Varanasi"
+    }
+  ]
+}

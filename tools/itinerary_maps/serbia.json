@@ -1,0 +1,53 @@
+{
+  "airport": null,
+  "country_width": 540,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 45.2671,
+      "lon": 19.8335,
+      "name": "Novi Sad"
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 43.7296,
+      "lon": 19.705,
+      "name": "Zlatibor"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 43.3209,
+      "lon": 21.8958,
+      "name": "Niš"
+    }
+  ],
+  "iso3": "SRB",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 55,
+  "slug": "serbia",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "dx": 46,
+      "dy": 16.2,
+      "lat": 44.7866,
+      "lon": 20.4489,
+      "n": 1,
+      "name": "Belgrade",
+      "no_number": true
+    }
+  ]
+}

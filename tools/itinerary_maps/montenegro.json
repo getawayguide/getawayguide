@@ -1,0 +1,53 @@
+{
+  "airport": null,
+  "country_width": 480,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -4.3,
+      "dy": -9,
+      "lat": 42.487,
+      "lon": 18.6983,
+      "name": "Perast"
+    },
+    {
+      "anchor": "start",
+      "dx": 6.3,
+      "dy": -5.5,
+      "lat": 42.2911,
+      "lon": 18.84,
+      "name": "Budva"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 43.1543,
+      "lon": 19.1225,
+      "name": "Durmitor"
+    }
+  ],
+  "iso3": "MNE",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 45,
+  "slug": "montenegro",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 42.4247,
+      "lon": 18.7712,
+      "n": 1,
+      "name": "Kotor",
+      "no_number": true
+    }
+  ]
+}
