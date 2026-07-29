@@ -434,6 +434,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .home-dest-grid{grid-template-columns:1fr;gap:.85rem}
   .home-dest-card{aspect-ratio:1.9/1}
   #dest-egypt .dest-bg{background-position:50% 25% !important}
+  #dest-latvia .dest-bg{background-image:url('Images/web/dest-cards/latvia-landscape.jpg') !important;background-position:50% 50% !important}
   .posts-grid{grid-template-columns:1fr}
   .post-card-image{aspect-ratio:16/9}
   .about-strip{grid-template-columns:1fr;min-height:auto}

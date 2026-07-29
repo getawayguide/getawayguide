@@ -292,6 +292,127 @@
     <ul>
       <li><b><a href="https://www.hostelworld.com/hostels/p/45416/cinnamon-sally-backpackers-hostel/">Cinnamon Sally Backpackers Hostel</a></b> — a cozy hostel with a nice common room and very social vibes. I really enjoyed my stay here</li>
     </ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap{position:relative;max-width:760px;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.cmmap{border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;
+  box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:18px;
+  display:flex;align-items:center;padding-left:2px}
+.cmrow{display:flex;align-items:center;gap:8px;height:18px;padding:0 5px;margin:0 -5px;
+  border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;color:#fff;font-size:8.5px;
+  font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.nm{font-size:11px;font-weight:500;color:#1C2821;white-space:nowrap}
+/* touch devices: no key — pan/pinch the map, tap a pin for its name, double-tap to open (see JS) */
+.citymap.touch .cmkey{display:none}
+@media (hover:none) and (pointer:coarse){ .cmkey{display:none} }   /* robust: hide key on touch even before JS runs */
+.citymap.touch .cmmap svg{touch-action:none}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;
+  font:600 13px/1 Montserrat,Arial;padding:8px 12px;border-radius:8px;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+</style>
+<figure class="citymap-fig"><div class="citymap"><div class="cmmap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke">
+<image x="0" y="0" width="760" height="470" href="../Images/web/city-maps/riga.png"/>
+<text x="335" y="307" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">VECRĪGA</text>
+<a href="https://www.google.com/maps/place/Riga+Castle/@56.9513145,24.0915373,15z/data=!4m6!3m5!1s0x46eecfd98f453a21:0x4e5a056da959e9c5!8m2!3d56.951003!4d24.1007905!16zL20vMDZiazY0?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="1"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(254.2 252.2)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(253.5 250.7)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="253.5" cy="233.0" r="6.4" fill="#fff"/><text x="253.5" y="233.0" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></a>
+<a href="https://www.google.com/maps/place/Three+Brothers,+Latvian+Museum+of+Architecture/@56.9480275,24.11034,15.15z/data=!4m6!3m5!1s0x46eecfd7549f102f:0x71d673de0e50bc54!8m2!3d56.950364!4d24.1042986!16s%2Fm%2F06zk7fs?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(301.0 267.9)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(300.3 266.4)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="300.3" cy="248.7" r="6.4" fill="#fff"/><text x="300.3" y="248.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></a>
+<a href="https://www.google.com/maps/place/Cat+House/@56.9501204,24.1041431,15.83z/data=!4m6!3m5!1s0x46eecfd0d7a7943f:0x761814c02a1b445f!8m2!3d56.9502134!4d24.1085295!16s%2Fm%2F0czd34r?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="3"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(357.5 271.6)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(356.8 270.1)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="356.8" cy="252.4" r="6.4" fill="#fff"/><text x="356.8" y="252.4" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=House+of+the+Blackheads+Riga" target="_blank" rel="noopener"><g class="cmpin" data-i="4"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(335.2 339.0)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(334.5 337.5)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="334.5" cy="319.8" r="6.4" fill="#fff"/><text x="334.5" y="319.8" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">4</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=Museum+of+the+Occupation+of+Latvia+Riga" target="_blank" rel="noopener"><g class="cmpin" data-i="5"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(343.2 332.3)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(342.5 330.8)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="342.5" cy="313.1" r="6.4" fill="#fff"/><text x="342.5" y="313.1" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">5</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=St+Peters+Church+Riga" target="_blank" rel="noopener"><g class="cmpin" data-i="6"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(367.1 340.7)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(366.4 339.2)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="366.4" cy="321.5" r="6.4" fill="#fff"/><text x="366.4" y="321.5" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">6</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=Art+Nouveau+Quarter+Riga+Alberta+iela" target="_blank" rel="noopener"><g class="cmpin" data-i="7"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(349.1 43.9)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(348.4 42.4)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="348.4" cy="24.7" r="6.4" fill="#fff"/><text x="348.4" y="24.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">7</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=Riga+Central+Market" target="_blank" rel="noopener"><g class="cmpin" data-i="8"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(439.8 429.1)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(439.1 427.6)" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="439.1" cy="409.9" r="6.4" fill="#fff"/><text x="439.1" y="409.9" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">8</text></g></a>
+<a href="https://www.google.com/maps/place/Moods/@56.9469934,24.1065254,16z/data=!4m13!1m7!3m6!1s0x46eecfc5ba7d1e9b:0x48926e281aa169f8!2sRiga+Art+Nouveau+Center!8m2!3d56.9595579!4d24.1084449!16s%2Fg%2F11ggsp0t2y!3m4!1s0x46eecfec3f3a858d:0x15350dd0bb5fef46!8m2!3d56.9452843!4d24.109143?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="9"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(365.7 392.4)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(365.0 390.9)" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="365.0" cy="373.2" r="6.4" fill="#fff"/><text x="365.0" y="373.2" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">9</text></g></a>
+<a href="https://www.google.com/maps/place/Skyline+bar/@56.9513354,24.1075583,14.86z/data=!4m14!1m7!3m6!1s0x46eecfc5ba7d1e9b:0x48926e281aa169f8!2sRiga+Art+Nouveau+Center!8m2!3d56.9595579!4d24.1084449!16s%2Fg%2F11ggsp0t2y!3m5!1s0x46eecfce08a4f14f:0xd7b3b26988aad881!8m2!3d56.9549827!4d24.1179294!16s%2Fg%2F1tj6sj76?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="10"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(483.1 154.7)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(482.4 153.2)" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="482.4" cy="135.5" r="6.4" fill="#fff"/><text x="482.4" y="135.5" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">10</text></g></a>
+<a href="https://www.google.com/maps/search/?api=1&amp;query=Cinnamon+Sally+Hostel+Riga" target="_blank" rel="noopener"><g class="cmpin" data-i="11"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(507.2 319.1)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(506.5 317.6)" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="506.5" cy="299.9" r="6.4" fill="#fff"/><text x="506.5" y="299.9" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#565B57">11</text></g></a>
+<text x="23" y="31" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.6" paint-order="stroke">LATVIA</text>
+<text x="21" y="57" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.5" paint-order="stroke">Riga</text>
+<text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text>
+</svg></div>
+<div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/place/Riga+Castle/@56.9513145,24.0915373,15z/data=!4m6!3m5!1s0x46eecfd98f453a21:0x4e5a056da959e9c5!8m2!3d56.951003!4d24.1007905!16zL20vMDZiazY0?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Riga Castle</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/place/Three+Brothers,+Latvian+Museum+of+Architecture/@56.9480275,24.11034,15.15z/data=!4m6!3m5!1s0x46eecfd7549f102f:0x71d673de0e50bc54!8m2!3d56.950364!4d24.1042986!16s%2Fm%2F06zk7fs?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Three Brothers</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/place/Cat+House/@56.9501204,24.1041431,15.83z/data=!4m6!3m5!1s0x46eecfd0d7a7943f:0x761814c02a1b445f!8m2!3d56.9502134!4d24.1085295!16s%2Fm%2F0czd34r?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Cat House</span></a>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/search/?api=1&amp;query=House+of+the+Blackheads+Riga" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">4</span><span class="nm">House of the Blackheads</span></a>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/search/?api=1&amp;query=Museum+of+the+Occupation+of+Latvia+Riga" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">5</span><span class="nm">Museum of the Occupation</span></a>
+<a class="cmrow" data-i="6" href="https://www.google.com/maps/search/?api=1&amp;query=St+Peters+Church+Riga" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">6</span><span class="nm">St. Peter&#x27;s Church</span></a>
+<a class="cmrow" data-i="7" href="https://www.google.com/maps/search/?api=1&amp;query=Art+Nouveau+Quarter+Riga+Alberta+iela" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">7</span><span class="nm">Art Nouveau Quarter</span></a>
+<a class="cmrow" data-i="8" href="https://www.google.com/maps/search/?api=1&amp;query=Riga+Central+Market" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">8</span><span class="nm">Riga Central Market</span></a>
+<div class="cmhead">BARS &amp; RESTAURANTS</div>
+<a class="cmrow" data-i="9" href="https://www.google.com/maps/place/Moods/@56.9469934,24.1065254,16z/data=!4m13!1m7!3m6!1s0x46eecfc5ba7d1e9b:0x48926e281aa169f8!2sRiga+Art+Nouveau+Center!8m2!3d56.9595579!4d24.1084449!16s%2Fg%2F11ggsp0t2y!3m4!1s0x46eecfec3f3a858d:0x15350dd0bb5fef46!8m2!3d56.9452843!4d24.109143?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">9</span><span class="nm">Moods.lv</span></a>
+<a class="cmrow" data-i="10" href="https://www.google.com/maps/place/Skyline+bar/@56.9513354,24.1075583,14.86z/data=!4m14!1m7!3m6!1s0x46eecfc5ba7d1e9b:0x48926e281aa169f8!2sRiga+Art+Nouveau+Center!8m2!3d56.9595579!4d24.1084449!16s%2Fg%2F11ggsp0t2y!3m5!1s0x46eecfce08a4f14f:0xd7b3b26988aad881!8m2!3d56.9549827!4d24.1179294!16s%2Fg%2F1tj6sj76?entry=ttu&amp;g_ep=EgoyMDI2MDcyNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">10</span><span class="nm">Skyline Bar</span></a>
+<div class="cmhead">ACCOMMODATION</div>
+<a class="cmrow" data-i="11" href="https://www.google.com/maps/search/?api=1&amp;query=Cinnamon+Sally+Hostel+Riga" target="_blank" rel="noopener"><span class="num" style="background:#6B716C;color:#ffffff">11</span><span class="nm">Cinnamon Sally Hostel</span></a>
+</div></div></figure>
+<script>
+(function(){
+ var cm=document.querySelector('.citymap'); if(!cm) return;
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ // desktop: hover a pin or key row highlights both + lifts the pin
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ if(!matchMedia('(pointer:coarse)').matches) return;   // desktop stops here
+ // ---- touch: pan/pinch-zoom + two-tap-to-open name bubble (mirrors destinations map) ----
+ cm.classList.add('touch');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ function apply(){svg.setAttribute('viewBox',x+' '+y+' '+w+' '+h);}
+ function clamp(){w=Math.max(W/5,Math.min(W,w));h=w*H/W;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});}); // never navigate on the first tap
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function nameFor(i){var el=cm.querySelector('.cmrow[data-i="'+i+'"] .nm');return el?el.textContent:'';}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=nameFor(i);bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px'; clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});   // tapping the bubble also opens
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ svg.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=svg.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ svg.addEventListener('touchmove',function(e){var r=svg.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ svg.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},90);}
+})();
+</script>
   </div>
   <div class="fn-section" id="other">
     <div class="fn-city-hd">
