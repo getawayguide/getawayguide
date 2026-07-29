@@ -44,7 +44,8 @@
       "lat": -22.9068,
       "lon": -43.1729,
       "n": 1,
-      "name": "Rio de Janeiro"
+      "name": "Rio de Janeiro",
+      "href": "#rio-de-janeiro"
     },
     {
       "anchor": "start",
@@ -54,7 +55,8 @@
       "lat": -23.14,
       "lon": -44.17,
       "n": 2,
-      "name": "Ilha Grande"
+      "name": "Ilha Grande",
+      "href": "#ilha-grande"
     },
     {
       "anchor": "start",
@@ -64,7 +66,8 @@
       "lat": -23.45,
       "lon": -44.7131,
       "n": 3,
-      "name": "Paraty"
+      "name": "Paraty",
+      "href": "#paraty"
     },
     {
       "anchor": "middle",
@@ -74,7 +77,8 @@
       "lat": -23.5505,
       "lon": -46.6333,
       "n": 4,
-      "name": "São Paulo"
+      "name": "São Paulo",
+      "href": "#sao-paulo"
     },
     {
       "anchor": "end",
@@ -84,7 +88,8 @@
       "lat": -25.6953,
       "lon": -54.4367,
       "n": 5,
-      "name": "Iguazu Falls"
+      "name": "Iguazu Falls",
+      "href": "#iguazu-falls"
     }
   ]
 }

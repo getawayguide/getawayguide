@@ -52,7 +52,8 @@
       "lat": -12.0464,
       "lon": -77.0428,
       "n": 1,
-      "name": "Lima"
+      "name": "Lima",
+      "href": "#lima"
     },
     {
       "anchor": "middle",
@@ -62,7 +63,8 @@
       "lat": -13.5319,
       "lon": -71.9675,
       "n": 2,
-      "name": "Cusco"
+      "name": "Cusco",
+      "href": "#cusco"
     },
     {
       "anchor": "start",
@@ -72,7 +74,8 @@
       "lat": -12.5933,
       "lon": -69.1891,
       "n": 3,
-      "name": "Amazon"
+      "name": "Amazon",
+      "href": "#amazon"
     }
   ]
 }

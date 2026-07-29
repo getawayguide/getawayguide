@@ -58,7 +58,8 @@
       "lat": 41.0082,
       "lon": 28.9784,
       "n": 1,
-      "name": "Istanbul"
+      "name": "Istanbul",
+      "href": "#istanbul"
     },
     {
       "anchor": "start",
@@ -68,7 +69,8 @@
       "lat": 38.6431,
       "lon": 34.8283,
       "n": 2,
-      "name": "Cappadocia"
+      "name": "Cappadocia",
+      "href": "#cappadocia"
     },
     {
       "anchor": "start",
@@ -78,7 +80,8 @@
       "lat": 36.8969,
       "lon": 30.7133,
       "n": 3,
-      "name": "Antalya"
+      "name": "Antalya",
+      "href": "#antalya"
     },
     {
       "anchor": "end",
@@ -88,7 +91,8 @@
       "lat": 36.6567,
       "lon": 29.1247,
       "n": 4,
-      "name": "Fethiye & Ölüdeniz"
+      "name": "Fethiye & Ölüdeniz",
+      "href": "#oludeniz-fethiye"
     }
   ]
 }

@@ -58,7 +58,8 @@
       "lat": 14.5995,
       "lon": 120.9842,
       "n": 1,
-      "name": "Manila"
+      "name": "Manila",
+      "href": "#manila"
     },
     {
       "anchor": "start",
@@ -68,7 +69,8 @@
       "lat": 12.0053,
       "lon": 120.2043,
       "n": 2,
-      "name": "Coron"
+      "name": "Coron",
+      "href": "#coron"
     },
     {
       "anchor": "end",
@@ -78,7 +80,8 @@
       "lat": 11.1949,
       "lon": 119.4013,
       "n": 3,
-      "name": "El Nido"
+      "name": "El Nido",
+      "href": "#el-nido"
     },
     {
       "anchor": "end",
@@ -88,7 +91,8 @@
       "lat": 10.4477,
       "lon": 119.226,
       "n": 4,
-      "name": "Port Barton"
+      "name": "Port Barton",
+      "href": "#port-barton"
     },
     {
       "anchor": "start",
@@ -98,7 +102,8 @@
       "lat": 9.8482,
       "lon": 126.0458,
       "n": 5,
-      "name": "Siargao"
+      "name": "Siargao",
+      "href": "#siargao"
     }
   ]
 }

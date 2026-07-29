@@ -10,6 +10,8 @@ Does, in order:
   4. Insert the destinations.html grid card (data-continent) + fieldNotesMap entry
   5. Compress the thumbnail -> Images/web/dest-cards/<slug>.jpg (portrait 600x900, q85, keep ICC)
   6. Remove the empty Drafts/<slug>/ folder
+  7. Rebuild search-index.js so the new country/text is searchable (also adds the
+     search.js script tag to the moved page, which drafts lack)
 
 Usage:
   python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe \
@@ -139,13 +141,16 @@ def main():
     if not os.path.exists(src): sys.exit("ERROR: draft not found: %s" % rel(src))
     if os.path.exists(dst) and not DRY: sys.exit("ERROR: live page already exists: %s" % rel(dst))
 
-    # 1. move + fix path depth
+    # 1. move + fix path depth (+ ensure the site-search script tag, which draft
+    #    pages don't have — a subpage loads it from ../)
     html = read(src).replace("../../", "../")
     assert "../../" not in html
+    if "search.js" not in html and "</body>" in html:
+        html = html.replace("</body>", '<script defer src="../search.js"></script>\n</body>', 1)
     if not DRY:
         os.makedirs(os.path.join(ROOT, slug), exist_ok=True)
         write(dst, html)
-    log.append("moved draft -> %s (../../ -> ../)" % rel(dst))
+    log.append("moved draft -> %s (../../ -> ../, +search.js)" % rel(dst))
 
     # 2. nav is regenerated for every page in step 4c (needs the updated destinations data first)
 
@@ -254,6 +259,17 @@ def main():
         except Exception:
             os.system('rm -rf "%s"' % os.path.join(ROOT, "Drafts", slug))
     log.append("removed Drafts/%s/" % slug)
+
+    # 7. rebuild the search index so the new country is searchable
+    if not DRY:
+        try:
+            import gen_search_index
+            gen_search_index.main()
+            log.append("rebuilt search-index.js")
+        except Exception as e:
+            log.append("WARN: search index not rebuilt (%s) — run tools/gen_search_index.py" % e)
+    else:
+        log.append("would rebuild search-index.js")
 
     print(tag + ("\n" + tag).join("- " + x for x in log))
     print("\nNext: python tools/lint_site.py  &&  python tools/gen_sitemap.py  &&  screenshot the 3 pages. Do not push until reviewed.")

@@ -56,7 +56,8 @@
       "lat": 40.1792,
       "lon": 44.4991,
       "n": 1,
-      "name": "Yerevan"
+      "name": "Yerevan",
+      "href": "#yerevan"
     },
     {
       "anchor": "start",
@@ -66,7 +67,8 @@
       "lat": 40.7929,
       "lon": 43.8465,
       "n": 2,
-      "name": "Gyumri"
+      "name": "Gyumri",
+      "href": "#gyumri"
     }
   ]
 }

@@ -79,7 +79,8 @@
       "lat": 40.6401,
       "lon": 22.9444,
       "n": 1,
-      "name": "Thessaloniki"
+      "name": "Thessaloniki",
+      "href": "#thessaloniki"
     },
     {
       "anchor": "end",
@@ -89,7 +90,8 @@
       "lat": 39.7217,
       "lon": 21.6306,
       "n": 2,
-      "name": "Meteora"
+      "name": "Meteora",
+      "href": "#meteora"
     },
     {
       "anchor": "end",
@@ -99,7 +101,8 @@
       "lat": 37.9838,
       "lon": 23.7275,
       "n": 3,
-      "name": "Athens"
+      "name": "Athens",
+      "href": "#athens"
     },
     {
       "anchor": "start",
@@ -109,7 +112,8 @@
       "lat": 37.4467,
       "lon": 25.3289,
       "n": 4,
-      "name": "Mykonos"
+      "name": "Mykonos",
+      "href": "#mykonos"
     },
     {
       "anchor": "start",
@@ -119,7 +123,8 @@
       "lat": 37.1036,
       "lon": 25.4766,
       "n": 5,
-      "name": "Naxos"
+      "name": "Naxos",
+      "href": "#naxos"
     },
     {
       "anchor": "start",
@@ -129,7 +134,8 @@
       "lat": 36.7228,
       "lon": 25.287,
       "n": 6,
-      "name": "Ios"
+      "name": "Ios",
+      "href": "#ios"
     },
     {
       "anchor": "start",
@@ -139,7 +145,8 @@
       "lat": 36.3932,
       "lon": 25.4615,
       "n": 7,
-      "name": "Santorini"
+      "name": "Santorini",
+      "href": "#santorini"
     }
   ]
 }

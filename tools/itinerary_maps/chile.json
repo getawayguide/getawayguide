@@ -49,7 +49,8 @@
       "lat": -33.4489,
       "lon": -70.6693,
       "n": 1,
-      "name": "Santiago"
+      "name": "Santiago",
+      "href": "#santiago"
     },
     {
       "anchor": "start",
@@ -59,7 +60,8 @@
       "lat": -53.1638,
       "lon": -70.9171,
       "n": 2,
-      "name": "Punta Arenas"
+      "name": "Punta Arenas",
+      "href": "#punta-arenas"
     },
     {
       "anchor": "start",
@@ -69,7 +71,8 @@
       "lat": -51.7236,
       "lon": -72.5069,
       "n": 3,
-      "name": "Puerto Natales"
+      "name": "Puerto Natales",
+      "href": "#puerto-natales"
     },
     {
       "anchor": "end",
@@ -79,7 +82,8 @@
       "lat": -50.9423,
       "lon": -73.4068,
       "n": 4,
-      "name": "Torres del Paine"
+      "name": "Torres del Paine",
+      "href": "#w-trek"
     }
   ]
 }

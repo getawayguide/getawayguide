@@ -70,7 +70,8 @@
       "lat": -16.9186,
       "lon": 145.7781,
       "n": 1,
-      "name": "Cairns"
+      "name": "Cairns",
+      "href": "#cairns"
     },
     {
       "anchor": "start",
@@ -80,7 +81,8 @@
       "lat": -20.2686,
       "lon": 148.7186,
       "n": 2,
-      "name": "Airlie Beach"
+      "name": "Airlie Beach",
+      "href": "#airlie"
     },
     {
       "anchor": "start",
@@ -90,7 +92,8 @@
       "lat": -25.24,
       "lon": 153.13,
       "n": 3,
-      "name": "K'gari"
+      "name": "K'gari",
+      "href": "#kgari"
     },
     {
       "anchor": "end",
@@ -100,7 +103,8 @@
       "lat": -26.3959,
       "lon": 153.0916,
       "n": 4,
-      "name": "Noosa"
+      "name": "Noosa",
+      "href": "#noosa"
     },
     {
       "anchor": "start",
@@ -110,7 +114,8 @@
       "lat": -27.4698,
       "lon": 153.0251,
       "n": 5,
-      "name": "Brisbane"
+      "name": "Brisbane",
+      "href": "#brisbane"
     },
     {
       "anchor": "end",
@@ -120,7 +125,8 @@
       "lat": -28.0167,
       "lon": 153.4,
       "n": 6,
-      "name": "Gold Coast"
+      "name": "Gold Coast",
+      "href": "#gold-coast"
     },
     {
       "anchor": "start",
@@ -130,7 +136,8 @@
       "lat": -28.6474,
       "lon": 153.602,
       "n": 7,
-      "name": "Byron Bay"
+      "name": "Byron Bay",
+      "href": "#byron-bay"
     },
     {
       "anchor": "start",
@@ -140,7 +147,8 @@
       "lat": -33.8688,
       "lon": 151.2093,
       "n": 8,
-      "name": "Sydney"
+      "name": "Sydney",
+      "href": "#sydney"
     },
     {
       "anchor": "end",
@@ -150,7 +158,8 @@
       "lat": -37.8136,
       "lon": 144.9631,
       "n": 9,
-      "name": "Melbourne"
+      "name": "Melbourne",
+      "href": "#melbourne"
     }
   ]
 }

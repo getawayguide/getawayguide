@@ -1,0 +1,54 @@
+{
+  "airport": null,
+  "country_width": 560,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 56.968,
+      "lon": 23.77,
+      "name": "Jūrmala"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 57.1537,
+      "lon": 24.8598,
+      "name": "Sigulda"
+    },
+    {
+      "anchor": "start",
+      "dx": -42.4,
+      "dy": -11.7,
+      "lat": 56.4144,
+      "lon": 24.025,
+      "name": "Rundāle Palace"
+    }
+  ],
+  "iso3": "LVA",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "latvia",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 14,
+      "dy": 4,
+      "href": "#riga",
+      "lat": 56.9496,
+      "lon": 24.1052,
+      "n": 1,
+      "name": "Riga"
+    }
+  ]
+}

@@ -308,6 +308,13 @@ def build(cfg):
                 lbl += (f'<text x="{dx}" y="{dy+15}" text-anchor="{anc}" font-size="10" '
                         f'font-weight="500" letter-spacing="1.5" fill="{P["pin"]}">'
                         f'{s["days"].upper()}</text>')
+            # optional link: the stop label jumps to a section on the article page.
+            # class "imap-link" is enabled on desktop but pointer-events:none on mobile
+            # (styles.css) so a tap can't interfere with scrolling/zooming the map.
+            # Skipped in edit mode so the editor can drag the label without navigating.
+            href = s.get("href")
+            if href and not EDIT:
+                lbl = f'<a class="imap-link" href="{href}">{lbl}</a>'
             inner += wrap(lbl, kind="stop", idx=i, dx=dx, dy=dy)
             ex_text(x + dx * AFS, y + dy * AFS, name, 14 * AFS, anc, 1.5 * AFS)
             if s.get("days"):

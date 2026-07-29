@@ -106,7 +106,8 @@
       "lat": 41.7151,
       "lon": 44.8271,
       "n": 1,
-      "name": "Tbilisi"
+      "name": "Tbilisi",
+      "href": "#tbilisi"
     },
     {
       "anchor": "start",
@@ -116,7 +117,8 @@
       "lat": 43.0458,
       "lon": 42.7288,
       "n": 2,
-      "name": "Svaneti"
+      "name": "Svaneti",
+      "href": "#svaneti"
     }
   ]
 }

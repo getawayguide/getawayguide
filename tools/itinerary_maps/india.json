@@ -39,7 +39,8 @@
       "lat": 28.6139,
       "lon": 77.209,
       "n": 1,
-      "name": "Delhi"
+      "name": "Delhi",
+      "href": "#delhi"
     },
     {
       "anchor": "end",
@@ -49,7 +50,8 @@
       "lat": 26.9124,
       "lon": 75.7873,
       "n": 2,
-      "name": "Jaipur"
+      "name": "Jaipur",
+      "href": "#jaipur"
     },
     {
       "anchor": "middle",
@@ -59,7 +61,8 @@
       "lat": 27.1767,
       "lon": 78.0081,
       "n": 3,
-      "name": "Agra"
+      "name": "Agra",
+      "href": "#agra"
     },
     {
       "anchor": "middle",
@@ -69,7 +72,8 @@
       "lat": 25.3176,
       "lon": 82.9739,
       "n": 4,
-      "name": "Varanasi"
+      "name": "Varanasi",
+      "href": "#varanasi"
     }
   ]
 }

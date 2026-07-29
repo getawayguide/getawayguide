@@ -79,7 +79,8 @@
       "lat": 30.0444,
       "lon": 31.2357,
       "n": 1,
-      "name": "Cairo & Giza"
+      "name": "Cairo & Giza",
+      "href": "#cairo"
     },
     {
       "anchor": "end",
@@ -89,7 +90,8 @@
       "lat": 25.6872,
       "lon": 32.6396,
       "n": 2,
-      "name": "Luxor"
+      "name": "Luxor",
+      "href": "#luxor"
     },
     {
       "anchor": "end",
@@ -99,7 +101,8 @@
       "lat": 24.0889,
       "lon": 32.8998,
       "n": 3,
-      "name": "Aswan"
+      "name": "Aswan",
+      "href": "#aswan"
     },
     {
       "anchor": "end",
@@ -109,7 +112,8 @@
       "lat": 22.3372,
       "lon": 31.6258,
       "n": 4,
-      "name": "Abu Simbel"
+      "name": "Abu Simbel",
+      "href": "#aswan"
     }
   ]
 }

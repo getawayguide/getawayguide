@@ -48,7 +48,8 @@
       "lat": 6.2442,
       "lon": -75.5812,
       "n": 1,
-      "name": "Medellín"
+      "name": "Medellín",
+      "href": "#medellin"
     },
     {
       "anchor": "end",
@@ -58,7 +59,8 @@
       "lat": 10.391,
       "lon": -75.4794,
       "n": 2,
-      "name": "Cartagena"
+      "name": "Cartagena",
+      "href": "#cartagena"
     },
     {
       "anchor": "start",
@@ -68,7 +70,8 @@
       "lat": 11.2408,
       "lon": -74.199,
       "n": 3,
-      "name": "Santa Marta & Tayrona"
+      "name": "Santa Marta & Tayrona",
+      "href": "#santa-marta"
     }
   ]
 }

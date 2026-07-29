@@ -45,7 +45,8 @@
       "lat": 41.9981,
       "lon": 21.4254,
       "n": 1,
-      "name": "Skopje"
+      "name": "Skopje",
+      "href": "#skopje"
     },
     {
       "anchor": "end",
@@ -55,7 +56,8 @@
       "lat": 41.1231,
       "lon": 20.8016,
       "n": 2,
-      "name": "Ohrid"
+      "name": "Ohrid",
+      "href": "#ohrid"
     },
     {
       "anchor": "start",
@@ -65,7 +67,8 @@
       "lat": 41.0319,
       "lon": 21.3347,
       "n": 3,
-      "name": "Bitola"
+      "name": "Bitola",
+      "href": "#bitola"
     },
     {
       "anchor": "start",
@@ -75,7 +78,8 @@
       "lat": 41.3697,
       "lon": 21.2494,
       "n": 4,
-      "name": "Krushevo"
+      "name": "Krushevo",
+      "href": "#krushevo"
     }
   ]
 }

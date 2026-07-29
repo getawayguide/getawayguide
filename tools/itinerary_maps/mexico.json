@@ -38,7 +38,8 @@
       "lat": 19.4326,
       "lon": -99.1332,
       "n": 1,
-      "name": "Mexico City"
+      "name": "Mexico City",
+      "href": "#mexico-city"
     },
     {
       "anchor": "start",
@@ -48,7 +49,8 @@
       "lat": 19.0414,
       "lon": -98.2063,
       "n": 2,
-      "name": "Puebla"
+      "name": "Puebla",
+      "href": "#puebla"
     },
     {
       "anchor": "start",
@@ -58,7 +60,8 @@
       "lat": 17.0732,
       "lon": -96.7266,
       "n": 3,
-      "name": "Oaxaca"
+      "name": "Oaxaca",
+      "href": "#oaxaca"
     },
     {
       "anchor": "end",
@@ -68,7 +71,8 @@
       "lat": 15.872,
       "lon": -97.0767,
       "n": 4,
-      "name": "Puerto Escondido"
+      "name": "Puerto Escondido",
+      "href": "#puerto-escondido"
     }
   ]
 }

@@ -57,7 +57,8 @@
       "lat": 40.1017,
       "lon": 19.745,
       "n": 1,
-      "name": "Himarë"
+      "name": "Himarë",
+      "href": "#himare"
     },
     {
       "anchor": "start",
@@ -67,7 +68,8 @@
       "lat": 41.3275,
       "lon": 19.8189,
       "n": 2,
-      "name": "Tirana"
+      "name": "Tirana",
+      "href": "#tirana"
     },
     {
       "anchor": "end",
@@ -77,7 +79,8 @@
       "lat": 42.0685,
       "lon": 19.5127,
       "n": 3,
-      "name": "Shkodër"
+      "name": "Shkodër",
+      "href": "#valbona-theth"
     },
     {
       "anchor": "start",
@@ -87,7 +90,8 @@
       "lat": 42.456,
       "lon": 19.901,
       "n": 4,
-      "name": "Valbona to Theth Hike"
+      "name": "Valbona to Theth Hike",
+      "href": "#valbona-theth"
     }
   ]
 }

@@ -825,3 +825,7 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
   .country-article-card-body{padding:1.1rem 1.2rem}
   .country-article-card-title{font-size:1.15rem}
 }
+/* Itinerary-map stop labels link to article sections — desktop only; disabled on
+   mobile so a tap can't interfere with scrolling/zooming the map. */
+.imap-link{pointer-events:auto;cursor:pointer}
+@media(max-width:768px){.imap-link{pointer-events:none;cursor:default}}

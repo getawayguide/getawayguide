@@ -61,7 +61,8 @@
       "lon": 115.13,
       "n": 1,
       "name": "Canggu & Seminyak",
-      "no_number": true
+      "no_number": true,
+      "href": "#canggu"
     },
     {
       "anchor": "start",
@@ -72,7 +73,8 @@
       "lon": 115.2625,
       "n": 2,
       "name": "Ubud",
-      "no_number": true
+      "no_number": true,
+      "href": "#ubud"
     }
   ]
 }

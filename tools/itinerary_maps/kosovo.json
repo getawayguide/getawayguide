@@ -40,7 +40,8 @@
       "lon": 21.1655,
       "n": 1,
       "name": "Prishtina",
-      "no_number": true
+      "no_number": true,
+      "href": "#prishtina"
     },
     {
       "anchor": "start",
@@ -51,7 +52,8 @@
       "lon": 20.7397,
       "n": 2,
       "name": "Prizren",
-      "no_number": true
+      "no_number": true,
+      "href": "#prizren"
     }
   ]
 }
