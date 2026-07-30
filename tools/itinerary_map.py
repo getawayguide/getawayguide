@@ -296,7 +296,7 @@ def build(cfg):
     for i, s in enumerate(stops):
         x, y = T(s["lat"], s["lon"])
         num = None if s.get("no_number") else s["n"]
-        inner = pin_body(num)
+        inner = f'<g class="imap-pin">{pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
         if s.get("name"):
             dx, dy = s.get("dx", 16), s.get("dy", 4)
             anc = s.get("anchor", "start")
@@ -319,7 +319,7 @@ def build(cfg):
             ex_text(x + dx * AFS, y + dy * AFS, name, 14 * AFS, anc, 1.5 * AFS)
             if s.get("days"):
                 ex_text(x + dx * AFS, y + (dy + 15) * AFS, s["days"].upper(), 10 * AFS, anc, 1.5 * AFS)
-        B.append(f'<g transform="{stamp_tf(x, y)}">{inner}</g>')
+        B.append(f'<g class="imap-stop" transform="{stamp_tf(x, y)}"><g class="imap-lift">{inner}</g></g>')
         exa(x - 9 * AFS, y - 28 * AFS); exa(x + 9 * AFS, y + 2 * AFS)
 
     # explicit crop window [minlon, minlat, maxlon, maxlat] — overrides the

@@ -830,3 +830,6 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
    mobile so a tap can't interfere with scrolling/zooming the map. */
 .imap-link{pointer-events:auto;cursor:pointer}
 @media(max-width:768px){.imap-link{pointer-events:none;cursor:default}}
+/* Route-map stops: hovering the pin or its label bounces both up together (desktop hover only) */
+.imap-stop .imap-lift{transition:transform .18s ease}
+@media(hover:hover){.imap-stop{cursor:pointer}.imap-stop:hover .imap-lift{transform:translateY(-4px)}}
