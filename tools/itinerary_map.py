@@ -293,14 +293,16 @@ def build(cfg):
                  f'{wrap(dlabel, kind="dot", idx=i, dx=ddx, dy=ddy)}</g>')
         ex_text(x + ddx * AFS, y + ddy * AFS, dot["name"], 10.5 * AFS, danc, 0)
 
+    single = len(stops) == 1   # a lone stop needs no number — "1." is meaningless
     for i, s in enumerate(stops):
         x, y = T(s["lat"], s["lon"])
-        num = None if s.get("no_number") else s["n"]
+        no_num = single or s.get("no_number")
+        num = None if no_num else s["n"]
         inner = f'<g class="imap-pin">{pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
         if s.get("name"):
             dx, dy = s.get("dx", 16), s.get("dy", 4)
             anc = s.get("anchor", "start")
-            prefix = "" if s.get("no_number") else f'{s["n"]}. '
+            prefix = "" if no_num else f'{s["n"]}. '
             name = f'{prefix}{s["name"].upper()}'
             lbl = (f'<text x="{dx}" y="{dy}" text-anchor="{anc}" font-size="14" '
                    f'font-weight="600" letter-spacing="1.5" fill="{P["ink"]}">{name}</text>')
