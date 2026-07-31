@@ -1,0 +1,118 @@
+{
+  "slug": "himare",
+  "kicker": "ALBANIA",
+  "city": "Himarë",
+  "osm": ".tmp/himare_osm.json",
+  "article": "albania/field-notes.html",
+  "embed": {
+    "pre": "My friends had a blast staying here</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Valbona & Theth -->"
+  },
+  "sea": {
+    "side": "west"
+  },
+  "district_label": {
+    "text": "DOWNTOWN",
+    "lat": 40.1025,
+    "lon": 19.742
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.9
+  },
+  "mobile": {
+    "pad": 1.16,
+    "init_w": 0.74,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Old Town Himarë",
+      "lat": 40.1178654,
+      "lon": 19.7328387,
+      "cat": "see",
+      "match": "old town"
+    },
+    {
+      "name": "Jale Beach",
+      "lat": 40.1195951,
+      "lon": 19.7016888,
+      "cat": "see",
+      "match": "jale"
+    },
+    {
+      "name": "Aquarium Beach",
+      "lat": 40.1129751,
+      "lon": 19.7119892,
+      "cat": "see",
+      "match": "aquarium"
+    },
+    {
+      "name": "Livadi Beach",
+      "lat": 40.1075701,
+      "lon": 19.7253121,
+      "cat": "see",
+      "match": "livadi"
+    },
+    {
+      "name": "Spile Beach",
+      "lat": 40.1011926,
+      "lon": 19.7433649,
+      "cat": "see",
+      "match": "spile"
+    },
+    {
+      "name": "Filikuri Beach",
+      "lat": 40.0858125,
+      "lon": 19.7519531,
+      "cat": "see",
+      "match": "filikuri"
+    },
+    {
+      "name": "Butterfly Cafe",
+      "lat": 40.1171075,
+      "lon": 19.7317212,
+      "cat": "eat",
+      "match": "butterfly"
+    },
+    {
+      "name": "Guma Restaurant",
+      "lat": 40.101253,
+      "lon": 19.7446052,
+      "cat": "eat",
+      "match": "guma"
+    },
+    {
+      "name": "I Love Souvlaki",
+      "lat": 40.1014456,
+      "lon": 19.7442966,
+      "cat": "eat",
+      "match": "souvlaki"
+    },
+    {
+      "name": "Fast Food Burbo Bakery",
+      "lat": 40.1030196,
+      "lon": 19.7455299,
+      "cat": "eat",
+      "match": "burbo"
+    },
+    {
+      "name": "Tonea's Café",
+      "lat": 40.1087731,
+      "lon": 19.7251177,
+      "cat": "eat",
+      "match": "tonea"
+    },
+    {
+      "name": "Himara Downtown Hostel",
+      "lat": 40.1015879,
+      "lon": 19.7452138,
+      "cat": "stay",
+      "match": "himara downtown"
+    }
+  ]
+}

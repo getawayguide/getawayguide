@@ -1,0 +1,108 @@
+{
+  "slug": "riga",
+  "kicker": "LATVIA",
+  "city": "Riga",
+  "osm": ".tmp/riga_osm.json",
+  "article": "latvia/field-notes.html",
+  "embed": {
+    "pre": "I really enjoyed my stay here</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "district_label": {
+    "text": "VECRĪGA",
+    "lat": 56.9487,
+    "lon": 24.1069
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.22
+  },
+  "mobile": {
+    "pad": 1.16,
+    "init_w": 0.8,
+    "init_x": 0.5,
+    "init_y": 0.55
+  },
+  "pois": [
+    {
+      "name": "House of the Blackheads",
+      "lat": 56.94746,
+      "lon": 24.10686,
+      "cat": "see",
+      "match": "blackheads"
+    },
+    {
+      "name": "St. Peter's Church",
+      "lat": 56.94739,
+      "lon": 24.10925,
+      "cat": "see",
+      "match": "peter"
+    },
+    {
+      "name": "Museum of the Occupation",
+      "lat": 56.94773,
+      "lon": 24.10746,
+      "cat": "see",
+      "match": "occupation"
+    },
+    {
+      "name": "Three Brothers",
+      "lat": 56.95036,
+      "lon": 24.1043,
+      "cat": "see",
+      "match": "three brothers"
+    },
+    {
+      "name": "Cat House",
+      "lat": 56.95021,
+      "lon": 24.10853,
+      "cat": "see",
+      "match": "cat house"
+    },
+    {
+      "name": "Riga Castle",
+      "lat": 56.951,
+      "lon": 24.1008,
+      "cat": "see",
+      "match": "riga castle"
+    },
+    {
+      "name": "Riga Central Market",
+      "lat": 56.94378,
+      "lon": 24.11469,
+      "cat": "see",
+      "match": "central market"
+    },
+    {
+      "name": "Art Nouveau Quarter",
+      "lat": 56.9595,
+      "lon": 24.1079,
+      "cat": "see",
+      "match": "art nouveau quarter"
+    },
+    {
+      "name": "Moods.lv",
+      "lat": 56.94528,
+      "lon": 24.10914,
+      "cat": "eat",
+      "match": "moods"
+    },
+    {
+      "name": "Skyline Bar",
+      "lat": 56.95498,
+      "lon": 24.11793,
+      "cat": "eat",
+      "match": "skyline"
+    },
+    {
+      "name": "Cinnamon Sally Hostel",
+      "lat": 56.94827,
+      "lon": 24.11973,
+      "cat": "stay",
+      "match": "cinnamon sally"
+    }
+  ]
+}

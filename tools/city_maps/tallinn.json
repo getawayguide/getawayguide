@@ -1,0 +1,133 @@
+{
+  "slug": "tallinn",
+  "kicker": "ESTONIA",
+  "city": "Tallinn",
+  "osm": ".tmp/tallinn_osm.json",
+  "article": "estonia/field-notes.html",
+  "embed": {
+    "pre": "<!--citymap:tallinn:start-->",
+    "post": "<!--citymap:tallinn:end-->"
+  },
+  "district_labels": [
+    { "text": "VANALINN", "lat": 59.4365, "lon": 24.7465 },
+    { "text": "TOOMPEA", "lat": 59.4352, "lon": 24.7378 },
+    { "text": "TELLISKIVI", "lat": 59.4416, "lon": 24.7288 }
+  ],
+  "center": {
+    "lat": 59.4362,
+    "lon": 24.7548
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.16,
+    "init_w": 0.8,
+    "init_x": 0.45,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Town Square",
+      "lat": 59.4373,
+      "lon": 24.7453,
+      "cat": "see",
+      "match": "town square"
+    },
+    {
+      "name": "St. Olaf's Church",
+      "lat": 59.4413,
+      "lon": 24.748,
+      "cat": "see",
+      "match": "olaf"
+    },
+    {
+      "name": "House of the Blackheads",
+      "lat": 59.4388,
+      "lon": 24.7466,
+      "cat": "see",
+      "match": "blackheads"
+    },
+    {
+      "name": "St. Nicholas' Church",
+      "lat": 59.4359,
+      "lon": 24.7427,
+      "cat": "see",
+      "match": "nicholas"
+    },
+    {
+      "name": "Kiek in de Kök",
+      "lat": 59.4347,
+      "lon": 24.7412,
+      "cat": "see",
+      "match": "kiek"
+    },
+    {
+      "name": "Alexander Nevsky Cathedral",
+      "lat": 59.4358,
+      "lon": 24.7394,
+      "cat": "see",
+      "match": "nevsky"
+    },
+    {
+      "name": "Toompea Castle",
+      "lat": 59.4352,
+      "lon": 24.737,
+      "cat": "see",
+      "match": "toompea castle"
+    },
+    {
+      "name": "Kohtuotsa Viewpoint",
+      "lat": 59.4392,
+      "lon": 24.7417,
+      "cat": "see",
+      "match": "kohtuotsa"
+    },
+    {
+      "name": "Vabamu Museum",
+      "lat": 59.4302,
+      "lon": 24.7386,
+      "cat": "see",
+      "match": "vabamu"
+    },
+    {
+      "name": "Telliskivi Creative City",
+      "lat": 59.4416,
+      "lon": 24.7288,
+      "cat": "see",
+      "match": "telliskivi"
+    },
+    {
+      "name": "Munga Kelder",
+      "lat": 59.4368,
+      "lon": 24.7456,
+      "cat": "eat",
+      "match": "munga"
+    },
+    {
+      "name": "Sveta Baar",
+      "lat": 59.4423,
+      "lon": 24.728,
+      "cat": "eat",
+      "match": "sveta"
+    },
+    {
+      "name": "Whisper Sister",
+      "lat": 59.4346,
+      "lon": 24.7473,
+      "cat": "eat",
+      "match": "whisper"
+    },
+    {
+      "name": "Lai 22",
+      "lat": 59.4398,
+      "lon": 24.7452,
+      "cat": "stay",
+      "match": "lai 22"
+    }
+  ]
+}

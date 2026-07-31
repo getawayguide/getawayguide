@@ -1,0 +1,54 @@
+{
+  "airport": null,
+  "country_width": 520,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": -13.6,
+      "dy": 28.1,
+      "lat": 59.53,
+      "lon": 25.83,
+      "name": "Lahemaa National Park"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 58.3776,
+      "lon": 26.729,
+      "name": "Tartu"
+    },
+    {
+      "anchor": "start",
+      "dx": -26.4,
+      "dy": -15.3,
+      "lat": 58.2528,
+      "lon": 22.4869,
+      "name": "Saaremaa"
+    }
+  ],
+  "iso3": "EST",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "estonia",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "middle",
+      "days": "2 days",
+      "dx": 5.3,
+      "dy": 21.1,
+      "href": "#tallinn",
+      "lat": 59.437,
+      "lon": 24.7536,
+      "n": 1,
+      "name": "Tallinn"
+    }
+  ]
+}

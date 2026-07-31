@@ -1,0 +1,598 @@
+#!/usr/bin/env python3
+"""Reusable city-map builder (WAT tool).
+
+Builds a two-variant "everything in the city" POI map from a JSON config:
+  - DESKTOP: landscape street map + floating category key + hover sync
+  - MOBILE:  portrait gesture map (drag-pan / pinch-zoom / tap-for-name /
+             double-tap-to-open), with a fixed title + instructions overlay
+             that the map pans underneath, and no key.
+
+The street layer is rasterized to a PNG (Playwright, 2x) and the pins are drawn
+as a light vector overlay on top, so the map ALWAYS paints (this sidesteps a
+Chromium paint-deferral bug with heavy all-vector inline SVGs).
+
+Usage:
+  python tools/city_map.py tools/city_maps/riga.json            # build PNGs + standalone preview
+  python tools/city_map.py tools/city_maps/riga.json --embed    # also embed the map into cfg["article"]
+  python tools/city_map.py tools/city_maps/riga.json --demo 7   # preview auto-opens pin #7's name bubble
+
+OSM street data is fetched SEPARATELY. The Bash tool here has no network, so
+fetch with PowerShell (Overpass) and save to the path in cfg["osm"]:
+  see tools/city_maps/README.md for the exact Overpass query.
+
+POI CATEGORY RULE: a pin's `cat` comes from the article SUB-SECTION it is written
+under, not from what the place "is":
+  - "What to Do" / attractions / sights (incl. squares, neighborhoods,
+    bazaars, viewpoints) -> "see"  (ATTRACTIONS)
+  - "Where to Eat" (bars, restaurants, cafés, bakeries)          -> "eat"
+  - "Where to Stay" (hotels, hostels, guesthouses)               -> "stay"
+
+WHICH PLACES TO PICK UP: include every map-linked place that is the subject of a
+bullet, PLUS notable named places listed inside a top-level bullet's prose (e.g.
+"Skanderbeg Square ... surrounded by the National Museum, Et'hem Bej Mosque and
+the Clock Tower" -> all four are pins; "Tirana Castle ... visit the New Bazaar
+inside" -> both are pins). Do NOT pick up incidental links buried inside a
+SUB-bullet's description (e.g. under Livadi Beach: "stop by the roof of the
+abandoned hotel for a view" -> not a pin). Skip duplicate references, geographic
+outliers that would wreck the frame (note them to the user), and places with no
+resolvable coordinates (e.g. Airbnb listings not in OSM).
+
+DISTRICT LABEL: if the article names a neighborhood/district (e.g. an old town or
+"downtown"), add `district_label {text, lat, lon}` — a faint place name baked onto
+the map (like VECRĪGA on Riga). Place it in that district but clear of the floating
+key (top-right on desktop); nudge `lat/lon` and, if needed, the desktop `pad` so it
+doesn't collide with the key.
+
+STANDARD SIZE: every map is the SAME size — desktop 760x470, mobile 660x820
+portrait (see DESK_*/MOB_* constants). Configs only set the framing: desktop `pad`,
+and mobile `pad` + `init_w/init_x/init_y` (opening view). Any w/h/dar/pin_scale in a
+config is ignored.
+
+GROUPING: by default the legend groups pins into ATTRACTIONS/EAT/STAY by each POI's
+`cat` (labels: ATTRACTIONS / RESTAURANTS & BARS / ACCOMMODATION). A config may instead
+define its own ordered `groups` (e.g. by NEIGHBORHOOD, the way the article is written)
+— a list of {key, label, color}; each POI then uses `group` (a group's key) instead of
+`cat`, pins are coloured by group, and the legend is grouped/ordered to match. For a
+NEIGHBORHOOD map: FOLD eat/stay POIs into their neighborhood group (no separate eat/stay
+groups — assign each by area) and add a faint neighborhood-name label per area via
+`district_labels`. Buenos Aires is the template (PALERMO / RECOLETA & MONSERRAT /
+SAN TELMO / LA BOCA). Pick group colours dark enough to read white pin numbers on.
+For a big multi-neighborhood city the legend is tall and the far-side cluster can fall
+under the key — nudge the frame with `center` (see Buenos Aires) so it clears.
+
+DISTRICT LABELS: `district_labels` (list of {text,lat,lon}; single `district_label`
+still works) are faint place names baked onto the map — clear of the title and key.
+The DESKTOP base is a plain <img> (reliably painted; survives HTML editors); MOBILE
+keeps the base in the SVG so gesture pan/zoom moves base+pins together.
+"""
+import json, math, os, html, re, asyncio, base64, argparse
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")
+PREV = f"{ROOT}/.tmp/previews"
+IMGDIR = f"{ROOT}/Images/web/city-maps"
+
+# ---- shared site palette / conventions (do not vary per city) ----------------
+LAND = "#F4F2EC"; WATER = "#B4D3D9"; PARK = "#CFE3C6"; TOP = "#FFFFFF"
+CASING = "#E6E1D4"; INK = "#1C2821"; KICKER = "#2D6B50"
+CAT = {"see":  ("ATTRACTIONS",        "#245A43", "#ffffff", "#245A43"),
+       "eat":  ("RESTAURANTS & BARS", "#C8DDD5", "#1C2821", "#3B6B54"),
+       "stay": ("ACCOMMODATION",      "#6B716C", "#ffffff", "#565B57")}
+CAT_ORDER = ["see", "eat", "stay"]
+PIN = "M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z"
+
+# ---- STANDARD FORMAT: uniform across every city so all maps render at the same
+# size. Only the FRAMING knobs (desktop `pad`; mobile `pad` + `init_w/x/y`) live in
+# each config. w/h/dar/pin_scale/title_px are fixed here and ignored in configs. ----
+DESK_W, DESK_H, DESK_PIN = 760, 470, 1.0        # landscape + floating key
+MOB_W, MOB_H, MOB_PIN, MOB_DAR = 660, 820, 1.6, 0.72   # portrait gesture map
+TITLE_PX = 34
+ROADW = {"living_street": 1.0, "pedestrian": 1.1, "residential": 1.2, "unclassified": 1.2,
+         "tertiary": 1.7, "tertiary_link": 1.2, "secondary": 2.3, "secondary_link": 1.5,
+         "primary": 2.9, "primary_link": 1.8, "trunk": 3.1, "trunk_link": 1.8,
+         "motorway": 3.3, "motorway_link": 1.8}
+MAJOR = ("tertiary", "tertiary_link", "secondary", "secondary_link", "primary",
+         "primary_link", "trunk", "trunk_link", "motorway", "motorway_link")
+
+
+def merc(lat, lon):
+    return math.radians(lon), math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
+
+
+def parse_osm(elements):
+    """Split a raw Overpass export into water polygons/lines, parks, roads, and coastline."""
+    water, parks, roads, coast = [], [], {k: [] for k in ROADW}, []
+    for el in elements:
+        t = el.get("tags", {})
+        if el["type"] == "way" and "geometry" in el:
+            g = el["geometry"]
+            if t.get("highway") in ROADW: roads[t["highway"]].append(g)
+            elif t.get("natural") == "coastline": coast.append(g)
+            elif t.get("natural") == "water" or t.get("waterway") == "riverbank" or "water" in t: water.append(g)
+            elif t.get("waterway") in ("river", "canal"): water.append(("line", g))
+            elif t.get("leisure") in ("park", "garden") or t.get("landuse") == "recreation_ground": parks.append(g)
+        elif el["type"] == "relation" and t.get("natural") == "water":
+            # a water multipolygon (e.g. the Río de la Plata) arrives as many separate
+            # boundary ways — chain them into closed rings so the body FILLS instead of
+            # drawing slivers. Huge rings get clipped to the frame by the SVG viewBox.
+            outers = [m["geometry"] for m in el.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
+            water.extend(assemble_rings(outers))
+    return water, parks, roads, coast
+
+
+def assemble_rings(ways):
+    """Chain boundary ways (lists of {lat,lon}) into rings by their shared end nodes."""
+    ways = [list(w) for w in ways if len(w) >= 2]
+    def k(p): return (round(p["lat"], 7), round(p["lon"], 7))
+    used = [False] * len(ways); rings = []
+    for i in range(len(ways)):
+        if used[i]: continue
+        used[i] = True; ch = list(ways[i]); ext = True
+        while ext:
+            ext = False
+            for j in range(len(ways)):
+                if used[j]: continue
+                w = ways[j]
+                if   k(ch[-1]) == k(w[0]):  ch += w[1:];         used[j] = True; ext = True
+                elif k(ch[-1]) == k(w[-1]): ch += w[-2::-1];     used[j] = True; ext = True
+                elif k(ch[0])  == k(w[-1]): ch = w[:-1] + ch;    used[j] = True; ext = True
+                elif k(ch[0])  == k(w[0]):  ch = w[1:][::-1] + ch; used[j] = True; ext = True
+        rings.append(ch)
+    return rings
+
+
+def landmass_polys(coast, px, W, H, pins):
+    """LAND polygons (as SVG point-strings) to paint over a WATER background for an
+    archipelago/peninsula frame. Robust for ANY coastline extent (tight or wide fetch):
+    assemble the coastline into rings, fill closed loops (islands) directly, and close
+    each open chain (the mainland) ALONG THE FRAME BORDER — never with a direct line,
+    which would cut diagonally across the view once the fetched coastline runs well past
+    the frame. OSM keeps land on the left of the way direction, but rather than reason
+    about winding we just pick the border-walk direction that puts the most (on-land)
+    pins inside the closed land. SVG clips everything past the viewBox."""
+    E = 0.5
+    def lb(a, b):                                   # Liang-Barsky clip of segment a->b to the frame
+        x0, y0 = a; x1, y1 = b; dx = x1 - x0; dy = y1 - y0; t0, t1 = 0.0, 1.0
+        for p, q in [(-dx, x0), (dx, W - x0), (-dy, y0), (dy, H - y0)]:
+            if abs(p) < 1e-12:
+                if q < 0: return None
+            else:
+                t = q / p
+                if p < 0:
+                    if t > t1: return None
+                    if t > t0: t0 = t
+                else:
+                    if t < t0: return None
+                    if t < t1: t1 = t
+        return ((x0 + t0 * dx, y0 + t0 * dy), (x0 + t1 * dx, y0 + t1 * dy), t0 > 1e-9, t1 < 1 - 1e-9)
+    def runs_of(ch):                                # split a polyline into its inside-the-frame runs
+        runs = []; cur = None
+        for i in range(len(ch) - 1):
+            r = lb(ch[i], ch[i + 1])
+            if r is None:
+                if cur and len(cur) >= 2: runs.append(cur)
+                cur = None; continue
+            p0, p1, c0, c1 = r
+            if cur is None or c0:
+                if cur and len(cur) >= 2: runs.append(cur)
+                cur = [p0, p1]
+            else:
+                cur.append(p1)
+            if c1:
+                if len(cur) >= 2: runs.append(cur)
+                cur = None
+        if cur and len(cur) >= 2: runs.append(cur)
+        return runs
+    def onb(p): return p[0] <= E or p[0] >= W - E or p[1] <= E or p[1] >= H - E
+    def pt(p):                                      # point -> perimeter param [0,4): top,right,bottom,left
+        x, y = p
+        if y <= E: return max(0.0, min(1.0, x / W))
+        if x >= W - E: return 1 + max(0.0, min(1.0, y / H))
+        if y >= H - E: return 2 + max(0.0, min(1.0, (W - x) / W))
+        return 3 + max(0.0, min(1.0, (H - y) / H))
+    def pp(t):
+        t %= 4
+        if t < 1: return (t * W, 0.0)
+        if t < 2: return (W, (t - 1) * H)
+        if t < 3: return ((3 - t) * W, H)
+        return (0.0, (4 - t) * H)
+    def corners(t0, t1, fwd):                       # frame-corner points between two params, one way round
+        span = ((t1 - t0) % 4) if fwd else ((t0 - t1) % 4); out = []
+        k = (math.floor(t0) + 1) if fwd else (math.ceil(t0) - 1)
+        for _ in range(5):
+            d = ((k - t0) % 4) if fwd else ((t0 - k) % 4)
+            if 1e-9 < d < span - 1e-9: out.append(pp(k % 4)); k += 1 if fwd else -1
+            else: break
+        return out
+    def close(runs, fwd):                           # join border-runs into closed land rings
+        ent = [pt(r[0]) for r in runs]; used = [False] * len(runs); rings = []
+        for s in range(len(runs)):
+            if used[s]: continue
+            ring = []; cur = s; guard = 0
+            while cur is not None and not used[cur] and guard < len(runs) + 3:
+                used[cur] = True; guard += 1; ring += runs[cur]
+                tout = pt(runs[cur][-1]); best = None; bd = 1e9
+                for j in range(len(runs)):
+                    if used[j]: continue
+                    d = ((ent[j] - tout) % 4) if fwd else ((tout - ent[j]) % 4)
+                    if 1e-9 < d < bd: bd = d; best = j
+                dclose = ((ent[s] - tout) % 4) if fwd else ((tout - ent[s]) % 4)
+                if best is None or dclose <= bd + 1e-9:
+                    ring += corners(tout, ent[s], fwd); cur = None
+                else:
+                    ring += corners(tout, ent[best], fwd); cur = best
+            if len(ring) >= 3: rings.append(ring)
+        return rings
+    def inside(q, poly):
+        x, y = q; c = False; n = len(poly); j = n - 1
+        for i in range(n):
+            xi, yi = poly[i]; xj, yj = poly[j]
+            if ((yi > y) != (yj > y)) and x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi: c = not c
+            j = i
+        return c
+
+    islands = []; runs = []
+    for r in assemble_rings(coast):
+        p = [px(q["lat"], q["lon"]) for q in r]
+        if len(p) < 2: continue
+        if (r[0]["lat"], r[0]["lon"]) == (r[-1]["lat"], r[-1]["lon"]):
+            islands.append(p)                       # closed loop = an island, fill as-is
+        else:
+            runs += [rr for rr in runs_of(p) if onb(rr[0]) and onb(rr[-1])]
+    best = max(([close(runs, f) for f in (True, False)]),
+               key=lambda rs: sum(any(inside(q, poly) for poly in rs) for q in pins)) if runs else []
+    return [" ".join(f"{a:.1f},{b:.1f}" for a, b in poly) for poly in islands + best if len(poly) >= 3]
+
+
+async def _raster(svg, W, H):
+    doc = (f'<!doctype html><meta charset="utf-8"><body style="margin:0">'
+           f'<div id="t" style="width:{W}px;height:{H}px">{svg}</div></body>')
+    from playwright.async_api import async_playwright
+    async with async_playwright() as pw:
+        br = await pw.chromium.launch()
+        ctx = await br.new_context(viewport={"width": W, "height": H}, device_scale_factor=2)
+        pg = await ctx.new_page(); await pg.set_content(doc, wait_until="load"); await pg.wait_for_timeout(400)
+        png = await pg.locator("#t").screenshot(); await br.close(); return png
+
+
+def build(cfg_path, embed=False, demo=None):
+    cfg = json.load(open(cfg_path, encoding="utf-8"))
+    slug = cfg["slug"]; city = cfg["city"]; kicker = cfg["kicker"]
+    os.makedirs(IMGDIR, exist_ok=True); os.makedirs(PREV, exist_ok=True)
+    osm = json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
+    water, parks, roads, coast = parse_osm(osm)
+    up = "../" * cfg["article"].count("/")   # relative depth to repo root (live=../, draft=../../)
+
+    # Grouping: default is the see/eat/stay categories. A config may instead define
+    # its own ordered `groups` (e.g. by neighborhood) — then each POI carries a
+    # `group` key (matching a group's `key`) instead of `cat`, pins are coloured by
+    # group, and the legend is grouped/ordered the same way. Each group needs
+    # {key, label, color}; the pin badge text is white and the on-map number uses
+    # the group colour, so pick colours dark enough to read white-on-colour.
+    if cfg.get("groups"):
+        GRP = {g["key"]: (g["label"], g["color"], "#ffffff", g["color"]) for g in cfg["groups"]}
+        GRP_ORDER = [g["key"] for g in cfg["groups"]]
+        gkey = lambda p: p["group"]
+    else:
+        GRP, GRP_ORDER, gkey = CAT, CAT_ORDER, lambda p: p["cat"]
+
+    # POIs in the order they're written about (earlier = lower number = drawn on top)
+    POIS = [(p["name"], p["lat"], p["lon"], gkey(p), p.get("match", p["name"].lower())) for p in cfg["pois"]]
+
+    # resolve each pin's Google-Maps link: explicit href > a matching link in the
+    # article > a generic maps search for "<name> <city>"
+    art = open(f"{ROOT}/{cfg['article']}", encoding="utf-8").read() if cfg.get("article") else ""
+    links = [(u.replace("&amp;", "&"), re.sub(r"<[^>]+>", "", t).strip().lower())
+             for u, t in re.findall(r'<a\b[^>]*href="(https://www\.google\.com/maps/[^"]+)"[^>]*>(.*?)</a>', art, re.S)]
+    explicit = {p["name"]: p["href"] for p in cfg["pois"] if p.get("href")}
+    def href_for(name, key):
+        if name in explicit: return explicit[name]
+        for u, t in links:
+            if key in t: return u
+        return f"https://www.google.com/maps/search/?api=1&query={(name + ' ' + city).replace(' ', '+')}"
+    HREF = {p[0]: href_for(p[0], p[4]) for p in POIS}
+
+    # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA). Accepts a
+    # list `district_labels`, or a single `district_label` for back-compat.
+    dls = cfg.get("district_labels") or ([cfg["district_label"]] if cfg.get("district_label") else [])
+
+    def make_variant(W, H, pad, title_px, pin_scale, pngname, show_num=True, svg_title=True, mobile=False):
+        mx = [merc(la, lo) for _, la, lo, *_ in POIS]
+        if cfg.get("center"):     # optional: frame around a chosen point (e.g. to clear a dense cluster off the key)
+            cx, cy = merc(cfg["center"]["lat"], cfg["center"]["lon"])
+        else:
+            cx = (min(p[0] for p in mx) + max(p[0] for p in mx)) / 2
+            cy = (min(p[1] for p in mx) + max(p[1] for p in mx)) / 2
+        hx = max(abs(p[0] - cx) for p in mx) * pad   # half-extents: keep every pin in frame
+        hy = max(abs(p[1] - cy) for p in mx) * pad
+        scale = min(W / (2 * hx), H / (2 * hy))
+        def px(lat, lon):
+            x, y = merc(lat, lon); return (W / 2 + (x - cx) * scale, H / 2 - (y - cy) * scale)
+        def proj_str(g):
+            pp = [px(p['lat'], p['lon']) for p in g]
+            xs = [a for a, b in pp]; ys = [b for a, b in pp]
+            if max(xs) < -25 or min(xs) > W + 25 or max(ys) < -25 or min(ys) > H + 25: return None
+            out = [pp[0]]
+            for a, b in pp[1:]:
+                if (a - out[-1][0]) ** 2 + (b - out[-1][1]) ** 2 >= 6.0: out.append((a, b))
+            return " ".join(f"{a:.1f},{b:.1f}" for a, b in out) if len(out) >= 2 else None
+        water_s = []
+        for w in water:
+            if isinstance(w, tuple):
+                s = proj_str(w[1]); water_s.append(("line", s)) if s else None
+            elif len(w) > 2:
+                s = proj_str(w); water_s.append(("poly", s)) if s else None
+        parks_s = [s for p in parks if len(p) > 2 and (s := proj_str(p))]
+        roads_s = {cls: [s for g in roads[cls] if (s := proj_str(g))] for cls in ROADW}
+
+        def basemap():
+            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" style="paint-order:stroke">']
+            # sea_bg: archipelago/peninsula city (Helsinki). The open sea isn't a water
+            # polygon, so fill the frame WATER and paint LAND from the coastline via
+            # landmass_polys() — islands fill directly, the mainland closes along the
+            # frame border (robust even when the fetched coastline runs far past the view).
+            seabg = bool(cfg.get("sea_bg") and coast)
+            if seabg:
+                o.append(f'<rect width="{W}" height="{H}" fill="{WATER}"/>')
+                pins_px = [px(p[1], p[2]) for p in POIS]
+                for s in landmass_polys(coast, px, W, H, pins_px):
+                    o.append(f'<polygon points="{s}" fill="{LAND}"/>')
+            else:
+                o.append(f'<rect width="{W}" height="{H}" fill="{LAND}"/>')
+            sea = cfg.get("sea")   # coastal city: flood the sea side (west/east/north/south) up to the coastline
+            if sea and coast:
+                side = sea.get("side", "west")
+                vertical = side in ("west", "east")
+                axis = (lambda q: q[1]) if vertical else (lambda q: q[0])   # order along the run of the shore
+                ways = []
+                for g in coast:                       # keep each way's own point order (no cross-way sorting)
+                    pts = [px(p['lat'], p['lon']) for p in g]
+                    if len(pts) < 2: continue
+                    if axis(pts[0]) > axis(pts[-1]): pts = pts[::-1]
+                    ways.append(pts)
+                ways.sort(key=lambda w: axis(w[0]))   # stack the ways in order along the shore
+                line = [p for w in ways for p in w]
+                thin = [line[0]]                       # light thinning to smooth the fill edge
+                for a, b in line[1:]:
+                    if (a - thin[-1][0]) ** 2 + (b - thin[-1][1]) ** 2 >= 6.0: thin.append((a, b))
+                line = thin
+                if vertical:                           # sea is the whole strip on one side of the shore line
+                    edge = -300 if side == "west" else W + 300
+                    poly = [(line[0][0], -300)] + line + [(line[-1][0], H + 300), (edge, H + 300), (edge, -300)]
+                else:
+                    edge = -300 if side == "north" else H + 300
+                    poly = [(-300, line[0][1])] + line + [(W + 300, line[-1][1]), (W + 300, edge), (-300, edge)]
+                o.append(f'<polygon points="{" ".join(f"{a:.1f},{b:.1f}" for a, b in poly)}" fill="{WATER}"/>')
+            for kind, s in water_s:
+                o.append(f'<polyline points="{s}" fill="none" stroke="{WATER}" stroke-width="5" stroke-linecap="round"/>'
+                         if kind == "line" else f'<polygon points="{s}" fill="{WATER}"/>')
+            for s in parks_s: o.append(f'<polygon points="{s}" fill="{PARK}"/>')
+            for cls in MAJOR:
+                for s in roads_s.get(cls, []):
+                    o.append(f'<polyline points="{s}" fill="none" stroke="{CASING}" stroke-width="{ROADW[cls]*1.3+1.8:.1f}" stroke-linecap="round" stroke-linejoin="round"/>')
+            for cls, wdt in ROADW.items():
+                for s in roads_s[cls]:
+                    o.append(f'<polyline points="{s}" fill="none" stroke="{TOP}" stroke-width="{wdt*1.3:.1f}" stroke-linecap="round" stroke-linejoin="round"/>')
+            o.append('</svg>'); return "\n".join(o)
+
+        png = asyncio.run(_raster(basemap(), W, H))
+        open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
+        b64 = base64.b64encode(png).decode()
+        ext_href = f"{up}Images/web/city-maps/{pngname}.png"
+
+        def render(active=None, external=False):
+            ps = pin_scale
+            src = ext_href if external else f"data:image/png;base64,{b64}"
+            # The base map is ALWAYS a plain <img> (browsers paint it reliably and HTML
+            # editors keep it); the pins ride on a transparent SVG overlay. Desktop is
+            # static; mobile wraps both in a .cmworld that JS pans/zooms via CSS transform
+            # (so base + pins move together) — see the JS. This avoids the SVG <image>
+            # paint bug that left the map blank / half-rendered at the edges.
+            img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
+            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke">']
+            for d in dls:      # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA)
+                lx, ly = px(d["lat"], d["lon"])
+                o.append(f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
+                         f'fill="#9DAAA0" text-anchor="middle" stroke="{LAND}" stroke-width="3">{html.escape(d["text"])}</text>')
+            for i in range(len(POIS), 0, -1):     # draw high->low so lower (earlier, more important) numbers sit on top
+                name, la, lo, cat, key = POIS[i - 1]
+                x, y = px(la, lo); fill = GRP[cat][1]; nt = GRP[cat][3]
+                cls = "cmpin active" if active == i else "cmpin"
+                mk = (f'<circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="{nt}">{i}</text>'
+                      if show_num else '<circle cx="0" cy="-17.7" r="3.1" fill="#fff"/>')
+                o.append(f'<a href="{html.escape(HREF[name])}" target="_blank" rel="noopener"><g class="{cls}" data-i="{i}" data-name="{html.escape(name)}">'
+                         f'<g transform="translate({x:.1f} {y:.1f}) scale({ps})">'
+                         f'<path d="{PIN}" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/>'
+                         f'<path d="{PIN}" fill="{fill}" stroke="#fff" stroke-width="1.1"/>{mk}'
+                         f'</g></g></a>')
+            if svg_title:   # desktop draws the title in the SVG; mobile uses a fixed HTML overlay instead
+                o.append(f'<text x="{title_px*0.68:.0f}" y="{title_px*0.58:.0f}" font-family="Montserrat,Arial" font-size="{title_px*0.27:.0f}" font-weight="600" letter-spacing="{title_px*0.12:.1f}" fill="{KICKER}" stroke="{LAND}" stroke-width="{title_px*0.08:.1f}" paint-order="stroke">{html.escape(kicker)}</text>')
+                o.append(f'<text x="{title_px*0.62:.0f}" y="{title_px*1.66:.0f}" font-family="Fraunces,Georgia,serif" font-size="{title_px}" font-weight="600" fill="{INK}" stroke="{LAND}" stroke-width="{title_px*0.13:.1f}" paint-order="stroke">{html.escape(city)}</text>')
+            o.append(f'<text x="{W-6}" y="{H-6}" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text>')
+            o.append('</svg>'); return img + "".join(o)
+        print(f"  {pngname}: {W}x{H}, raster {len(png)//1024}KB")
+        return render
+
+    d = cfg["desktop"]; m = cfg["mobile"]
+    render_desk = make_variant(DESK_W, DESK_H, d["pad"], TITLE_PX, DESK_PIN, slug)
+    render_mob = make_variant(MOB_W, MOB_H, m["pad"], TITLE_PX, MOB_PIN,
+                              f"{slug}-mobile", show_num=False, svg_title=False, mobile=True)
+
+    def legend_html(active=None):
+        h = ['<div class="cmkey">']
+        for cat in GRP_ORDER:
+            label, fill, badge_text, _ = GRP[cat]
+            items = [(i, p) for i, p in enumerate(POIS, 1) if p[3] == cat]
+            if not items: continue
+            h.append(f'<div class="cmhead">{html.escape(label)}</div>')
+            for i, (name, la, lo, c, key) in items:
+                ac = " active" if active == i else ""
+                h.append(f'<a class="cmrow{ac}" data-i="{i}" href="{html.escape(HREF[name])}" target="_blank" rel="noopener">'
+                         f'<span class="num" style="background:{fill};color:{badge_text}">{i}</span><span class="nm">{html.escape(name)}</span></a>')
+        h.append('</div>'); return "\n".join(h)
+
+    hint = "<br>".join(html.escape(l) for l in cfg.get("hint", ["Touch to explore", "Double-tap to open in Google Maps"]))
+    da = (f' data-dar="{MOB_DAR}" data-iw="{m.get("init_w",0.8)}" '
+          f'data-ix="{m.get("init_x",0.5)}" data-iy="{m.get("init_y",0.5)}"')
+
+    def maps_html(demo=None, external=False):
+        dd = f' data-demo="{demo}"' if demo else ""
+        return (f'<div class="citymap desk"><div class="cmmap">{render_desk(external=external)}</div>{legend_html()}</div>'
+                f'<div class="citymap mob"{da}{dd}><div class="cmmap"><div class="cmworld">{render_mob(external=external)}</div></div>'
+                f'<div class="cm-ov"><div class="cm-ov-kick">{html.escape(kicker)}</div><div class="cm-ov-title">{html.escape(city)}</div>'
+                f'<div class="cm-ov-hint">{hint}</div></div></div>')
+
+    frag = f'<style>\n{CSS}</style>\n<figure class="citymap-fig">{maps_html(external=True)}</figure>\n{JS}\n'
+    open(f"{PREV}/{slug}-city-embed.html", "w", encoding="utf-8").write(frag)
+
+    def page(demo=None, note=""):
+        return ('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+                '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">'
+                f'<style>body{{margin:0;background:#e9e9e3;padding:22px 16px}}{CSS}'
+                f'.note{{max-width:760px;margin:0 auto 8px;font:600 13px Montserrat;color:#444}}</style>'
+                f'<body>{f"<div class=note>{note}</div>" if note else ""}<figure class="citymap-fig">{maps_html(demo)}</figure>{JS}</body>')
+    open(f"{PREV}/{slug}-city.html", "w", encoding="utf-8").write(page(note=f"{city} · desktop=landscape+key · mobile=portrait gesture map"))
+    if demo:
+        open(f"{PREV}/{slug}-city-demo.html", "w", encoding="utf-8").write(page(demo=demo, note="mobile demo — tap a pin for its name, double-tap to open"))
+    print(f"wrote {slug}-city-embed.html + {slug}-city.html" + (" + demo" if demo else ""))
+
+    if embed:
+        e = cfg["embed"]; p = f"{ROOT}/{cfg['article']}"
+        s = open(p, encoding="utf-8").read()
+        a = s.index(e["pre"]) + len(e["pre"]); b = s.index(e["post"])
+        open(p, "w", encoding="utf-8", newline="").write(s[:a] + frag + s[b:])
+        print(f"embedded into {cfg['article']}")
+    return frag
+
+
+# ---- static CSS + JS (shared by every city; behaviour is data-attribute driven) ----
+CSS = """
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;height:16px;padding:0 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.nm{font-size:11px;font-weight:500;color:#1C2821;white-space:nowrap}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+"""
+JS = """<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>"""
+
+
+def fetch_bbox(cfg_path, margin=1.7):
+    """Generous Overpass fetch bbox (S,W,N,E) for a config. Covers the frame of BOTH
+    variants (desktop landscape + mobile portrait) at their current pad, then expands
+    by `margin` so there's street/water data well beyond the edges — the map stays
+    filled when you zoom out or nudge pad/center later, no blank land off the edge."""
+    cfg = json.load(open(cfg_path, encoding="utf-8"))
+    mxs = [merc(p["lat"], p["lon"]) for p in cfg["pois"]]
+    if cfg.get("center"):
+        cx, cy = merc(cfg["center"]["lat"], cfg["center"]["lon"])
+    else:
+        cx = (min(p[0] for p in mxs) + max(p[0] for p in mxs)) / 2
+        cy = (min(p[1] for p in mxs) + max(p[1] for p in mxs)) / 2
+    HW = HH = 0.0
+    for W, H, pad in [(DESK_W, DESK_H, cfg["desktop"]["pad"]), (MOB_W, MOB_H, cfg["mobile"]["pad"])]:
+        hx = max(abs(p[0] - cx) for p in mxs) * pad
+        hy = max(abs(p[1] - cy) for p in mxs) * pad
+        scale = min(W / (2 * hx), H / (2 * hy))
+        HW = max(HW, W / (2 * scale)); HH = max(HH, H / (2 * scale))
+    HW *= margin; HH *= margin
+    lat_of = lambda y: math.degrees(2 * (math.atan(math.exp(y)) - math.pi / 4))
+    return (lat_of(cy - HH), math.degrees(cx - HW), lat_of(cy + HH), math.degrees(cx + HW))
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description="Build a two-variant city POI map from a JSON config.")
+    ap.add_argument("config", help="path to the city-map config json (e.g. tools/city_maps/riga.json)")
+    ap.add_argument("--embed", action="store_true", help="embed the map into cfg['article'] between its markers")
+    ap.add_argument("--demo", type=int, default=None, help="preview auto-opens this pin's name bubble")
+    ap.add_argument("--bbox", action="store_true", help="print a generous Overpass fetch bbox (S,W,N,E) and exit")
+    a = ap.parse_args()
+    if a.bbox:
+        print("%.4f,%.4f,%.4f,%.4f" % fetch_bbox(a.config))
+    else:
+        build(a.config, embed=a.embed, demo=a.demo)

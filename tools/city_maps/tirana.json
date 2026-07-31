@@ -1,0 +1,103 @@
+{
+  "slug": "tirana",
+  "kicker": "ALBANIA",
+  "city": "Tirana",
+  "osm": ".tmp/tirana_osm.json",
+  "article": "albania/field-notes.html",
+  "embed": {
+    "pre": "like trivia</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Other Towns -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.16,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Skanderbeg Square",
+      "lat": 41.32756,
+      "lon": 19.8189,
+      "cat": "see",
+      "match": "skanderbeg"
+    },
+    {
+      "name": "National History Museum",
+      "lat": 41.32833,
+      "lon": 19.81805,
+      "cat": "see",
+      "match": "national museum"
+    },
+    {
+      "name": "Et'hem Bej Mosque",
+      "lat": 41.32723,
+      "lon": 19.8193,
+      "cat": "see",
+      "match": "et'hem"
+    },
+    {
+      "name": "Clock Tower",
+      "lat": 41.32776,
+      "lon": 19.81965,
+      "cat": "see",
+      "match": "clock tower"
+    },
+    {
+      "name": "Tirana Castle",
+      "lat": 41.3261,
+      "lon": 19.8215,
+      "cat": "see",
+      "match": "castle"
+    },
+    {
+      "name": "Bunk'Art 2",
+      "lat": 41.32709,
+      "lon": 19.81956,
+      "cat": "see",
+      "match": "bunk'art 2"
+    },
+    {
+      "name": "Tirana Pyramid",
+      "lat": 41.31806,
+      "lon": 19.81972,
+      "cat": "see",
+      "match": "pyramid"
+    },
+    {
+      "name": "New Bazaar",
+      "lat": 41.3299,
+      "lon": 19.8246,
+      "cat": "see",
+      "match": "new bazaar"
+    },
+    {
+      "name": "Blloku",
+      "lat": 41.3193,
+      "lon": 19.8172,
+      "cat": "see",
+      "match": "blloku"
+    },
+    {
+      "name": "Bearded Dad Hostel",
+      "lat": 41.3342994,
+      "lon": 19.8154446,
+      "cat": "stay",
+      "match": "bearded dad"
+    },
+    {
+      "name": "Blue Door Hostel",
+      "lat": 41.3336916,
+      "lon": 19.8289642,
+      "cat": "stay",
+      "match": "blue door"
+    }
+  ]
+}
