@@ -1,0 +1,86 @@
+{
+  "slug": "interlaken",
+  "kicker": "Switzerland",
+  "city": "Interlaken",
+  "osm": ".tmp/interlaken_osm.json",
+  "article": "switzerland/field-notes.html",
+  "embed": {
+    "pre": "The place has a legendary reputation among backpackers and for good reason</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Bern -->\n  <div class=\"fn-section\" id=\"bern\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Interlaken",
+      "cat": "see",
+      "match": "interlaken",
+      "lat": 46.686348,
+      "lon": 7.863205
+    },
+    {
+      "name": "Jungfraujoch",
+      "cat": "see",
+      "match": "jungfraujoch",
+      "lat": 46.547579,
+      "lon": 7.978974
+    },
+    {
+      "name": "Eiger",
+      "cat": "see",
+      "match": "eiger",
+      "lat": 46.577621,
+      "lon": 8.005393
+    },
+    {
+      "name": "Lauterbrunnen Valley",
+      "cat": "see",
+      "match": "lauterbrunnen valley",
+      "lat": 46.59352,
+      "lon": 7.90853
+    },
+    {
+      "name": "Grindelwald",
+      "cat": "see",
+      "match": "grindelwald",
+      "lat": 46.624273,
+      "lon": 8.036746
+    },
+    {
+      "name": "Gimmelwald",
+      "cat": "see",
+      "match": "gimmelwald",
+      "lat": 46.546862,
+      "lon": 7.894003
+    },
+    {
+      "name": "Spatz",
+      "cat": "eat",
+      "match": "spatz",
+      "lat": 46.686745,
+      "lon": 7.851946
+    },
+    {
+      "name": "Balmer's Hostel",
+      "cat": "stay",
+      "match": "balmer's hostel",
+      "lat": 46.681109,
+      "lon": 7.863639
+    }
+  ],
+  "center": {
+    "lat": 46.641916,
+    "lon": 7.919054
+  }
+}

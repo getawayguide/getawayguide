@@ -1,0 +1,99 @@
+{
+  "slug": "lima",
+  "kicker": "Peru",
+  "city": "Lima",
+  "osm": ".tmp/lima_osm.json",
+  "article": "peru/field-notes.html",
+  "embed": {
+    "pre": "neighborhood</b></a> — the bohemian option, popular with younger travelers</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Puerto Maldonado (Amazon) -->\n  <div class=\"fn-section\" id=\"amazon\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Walk along Malecón de Miraflores",
+      "cat": "see",
+      "match": "walk along malecón de ",
+      "lat": -12.124523,
+      "lon": -77.038382
+    },
+    {
+      "name": "Barranco Neighborhood",
+      "cat": "see",
+      "match": "barranco neighborhood",
+      "lat": -12.141151,
+      "lon": -77.022119
+    },
+    {
+      "name": "Bridge of Sighs",
+      "cat": "see",
+      "match": "bridge of sighs",
+      "lat": -12.14918,
+      "lon": -77.0226
+    },
+    {
+      "name": "Barranco Municipal Park",
+      "cat": "see",
+      "match": "barranco municipal par",
+      "lat": -12.149527,
+      "lon": -77.021187
+    },
+    {
+      "name": "Bajada de Baños",
+      "cat": "see",
+      "match": "bajada de baños",
+      "lat": -12.149297,
+      "lon": -77.02265
+    },
+    {
+      "name": "Huaca Pucllana",
+      "cat": "see",
+      "match": "huaca pucllana",
+      "lat": -12.111208,
+      "lon": -77.033608
+    },
+    {
+      "name": "Popular de aquí y de allá",
+      "cat": "eat",
+      "match": "popular de aquí y de a",
+      "lat": -12.131997,
+      "lon": -77.030555
+    },
+    {
+      "name": "Rainbow Hostel",
+      "cat": "stay",
+      "match": "rainbow hostel",
+      "lat": -12.1294154,
+      "lon": -77.0325818
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -12.134834,
+    "lon": -77.027694
+  },
+  "district_labels": [
+    {
+      "text": "MIRAFLORES",
+      "lat": -12.1205,
+      "lon": -77.03
+    },
+    {
+      "text": "BARRANCO",
+      "lat": -12.1475,
+      "lon": -77.022
+    }
+  ]
+}

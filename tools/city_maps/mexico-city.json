@@ -1,0 +1,141 @@
+{
+  "slug": "mexico-city",
+  "kicker": "Mexico",
+  "city": "Mexico City",
+  "osm": ".tmp/mexico-city_osm.json",
+  "article": "mexico/field-notes.html",
+  "embed": {
+    "pre": "so organized a lot of social activities including trip to a wrestling show</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Puebla -->\n  <div class=\"fn-section\" id=\"puebla\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.4
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Zócalo",
+      "cat": "see",
+      "match": "zócalo",
+      "lat": 19.433401,
+      "lon": -99.133253
+    },
+    {
+      "name": "Roma Norte",
+      "cat": "see",
+      "match": "roma norte",
+      "lat": 19.419526,
+      "lon": -99.162549
+    },
+    {
+      "name": "La Condesa",
+      "cat": "see",
+      "match": "la condesa",
+      "lat": 19.41498,
+      "lon": -99.177446
+    },
+    {
+      "name": "Polanco",
+      "cat": "see",
+      "match": "polanco",
+      "lat": 19.43402,
+      "lon": -99.195601
+    },
+    {
+      "name": "Bosque de Chapultepec",
+      "cat": "see",
+      "match": "bosque de chapultepec",
+      "lat": 19.4218,
+      "lon": -99.188193
+    },
+    {
+      "name": "Chapultepec Castle",
+      "cat": "see",
+      "match": "chapultepec castle",
+      "lat": 19.420463,
+      "lon": -99.182087
+    },
+    {
+      "name": "Palacio de Bellas Artes",
+      "cat": "see",
+      "match": "palacio de bellas arte",
+      "lat": 19.435501,
+      "lon": -99.141259
+    },
+    {
+      "name": "Lucha Libre",
+      "cat": "see",
+      "match": "lucha libre",
+      "lat": 19.425887,
+      "lon": -99.151719
+    },
+    {
+      "name": "Mercado de la Merced",
+      "cat": "see",
+      "match": "mercado de la merced",
+      "lat": 19.42535,
+      "lon": -99.12459
+    },
+    {
+      "name": "Taquería Orinoco",
+      "cat": "eat",
+      "match": "taquería orinoco",
+      "lat": 19.425665,
+      "lon": -99.166749
+    },
+    {
+      "name": "Tacos Tlaquepaque",
+      "cat": "eat",
+      "match": "tacos tlaquepaque",
+      "lat": 19.434312,
+      "lon": -99.137786
+    },
+    {
+      "name": "Máximo",
+      "cat": "eat",
+      "match": "máximo",
+      "lat": 19.415212,
+      "lon": -99.162006
+    },
+    {
+      "name": "Bar Las Brujas",
+      "cat": "eat",
+      "match": "bar las brujas",
+      "lat": 19.421183,
+      "lon": -99.159773
+    },
+    {
+      "name": "Wanderlust District",
+      "cat": "stay",
+      "match": "wanderlust",
+      "lat": 19.4255096,
+      "lon": -99.1561846
+    }
+  ],
+  "center": {
+    "lat": 19.425177,
+    "lon": -99.145975
+  },
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "CENTRO",
+      "lat": 19.4345,
+      "lon": -99.133
+    },
+    {
+      "text": "ROMA · CONDESA",
+      "lat": 19.416,
+      "lon": -99.164
+    }
+  ]
+}

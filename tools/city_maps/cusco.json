@@ -1,0 +1,176 @@
+{
+  "slug": "cusco",
+  "kicker": "Peru",
+  "city": "Cusco",
+  "osm": ".tmp/cusco_osm.json",
+  "article": "peru/field-notes.html",
+  "embed": {
+    "pre": "4AM–5AM) so keep this in mind if you book a dorm</li>\n        </ul>\n      </li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Machu Picchu -->\n  <div class=\"fn-section\" id=\"machu-picchu\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Plaza de Armas",
+      "cat": "see",
+      "match": "plaza de armas",
+      "lat": -13.516757,
+      "lon": -71.978813
+    },
+    {
+      "name": "Saqsaywaman",
+      "cat": "see",
+      "match": "saqsaywaman",
+      "lat": -13.509856,
+      "lon": -71.981688
+    },
+    {
+      "name": "San Blas Market",
+      "cat": "see",
+      "match": "san blas market",
+      "lat": -13.51569,
+      "lon": -71.972763
+    },
+    {
+      "name": "Mirador de Plaza San Cristóbal",
+      "cat": "see",
+      "match": "mirador de plaza san c",
+      "lat": -13.513499,
+      "lon": -71.97962
+    },
+    {
+      "name": "Mirador desde el Cristo Blanco",
+      "cat": "see",
+      "match": "mirador desde el crist",
+      "lat": -13.509641,
+      "lon": -71.978116
+    },
+    {
+      "name": "San Blas Viewpoint",
+      "cat": "see",
+      "match": "san blas viewpoint",
+      "lat": -13.51383,
+      "lon": -71.974093
+    },
+    {
+      "name": "Siete Borreguitos",
+      "cat": "see",
+      "match": "siete borreguitos",
+      "lat": -13.512304,
+      "lon": -71.978267
+    },
+    {
+      "name": "Q'enco Archaeological Complex",
+      "cat": "see",
+      "match": "q'enco archaeological ",
+      "lat": -13.508898,
+      "lon": -71.970656
+    },
+    {
+      "name": "Sapantiana Aqueduct",
+      "cat": "see",
+      "match": "sapantiana aqueduct",
+      "lat": -13.511866,
+      "lon": -71.978095
+    },
+    {
+      "name": "Regional Historical Museum of Cusco",
+      "cat": "see",
+      "match": "regional historical mu",
+      "lat": -13.517636,
+      "lon": -71.980215
+    },
+    {
+      "name": "Inka Museum",
+      "cat": "see",
+      "match": "inka museum",
+      "lat": -13.515593,
+      "lon": -71.978154
+    },
+    {
+      "name": "Chira Restaurante",
+      "cat": "eat",
+      "match": "chira restaurante",
+      "lat": -13.518978,
+      "lon": -71.976178
+    },
+    {
+      "name": "Xapiri Ground",
+      "cat": "eat",
+      "match": "xapiri ground",
+      "lat": -13.515201,
+      "lon": -71.974096
+    },
+    {
+      "name": "Qosqo Maki Panadería",
+      "cat": "eat",
+      "match": "qosqo maki panadería",
+      "lat": -13.518947,
+      "lon": -71.973857
+    },
+    {
+      "name": "Café Panam",
+      "cat": "eat",
+      "match": "café panam",
+      "lat": -13.517016,
+      "lon": -71.97985
+    },
+    {
+      "name": "Viajero Kokopelli Cusco",
+      "cat": "stay",
+      "match": "viajero kokopelli ",
+      "lat": -13.5197201,
+      "lon": -71.978671
+    }
+  ],
+  "center": {
+    "lat": -13.515488,
+    "lon": -71.974488
+  },
+  "day_trips": [
+    {
+      "name": "Rainbow Mountain",
+      "time": "Full Day",
+      "match": "rainbow mountain"
+    },
+    {
+      "name": "Humantay Lake",
+      "time": "Full Day",
+      "match": "humantay"
+    },
+    {
+      "name": "Sacred Valley",
+      "time": "Full Day",
+      "match": "sacred valley"
+    },
+    {
+      "name": "Machu Picchu",
+      "time": "Full Day",
+      "match": "machu picchu"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "SAN BLAS",
+      "lat": -13.5152,
+      "lon": -71.9755
+    },
+    {
+      "text": "CENTRO",
+      "lat": -13.5172,
+      "lon": -71.9805
+    }
+  ]
+}

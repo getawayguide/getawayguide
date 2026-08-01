@@ -1,0 +1,129 @@
+{
+  "slug": "zanzibar",
+  "kicker": "Tanzania",
+  "city": "Stone Town, Zanzibar",
+  "osm": ".tmp/zanzibar_osm.json",
+  "article": "tanzania/field-notes.html",
+  "embed": {
+    "pre": "y operate on a tab system and the food included was amazing and affordable</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Stone Town",
+      "cat": "see",
+      "match": "stone town",
+      "lat": -6.162653,
+      "lon": 39.189655
+    },
+    {
+      "name": "Old Fort",
+      "cat": "see",
+      "match": "old fort",
+      "lat": -6.16135,
+      "lon": 39.189057
+    },
+    {
+      "name": "House of Wonders",
+      "cat": "see",
+      "match": "house of wonders",
+      "lat": -6.160959,
+      "lon": 39.189563
+    },
+    {
+      "name": "Old Dispensary",
+      "cat": "see",
+      "match": "old dispensary",
+      "lat": -6.158241,
+      "lon": 39.192525
+    },
+    {
+      "name": "Darajani Bazaar",
+      "cat": "see",
+      "match": "darajani bazaar",
+      "lat": -6.16219,
+      "lon": 39.193695
+    },
+    {
+      "name": "Forodhani Gardens",
+      "cat": "see",
+      "match": "forodhani gardens",
+      "lat": -6.160341,
+      "lon": 39.189003
+    },
+    {
+      "name": "East Africa Slave Trade Exhibition",
+      "cat": "see",
+      "match": "east africa slave trad",
+      "lat": -6.163393,
+      "lon": 39.192551
+    },
+    {
+      "name": "Forodhani Gardens Night Market",
+      "cat": "eat",
+      "match": "forodhani gardens nigh",
+      "lat": -6.160542,
+      "lon": 39.188886
+    },
+    {
+      "name": "Lukmaan Swahili Restaurant",
+      "cat": "eat",
+      "match": "lukmaan swahili restau",
+      "lat": -6.163443,
+      "lon": 39.191583
+    },
+    {
+      "name": "Stone Town House",
+      "cat": "stay",
+      "match": "stone town house",
+      "lat": -6.1614168,
+      "lon": 39.1921751
+    },
+    {
+      "name": "Your Zanzibar Place",
+      "cat": "stay",
+      "match": "your zanzibar plac",
+      "lat": -6.163,
+      "lon": 39.188
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -6.160842000000001,
+    "lon": 39.190847500000004
+  },
+  "day_trips": [
+    {
+      "name": "Spice Farm Tour",
+      "time": "Half Day"
+    },
+    {
+      "name": "Prison Island",
+      "time": "Full Day"
+    },
+    {
+      "name": "Jozani Forest",
+      "time": "Full Day"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": -6.1625,
+      "lon": 39.1892
+    }
+  ]
+}

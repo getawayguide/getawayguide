@@ -1,0 +1,107 @@
+{
+  "slug": "lucerne",
+  "kicker": "Switzerland",
+  "city": "Lucerne",
+  "osm": ".tmp/lucerne_osm.json",
+  "article": "switzerland/field-notes.html",
+  "embed": {
+    "pre": "n, but located right on the lake. It was not super social when I was there</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Other Stops -->\n  <div class=\"fn-section\" id=\"other-stops\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Chapel Bridge (Kapellbrücke)",
+      "cat": "see",
+      "match": "chapel bridge (kapellb",
+      "lat": 47.05174,
+      "lon": 8.30763
+    },
+    {
+      "name": "Spreuerbrücke",
+      "cat": "see",
+      "match": "spreuerbrücke",
+      "lat": 47.050168,
+      "lon": 8.309307
+    },
+    {
+      "name": "Museggmauer (City Walls)",
+      "cat": "see",
+      "match": "museggmauer (city wall",
+      "lat": 47.055135,
+      "lon": 8.307193
+    },
+    {
+      "name": "Zytturm",
+      "cat": "see",
+      "match": "zytturm",
+      "lat": 47.054443,
+      "lon": 8.304507
+    },
+    {
+      "name": "Bourbaki Panorama Museum",
+      "cat": "see",
+      "match": "bourbaki panorama muse",
+      "lat": 47.056958,
+      "lon": 8.311226
+    },
+    {
+      "name": "Lion Monument",
+      "cat": "see",
+      "match": "lion monument",
+      "lat": 47.058426,
+      "lon": 8.310915
+    },
+    {
+      "name": "Swiss Museum of Transport",
+      "cat": "see",
+      "match": "swiss museum of transp",
+      "lat": 47.053814,
+      "lon": 8.335529
+    },
+    {
+      "name": "Rathaus Brauerei",
+      "cat": "eat",
+      "match": "rathaus brauerei",
+      "lat": 47.050168,
+      "lon": 8.309307
+    },
+    {
+      "name": "Restaurant Fritschi",
+      "cat": "eat",
+      "match": "restaurant fritschi",
+      "lat": 47.050168,
+      "lon": 8.309307
+    },
+    {
+      "name": "Backpackers Lucerne",
+      "cat": "stay",
+      "match": "backpackers lucerne",
+      "lat": 47.044101,
+      "lon": 8.321094
+    }
+  ],
+  "center": {
+    "lat": 47.055876,
+    "lon": 8.312601
+  },
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 47.052,
+      "lon": 8.308
+    }
+  ]
+}

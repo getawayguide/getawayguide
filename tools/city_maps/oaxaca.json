@@ -1,0 +1,107 @@
+{
+  "slug": "oaxaca",
+  "kicker": "Mexico",
+  "city": "Oaxaca",
+  "osm": ".tmp/oaxaca_osm.json",
+  "article": "mexico/field-notes.html",
+  "embed": {
+    "pre": "d daily activities. It was super social and I met some amazing people here</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Puerto Escondido -->\n  <div class=\"fn-section\" id=\"puerto-escondido\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Templo de Santo Domingo de Guzmán",
+      "cat": "see",
+      "match": "templo de santo doming",
+      "lat": 17.05423,
+      "lon": -96.71323
+    },
+    {
+      "name": "Museum of Cultures of Oaxaca",
+      "cat": "see",
+      "match": "museum of cultures of ",
+      "lat": 17.06552,
+      "lon": -96.7233
+    },
+    {
+      "name": "Mercado 20 de Noviembre",
+      "cat": "eat",
+      "match": "mercado 20 de noviembr",
+      "lat": 17.058033,
+      "lon": -96.727085
+    },
+    {
+      "name": "La Popular",
+      "cat": "eat",
+      "match": "la popular",
+      "lat": 17.043803,
+      "lon": -96.76811
+    },
+    {
+      "name": "Roy's Tacos",
+      "cat": "eat",
+      "match": "roy's tacos",
+      "lat": 17.06394,
+      "lon": -96.720081
+    },
+    {
+      "name": "Nono Cafe",
+      "cat": "eat",
+      "match": "nono cafe",
+      "lat": 17.06693,
+      "lon": -96.725537
+    },
+    {
+      "name": "Casa Angel Hostel",
+      "cat": "stay",
+      "match": "casa angel hostel",
+      "lat": 17.0916677,
+      "lon": -96.717044
+    }
+  ],
+  "center": {
+    "lat": 17.058743,
+    "lon": -96.729557
+  },
+  "day_trips": [
+    {
+      "name": "Food Tour",
+      "time": "Half Day"
+    },
+    {
+      "name": "Hierve el Agua",
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/search/?api=1&query=Hierve+el+Agua+Oaxaca"
+    },
+    {
+      "name": "Mezcal Distillery Tour",
+      "time": "Half Day"
+    },
+    {
+      "name": "Monte Albán",
+      "time": "Half Day",
+      "href": "https://www.google.com/maps/search/?api=1&query=Monte+Alban+ruins+Oaxaca"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "CENTRO HISTÓRICO",
+      "lat": 17.0625,
+      "lon": -96.724
+    }
+  ],
+  "roads": "major"
+}

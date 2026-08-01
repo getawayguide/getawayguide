@@ -1,0 +1,58 @@
+{
+  "slug": "prishtina",
+  "kicker": "Kosovo",
+  "city": "Prishtina",
+  "osm": ".tmp/prishtina_osm.json",
+  "article": "kosovo/field-notes.html",
+  "embed": {
+    "pre": " you don't miss the bell tower which has one of the best views in the city</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Prizren -->\n  <div class=\"fn-section\" id=\"prizren\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Bill Clinton Statue",
+      "cat": "see",
+      "match": "bill clinton statue",
+      "lat": 42.654052,
+      "lon": 21.153167
+    },
+    {
+      "name": "Kosovo National Library",
+      "cat": "see",
+      "match": "kosovo national librar",
+      "lat": 42.657553,
+      "lon": 21.16224
+    },
+    {
+      "name": "Mother Teresa Church & Bell Tower",
+      "cat": "see",
+      "match": "mother teresa church &",
+      "lat": 42.65628,
+      "lon": 21.159353
+    }
+  ],
+  "center": {
+    "lat": 42.6565,
+    "lon": 21.157591
+  },
+  "district_labels": [
+    {
+      "text": "CITY CENTER",
+      "lat": 42.6553,
+      "lon": 21.1565
+    }
+  ]
+}

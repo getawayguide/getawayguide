@@ -316,6 +316,117 @@
     <ul>
       <li><a href="https://www.hostelworld.com/hostels/p/275702/hindustan-by-backpackers-heaven/"><b>Hindustan Hostel</b></a> — a barebones hostel that I stayed in while in Delhi. It was located in a sketchy area where I would not walk around at night. There are probably better places to stay in Delhi...</li>
     </ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/delhi.png" width="760" height="470" alt="Delhi map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="366" y="89" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD DELHI</text><text x="306" y="166" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">CONNAUGHT PLACE</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Hindustan+Hostel+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="7" data-name="Hindustan Hostel"><g transform="translate(276.7 123.6) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#565B57">7</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Haldiram+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="6" data-name="Haldiram&#x27;s"><g transform="translate(210.8 423.0) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">6</text></g></g></a><a href="https://www.google.com/maps/place/India+Gate/@28.6129167,77.2269348,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce2daa9eb4d0b:0x717971125923e5d!8m2!3d28.612912!4d77.2295097!16zL20vMDM1bWMz?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="India Gate"><g transform="translate(347.9 257.4) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">5</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Chandni+Chowk+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Chandni Chowk"><g transform="translate(358.5 62.4) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">4</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Red+Fort+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Red Fort"><g transform="translate(392.7 61.9) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></g></a><a href="https://www.google.com/maps/place/Humayun%E2%80%99s+Tomb/@28.5932895,77.2481743,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce31ce8460ba7:0xb9f1ba2d3bdfa80d!8m2!3d28.5932848!4d77.2507492!16zL20vMDR3OWMy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Humayun&#x27;s Tomb"><g transform="translate(432.3 346.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Akshardham+Temple+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Akshardham Temple"><g transform="translate(537.8 259.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">India</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Delhi</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/search/?api=1&amp;query=Akshardham+Temple+Delhi" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Akshardham Temple</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/place/Humayun%E2%80%99s+Tomb/@28.5932895,77.2481743,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce31ce8460ba7:0xb9f1ba2d3bdfa80d!8m2!3d28.5932848!4d77.2507492!16zL20vMDR3OWMy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Humayun&#x27;s Tomb</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/search/?api=1&amp;query=Red+Fort+Delhi" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Red Fort</span></a>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/search/?api=1&amp;query=Chandni+Chowk+Delhi" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">4</span><span class="nm">Chandni Chowk</span></a>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/place/India+Gate/@28.6129167,77.2269348,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce2daa9eb4d0b:0x717971125923e5d!8m2!3d28.612912!4d77.2295097!16zL20vMDM1bWMz?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">5</span><span class="nm">India Gate</span></a>
+<div class="cmhead">RESTAURANTS &amp; BARS</div>
+<a class="cmrow" data-i="6" href="https://www.google.com/maps/search/?api=1&amp;query=Haldiram+Delhi" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">6</span><span class="nm">Haldiram&#x27;s</span></a>
+<div class="cmhead">ACCOMMODATION</div>
+<a class="cmrow" data-i="7" href="https://www.google.com/maps/search/?api=1&amp;query=Hindustan+Hostel+Delhi" target="_blank" rel="noopener"><span class="num" style="background:#6B716C;color:#ffffff">7</span><span class="nm">Hindustan Hostel</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/delhi-mobile.png" width="660" height="820" alt="Delhi map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="307" y="174" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD DELHI</text><text x="210" y="299" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">CONNAUGHT PLACE</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Hindustan+Hostel+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="7" data-name="Hindustan Hostel"><g transform="translate(162.1 228.9) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Haldiram+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="6" data-name="Haldiram&#x27;s"><g transform="translate(55.0 715.5) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/India+Gate/@28.6129167,77.2269348,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce2daa9eb4d0b:0x717971125923e5d!8m2!3d28.612912!4d77.2295097!16zL20vMDM1bWMz?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="India Gate"><g transform="translate(277.8 446.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Chandni+Chowk+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Chandni Chowk"><g transform="translate(295.1 129.5) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Red+Fort+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Red Fort"><g transform="translate(350.7 128.8) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Humayun%E2%80%99s+Tomb/@28.5932895,77.2481743,17z/data=!3m1!4b1!4m6!3m5!1s0x390ce31ce8460ba7:0xb9f1ba2d3bdfa80d!8m2!3d28.5932848!4d77.2507492!16zL20vMDR3OWMy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Humayun&#x27;s Tomb"><g transform="translate(414.9 590.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Akshardham+Temple+Delhi" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Akshardham Temple"><g transform="translate(586.5 449.2) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">India</div><div class="cm-ov-title">Delhi</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="agra">
     <div class="fn-city-hd">
@@ -339,6 +450,113 @@
     <ul>
       <li><a href="https://www.hostelworld.com/hostels/p/293756/joey-s-hostel-agra/?source=ppc_gooads_nonbrand_dsk_search_pn_en_us&amp;network=g&amp;campaign_id=20140219878&amp;adgroup_id=149203627174&amp;criteria_id=kwd-736133875900&amp;creative_id=664243389726&amp;location_physical_id=9061268&amp;location_interest_id=&amp;adposition=&amp;uniqueclickID=1464073545990046329&amp;sub_keyword=joey%27s+hostel+agra&amp;sub_ad=e&amp;sub_publisher=ADW&amp;gclsrc=aw.ds&amp;gad_source=1&amp;gad_campaignid=20140219878&amp;gbraid=0AAAAAD9QXQY5_4hoHv4iVi2x-sxhFvDFV&amp;gclid=CjwKCAjwpefSBhBvEiwAzyEtZ7_z1cKfeTEicC4PQH5TIcH5s82NYISjxFcArMZB21w4QWaKjxQAOxoCNHUQAvD_BwE"><b>Joey's Hostel Agra</b></a> — a great hostel in Agra with an incredible view of Agra from the roof</li>
     </ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/agra.png" width="760" height="470" alt="Agra map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="498" y="370" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">TAJ GANJ</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Joey&#x27;s+Hostel+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Joey&#x27;s Hostel"><g transform="translate(556.5 415.5) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#565B57">4</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+east+gate+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Taj Mahal east gate"><g transform="translate(532.0 273.7) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></g></a><a href="https://www.google.com/maps/place/Agra+Fort/@27.1795375,78.0185371,17z/data=!3m2!4b1!5s0x397477a80717e019:0x79df84725ade21fc!4m6!3m5!1s0x397470d491343beb:0x640a5ccc94029576!8m2!3d27.1795328!4d78.021112!16zL20vMDQ3OThj?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Agra Fort"><g transform="translate(76.0 157.6) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Taj Mahal"><g transform="translate(532.0 273.7) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">India</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Agra</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+Agra" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Taj Mahal</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/place/Agra+Fort/@27.1795375,78.0185371,17z/data=!3m2!4b1!5s0x397477a80717e019:0x79df84725ade21fc!4m6!3m5!1s0x397470d491343beb:0x640a5ccc94029576!8m2!3d27.1795328!4d78.021112!16zL20vMDQ3OThj?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Agra Fort</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+east+gate+Agra" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Taj Mahal east gate</span></a>
+<div class="cmhead">ACCOMMODATION</div>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/search/?api=1&amp;query=Joey&#x27;s+Hostel+Agra" target="_blank" rel="noopener"><span class="num" style="background:#6B716C;color:#ffffff">4</span><span class="nm">Joey&#x27;s Hostel</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/agra-mobile.png" width="660" height="820" alt="Agra map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="436" y="532" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">TAJ GANJ</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Joey&#x27;s+Hostel+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Joey&#x27;s Hostel"><g transform="translate(489.6 573.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+east+gate+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Taj Mahal east gate"><g transform="translate(467.5 445.0) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Agra+Fort/@27.1795375,78.0185371,17z/data=!3m2!4b1!5s0x397477a80717e019:0x79df84725ade21fc!4m6!3m5!1s0x397470d491343beb:0x640a5ccc94029576!8m2!3d27.1795328!4d78.021112!16zL20vMDQ3OThj?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Agra Fort"><g transform="translate(55.0 340.0) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Taj+Mahal+Agra" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Taj Mahal"><g transform="translate(467.5 445.0) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">India</div><div class="cm-ov-title">Agra</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="jaipur">
     <div class="fn-city-hd">
@@ -393,6 +611,120 @@
       <li><a href="https://www.booking.com/hotel/in/fairfield-by-marriott-jaipur.html?aid=356980&amp;label=gog235jc-10CAsobEIcZmFpcmZpZWxkLWJ5LW1hcnJpb3R0LWphaXB1ckgzWANoiQKIAQGYATO4ARfIAQzYAQPoAQH4AQGIAgGoAgG4ArvJ6dIGwAIB0gIkM2UyNzczZmYtNzM3YS00OTM4LWEwMGQtMzdhZWExODMyMmI32AIB4AIB&amp;sid=ebb6135b5c5c55d833e36065695ca673&amp;dest_id=-2098033&amp;dest_type=city&amp;dist=0&amp;group_adults=2&amp;group_children=0&amp;hapos=1&amp;hpos=1&amp;no_rooms=1&amp;req_adults=2&amp;req_children=0&amp;room1=A%2CA&amp;sb_price_type=total&amp;sr_order=popularity&amp;srepoch=1784308931&amp;srpvid=ad827a1e9c6c02e3&amp;type=total&amp;ucfs=1&amp;"><b>Fairfield by Marriott Jaipur</b></a> — an amazing 4 star hotel in Jaipur that was very clean and a nice break from . It was only ~$50 - 60 (not bad for a 4 star hotel!)</li>
     </ul>
     <ul></ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/jaipur.png" width="760" height="470" alt="Jaipur map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="365" y="241" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD CITY</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Govindam+Retreat+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="10" data-name="Govindam Retreat"><g transform="translate(376.6 215.3) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">10</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Fairfield+by+Marriott+Jaipur+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="9" data-name="Fairfield by Marriott Jaipur"><g transform="translate(291.4 423.0) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#565B57">9</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Jal+Mahal+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="8" data-name="Jal Mahal"><g transform="translate(464.5 99.8) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">8</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Nahargarh+Fort+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="7" data-name="Nahargarh Fort"><g transform="translate(339.9 163.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">7</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Johari+Bazaar+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="6" data-name="Johari Bazaar"><g transform="translate(382.7 263.8) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">6</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=City+Palace+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="City Palace"><g transform="translate(370.6 228.5) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">5</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Jantar+Mantar+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Jantar Mantar"><g transform="translate(373.3 235.4) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">4</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Wind+View+Cafe+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Wind View Cafe"><g transform="translate(385.2 240.1) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Hawa+Mahal+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Hawa Mahal"><g transform="translate(383.4 239.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/place/Ajmeri+Gate/@26.9260606,75.7980896,14z/data=!4m10!1m2!2m1!1sOld+Town+Jaipur!3m6!1s0x396db6ada40e4423:0xb418daa896e9de87!8m2!3d26.917647!4d75.8166568!15sCg9PbGQgVG93biBKYWlwdXJaESIPb2xkIHRvd24gamFpcHVykgENaGlzdG9yaWNfc2l0ZZoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyeENabG93ZEhOamJtUnVWSHBXU1ZKSWNHdFhWM0JHV1RCb1dFOUdSUkFC4AEA-gEECAAQQQ!16s%2Fg%2F1q5bky0_f?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Ajmeri Gate"><g transform="translate(340.4 268.9) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">India</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Jaipur</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/place/Ajmeri+Gate/@26.9260606,75.7980896,14z/data=!4m10!1m2!2m1!1sOld+Town+Jaipur!3m6!1s0x396db6ada40e4423:0xb418daa896e9de87!8m2!3d26.917647!4d75.8166568!15sCg9PbGQgVG93biBKYWlwdXJaESIPb2xkIHRvd24gamFpcHVykgENaGlzdG9yaWNfc2l0ZZoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyeENabG93ZEhOamJtUnVWSHBXU1ZKSWNHdFhWM0JHV1RCb1dFOUdSUkFC4AEA-gEECAAQQQ!16s%2Fg%2F1q5bky0_f?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Ajmeri Gate</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/search/?api=1&amp;query=Hawa+Mahal+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Hawa Mahal</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/search/?api=1&amp;query=Wind+View+Cafe+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Wind View Cafe</span></a>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/search/?api=1&amp;query=Jantar+Mantar+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">4</span><span class="nm">Jantar Mantar</span></a>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/search/?api=1&amp;query=City+Palace+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">5</span><span class="nm">City Palace</span></a>
+<a class="cmrow" data-i="6" href="https://www.google.com/maps/search/?api=1&amp;query=Johari+Bazaar+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">6</span><span class="nm">Johari Bazaar</span></a>
+<a class="cmrow" data-i="7" href="https://www.google.com/maps/search/?api=1&amp;query=Nahargarh+Fort+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">7</span><span class="nm">Nahargarh Fort</span></a>
+<a class="cmrow" data-i="8" href="https://www.google.com/maps/search/?api=1&amp;query=Jal+Mahal+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">8</span><span class="nm">Jal Mahal</span></a>
+<div class="cmhead">RESTAURANTS &amp; BARS</div>
+<a class="cmrow" data-i="10" href="https://www.google.com/maps/search/?api=1&amp;query=Govindam+Retreat+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">10</span><span class="nm">Govindam Retreat</span></a>
+<div class="cmhead">ACCOMMODATION</div>
+<a class="cmrow" data-i="9" href="https://www.google.com/maps/search/?api=1&amp;query=Fairfield+by+Marriott+Jaipur+Jaipur" target="_blank" rel="noopener"><span class="num" style="background:#6B716C;color:#ffffff">9</span><span class="nm">Fairfield by Marriott Jaipur</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/jaipur-mobile.png" width="660" height="820" alt="Jaipur map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="303" y="421" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD CITY</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Govindam+Retreat+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="10" data-name="Govindam Retreat"><g transform="translate(323.9 374.2) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Fairfield+by+Marriott+Jaipur+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="9" data-name="Fairfield by Marriott Jaipur"><g transform="translate(168.9 751.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Jal+Mahal+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="8" data-name="Jal Mahal"><g transform="translate(483.6 164.2) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Nahargarh+Fort+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="7" data-name="Nahargarh Fort"><g transform="translate(257.1 279.5) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Johari+Bazaar+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="6" data-name="Johari Bazaar"><g transform="translate(334.9 462.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=City+Palace+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="City Palace"><g transform="translate(313.0 398.1) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Jantar+Mantar+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Jantar Mantar"><g transform="translate(317.8 410.8) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Wind+View+Cafe+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Wind View Cafe"><g transform="translate(339.4 419.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Hawa+Mahal+Jaipur" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Hawa Mahal"><g transform="translate(336.2 417.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Ajmeri+Gate/@26.9260606,75.7980896,14z/data=!4m10!1m2!2m1!1sOld+Town+Jaipur!3m6!1s0x396db6ada40e4423:0xb418daa896e9de87!8m2!3d26.917647!4d75.8166568!15sCg9PbGQgVG93biBKYWlwdXJaESIPb2xkIHRvd24gamFpcHVykgENaGlzdG9yaWNfc2l0ZZoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyeENabG93ZEhOamJtUnVWSHBXU1ZKSWNHdFhWM0JHV1RCb1dFOUdSUkFC4AEA-gEECAAQQQ!16s%2Fg%2F1q5bky0_f?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Ajmeri Gate"><g transform="translate(258.1 471.6) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">India</div><div class="cm-ov-title">Jaipur</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="varanasi">
     <div class="fn-city-hd">
@@ -427,6 +759,118 @@
       <li><a href="https://www.hostelworld.com/hostels/p/292944/wander-station-varanasi/?source=ppc_gooads_nonbrand_dsk_dsa_pn_en_us&amp;network=g&amp;campaign_id=21523956152&amp;adgroup_id=169062057481&amp;criteria_id=dsa-443313842330&amp;creative_id=794950546519&amp;location_physical_id=9061268&amp;location_interest_id=&amp;adposition=&amp;uniqueclickID=13044625796945602205&amp;sub_keyword=&amp;sub_ad=&amp;sub_publisher=ADW&amp;gclsrc=aw.ds&amp;gad_source=1&amp;gad_campaignid=21523956152&amp;gbraid=0AAAAAD9QXQaX_p6oWzoRt-tV7_g77DsNU&amp;gclid=CjwKCAjwpefSBhBvEiwAzyEtZ4fRPHh2F6cjBlV3yXExHk79lgM1d9BZZ8vfUNSsMTmL3jf8THISVhoCMYIQAvD_BwE"><b>Wander Station Varanasi</b></a> — a great hostel in Varanasi with a rooftop, cafe and common area. They also offer a variety of tours. I booked the temple tour which took us through many different neighborhoods of the city. A lot of domestic Indian tourists stay here so it is a great place to make friends with locals</li>
     </ul>
     <ul></ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/varanasi.png" width="760" height="470" alt="Varanasi map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="316" y="289" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD CITY</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Wander+Station+Varanasi+Varanasi" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Wander Station Varanasi"><g transform="translate(300.3 423.0) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#565B57">5</text></g></g></a><a href="https://www.google.com/maps/place/Aadha-Aadha+Caf%C3%A9/@25.2973752,82.9970531,15z/data=!4m10!1m2!2m1!1sAdaha+Cafe+varanasi!3m6!1s0x398e31e228fd6bbf:0xdc5c888ddbc02aa3!8m2!3d25.3053428!4d83.0090766!15sChNBZGFoYSBDYWZlIHZhcmFuYXNpWhUiE2FkYWhhIGNhZmUgdmFyYW5hc2mSAQpyZXN0YXVyYW50mgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDJwb1RsWkhPVnBqUnpsTVpFVmFURk5YYURaaWJrSXhUMFZrYlZSV1JSQULgAQD6AQQIABBJ!16s%2Fg%2F11hd589v90?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Aadha-Aadha Café"><g transform="translate(326.9 396.7) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">4</text></g></g></a><a href="https://www.google.com/maps/place/Blue+Lassi+Shop/@25.3123713,83.0114513,17z/data=!4m10!1m2!2m1!1sBlue+Lassi+Shop+Varanasi!3m6!1s0x398e2e1edccc4ee1:0x75201798f943ce7!8m2!3d25.3123167!4d83.0114726!15sChhCbHVlIExhc3NpIFNob3AgVmFyYW5hc2laGiIYYmx1ZSBsYXNzaSBzaG9wIHZhcmFuYXNpkgEKanVpY2Vfc2hvcJoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQycHNjbVF5U1hsaWJGcDZaRmRLWVZsWVpFZFpNVlpDVWpKc1dsWklZeEFC4AEA-gEFCJgGEC0!16s%2Fg%2F11b6d5v3_7?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Blue Lassi Shop"><g transform="translate(421.8 91.0) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">3</text></g></g></a><a href="https://www.google.com/maps/place/Shri+Kashi+Vishwanath+Temple/@25.288692,83.0000177,14z/data=!4m10!1m2!2m1!1sKashi+Vishwanath+Temple+Varanasi!3m6!1s0x398e2e21ee940b17:0x48600e4fcdfb7b13!8m2!3d25.3108532!4d83.0106783!15sCiBLYXNoaSBWaXNod2FuYXRoIFRlbXBsZSBWYXJhbmFzaVoiIiBrYXNoaSB2aXNod2FuYXRoIHRlbXBsZSB2YXJhbmFzaZIBDGhpbmR1X3RlbXBsZeABAA!16zL20vMDZrYzU0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Kashi Vishwanath Temple"><g transform="translate(390.3 155.1) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Dashashwamedh+Ghat+Varanasi" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Dashashwamedh Ghat"><g transform="translate(380.9 297.3) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">India</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Varanasi</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/search/?api=1&amp;query=Dashashwamedh+Ghat+Varanasi" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Dashashwamedh Ghat</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/place/Shri+Kashi+Vishwanath+Temple/@25.288692,83.0000177,14z/data=!4m10!1m2!2m1!1sKashi+Vishwanath+Temple+Varanasi!3m6!1s0x398e2e21ee940b17:0x48600e4fcdfb7b13!8m2!3d25.3108532!4d83.0106783!15sCiBLYXNoaSBWaXNod2FuYXRoIFRlbXBsZSBWYXJhbmFzaVoiIiBrYXNoaSB2aXNod2FuYXRoIHRlbXBsZSB2YXJhbmFzaZIBDGhpbmR1X3RlbXBsZeABAA!16zL20vMDZrYzU0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Kashi Vishwanath Temple</span></a>
+<div class="cmhead">RESTAURANTS &amp; BARS</div>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/place/Blue+Lassi+Shop/@25.3123713,83.0114513,17z/data=!4m10!1m2!2m1!1sBlue+Lassi+Shop+Varanasi!3m6!1s0x398e2e1edccc4ee1:0x75201798f943ce7!8m2!3d25.3123167!4d83.0114726!15sChhCbHVlIExhc3NpIFNob3AgVmFyYW5hc2laGiIYYmx1ZSBsYXNzaSBzaG9wIHZhcmFuYXNpkgEKanVpY2Vfc2hvcJoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQycHNjbVF5U1hsaWJGcDZaRmRLWVZsWVpFZFpNVlpDVWpKc1dsWklZeEFC4AEA-gEFCJgGEC0!16s%2Fg%2F11b6d5v3_7?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">3</span><span class="nm">Blue Lassi Shop</span></a>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/place/Aadha-Aadha+Caf%C3%A9/@25.2973752,82.9970531,15z/data=!4m10!1m2!2m1!1sAdaha+Cafe+varanasi!3m6!1s0x398e31e228fd6bbf:0xdc5c888ddbc02aa3!8m2!3d25.3053428!4d83.0090766!15sChNBZGFoYSBDYWZlIHZhcmFuYXNpWhUiE2FkYWhhIGNhZmUgdmFyYW5hc2mSAQpyZXN0YXVyYW50mgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDJwb1RsWkhPVnBqUnpsTVpFVmFURk5YYURaaWJrSXhUMFZrYlZSV1JSQULgAQD6AQQIABBJ!16s%2Fg%2F11hd589v90?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">4</span><span class="nm">Aadha-Aadha Café</span></a>
+<div class="cmhead">ACCOMMODATION</div>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/search/?api=1&amp;query=Wander+Station+Varanasi+Varanasi" target="_blank" rel="noopener"><span class="num" style="background:#6B716C;color:#ffffff">5</span><span class="nm">Wander Station Varanasi</span></a>
+<div class="cmhead">ACTIVITIES</div>
+<a class="cmrow cmrow-dt" href="https://www.getyourguide.com/en-gb/varanasi-l32154/mysticism-of-varanasi-with-boat-ride-ganga-aarti-t525801/" target="_blank" rel="noopener"><span class="num num-dt">✦</span><span class="nm">Ganga Aarti ceremony</span></a>
+<a class="cmrow cmrow-dt" href="https://www.getyourguide.com/en-gb/varanasi-l32154/mysticism-of-varanasi-with-boat-ride-ganga-aarti-t525801/" target="_blank" rel="noopener"><span class="num num-dt">✦</span><span class="nm">Boat ride on the Ganges</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/varanasi-mobile.png" width="660" height="820" alt="Varanasi map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="214" y="508" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">OLD CITY</text><a href="https://www.google.com/maps/search/?api=1&amp;query=Wander+Station+Varanasi+Varanasi" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Wander Station Varanasi"><g transform="translate(185.2 751.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#6B716C" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Aadha-Aadha+Caf%C3%A9/@25.2973752,82.9970531,15z/data=!4m10!1m2!2m1!1sAdaha+Cafe+varanasi!3m6!1s0x398e31e228fd6bbf:0xdc5c888ddbc02aa3!8m2!3d25.3053428!4d83.0090766!15sChNBZGFoYSBDYWZlIHZhcmFuYXNpWhUiE2FkYWhhIGNhZmUgdmFyYW5hc2mSAQpyZXN0YXVyYW50mgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDJwb1RsWkhPVnBqUnpsTVpFVmFURk5YYURaaWJrSXhUMFZrYlZSV1JSQULgAQD6AQQIABBJ!16s%2Fg%2F11hd589v90?entry=ttu&amp;g_ep=EgoyMDI2MDcxNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Aadha-Aadha Café"><g transform="translate(233.5 703.8) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Blue+Lassi+Shop/@25.3123713,83.0114513,17z/data=!4m10!1m2!2m1!1sBlue+Lassi+Shop+Varanasi!3m6!1s0x398e2e1edccc4ee1:0x75201798f943ce7!8m2!3d25.3123167!4d83.0114726!15sChhCbHVlIExhc3NpIFNob3AgVmFyYW5hc2laGiIYYmx1ZSBsYXNzaSBzaG9wIHZhcmFuYXNpkgEKanVpY2Vfc2hvcJoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQycHNjbVF5U1hsaWJGcDZaRmRLWVZsWVpFZFpNVlpDVWpKc1dsWklZeEFC4AEA-gEFCJgGEC0!16s%2Fg%2F11b6d5v3_7?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Blue Lassi Shop"><g transform="translate(406.0 148.2) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Shri+Kashi+Vishwanath+Temple/@25.288692,83.0000177,14z/data=!4m10!1m2!2m1!1sKashi+Vishwanath+Temple+Varanasi!3m6!1s0x398e2e21ee940b17:0x48600e4fcdfb7b13!8m2!3d25.3108532!4d83.0106783!15sCiBLYXNoaSBWaXNod2FuYXRoIFRlbXBsZSBWYXJhbmFzaVoiIiBrYXNoaSB2aXNod2FuYXRoIHRlbXBsZSB2YXJhbmFzaZIBDGhpbmR1X3RlbXBsZeABAA!16zL20vMDZrYzU0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Kashi Vishwanath Temple"><g transform="translate(348.8 264.9) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Dashashwamedh+Ghat+Varanasi" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Dashashwamedh Ghat"><g transform="translate(331.7 523.2) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">India</div><div class="cm-ov-title">Varanasi</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="other">
     <div class="fn-city-hd">

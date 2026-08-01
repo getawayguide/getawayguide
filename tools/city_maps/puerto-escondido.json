@@ -1,0 +1,107 @@
+{
+  "slug": "puerto-escondido",
+  "kicker": "Mexico",
+  "city": "Puerto Escondido",
+  "osm": ".tmp/puerto-escondido_osm.json",
+  "article": "mexico/field-notes.html",
+  "embed": {
+    "pre": "\" rel=\"noopener noreferrer\">Zipolite</a> (hippy vibes &amp; a nude beach).</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Other Places to Consider -->\n  <div class=\"fn-section\" id=\"other-places\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "La Punta Zicatela (the Main beach)",
+      "cat": "see",
+      "match": "la punta zicatela (the",
+      "lat": 15.8358,
+      "lon": -97.0468
+    },
+    {
+      "name": "Baby Sea Turtle Release",
+      "cat": "see",
+      "match": "baby sea turtle releas",
+      "lat": 15.865653,
+      "lon": -97.091278
+    },
+    {
+      "name": "Malagua Café",
+      "cat": "eat",
+      "match": "malagua café",
+      "lat": 15.835393,
+      "lon": -97.044597
+    },
+    {
+      "name": "Xcaanda",
+      "cat": "eat",
+      "match": "xcaanda",
+      "lat": 15.854,
+      "lon": -97.0568
+    },
+    {
+      "name": "Fish Shack",
+      "cat": "eat",
+      "match": "fish shack",
+      "lat": 15.8354,
+      "lon": -97.0462
+    },
+    {
+      "name": "Ola Taquería",
+      "cat": "eat",
+      "match": "ola taquería",
+      "lat": 15.836,
+      "lon": -97.0464
+    },
+    {
+      "name": "Viajero Puerto Escondido",
+      "cat": "stay",
+      "match": "viajero puerto esc",
+      "lat": 15.8366,
+      "lon": -97.0472
+    },
+    {
+      "name": "Cactus",
+      "cat": "eat",
+      "match": "cactus",
+      "lat": 15.8362,
+      "lon": -97.0458
+    },
+    {
+      "name": "Mar y Wana",
+      "cat": "eat",
+      "match": "mar y wana",
+      "lat": 15.8364,
+      "lon": -97.0455
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 15.854809,
+    "lon": -97.065869
+  },
+  "sea_flip": true,
+  "district_labels": [
+    {
+      "text": "ZICATELA",
+      "lat": 15.8495,
+      "lon": -97.0595
+    },
+    {
+      "text": "LA PUNTA",
+      "lat": 15.8345,
+      "lon": -97.046
+    }
+  ]
+}

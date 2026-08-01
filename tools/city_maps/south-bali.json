@@ -1,0 +1,75 @@
+{
+  "slug": "south-bali",
+  "kicker": "Indonesia",
+  "city": "Southern Bali",
+  "osm": ".tmp/south-bali_osm.json",
+  "article": "indonesia/field-notes.html",
+  "embed": {
+    "pre": "larger group</span></li>\n      </ul>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"north-bali\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "roads": "major",
+  "pois": [
+    {
+      "name": "Uluwatu Temple",
+      "cat": "see",
+      "match": "uluwatu temple",
+      "lat": -8.8293693,
+      "lon": 115.0843428
+    },
+    {
+      "name": "GWK Cultural Park",
+      "cat": "see",
+      "match": "gwk cultural park",
+      "lat": -8.8103891,
+      "lon": 115.1667584
+    },
+    {
+      "name": "Savaya (beach club)",
+      "cat": "see",
+      "match": "savaya (beach club",
+      "lat": -8.8464133,
+      "lon": 115.1406518
+    },
+    {
+      "name": "Nusa Dua Beach",
+      "cat": "see",
+      "match": "nusa dua beach",
+      "lat": -8.7957616,
+      "lon": 115.2328213
+    },
+    {
+      "name": "Pura Bias Tugel",
+      "cat": "see",
+      "match": "pura bias tugel",
+      "lat": -8.803705,
+      "lon": 115.2387644
+    }
+  ],
+  "sea_bg": true,
+  "district_labels": [
+    {
+      "text": "ULUWATU",
+      "lat": -8.828,
+      "lon": 115.091
+    },
+    {
+      "text": "NUSA DUA",
+      "lat": -8.798,
+      "lon": 115.226
+    }
+  ]
+}

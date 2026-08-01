@@ -1,0 +1,116 @@
+{
+  "slug": "manila",
+  "kicker": "Philippines",
+  "city": "Manila",
+  "osm": ".tmp/manila_osm.json",
+  "article": "philippines/field-notes.html",
+  "embed": {
+    "pre": "It wasn't the most walkable neighborhood</li>\n    </ul>\n",
+    "post": "    <div class=\"fn-city-hd\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "San Agustin Church",
+      "cat": "see",
+      "match": "san agustin church",
+      "lat": 14.589151,
+      "lon": 120.975184
+    },
+    {
+      "name": "Manila Cathedral",
+      "cat": "see",
+      "match": "manila cathedral",
+      "lat": 14.591742,
+      "lon": 120.973392
+    },
+    {
+      "name": "Baluarte de San Diego",
+      "cat": "see",
+      "match": "baluarte de san diego",
+      "lat": 14.585384,
+      "lon": 120.975567
+    },
+    {
+      "name": "Casa Manila",
+      "cat": "see",
+      "match": "casa manila",
+      "lat": 14.589659,
+      "lon": 120.975169
+    },
+    {
+      "name": "Manila 1945 Historical Marker and Memorial",
+      "cat": "see",
+      "match": "manila 1945 historical",
+      "lat": 14.590439,
+      "lon": 120.974406
+    },
+    {
+      "name": "National Museum of Anthropology",
+      "cat": "see",
+      "match": "national museum of ant",
+      "lat": 14.585408,
+      "lon": 120.980997
+    },
+    {
+      "name": "Rizal Park",
+      "cat": "see",
+      "match": "rizal park",
+      "lat": 14.582645,
+      "lon": 120.978689
+    },
+    {
+      "name": "Mall of Asia",
+      "cat": "see",
+      "match": "mall of asia",
+      "lat": 14.53584,
+      "lon": 120.980416
+    },
+    {
+      "name": "Mang Inasal",
+      "cat": "eat",
+      "match": "mang inasal",
+      "lat": 14.590438,
+      "lon": 120.964074
+    },
+    {
+      "name": "Patio de Conchita Restaurant",
+      "cat": "eat",
+      "match": "patio de conchita rest",
+      "lat": 14.590439,
+      "lon": 120.974406
+    },
+    {
+      "name": "Ola Hostel",
+      "cat": "stay",
+      "match": "ola hostel",
+      "lat": 14.5640557,
+      "lon": 120.9986433
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 14.583115,
+    "lon": 120.97523
+  },
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "INTRAMUROS",
+      "lat": 14.5905,
+      "lon": 120.9735
+    }
+  ]
+}

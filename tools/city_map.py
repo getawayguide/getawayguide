@@ -146,7 +146,7 @@ def assemble_rings(ways):
     return rings
 
 
-def landmass_polys(coast, px, W, H, pins):
+def landmass_polys(coast, px, W, H, pins, flip=False):
     """LAND polygons (as SVG point-strings) to paint over a WATER background for an
     archipelago/peninsula frame. Robust for ANY coastline extent (tight or wide fetch):
     assemble the coastline into rings, fill closed loops (islands) directly, and close
@@ -244,8 +244,17 @@ def landmass_polys(coast, px, W, H, pins):
             islands.append(p)                       # closed loop = an island, fill as-is
         else:
             runs += [rr for rr in runs_of(p) if onb(rr[0]) and onb(rr[-1])]
-    best = max(([close(runs, f) for f in (True, False)]),
-               key=lambda rs: sum(any(inside(q, poly) for poly in rs) for q in pins)) if runs else []
+    # pick the border-walk direction that puts the most on-land pins inside the closed land.
+    # `flip` (cfg "sea_flip") forces the OTHER direction when a near-shore pin fools the heuristic.
+    if runs:
+        opts = [close(runs, f) for f in (True, False)]
+        if flip:
+            best = opts[1]           # deterministic forced direction (stable regardless of pin moves)
+        else:
+            sc = [sum(any(inside(q, poly) for poly in o) for q in pins) for o in opts]
+            best = opts[0] if sc[0] >= sc[1] else opts[1]
+    else:
+        best = []
     return [" ".join(f"{a:.1f},{b:.1f}" for a, b in poly) for poly in islands + best if len(poly) >= 3]
 
 
@@ -318,6 +327,7 @@ def build(cfg_path, embed=False, demo=None):
                 for d in cfg.get(key, [])]
     MULTITRIPS = _trips("multi_day_trips")
     DAYTRIPS = _trips("day_trips")
+    ACTIVITIES = _trips("activities")   # legend-only "ACTIVITIES" section (e.g. a ceremony, a boat ride)
 
     # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA). Accepts a
     # list `district_labels`, or a single `district_label` for back-compat.
@@ -325,14 +335,65 @@ def build(cfg_path, embed=False, demo=None):
 
     def make_variant(W, H, pad, title_px, pin_scale, pngname, show_num=True, svg_title=True, mobile=False):
         mx = [merc(la, lo) for _, la, lo, *_ in POIS]
+        # A poi with "frame": false is dropped from the DESKTOP framing extent (a far outlier that
+        # would force a zoom-out) — it's still drawn (clipped off the static desktop frame), still in
+        # the legend, and still inside the wider MOBILE base so you can pan to it.
+        fmx = [m for m, p in zip(mx, cfg["pois"]) if mobile or p.get("frame", True)]
         if cfg.get("center"):     # optional: frame around a chosen point (e.g. to clear a dense cluster off the key)
             cx, cy = merc(cfg["center"]["lat"], cfg["center"]["lon"])
         else:
-            cx = (min(p[0] for p in mx) + max(p[0] for p in mx)) / 2
-            cy = (min(p[1] for p in mx) + max(p[1] for p in mx)) / 2
-        hx = max(abs(p[0] - cx) for p in mx) * pad   # half-extents: keep every pin in frame
-        hy = max(abs(p[1] - cy) for p in mx) * pad
+            cx = (min(p[0] for p in fmx) + max(p[0] for p in fmx)) / 2
+            cy = (min(p[1] for p in fmx) + max(p[1] for p in fmx)) / 2
+        hx = max(abs(p[0] - cx) for p in fmx) * pad   # half-extents: keep every framed pin in frame
+        hy = max(abs(p[1] - cy) for p in fmx) * pad
         scale = min(W / (2 * hx), H / (2 * hy))
+
+        # LEGEND-CLEAR RULE (desktop only): the floating key sits fixed top-right, so a pin
+        # projected into that corner ends up hidden underneath it. If the config framing puts
+        # any pin under the key, search nearby framings (bias the center up/right so pins slide
+        # down/left, zooming out only as needed) and take the closest one that clears the key
+        # AND keeps every pin in frame. If the current framing is already clear, nothing changes
+        # (hand-tuned `center`/`pad` are respected).
+        if not mobile and not os.environ.get("CM_NO_LEGEND_CLEAR"):
+            rows = heads = 0
+            for _cat in GRP_ORDER:
+                if any(p[3] == _cat for p in POIS): heads += 1; rows += sum(p[3] == _cat for p in POIS)
+            for _tr in (MULTITRIPS, DAYTRIPS, ACTIVITIES):
+                if _tr: heads += 1; rows += len(_tr) + sum(len(t["name"]) > 24 for t in _tr)  # long names wrap
+            Lw = 226 + 34                 # key width + right margin + a little slack
+            Lh = 15 + 24 + heads * 17 + rows * 16 + 6
+            Lx0 = W - Lw
+
+            def _project(cx0, cy0, s0):
+                return [(W / 2 + (p[0] - cx0) * s0, H / 2 - (p[1] - cy0) * s0) for p in fmx]
+
+            def _under(pts):              # pins whose marker (x±9, y-30..y+2) pokes into the key box
+                return sum(1 for X, Y in pts if X + 9 >= Lx0 and Y - 30 <= Lh)
+
+            def _inframe(pts):
+                return all(6 <= X <= W - 6 and 30 <= Y <= H - 6 for X, Y in pts)
+
+            if _under(_project(cx, cy, scale)) > 0:
+                orig = scale
+                spanx = (max(p[0] for p in fmx) - min(p[0] for p in fmx)) or 1e-6
+                spany = (max(p[1] for p in fmx) - min(p[1] for p in fmx)) or 1e-6
+                best = None
+                # small pans first, then progressively larger zoom-outs. Cost prefers the
+                # framing closest to the original (least zoom-out, least shift) that clears the key.
+                for padf in (1.0, 1.1, 1.22, 1.4, 1.6, 1.9, 2.3):
+                    for ex in (0, .08, .16, .28, .42, .6):     # +lon -> pins slide LEFT (off the key)
+                        for ey in (0, .08, .16, .28, .42):     # +lat -> pins slide DOWN (below the key)
+                            ccx = cx + ex * spanx; ccy = cy + ey * spany
+                            hxx = max(abs(p[0] - ccx) for p in fmx) * pad * padf
+                            hyy = max(abs(p[1] - ccy) for p in fmx) * pad * padf
+                            s0 = min(W / (2 * hxx), H / (2 * hyy))
+                            pts = _project(ccx, ccy, s0)
+                            if not _inframe(pts): continue
+                            cost = _under(pts) * 1000 + (orig / s0 - 1) * 60 + ex * 6 + ey * 6
+                            if best is None or cost < best[0]: best = (cost, ccx, ccy, s0)
+                if best is not None:
+                    _, cx, cy, scale = best
+
         def px(lat, lon):
             x, y = merc(lat, lon); return (W / 2 + (x - cx) * scale, H / 2 - (y - cy) * scale)
         def proj_str(g):
@@ -362,7 +423,7 @@ def build(cfg_path, embed=False, demo=None):
             if seabg:
                 o.append(f'<rect width="{W}" height="{H}" fill="{WATER}"/>')
                 pins_px = [px(p[1], p[2]) for p in POIS]
-                for s in landmass_polys(coast, px, W, H, pins_px):
+                for s in landmass_polys(coast, px, W, H, pins_px, flip=cfg.get("sea_flip", False)):
                     o.append(f'<polygon points="{s}" fill="{LAND}"/>')
             else:
                 o.append(f'<rect width="{W}" height="{H}" fill="{LAND}"/>')
@@ -503,13 +564,14 @@ def build(cfg_path, embed=False, demo=None):
                 ac = " active" if active == i else ""
                 h.append(f'<a class="cmrow{ac}" data-i="{i}" href="{html.escape(HREF[name])}" target="_blank" rel="noopener">'
                          f'<span class="num" style="background:{fill};color:{badge_text}">{i}</span><span class="nm">{html.escape(name)}</span></a>')
-        for hdr, trips in [("MULTI-DAY TRIP", MULTITRIPS), ("DAY TRIPS", DAYTRIPS)]:  # legend-only, off-map
+        for hdr, trips, mark in [("MULTI-DAY TRIP", MULTITRIPS, "↗"), ("DAY TRIPS", DAYTRIPS, "↗"),
+                                 ("ACTIVITIES", ACTIVITIES, "✦")]:  # legend-only sections
             if not trips: continue
             h.append(f'<div class="cmhead">{hdr}</div>')
             for dt in trips:
                 tm = f'<span class="dt-time"> ({html.escape(dt["time"])})</span>' if dt["time"] else ""
                 h.append(f'<a class="cmrow cmrow-dt" href="{html.escape(dt["href"])}" target="_blank" rel="noopener">'
-                         f'<span class="num num-dt">↗</span><span class="nm">{html.escape(dt["name"])}{tm}</span></a>')
+                         f'<span class="num num-dt">{mark}</span><span class="nm">{html.escape(dt["name"])}{tm}</span></a>')
         h.append('</div>'); return "\n".join(h)
 
     hint = "<br>".join(html.escape(l) for l in cfg.get("hint", ["Touch to explore", "Double-tap to open in Google Maps"]))

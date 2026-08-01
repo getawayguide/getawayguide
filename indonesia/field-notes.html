@@ -300,6 +300,114 @@
       </ul>
       <li><b><a href="https://www.google.com/maps/search/?api=1&amp;query=Tanah+Lot+Temple+Bali" target="_blank" rel="noopener noreferrer">Tanah Lot</a></b><span> — located about an hour North of <a href="https://www.google.com/maps/search/?api=1&amp;query=Seminyak+Bali" target="_blank" rel="noopener noreferrer">Seminyak</a>, <a href="https://www.google.com/maps/search/?api=1&amp;query=Tanah+Lot+Temple+Bali" target="_blank" rel="noopener noreferrer">Tanah Lot</a> is a temple perched on a rock just offshore. You can only cross to the temple at low tide across the black-sand beach at low tide. However, foreigners aren't allowed in so you can only admire it from the viewpoints. Bali has some stiff competition for temples so I'd say this is only worth it if you're already driving past</span></li>
     </ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/canggu.png" width="760" height="470" alt="Canggu &amp; Seminyak map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="493" y="278" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">CANGGU</text><text x="603" y="391" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">SEMINYAK</text><a href="https://www.google.com/maps/place/Mowies+Bali/@-8.6601754,115.1408728,3a,75y,90t/data=!3m8!1e2!3m6!1sCIABIhDeaZEiSER9hrMOCMIy-WEk!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAHRPTWnLPw7WKuORzxR89YDmsAc7BCcyRy8a69fy-ArIHqdrCsEAwuvRDCvNpydTh--mqm-It2PIX9Bv6-vQBkhz4UyaK2J8NC36adP_9SL_rvLzEczmB1hZT8M5JK_WQmIqoFo0wQLBkzbvN7JY%3Dw114-h86-k-no!7i5712!8i4284!4m7!3m6!1s0x2dd24786da79c9e3:0x19450160f19faf57!8m2!3d-8.6602373!4d115.1408019!10e5!16s%2Fg%2F11sgj2333m?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Mowies"><g transform="translate(535.0 317.4) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">5</text></g></g></a><a href="https://www.google.com/maps/place/Foal+Cafe/@-8.6595607,115.1328442,15z/data=!3m1!4b1!4m6!3m5!1s0x2dd247e6b0d32b1b:0x2a3ee9de4e5e87ac!8m2!3d-8.6595608!4d115.1431225!16s%2Fg%2F11pv3l9t39?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Foal Cafe"><g transform="translate(546.0 314.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#3B6B54">4</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Potato+Head+Beach+Club+Seminyak" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Potato Head Beach Club"><g transform="translate(578.3 409.1) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Finns+Beach+Club+Canggu" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Finns Beach Club"><g transform="translate(528.3 348.9) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Tanah+Lot+Temple+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Tanah Lot"><g transform="translate(280.2 130.9) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">Indonesia</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Canggu &amp; Seminyak</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/search/?api=1&amp;query=Tanah+Lot+Temple+Bali" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Tanah Lot</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/search/?api=1&amp;query=Finns+Beach+Club+Canggu" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">Finns Beach Club</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/search/?api=1&amp;query=Potato+Head+Beach+Club+Seminyak" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Potato Head Beach Club</span></a>
+<div class="cmhead">RESTAURANTS &amp; BARS</div>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/place/Foal+Cafe/@-8.6595607,115.1328442,15z/data=!3m1!4b1!4m6!3m5!1s0x2dd247e6b0d32b1b:0x2a3ee9de4e5e87ac!8m2!3d-8.6595608!4d115.1431225!16s%2Fg%2F11pv3l9t39?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">4</span><span class="nm">Foal Cafe</span></a>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/place/Mowies+Bali/@-8.6601754,115.1408728,3a,75y,90t/data=!3m8!1e2!3m6!1sCIABIhDeaZEiSER9hrMOCMIy-WEk!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAHRPTWnLPw7WKuORzxR89YDmsAc7BCcyRy8a69fy-ArIHqdrCsEAwuvRDCvNpydTh--mqm-It2PIX9Bv6-vQBkhz4UyaK2J8NC36adP_9SL_rvLzEczmB1hZT8M5JK_WQmIqoFo0wQLBkzbvN7JY%3Dw114-h86-k-no!7i5712!8i4284!4m7!3m6!1s0x2dd24786da79c9e3:0x19450160f19faf57!8m2!3d-8.6602373!4d115.1408019!10e5!16s%2Fg%2F11sgj2333m?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#C8DDD5;color:#1C2821">5</span><span class="nm">Mowies</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/canggu-mobile.png" width="660" height="820" alt="Canggu &amp; Seminyak map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="487" y="464" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">CANGGU</text><text x="590" y="561" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">SEMINYAK</text><a href="https://www.google.com/maps/place/Mowies+Bali/@-8.6601754,115.1408728,3a,75y,90t/data=!3m8!1e2!3m6!1sCIABIhDeaZEiSER9hrMOCMIy-WEk!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAHRPTWnLPw7WKuORzxR89YDmsAc7BCcyRy8a69fy-ArIHqdrCsEAwuvRDCvNpydTh--mqm-It2PIX9Bv6-vQBkhz4UyaK2J8NC36adP_9SL_rvLzEczmB1hZT8M5JK_WQmIqoFo0wQLBkzbvN7JY%3Dw114-h86-k-no!7i5712!8i4284!4m7!3m6!1s0x2dd24786da79c9e3:0x19450160f19faf57!8m2!3d-8.6602373!4d115.1408019!10e5!16s%2Fg%2F11sgj2333m?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Mowies"><g transform="translate(545.0 524.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Foal+Cafe/@-8.6595607,115.1328442,15z/data=!3m1!4b1!4m6!3m5!1s0x2dd247e6b0d32b1b:0x2a3ee9de4e5e87ac!8m2!3d-8.6595608!4d115.1431225!16s%2Fg%2F11pv3l9t39?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Foal Cafe"><g transform="translate(560.2 519.8) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#C8DDD5" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Potato+Head+Beach+Club+Seminyak" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Potato Head Beach Club"><g transform="translate(605.0 651.4) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Finns+Beach+Club+Canggu" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="Finns Beach Club"><g transform="translate(535.6 567.9) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Tanah+Lot+Temple+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Tanah Lot"><g transform="translate(191.6 265.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">Indonesia</div><div class="cm-ov-title">Canggu &amp; Seminyak</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="ubud">
     <div class="fn-city-hd">
@@ -332,6 +440,113 @@
         <li><span>The table minimum is steep (~$200). Just buy cover entry if you're not in a larger group</span></li>
       </ul>
     </ul>
+<style>
+
+*{box-sizing:border-box}
+.citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
+.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
+.cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
+.cmmap svg{display:block;width:100%;height:auto}
+.cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
+.cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+.cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmpin{transition:transform .16s ease;cursor:pointer}
+.cmpin.active{transform:translateY(-6px)}
+.cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
+.cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow.active{background:rgba(28,40,33,.06)}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
+/* mobile fixed title/instructions overlay (map pans underneath) */
+.cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
+.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+@media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
+</style>
+<figure class="citymap-fig"><div class="citymap desk"><div class="cmmap"><img class="cmbase" src="../Images/web/city-maps/south-bali.png" width="760" height="470" alt="Southern Bali map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="114" y="319" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">ULUWATU</text><text x="622" y="206" font-size="11" letter-spacing="2.5" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">NUSA DUA</text><a href="https://www.google.com/maps/place/Pura+Bias+Tugel/@-8.8032559,115.238817,19.1z/data=!4m6!3m5!1s0x2dd242d451f23337:0x2ee8bf928ee661f2!8m2!3d-8.803705!4d115.2387644!16s%2Fg%2F1pzxb2nxy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Pura Bias Tugel"><g transform="translate(684.0 222.2) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">5</text></g></g></a><a href="https://www.google.com/maps/place/Nusa+Dua+Beach/@-8.7958466,115.2312068,17z/data=!3m1!4b1!4m6!3m5!1s0x2dd243213c2ea8df:0xfe9b8fbae7a12e8f!8m2!3d-8.7957616!4d115.2328213!16s%2Fg%2F1ptyl7nz0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Nusa Dua Beach"><g transform="translate(660.6 190.6) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">4</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Savaya+(beach+club)+Southern+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Savaya (beach club)"><g transform="translate(297.7 392.4) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">3</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Garuda+Wisnu+Kencana+Cultural+Park+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="GWK Cultural Park"><g transform="translate(400.5 248.9) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">2</text></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Uluwatu+Temple+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Uluwatu Temple"><g transform="translate(76.0 324.5) scale(1.0)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="#245A43">1</text></g></g></a><text x="23" y="20" font-family="Montserrat,Arial" font-size="9" font-weight="600" letter-spacing="4.1" fill="#2D6B50" stroke="#F4F2EC" stroke-width="2.7" paint-order="stroke">Indonesia</text><text x="21" y="56" font-family="Fraunces,Georgia,serif" font-size="34" font-weight="600" fill="#1C2821" stroke="#F4F2EC" stroke-width="4.4" paint-order="stroke">Southern Bali</text><text x="754" y="464" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div><div class="cmkey">
+<div class="cmhead">ATTRACTIONS</div>
+<a class="cmrow" data-i="1" href="https://www.google.com/maps/search/?api=1&amp;query=Uluwatu+Temple+Bali" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">1</span><span class="nm">Uluwatu Temple</span></a>
+<a class="cmrow" data-i="2" href="https://www.google.com/maps/search/?api=1&amp;query=Garuda+Wisnu+Kencana+Cultural+Park+Bali" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">2</span><span class="nm">GWK Cultural Park</span></a>
+<a class="cmrow" data-i="3" href="https://www.google.com/maps/search/?api=1&amp;query=Savaya+(beach+club)+Southern+Bali" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">3</span><span class="nm">Savaya (beach club)</span></a>
+<a class="cmrow" data-i="4" href="https://www.google.com/maps/place/Nusa+Dua+Beach/@-8.7958466,115.2312068,17z/data=!3m1!4b1!4m6!3m5!1s0x2dd243213c2ea8df:0xfe9b8fbae7a12e8f!8m2!3d-8.7957616!4d115.2328213!16s%2Fg%2F1ptyl7nz0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">4</span><span class="nm">Nusa Dua Beach</span></a>
+<a class="cmrow" data-i="5" href="https://www.google.com/maps/place/Pura+Bias+Tugel/@-8.8032559,115.238817,19.1z/data=!4m6!3m5!1s0x2dd242d451f23337:0x2ee8bf928ee661f2!8m2!3d-8.803705!4d115.2387644!16s%2Fg%2F1pzxb2nxy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><span class="num" style="background:#245A43;color:#ffffff">5</span><span class="nm">Pura Bias Tugel</span></a>
+</div></div><div class="citymap mob" data-dar="0.72" data-iw="0.82" data-ix="0.5" data-iy="0.5"><div class="cmmap"><div class="cmworld"><img class="cmbase" src="../Images/web/city-maps/south-bali-mobile.png" width="660" height="820" alt="Southern Bali map"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 820" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke"><text x="115" y="435" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">ULUWATU</text><text x="530" y="345" font-size="18" letter-spacing="4.0" fill="#9DAAA0" text-anchor="middle" stroke="#F4F2EC" stroke-width="3">NUSA DUA</text><a href="https://www.google.com/maps/place/Pura+Bias+Tugel/@-8.8032559,115.238817,19.1z/data=!4m6!3m5!1s0x2dd242d451f23337:0x2ee8bf928ee661f2!8m2!3d-8.803705!4d115.2387644!16s%2Fg%2F1pzxb2nxy?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="5" data-name="Pura Bias Tugel"><g transform="translate(605.0 347.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/place/Nusa+Dua+Beach/@-8.7958466,115.2312068,17z/data=!3m1!4b1!4m6!3m5!1s0x2dd243213c2ea8df:0xfe9b8fbae7a12e8f!8m2!3d-8.7957616!4d115.2328213!16s%2Fg%2F1ptyl7nz0?entry=ttu&amp;g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"><g class="cmpin" data-i="4" data-name="Nusa Dua Beach"><g transform="translate(583.8 318.7) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Savaya+(beach+club)+Southern+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="3" data-name="Savaya (beach club)"><g transform="translate(255.6 501.3) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Garuda+Wisnu+Kencana+Cultural+Park+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="2" data-name="GWK Cultural Park"><g transform="translate(348.5 371.4) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><a href="https://www.google.com/maps/search/?api=1&amp;query=Uluwatu+Temple+Bali" target="_blank" rel="noopener"><g class="cmpin" data-i="1" data-name="Uluwatu Temple"><g transform="translate(55.0 439.8) scale(1.6)"><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/><path d="M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z" fill="#245A43" stroke="#fff" stroke-width="1.1"/><circle cx="0" cy="-17.7" r="3.1" fill="#fff"/></g></g></a><text x="654" y="814" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text></svg></div></div><div class="cm-ov"><div class="cm-ov-kick">Indonesia</div><div class="cm-ov-title">Southern Bali</div><div class="cm-ov-hint">Touch to explore<br>Double-tap to open in Google Maps</div></div></div></figure>
+<script>
+(function(){
+function setup(cm){
+ var svg=cm.querySelector('.cmmap svg');
+ function all(i){return cm.querySelectorAll('[data-i="'+i+'"]');}
+ cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
+   el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
+   el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
+ var isMob=cm.classList.contains('mob');
+ if(!isMob) return;                        // desktop variant is static (landscape + key)
+ var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
+ var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
+ // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
+ function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
+ function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
+ var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
+ var armed=null, armedHref=null;
+ function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
+ function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
+ function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
+   bub.textContent=g.getAttribute('data-name')||'';bub.style.display='block';
+   var cr=cm.getBoundingClientRect(),pr=g.getBoundingClientRect();
+   var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
+   bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
+   bub.style.top=Math.max(4,top)+'px';
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
+   clearAct(); g.classList.add('active');}
+ bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
+ function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ vp.addEventListener('touchstart',function(e){
+   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
+     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
+   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+ },{passive:false});
+ vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
+   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
+     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
+   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
+     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
+     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ },{passive:false});
+ vp.addEventListener('touchend',function(e){
+   if(e.touches.length===0){
+     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
+       var g=node&&node.closest?node.closest('.cmpin'):null;
+       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
+       else hideBub();}
+     mode=null;}
+ });
+ var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
+ w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
+ y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
+ window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ var dm=cm.getAttribute('data-demo');
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+}
+document.querySelectorAll('.citymap').forEach(setup);
+})();
+</script>
   </div>
   <div class="fn-section" id="north-bali">
     <div class="fn-city-hd">

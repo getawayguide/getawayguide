@@ -1,0 +1,126 @@
+{
+  "slug": "skopje",
+  "kicker": "North Macedonia",
+  "city": "Skopje",
+  "osm": ".tmp/skopje_osm.json",
+  "article": "north-macedonia/field-notes.html",
+  "embed": {
+    "pre": "er or in the Bohemian Debar Maalo neighborhood. The city is very walkable</li></ul>\n",
+    "post": "  </div>\n\n  <!-- Ohrid -->\n  <div class=\"fn-section\" id=\"ohrid\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "The Bridge of Civilizations in Macedonia",
+      "cat": "see",
+      "match": "the bridge of civili",
+      "lat": 41.996978,
+      "lon": 21.433947
+    },
+    {
+      "name": "Stone Bridge",
+      "cat": "see",
+      "match": "stone bridge",
+      "lat": 41.9971,
+      "lon": 21.43318
+    },
+    {
+      "name": "Alexander the Great Statue",
+      "cat": "see",
+      "match": "alexander the great ",
+      "lat": 41.99617,
+      "lon": 21.43172
+    },
+    {
+      "name": "Macedonia Gate",
+      "cat": "see",
+      "match": "macedonia gate",
+      "lat": 41.994451,
+      "lon": 21.43244
+    },
+    {
+      "name": "Woman-Warrior Park",
+      "cat": "see",
+      "match": "woman-warrior park",
+      "lat": 41.993722,
+      "lon": 21.434033
+    },
+    {
+      "name": "Old Bazaar",
+      "cat": "see",
+      "match": "old bazaar",
+      "lat": 42.001736,
+      "lon": 21.436747
+    },
+    {
+      "name": "Archbishop Cathedral of St. Clement of Ohrid",
+      "cat": "see",
+      "match": "archbishop cathedral",
+      "lat": 41.99878,
+      "lon": 21.4226
+    },
+    {
+      "name": "The Post Office",
+      "cat": "see",
+      "match": "the post office",
+      "lat": 41.99735,
+      "lon": 21.4306
+    },
+    {
+      "name": "Kale Fortress (aka Skopje Fortress)",
+      "cat": "see",
+      "match": "kale fortress (aka s",
+      "lat": 42.000802,
+      "lon": 21.433048
+    },
+    {
+      "name": "Mother Teresa Memorial House",
+      "cat": "see",
+      "match": "mother teresa memori",
+      "lat": 41.993845,
+      "lon": 21.430864
+    },
+    {
+      "name": "Restaurant Skopski Merak",
+      "cat": "eat",
+      "match": "restaurant skopski m",
+      "lat": 42.001031,
+      "lon": 21.419801
+    },
+    {
+      "name": "Kaj Гоце",
+      "cat": "eat",
+      "match": "kaj гоце",
+      "lat": 41.999664,
+      "lon": 21.436209
+    }
+  ],
+  "center": {
+    "lat": 41.9977,
+    "lon": 21.4305
+  },
+  "district_labels": [
+    {
+      "text": "OLD BAZAAR",
+      "lat": 42.0012,
+      "lon": 21.4352
+    },
+    {
+      "text": "CENTAR",
+      "lat": 41.9956,
+      "lon": 21.43
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "slug": "meteora",
+  "kicker": "Greece",
+  "city": "Meteora",
+  "osm": ".tmp/meteora_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "help you plan your itinerary on arrival</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Santorini -->\n  <div class=\"fn-section\" id=\"santorini\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "center": {
+    "lat": 39.7165,
+    "lon": 21.6285
+  },
+  "district_labels": [
+    {
+      "text": "KALAMBAKA",
+      "lat": 39.706,
+      "lon": 21.6295
+    },
+    {
+      "text": "KASTRAKI",
+      "lat": 39.7168,
+      "lon": 21.6178
+    }
+  ],
+  "pois": [
+    {
+      "name": "Great Meteoron",
+      "cat": "see",
+      "match": "great meteoron",
+      "lat": 39.7263,
+      "lon": 21.62631
+    },
+    {
+      "name": "Varlaam",
+      "cat": "see",
+      "match": "varlaam",
+      "lat": 39.72503,
+      "lon": 21.62982
+    },
+    {
+      "name": "Roussanou",
+      "cat": "see",
+      "match": "roussanou",
+      "lat": 39.72158,
+      "lon": 21.6319
+    },
+    {
+      "name": "St. Nicholas Anapafsas",
+      "cat": "see",
+      "match": "st. nicholas",
+      "lat": 39.7218,
+      "lon": 21.6268
+    },
+    {
+      "name": "Holy Trinity (Agia Triada)",
+      "cat": "see",
+      "match": "holy trinity",
+      "lat": 39.7043,
+      "lon": 21.6358
+    },
+    {
+      "name": "St. Stephen (Agios Stefanos)",
+      "cat": "see",
+      "match": "st. stephen",
+      "lat": 39.70916,
+      "lon": 21.63858
+    },
+    {
+      "name": "Viewpoint Meteora",
+      "cat": "see",
+      "match": "viewpoint meteora",
+      "lat": 39.72127,
+      "lon": 21.63431
+    },
+    {
+      "name": "Main Observation Deck of Meteora",
+      "cat": "see",
+      "match": "main observation deck",
+      "lat": 39.71928,
+      "lon": 21.63701
+    },
+    {
+      "name": "Holy Spirit Rock hike",
+      "cat": "see",
+      "match": "holy spirit rock",
+      "lat": 39.71844,
+      "lon": 21.6242
+    },
+    {
+      "name": "Taverna Gardenia",
+      "cat": "eat",
+      "match": "taverna gardenia",
+      "lat": 39.71652,
+      "lon": 21.61999
+    },
+    {
+      "name": "Kofi Hub",
+      "cat": "eat",
+      "match": "kofi hub",
+      "lat": 39.7163719,
+      "lon": 21.6199917
+    },
+    {
+      "name": "Batalogiannis Bakery",
+      "cat": "eat",
+      "match": "batalogiannis bake",
+      "lat": 39.7160602,
+      "lon": 21.6189468
+    },
+    {
+      "name": "Restaurant Meteora Gkertsou Family",
+      "cat": "eat",
+      "match": "restaurant meteora",
+      "lat": 39.7066018,
+      "lon": 21.6235119
+    },
+    {
+      "name": "Octo Coffee & Breakfast",
+      "cat": "eat",
+      "match": "octo coffee & brea",
+      "lat": 39.7059445,
+      "lon": 21.6249612
+    },
+    {
+      "name": "Thalia Rooms",
+      "cat": "stay",
+      "match": "thalia rooms",
+      "lat": 39.716,
+      "lon": 21.6193
+    }
+  ]
+}

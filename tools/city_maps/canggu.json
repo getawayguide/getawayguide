@@ -1,0 +1,79 @@
+{
+  "slug": "canggu",
+  "kicker": "Indonesia",
+  "city": "Canggu & Seminyak",
+  "osm": ".tmp/canggu_osm.json",
+  "article": "indonesia/field-notes.html",
+  "embed": {
+    "pre": "les so I'd say this is only worth it if you're already driving past</span></li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"ubud\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.35
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Tanah Lot",
+      "cat": "see",
+      "match": "tanah lot",
+      "lat": -8.6212286,
+      "lon": 115.0868849
+    },
+    {
+      "name": "Finns Beach Club",
+      "cat": "see",
+      "match": "finns beach club",
+      "lat": -8.6668176,
+      "lon": 115.1393679
+    },
+    {
+      "name": "Potato Head Beach Club",
+      "cat": "see",
+      "match": "potato head beach ",
+      "lat": -8.6794068,
+      "lon": 115.1499595
+    },
+    {
+      "name": "Foal Cafe",
+      "cat": "eat",
+      "match": "foal cafe",
+      "lat": -8.6595608,
+      "lon": 115.1431225
+    },
+    {
+      "name": "Mowies",
+      "cat": "eat",
+      "match": "mowies",
+      "lat": -8.6602373,
+      "lon": 115.1408019
+    }
+  ],
+  "sea_bg": true,
+  "roads": "major",
+  "center": {
+    "lat": -8.643,
+    "lon": 115.108
+  },
+  "district_labels": [
+    {
+      "text": "CANGGU",
+      "lat": -8.652,
+      "lon": 115.132
+    },
+    {
+      "text": "SEMINYAK",
+      "lat": -8.682,
+      "lon": 115.145
+    }
+  ]
+}

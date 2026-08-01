@@ -1,0 +1,73 @@
+{
+  "slug": "naxos",
+  "kicker": "Greece",
+  "city": "Naxos",
+  "osm": ".tmp/naxos_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "chId=0dec8dba-b2a7-44b6-ae7c-8154ff21cfa7\">Hotel Kymata</a> where I stayed</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Thessaloniki -->\n  <div class=\"fn-section\" id=\"thessaloniki\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Temple of Apollo (Portara)",
+      "cat": "see",
+      "match": "temple of apollo (port",
+      "lat": 37.110127,
+      "lon": 25.372466
+    },
+    {
+      "name": "Venetian Castle",
+      "cat": "see",
+      "match": "venetian castle",
+      "lat": 37.105532,
+      "lon": 25.377184
+    },
+    {
+      "name": "Agios Georgios Beach",
+      "cat": "see",
+      "match": "agios georgios beach",
+      "lat": 37.099272,
+      "lon": 25.374866
+    },
+    {
+      "name": "Menu με νου",
+      "cat": "eat",
+      "match": "menu με νου",
+      "lat": 37.100839,
+      "lon": 25.375909
+    },
+    {
+      "name": "Hotel Kymata",
+      "cat": "stay",
+      "match": "hotel kymata",
+      "lat": 37.105,
+      "lon": 25.376
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.10518,
+    "lon": 25.374578
+  },
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 37.110127,
+      "lon": 25.372466
+    }
+  ]
+}

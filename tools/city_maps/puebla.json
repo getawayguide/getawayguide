@@ -1,0 +1,115 @@
+{
+  "slug": "puebla",
+  "kicker": "Mexico",
+  "city": "Puebla",
+  "osm": ".tmp/puebla_osm.json",
+  "article": "mexico/field-notes.html",
+  "embed": {
+    "pre": "ostel located in old town Puebla embedded in a historic 18th century house</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Oaxaca -->\n  <div class=\"fn-section\" id=\"oaxaca\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Zócalo de Puebla",
+      "cat": "see",
+      "match": "zócalo de puebla",
+      "lat": 19.04144,
+      "lon": -98.206273
+    },
+    {
+      "name": "Biblioteca Palafoxiana",
+      "cat": "see",
+      "match": "biblioteca palafoxiana",
+      "lat": 19.04215,
+      "lon": -98.198889
+    },
+    {
+      "name": "Pasaje Histórico 5 de Mayo",
+      "cat": "see",
+      "match": "pasaje histórico 5 de ",
+      "lat": 19.052492,
+      "lon": -98.191165
+    },
+    {
+      "name": "Loreto Fort Museum",
+      "cat": "see",
+      "match": "loreto fort museum",
+      "lat": 19.057847,
+      "lon": -98.187091
+    },
+    {
+      "name": "Ex-Convento de San Francisco",
+      "cat": "see",
+      "match": "ex-convento de san fra",
+      "lat": 19.044923,
+      "lon": -98.189447
+    },
+    {
+      "name": "Chapel of the Rosary, St. Dominic’s Temple",
+      "cat": "see",
+      "match": "chapel of the rosary, ",
+      "lat": 19.046523,
+      "lon": -98.198309
+    },
+    {
+      "name": "Cemitas Americas",
+      "cat": "eat",
+      "match": "cemitas americas",
+      "lat": 19.048472,
+      "lon": -98.194307
+    },
+    {
+      "name": "Comal",
+      "cat": "eat",
+      "match": "comal",
+      "lat": 19.04338,
+      "lon": -98.199355
+    },
+    {
+      "name": "Fonda Típica La Poblana",
+      "cat": "eat",
+      "match": "fonda típica la poblan",
+      "lat": 19.043516,
+      "lon": -98.19279
+    },
+    {
+      "name": "Casa Pepe Hostel Boutique",
+      "cat": "stay",
+      "match": "casa pepe hostel b",
+      "lat": 19.0408339,
+      "lon": -98.1942653
+    }
+  ],
+  "center": {
+    "lat": 19.045085,
+    "lon": -98.195292
+  },
+  "roads": "major",
+  "day_trips": [
+    {
+      "name": "Cholula",
+      "time": "Half Day",
+      "match": "cholula"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "CENTRO HISTÓRICO",
+      "lat": 19.0435,
+      "lon": -98.197
+    }
+  ]
+}

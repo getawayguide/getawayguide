@@ -1,0 +1,108 @@
+{
+  "slug": "el-nido",
+  "kicker": "Philippines",
+  "city": "El Nido",
+  "osm": ".tmp/el-nido_osm.json",
+  "article": "philippines/field-notes.html",
+  "embed": {
+    "pre": "'re looking for a more relaxing stay away from the madness of El Nido town</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Port Barton -->\n  <div class=\"fn-section\" id=\"port-barton\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Seven Commandos Beach",
+      "cat": "see",
+      "match": "seven commandos beach",
+      "lat": 11.173671,
+      "lon": 119.378839
+    },
+    {
+      "name": "El Nido Zipline at Las Cabanas Beach",
+      "cat": "see",
+      "match": "el nido zipline at las",
+      "lat": 11.144803,
+      "lon": 119.394457
+    },
+    {
+      "name": "Inasal Eats Co",
+      "cat": "eat",
+      "match": "inasal eats co",
+      "lat": 11.18105,
+      "lon": 119.391268
+    },
+    {
+      "name": "Big Bad Thai",
+      "cat": "eat",
+      "match": "big bad thai",
+      "lat": 11.181221,
+      "lon": 119.391086
+    },
+    {
+      "name": "Frendz Hostel rooftop bar",
+      "cat": "eat",
+      "match": "frendz hostel rooftop ",
+      "lat": 11.181209,
+      "lon": 119.391875
+    },
+    {
+      "name": "Sava Beach Bar",
+      "cat": "eat",
+      "match": "sava beach bar",
+      "lat": 11.180918,
+      "lon": 119.390608
+    },
+    {
+      "name": "Amigos",
+      "cat": "eat",
+      "match": "amigos",
+      "lat": 11.180918,
+      "lon": 119.390608
+    },
+    {
+      "name": "Big Paul's (Corong Corong Beach)",
+      "cat": "stay",
+      "match": "big paul's (corong cor",
+      "lat": 11.163798,
+      "lon": 119.398439
+    },
+    {
+      "name": "Frendz Hostel",
+      "cat": "stay",
+      "match": "frendz hostel",
+      "lat": 11.1813343,
+      "lon": 119.3918613
+    },
+    {
+      "name": "Mad Monkey El Nido",
+      "cat": "stay",
+      "match": "mad monkey el nido",
+      "lat": 11.311396,
+      "lon": 119.419167,
+      "frame": false
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 11.173449,
+    "lon": 119.390898
+  },
+  "day_trips": [
+    {
+      "name": "Boat Tour A",
+      "time": "Full Day"
+    }
+  ]
+}

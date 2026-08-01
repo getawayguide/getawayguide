@@ -1,0 +1,76 @@
+{
+  "slug": "sacred-valley",
+  "kicker": "Peru",
+  "city": "Sacred Valley",
+  "osm": ".tmp/sacred-valley_osm.json",
+  "article": "peru/field-notes.html",
+  "embed": {
+    "pre": "stargazing at night</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Lima -->\n  <div class=\"fn-section\" id=\"lima\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.2
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "roads": "major",
+  "pois": [
+    {
+      "name": "Ollantaytambo",
+      "cat": "see",
+      "match": "ollantaytambo",
+      "lat": -13.1546371,
+      "lon": -72.5298178
+    },
+    {
+      "name": "Maras Salt Mines",
+      "cat": "see",
+      "match": "maras salt mines",
+      "lat": -13.303646,
+      "lon": -72.1541824
+    },
+    {
+      "name": "Moray",
+      "cat": "see",
+      "match": "moray",
+      "lat": -13.3298569,
+      "lon": -72.1971438
+    },
+    {
+      "name": "Chinchero",
+      "cat": "see",
+      "match": "chinchero",
+      "lat": -13.3925,
+      "lon": -72.048
+    },
+    {
+      "name": "Pisac",
+      "cat": "see",
+      "match": "pisac",
+      "lat": -13.4216848,
+      "lon": -71.8482388
+    },
+    {
+      "name": "Apu Veronica Restaurant",
+      "cat": "eat",
+      "match": "apu veronica resta",
+      "lat": -13.2581668,
+      "lon": -72.2648268
+    },
+    {
+      "name": "Casa Samay Mountain View",
+      "cat": "stay",
+      "match": "casa samay mountai",
+      "lat": -13.2507647,
+      "lon": -72.2622205
+    }
+  ]
+}

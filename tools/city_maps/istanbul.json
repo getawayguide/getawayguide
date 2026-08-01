@@ -1,0 +1,135 @@
+{
+  "slug": "istanbul",
+  "kicker": "Türkiye",
+  "city": "Istanbul",
+  "osm": ".tmp/istanbul_osm.json",
+  "article": "turkiye/field-notes.html",
+  "embed": {
+    "pre": "Co.</b></a> — modern coffee shop in Karaköy. Best coffee I had in Istanbul</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Cappadocia -->\n  <div class=\"fn-section\" id=\"cappadocia\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Beyoğlu",
+      "cat": "see",
+      "match": "beyoğlu",
+      "lat": 41.038286,
+      "lon": 28.97033
+    },
+    {
+      "name": "Kadıköy (The Asian Side)",
+      "cat": "see",
+      "match": "kadıköy (the asian sid",
+      "lat": 40.99012,
+      "lon": 29.02699
+    },
+    {
+      "name": "Hagia Sophia",
+      "cat": "see",
+      "match": "hagia sophia",
+      "lat": 41.008583,
+      "lon": 28.980175
+    },
+    {
+      "name": "Blue Mosque (Sultan Ahmed Mosque)",
+      "cat": "see",
+      "match": "blue mosque (sultan ah",
+      "lat": 41.00541,
+      "lon": 28.976814
+    },
+    {
+      "name": "Basilica Cistern",
+      "cat": "see",
+      "match": "basilica cistern",
+      "lat": 41.008384,
+      "lon": 28.977878
+    },
+    {
+      "name": "Grand Bazaar",
+      "cat": "see",
+      "match": "grand bazaar",
+      "lat": 41.010685,
+      "lon": 28.968068
+    },
+    {
+      "name": "Nuruosmaniye Mosque",
+      "cat": "see",
+      "match": "nuruosmaniye mosque",
+      "lat": 41.010196,
+      "lon": 28.970645
+    },
+    {
+      "name": "Balat",
+      "cat": "see",
+      "match": "balat",
+      "lat": 41.029211,
+      "lon": 28.948498
+    },
+    {
+      "name": "Galata Bridge",
+      "cat": "see",
+      "match": "galata bridge",
+      "lat": 41.020015,
+      "lon": 28.97322
+    },
+    {
+      "name": "Topkapi Palace",
+      "cat": "see",
+      "match": "topkapi palace",
+      "lat": 41.011519,
+      "lon": 28.983379
+    },
+    {
+      "name": "Galata Tower",
+      "cat": "see",
+      "match": "galata tower",
+      "lat": 41.025569,
+      "lon": 28.974129
+    },
+    {
+      "name": "Coffee Restarting and Co.",
+      "cat": "eat",
+      "match": "coffee restarting and ",
+      "lat": 41.025901,
+      "lon": 28.980781
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 41.015404,
+    "lon": 28.97755
+  },
+  "roads": "major",
+  "day_trips": [
+    {
+      "name": "Prince Islands",
+      "time": "Full Day",
+      "match": "prince islands"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "SULTANAHMET",
+      "lat": 41.0047,
+      "lon": 28.9772
+    },
+    {
+      "text": "KARAKÖY",
+      "lat": 41.0245,
+      "lon": 28.977
+    }
+  ]
+}

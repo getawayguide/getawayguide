@@ -1,0 +1,76 @@
+{
+  "slug": "port-barton",
+  "kicker": "Philippines",
+  "city": "Port Barton",
+  "osm": ".tmp/port-barton_osm.json",
+  "article": "philippines/field-notes.html",
+  "embed": {
+    "pre": "The food is pretty good here</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Siargao -->\n  <div class=\"fn-section\" id=\"siargao\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "sea_bg": true,
+  "pois": [
+    {
+      "name": "Port Barton Beach",
+      "cat": "see",
+      "match": "port barton beach",
+      "lat": 10.4125,
+      "lon": 119.1768
+    },
+    {
+      "name": "Coconut Beach",
+      "cat": "see",
+      "match": "coconut beach",
+      "lat": 10.4106748,
+      "lon": 119.1625087
+    },
+    {
+      "name": "Barton Bistro",
+      "cat": "eat",
+      "match": "barton bistro",
+      "lat": 10.4128842,
+      "lon": 119.1773857
+    },
+    {
+      "name": "Raquel's Canteen",
+      "cat": "eat",
+      "match": "raquel",
+      "lat": 10.4116711,
+      "lon": 119.1779525
+    },
+    {
+      "name": "MGM Food House",
+      "cat": "eat",
+      "match": "mgm food",
+      "lat": 10.4107616,
+      "lon": 119.1773018
+    },
+    {
+      "name": "Dam Dam Hostel",
+      "cat": "stay",
+      "match": "dam dam",
+      "lat": 10.4118,
+      "lon": 119.1782
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "MAIN TOWN",
+      "lat": 10.4118,
+      "lon": 119.1783
+    }
+  ]
+}

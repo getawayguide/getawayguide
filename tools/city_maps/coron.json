@@ -1,0 +1,115 @@
+{
+  "slug": "coron",
+  "kicker": "Philippines",
+  "city": "Coron",
+  "osm": ".tmp/coron_osm.json",
+  "article": "philippines/field-notes.html",
+  "embed": {
+    "pre": "nveniently books boat tours and can organize airport pickups</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <!-- Coron to El Nido Boat Tour -->\n  <div class=\"fn-section\" id=\"coron-el-nido\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Mount Tapyas viewpoint",
+      "cat": "see",
+      "match": "mount tapyas viewpoint",
+      "lat": 11.996137,
+      "lon": 120.20257
+    },
+    {
+      "name": "Skeleton Wreck",
+      "cat": "see",
+      "match": "skeleton wreck",
+      "lat": 11.941233,
+      "lon": 120.191758
+    },
+    {
+      "name": "Coral Garden (Las Isla De Coral)",
+      "cat": "see",
+      "match": "coral garden (las isla",
+      "lat": 11.953753,
+      "lon": 120.193154
+    },
+    {
+      "name": "CYC Beach",
+      "cat": "see",
+      "match": "cyc beach",
+      "lat": 11.963711,
+      "lon": 120.180653
+    },
+    {
+      "name": "Twin Lagoon",
+      "cat": "see",
+      "match": "twin lagoon",
+      "lat": 11.947603,
+      "lon": 120.20968
+    },
+    {
+      "name": "Kayangan",
+      "cat": "see",
+      "match": "kayangan",
+      "lat": 11.953413,
+      "lon": 120.223505
+    },
+    {
+      "name": "Barracuda Lake",
+      "cat": "see",
+      "match": "barracuda lake",
+      "lat": 11.95505,
+      "lon": 120.216697
+    },
+    {
+      "name": "Island Brasserie Restaurant",
+      "cat": "eat",
+      "match": "island brasserie resta",
+      "lat": 11.999679,
+      "lon": 120.209279
+    },
+    {
+      "name": "Umamikusina",
+      "cat": "eat",
+      "match": "umamikusina",
+      "lat": 11.999174,
+      "lon": 120.20359
+    },
+    {
+      "name": "Island Boy Grill",
+      "cat": "eat",
+      "match": "island boy grill",
+      "lat": 11.996137,
+      "lon": 120.20257
+    },
+    {
+      "name": "MyGuide Traveller Hostel",
+      "cat": "stay",
+      "match": "myguide traveller ",
+      "lat": 11.998866,
+      "lon": 120.2034601
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 11.972913,
+    "lon": 120.203275
+  },
+  "district_labels": [
+    {
+      "text": "MAIN TOWN",
+      "lat": 12.0053,
+      "lon": 120.2042
+    }
+  ]
+}

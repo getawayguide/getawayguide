@@ -1,0 +1,91 @@
+{
+  "slug": "athens",
+  "kicker": "Greece",
+  "city": "Athens",
+  "osm": ".tmp/athens_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "e nicest neighborhood. They have a rooftop where you can see the Acropolis</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Meteora -->\n  <div class=\"fn-section\" id=\"meteora\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Acropolis",
+      "cat": "see",
+      "match": "acropolis",
+      "lat": 37.971532,
+      "lon": 23.725749
+    },
+    {
+      "name": "Ancient Agora",
+      "cat": "see",
+      "match": "ancient agora",
+      "lat": 37.974897,
+      "lon": 23.722093
+    },
+    {
+      "name": "Syntagma Square",
+      "cat": "see",
+      "match": "syntagma square",
+      "lat": 37.975525,
+      "lon": 23.734904
+    },
+    {
+      "name": "Monastiraki Square",
+      "cat": "see",
+      "match": "monastiraki square",
+      "lat": 37.976408,
+      "lon": 23.725886
+    },
+    {
+      "name": "Eatery Bairaktaris Aiolou 29",
+      "cat": "eat",
+      "match": "eatery bairaktaris aio",
+      "lat": 37.977377,
+      "lon": 23.727652
+    },
+    {
+      "name": "YellowSquare Athens",
+      "cat": "stay",
+      "match": "yellowsquare athen",
+      "lat": 37.9808803,
+      "lon": 23.7251539
+    },
+    {
+      "name": "Mosaikon Glostel",
+      "cat": "stay",
+      "match": "mosaikon glostel",
+      "lat": 37.9777318,
+      "lon": 23.7284494
+    }
+  ],
+  "center": {
+    "lat": 37.974715,
+    "lon": 23.72777
+  },
+  "district_labels": [
+    {
+      "text": "PLAKA",
+      "lat": 37.9724,
+      "lon": 23.7303
+    },
+    {
+      "text": "MONASTIRAKI",
+      "lat": 37.9773,
+      "lon": 23.7244
+    }
+  ]
+}

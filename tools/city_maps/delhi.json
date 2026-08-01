@@ -1,0 +1,92 @@
+{
+  "slug": "delhi",
+  "kicker": "India",
+  "city": "Delhi",
+  "osm": ".tmp/delhi_osm.json",
+  "article": "india/field-notes.html",
+  "embed": {
+    "pre": "walk around at night. There are probably better places to stay in Delhi...</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"agra\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Akshardham Temple",
+      "cat": "see",
+      "match": "akshardham temple",
+      "lat": 28.612517,
+      "lon": 77.277318
+    },
+    {
+      "name": "Humayun's Tomb",
+      "cat": "see",
+      "match": "humayun's tomb",
+      "lat": 28.593285,
+      "lon": 77.250749
+    },
+    {
+      "name": "Red Fort",
+      "cat": "see",
+      "match": "red fort",
+      "lat": 28.656081,
+      "lon": 77.240796
+    },
+    {
+      "name": "Chandni Chowk",
+      "cat": "see",
+      "match": "chandni chowk",
+      "lat": 28.655983,
+      "lon": 77.232194
+    },
+    {
+      "name": "India Gate",
+      "cat": "see",
+      "match": "india gate",
+      "lat": 28.612912,
+      "lon": 77.22951
+    },
+    {
+      "name": "Haldiram's",
+      "cat": "eat",
+      "match": "haldiram's",
+      "lat": 28.576312,
+      "lon": 77.195003
+    },
+    {
+      "name": "Hindustan Hostel",
+      "cat": "stay",
+      "match": "hindustan hostel",
+      "lat": 28.6424676,
+      "lon": 77.2115982
+    }
+  ],
+  "center": {
+    "lat": 28.617853,
+    "lon": 77.237595
+  },
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "OLD DELHI",
+      "lat": 28.65,
+      "lon": 77.234
+    },
+    {
+      "text": "CONNAUGHT PLACE",
+      "lat": 28.633,
+      "lon": 77.219
+    }
+  ]
+}

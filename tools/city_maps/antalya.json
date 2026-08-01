@@ -1,0 +1,91 @@
+{
+  "slug": "antalya",
+  "kicker": "Türkiye",
+  "city": "Antalya",
+  "osm": ".tmp/antalya_osm.json",
+  "article": "turkiye/field-notes.html",
+  "embed": {
+    "pre": "ers here. The door on my room broke twice and I was locked inside</li></ul><ul>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Köprülü Canyon Area -->\n  <div class=\"fn-section\" id=\"sailing\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Kaleiçi Old Town",
+      "cat": "see",
+      "match": "kaleiçi old town",
+      "lat": 36.882282,
+      "lon": 30.705313
+    },
+    {
+      "name": "Paşa Bey",
+      "cat": "eat",
+      "match": "paşa bey",
+      "lat": 36.878115,
+      "lon": 30.711025
+    },
+    {
+      "name": "Tarihi Ankara Simit Fırını",
+      "cat": "eat",
+      "match": "tarihi ankara simit fı",
+      "lat": 36.880315,
+      "lon": 30.710555
+    },
+    {
+      "name": "Üstat lokantası",
+      "cat": "eat",
+      "match": "üstat lokantası",
+      "lat": 36.885435,
+      "lon": 30.710603
+    },
+    {
+      "name": "Doys Döner Antalya",
+      "cat": "eat",
+      "match": "doys döner antalya",
+      "lat": 36.886524,
+      "lon": 30.710701
+    },
+    {
+      "name": "Kiana Kaleiçi",
+      "cat": "stay",
+      "match": "kiana kaleiçi",
+      "lat": 36.881863,
+      "lon": 30.704234
+    },
+    {
+      "name": "Upper Düden Falls",
+      "cat": "see",
+      "match": "upper düden fall",
+      "lat": 36.963731,
+      "lon": 30.726744
+    },
+    {
+      "name": "Lower Düden Falls",
+      "cat": "see",
+      "match": "lower düden fall",
+      "lat": 36.85077,
+      "lon": 30.783373
+    }
+  ],
+  "sea_bg": true,
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "KALEİÇİ",
+      "lat": 36.884,
+      "lon": 30.705
+    }
+  ]
+}

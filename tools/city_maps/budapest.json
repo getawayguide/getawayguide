@@ -1,0 +1,167 @@
+{
+  "slug": "budapest",
+  "kicker": "Hungary",
+  "city": "Budapest",
+  "osm": ".tmp/budapest_osm.json",
+  "article": "hungary/field-notes.html",
+  "embed": {
+    "pre": ", centrally located in Pest and within walking distance of the main sights</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Other Stops -->\n  <div class=\"fn-section\" id=\"other-stops\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.4
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Buda Castle",
+      "cat": "see",
+      "match": "buda castle",
+      "lat": 47.495991,
+      "lon": 19.039801
+    },
+    {
+      "name": "Fisherman's Bastion",
+      "cat": "see",
+      "match": "fisherman's bastion",
+      "lat": 47.502305,
+      "lon": 19.0347
+    },
+    {
+      "name": "Matthias Church",
+      "cat": "see",
+      "match": "matthias church",
+      "lat": 47.502009,
+      "lon": 19.034206
+    },
+    {
+      "name": "Citadella",
+      "cat": "see",
+      "match": "citadella",
+      "lat": 47.48702,
+      "lon": 19.045698
+    },
+    {
+      "name": "Széchenyi Chain Bridge",
+      "cat": "see",
+      "match": "széchenyi chain bridge",
+      "lat": 47.498979,
+      "lon": 19.043649
+    },
+    {
+      "name": "Hungarian Parliament",
+      "cat": "see",
+      "match": "hungarian parliament",
+      "lat": 47.506996,
+      "lon": 19.045268
+    },
+    {
+      "name": "Liberty Square",
+      "cat": "see",
+      "match": "liberty square",
+      "lat": 47.50473,
+      "lon": 19.050748
+    },
+    {
+      "name": "House of Terror",
+      "cat": "see",
+      "match": "house of terror",
+      "lat": 47.506897,
+      "lon": 19.065019
+    },
+    {
+      "name": "Central Market Hall",
+      "cat": "see",
+      "match": "central market hall",
+      "lat": 47.486575,
+      "lon": 19.058994
+    },
+    {
+      "name": "Jewish Quarter (District VII)",
+      "cat": "see",
+      "match": "jewish quarter (distri",
+      "lat": 47.502729,
+      "lon": 19.073376
+    },
+    {
+      "name": "Carl Lutz Rakpart",
+      "cat": "see",
+      "match": "carl lutz rakpart",
+      "lat": 47.515248,
+      "lon": 19.083016
+    },
+    {
+      "name": "Café Kör",
+      "cat": "eat",
+      "match": "café kör",
+      "lat": 47.501237,
+      "lon": 19.052063
+    },
+    {
+      "name": "Horgásztanya Vendéglő",
+      "cat": "eat",
+      "match": "horgásztanya vendéglő",
+      "lat": 47.50211,
+      "lon": 19.039089
+    },
+    {
+      "name": "Nor/ma Scandinavian Bakery",
+      "cat": "eat",
+      "match": "nor/ma scandinavian ba",
+      "lat": 47.490232,
+      "lon": 19.060232
+    },
+    {
+      "name": "Szimpla Kert",
+      "cat": "eat",
+      "match": "szimpla kert",
+      "lat": 47.49693,
+      "lon": 19.063313
+    },
+    {
+      "name": "Instant-Fogas",
+      "cat": "eat",
+      "match": "instant-fogas",
+      "lat": 47.500527,
+      "lon": 19.065523
+    },
+    {
+      "name": "Monastery Boutique Hotel",
+      "cat": "stay",
+      "match": "monastery boutique hot",
+      "lat": 47.501835,
+      "lon": 19.038546
+    }
+  ],
+  "center": {
+    "lat": 47.506228,
+    "lon": 19.064101
+  },
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "CASTLE HILL",
+      "lat": 47.5015,
+      "lon": 19.034
+    },
+    {
+      "text": "BUDA",
+      "lat": 47.4875,
+      "lon": 19.03
+    },
+    {
+      "text": "PEST",
+      "lat": 47.499,
+      "lon": 19.066
+    }
+  ]
+}

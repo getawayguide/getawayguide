@@ -1,0 +1,115 @@
+{
+  "slug": "ios",
+  "kicker": "Greece",
+  "city": "Ios",
+  "osm": ".tmp/ios_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "r. Pool, bar and a great social atmosphere. The go-to hostel on the island</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Mykonos -->\n  <div class=\"fn-section\" id=\"mykonos\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Church of Panagia Gremniotissa",
+      "cat": "see",
+      "match": "church of panagia grem",
+      "lat": 36.723907,
+      "lon": 25.281408
+    },
+    {
+      "name": "Mylopotas",
+      "cat": "see",
+      "match": "mylopotas",
+      "lat": 36.721777,
+      "lon": 25.281938
+    },
+    {
+      "name": "FarOut Beach Club",
+      "cat": "see",
+      "match": "farout beach club",
+      "lat": 36.711393,
+      "lon": 25.296244
+    },
+    {
+      "name": "Little Gem",
+      "cat": "see",
+      "match": "little gem",
+      "lat": 36.721777,
+      "lon": 25.281938
+    },
+    {
+      "name": "Pathos Bar",
+      "cat": "see",
+      "match": "pathos bar",
+      "lat": 36.729293,
+      "lon": 25.256
+    },
+    {
+      "name": "Loretzaina",
+      "cat": "see",
+      "match": "loretzaina",
+      "lat": 36.751886,
+      "lon": 25.264033
+    },
+    {
+      "name": "Paralia Gialos",
+      "cat": "see",
+      "match": "paralia gialos",
+      "lat": 36.725494,
+      "lon": 25.273294
+    },
+    {
+      "name": "Sweet Irish Dream",
+      "cat": "eat",
+      "match": "sweet irish dream",
+      "lat": 36.722482,
+      "lon": 25.280033
+    },
+    {
+      "name": "Shush Silent Disco",
+      "cat": "eat",
+      "match": "shush silent disco",
+      "lat": 36.722931,
+      "lon": 25.281429
+    },
+    {
+      "name": "Lost Boys",
+      "cat": "eat",
+      "match": "lost boys",
+      "lat": 36.722767,
+      "lon": 25.28288
+    },
+    {
+      "name": "Francesco's Hostel",
+      "cat": "stay",
+      "match": "francesco's hostel",
+      "lat": 36.7236,
+      "lon": 25.282
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 36.725045,
+    "lon": 25.278285
+  },
+  "district_labels": [
+    {
+      "text": "CHORA",
+      "lat": 36.721777,
+      "lon": 25.281938
+    }
+  ]
+}

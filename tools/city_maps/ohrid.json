@@ -1,0 +1,89 @@
+{
+  "slug": "ohrid",
+  "kicker": "North Macedonia",
+  "city": "Ohrid",
+  "osm": ".tmp/ohrid_osm.json",
+  "article": "north-macedonia/field-notes.html",
+  "embed": {
+    "pre": "right in the middle of Old Town</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Krushevo -->\n  <div class=\"fn-section\" id=\"krushevo\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "St. John Kaneo Church",
+      "cat": "see",
+      "match": "st. john kaneo chu",
+      "lat": 41.1111244,
+      "lon": 20.7887653
+    },
+    {
+      "name": "Ancient Macedonian Theatre of Lychnidos",
+      "cat": "see",
+      "match": "ancient macedonian",
+      "lat": 41.1146483,
+      "lon": 20.7937122
+    },
+    {
+      "name": "Samuel's Fortress",
+      "cat": "see",
+      "match": "samuel's fortress",
+      "lat": 41.1146377,
+      "lon": 20.7915434
+    },
+    {
+      "name": "Old Bazaar Street",
+      "cat": "see",
+      "match": "old bazaar street",
+      "lat": 41.1166,
+      "lon": 20.801
+    },
+    {
+      "name": "Old Swimming Court",
+      "cat": "see",
+      "match": "old swimming court",
+      "lat": 41.1147,
+      "lon": 20.792
+    },
+    {
+      "name": "Labino Vista Point",
+      "cat": "see",
+      "match": "labino vista point",
+      "lat": 41.1140814,
+      "lon": 20.7879326
+    },
+    {
+      "name": "Old Town Hostel Ohrid",
+      "cat": "stay",
+      "match": "old town hostel oh",
+      "lat": 41.1148218,
+      "lon": 20.7996612
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Lake Boat Tour",
+      "time": "Full Day",
+      "href": "https://www.getyourguide.com/booking/G3X1Q10W2MV13J2B277Z8M4MPJ4KGFSH"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 41.1145,
+      "lon": 20.796
+    }
+  ]
+}

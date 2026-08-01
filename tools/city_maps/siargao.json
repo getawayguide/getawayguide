@@ -1,0 +1,120 @@
+{
+  "slug": "siargao",
+  "kicker": "Philippines",
+  "city": "Siargao",
+  "osm": ".tmp/siargao_osm.json",
+  "article": "philippines/field-notes.html",
+  "embed": {
+    "pre": "gle other tourist while I was there. I preferred the Mad Monkey in Siargao</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Manila -->\n  <div class=\"fn-section\" id=\"manila\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cloud 9",
+      "cat": "see",
+      "match": "cloud 9",
+      "lat": 9.783753,
+      "lon": 126.156571
+    },
+    {
+      "name": "Explore General Luna Downtown",
+      "cat": "see",
+      "match": "explore general luna d",
+      "lat": 9.783753,
+      "lon": 126.156571
+    },
+    {
+      "name": "Siargao Wakepark",
+      "cat": "see",
+      "match": "siargao wakepark",
+      "lat": 9.801332,
+      "lon": 126.113256
+    },
+    {
+      "name": "Sunset Bridge",
+      "cat": "see",
+      "match": "sunset bridge",
+      "lat": 9.809349,
+      "lon": 126.157033
+    },
+    {
+      "name": "Sana Bowl",
+      "cat": "eat",
+      "match": "sana bowl",
+      "lat": 9.785896,
+      "lon": 126.161369
+    },
+    {
+      "name": "Kurvada",
+      "cat": "eat",
+      "match": "kurvada",
+      "lat": 9.787171,
+      "lon": 126.162378
+    },
+    {
+      "name": "Backyard Steakhouse",
+      "cat": "eat",
+      "match": "backyard steakhouse",
+      "lat": 9.807634,
+      "lon": 126.166507
+    },
+    {
+      "name": "Big Mama's Cafe & Laundry",
+      "cat": "eat",
+      "match": "big mama's cafe & laun",
+      "lat": 9.805053,
+      "lon": 126.159027
+    },
+    {
+      "name": "Felix Surf Club",
+      "cat": "eat",
+      "match": "felix surf club",
+      "lat": 9.813163,
+      "lon": 126.161645
+    },
+    {
+      "name": "Mad Monkey Siargao",
+      "cat": "stay",
+      "match": "mad monkey siargao",
+      "lat": 9.796,
+      "lon": 126.1585
+    },
+    {
+      "name": "Kayan Siargao",
+      "cat": "stay",
+      "match": "kayan siargao",
+      "lat": 9.808,
+      "lon": 126.1625
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 9.797456,
+    "lon": 126.154929
+  },
+  "district_labels": [
+    {
+      "text": "GENERAL LUNA",
+      "lat": 9.793,
+      "lon": 126.1575
+    },
+    {
+      "text": "CLOUD 9",
+      "lat": 9.8095,
+      "lon": 126.1665
+    }
+  ]
+}

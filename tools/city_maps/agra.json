@@ -1,0 +1,65 @@
+{
+  "slug": "agra",
+  "kicker": "India",
+  "city": "Agra",
+  "osm": ".tmp/agra_osm.json",
+  "article": "india/field-notes.html",
+  "embed": {
+    "pre": "/a> — a great hostel in Agra with an incredible view of Agra from the roof</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"jaipur\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Taj Mahal",
+      "cat": "see",
+      "match": "taj mahal",
+      "lat": 27.175007,
+      "lon": 78.042101
+    },
+    {
+      "name": "Agra Fort",
+      "cat": "see",
+      "match": "agra fort",
+      "lat": 27.179826,
+      "lon": 78.020822
+    },
+    {
+      "name": "Taj Mahal east gate",
+      "cat": "see",
+      "match": "taj mahal east gate",
+      "lat": 27.175007,
+      "lon": 78.042101
+    },
+    {
+      "name": "Joey's Hostel",
+      "cat": "stay",
+      "match": "joey's hostel",
+      "lat": 27.1691191,
+      "lon": 78.0432423
+    }
+  ],
+  "center": {
+    "lat": 27.176613,
+    "lon": 78.035008
+  },
+  "district_labels": [
+    {
+      "text": "TAJ GANJ",
+      "lat": 27.171,
+      "lon": 78.0405
+    }
+  ]
+}

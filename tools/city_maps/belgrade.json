@@ -1,0 +1,147 @@
+{
+  "slug": "belgrade",
+  "kicker": "Serbia",
+  "city": "Belgrade",
+  "osm": ".tmp/belgrade_osm.json",
+  "article": "serbia/field-notes.html",
+  "embed": {
+    "pre": "a Yugoslav theme if you want to experience a hotel room from the Yugoslav times</li></ul>\n",
+    "post": "  </div>\n\n  <!-- Other Places -->\n  <div class=\"fn-section\" id=\"other-places\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Kneza Mihaila",
+      "cat": "see",
+      "match": "kneza mihaila",
+      "lat": 44.816397,
+      "lon": 20.45861
+    },
+    {
+      "name": "Republic Square",
+      "cat": "see",
+      "match": "republic square",
+      "lat": 44.816222,
+      "lon": 20.460295
+    },
+    {
+      "name": "Belgrade Fortress (Kalemegdan)",
+      "cat": "see",
+      "match": "belgrade fortress (kal",
+      "lat": 44.823502,
+      "lon": 20.449765
+    },
+    {
+      "name": "Museum of Yugoslavia",
+      "cat": "see",
+      "match": "museum of yugoslavia",
+      "lat": 44.788019,
+      "lon": 20.452314
+    },
+    {
+      "name": "Nikola Tesla Museum",
+      "cat": "see",
+      "match": "nikola tesla museum",
+      "lat": 44.805105,
+      "lon": 20.4707
+    },
+    {
+      "name": "Gardoš Tower",
+      "cat": "see",
+      "match": "gardoš tower",
+      "lat": 44.848323,
+      "lon": 20.409731
+    },
+    {
+      "name": "Kosančićev Venac",
+      "cat": "see",
+      "match": "kosančićev venac",
+      "lat": 44.816925,
+      "lon": 20.452926
+    },
+    {
+      "name": "25. Maj",
+      "cat": "see",
+      "match": "25. maj",
+      "lat": 44.828364,
+      "lon": 20.448059
+    },
+    {
+      "name": "Restoran Šaran Zemun",
+      "cat": "eat",
+      "match": "restoran šaran",
+      "lat": 44.848189,
+      "lon": 20.412915
+    },
+    {
+      "name": "Restoran Vuk",
+      "cat": "eat",
+      "match": "restoran vuk",
+      "lat": 44.817607,
+      "lon": 20.455597
+    },
+    {
+      "name": "Hotel Moskva",
+      "cat": "eat",
+      "match": "hotel moskva",
+      "lat": 44.8130277,
+      "lon": 20.4604305
+    },
+    {
+      "name": "Riddle Bar",
+      "cat": "eat",
+      "match": "riddle bar",
+      "lat": 44.8169374,
+      "lon": 20.4635717
+    },
+    {
+      "name": "Zora Sweets & Desserts",
+      "cat": "eat",
+      "match": "zora sweets & dess",
+      "lat": 44.8449832,
+      "lon": 20.4109614
+    },
+    {
+      "name": "Balkan Soul Hostel",
+      "cat": "stay",
+      "match": "balkan soul hostel",
+      "lat": 44.8159465,
+      "lon": 20.4518323
+    },
+    {
+      "name": "Yugodom",
+      "cat": "stay",
+      "match": "yugodom",
+      "lat": 44.8189917,
+      "lon": 20.4655485
+    }
+  ],
+  "center": {
+    "lat": 44.82123,
+    "lon": 20.446146
+  },
+  "district_labels": [
+    {
+      "text": "STARI GRAD",
+      "lat": 44.818,
+      "lon": 20.456
+    },
+    {
+      "text": "ZEMUN",
+      "lat": 44.846,
+      "lon": 20.413
+    }
+  ]
+}

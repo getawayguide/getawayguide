@@ -1,0 +1,108 @@
+{
+  "slug": "jaipur",
+  "kicker": "India",
+  "city": "Jaipur",
+  "osm": ".tmp/jaipur_osm.json",
+  "article": "india/field-notes.html",
+  "embed": {
+    "pre": "k from . It was only ~$50 - 60 (not bad for a 4 star hotel!)</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"varanasi\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Ajmeri Gate",
+      "cat": "see",
+      "match": "ajmeri gate",
+      "lat": 26.917647,
+      "lon": 75.816657
+    },
+    {
+      "name": "Hawa Mahal",
+      "cat": "see",
+      "match": "hawa mahal",
+      "lat": 26.923932,
+      "lon": 75.826865
+    },
+    {
+      "name": "Wind View Cafe",
+      "cat": "see",
+      "match": "wind view cafe",
+      "lat": 26.923749,
+      "lon": 75.827285
+    },
+    {
+      "name": "Jantar Mantar",
+      "cat": "see",
+      "match": "jantar mantar",
+      "lat": 26.924739,
+      "lon": 75.824466
+    },
+    {
+      "name": "City Palace",
+      "cat": "see",
+      "match": "city palace",
+      "lat": 26.92621,
+      "lon": 75.823835
+    },
+    {
+      "name": "Johari Bazaar",
+      "cat": "see",
+      "match": "johari bazaar",
+      "lat": 26.91873,
+      "lon": 75.8267
+    },
+    {
+      "name": "Nahargarh Fort",
+      "cat": "see",
+      "match": "nahargarh fort",
+      "lat": 26.940034,
+      "lon": 75.81653
+    },
+    {
+      "name": "Jal Mahal",
+      "cat": "see",
+      "match": "jal mahal",
+      "lat": 26.953467,
+      "lon": 75.846131
+    },
+    {
+      "name": "Fairfield by Marriott Jaipur",
+      "cat": "stay",
+      "match": "fairfield by marri",
+      "lat": 26.885,
+      "lon": 75.805
+    },
+    {
+      "name": "Govindam Retreat",
+      "cat": "eat",
+      "match": "govindam",
+      "lat": 26.9289947,
+      "lon": 75.8252613
+    }
+  ],
+  "center": {
+    "lat": 26.924828,
+    "lon": 75.826059
+  },
+  "roads": "major",
+  "district_labels": [
+    {
+      "text": "OLD CITY",
+      "lat": 26.9235,
+      "lon": 75.8225
+    }
+  ]
+}

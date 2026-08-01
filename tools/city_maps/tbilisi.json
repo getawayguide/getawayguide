@@ -1,0 +1,167 @@
+{
+  "slug": "tbilisi",
+  "kicker": "Georgia",
+  "city": "Tbilisi",
+  "osm": ".tmp/tbilisi_osm.json",
+  "article": "georgia/field-notes.html",
+  "embed": {
+    "pre": "y/\">Yerevan from Tbilisi</a> with a lot of interesting stops along the way</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Kazbegi -->\n  <div class=\"fn-section\" id=\"kazbegi\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Old Town Tbilisi",
+      "cat": "see",
+      "match": "old town tbilisi",
+      "lat": 41.695453,
+      "lon": 44.796282
+    },
+    {
+      "name": "Clock Tower",
+      "cat": "see",
+      "match": "clock tower",
+      "lat": 41.695783,
+      "lon": 44.806546
+    },
+    {
+      "name": "Anchiskhati Basilica",
+      "cat": "see",
+      "match": "anchiskhati basilica",
+      "lat": 41.695502,
+      "lon": 44.806873
+    },
+    {
+      "name": "Georgian National Museum",
+      "cat": "see",
+      "match": "georgian national muse",
+      "lat": 41.696043,
+      "lon": 44.800221
+    },
+    {
+      "name": "Capela Sfântului Abo",
+      "cat": "see",
+      "match": "capela sfântului abo",
+      "lat": 41.695783,
+      "lon": 44.806546
+    },
+    {
+      "name": "Holy Trinity Cathedral",
+      "cat": "see",
+      "match": "holy trinity cathedral",
+      "lat": 41.730642,
+      "lon": 44.807505,
+      "frame": false
+    },
+    {
+      "name": "Rike Park",
+      "cat": "see",
+      "match": "rike park",
+      "lat": 41.693199,
+      "lon": 44.809987
+    },
+    {
+      "name": "Sololaki Street",
+      "cat": "see",
+      "match": "sololaki street",
+      "lat": 41.69601,
+      "lon": 44.800232
+    },
+    {
+      "name": "Mother of Georgia",
+      "cat": "see",
+      "match": "mother of georgia",
+      "lat": 41.691944,
+      "lon": 44.810663
+    },
+    {
+      "name": "Tabor Monastery",
+      "cat": "see",
+      "match": "tabor monastery",
+      "lat": 41.685651,
+      "lon": 44.812962
+    },
+    {
+      "name": "Betlemi Rise Viewpoint",
+      "cat": "see",
+      "match": "betlemi rise viewpoint",
+      "lat": 41.689031,
+      "lon": 44.804732
+    },
+    {
+      "name": "Racha",
+      "cat": "eat",
+      "match": "racha",
+      "lat": 41.691222,
+      "lon": 44.802256
+    },
+    {
+      "name": "Cafe Daphna",
+      "cat": "eat",
+      "match": "cafe daphna",
+      "lat": 41.69991,
+      "lon": 44.802201
+    },
+    {
+      "name": "Puri Guliani",
+      "cat": "eat",
+      "match": "puri guliani",
+      "lat": 41.702176,
+      "lon": 44.805186
+    },
+    {
+      "name": "Pasanauri",
+      "cat": "eat",
+      "match": "pasanauri",
+      "lat": 41.692564,
+      "lon": 44.799002
+    },
+    {
+      "name": "Envoy Hostel & Tours",
+      "lat": 41.6888076,
+      "lon": 44.8087662,
+      "cat": "stay",
+      "match": "envoy"
+    }
+  ],
+  "center": {
+    "lat": 41.696728,
+    "lon": 44.804746
+  },
+  "day_trips": [
+    {
+      "name": "Kazbegi",
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/search/?api=1&query=Kazbegi+Georgia"
+    },
+    {
+      "name": "Mtskheta, Gori and Uplistsikhe",
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/search/?api=1&query=Mtskheta+Georgia"
+    },
+    {
+      "name": "Kakheti Wine Region",
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/search/?api=1&query=Kakheti+wine+region+Georgia"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 41.6895,
+      "lon": 44.808
+    }
+  ]
+}

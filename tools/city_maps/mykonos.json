@@ -1,0 +1,101 @@
+{
+  "slug": "mykonos",
+  "kicker": "Greece",
+  "city": "Mykonos",
+  "osm": ".tmp/mykonos_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "pensive at ~$90 per dorm bed. However, it is the only hostel on the island</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Naxos -->\n  <div class=\"fn-section\" id=\"naxos\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Old Town",
+      "cat": "see",
+      "match": "old town",
+      "lat": 37.450838,
+      "lon": 25.329772
+    },
+    {
+      "name": "The Windmills of Mykonos",
+      "cat": "see",
+      "match": "the windmills of mykon",
+      "lat": 37.444583,
+      "lon": 25.325932
+    },
+    {
+      "name": "Little Venice",
+      "cat": "see",
+      "match": "little venice",
+      "lat": 37.445385,
+      "lon": 25.326049
+    },
+    {
+      "name": "Tropicana Beach Bar",
+      "cat": "see",
+      "match": "tropicana beach bar",
+      "lat": 37.410265,
+      "lon": 25.356756
+    },
+    {
+      "name": "Cavo Paradiso",
+      "cat": "see",
+      "match": "cavo paradiso",
+      "lat": 37.408113,
+      "lon": 25.36023
+    },
+    {
+      "name": "Skandinavian Bar",
+      "cat": "see",
+      "match": "skandinavian bar",
+      "lat": 37.446869,
+      "lon": 25.326882
+    },
+    {
+      "name": "Attica Bakery",
+      "cat": "eat",
+      "match": "attica bakery",
+      "lat": 37.449458,
+      "lon": 25.330115
+    },
+    {
+      "name": "Souvlaki Story",
+      "cat": "eat",
+      "match": "souvlaki story",
+      "lat": 37.444935,
+      "lon": 25.327734
+    },
+    {
+      "name": "Niko's Taverna",
+      "cat": "eat",
+      "match": "niko's taverna",
+      "lat": 37.447131,
+      "lon": 25.326839
+    },
+    {
+      "name": "Mykocoon Hostel",
+      "cat": "stay",
+      "match": "mykocoon hostel",
+      "lat": 37.445,
+      "lon": 25.33
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.438621,
+    "lon": 25.334479
+  }
+}

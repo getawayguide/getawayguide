@@ -77,11 +77,9 @@
       "match": "konditori katarina"
     }
   ],
-  "sea": {
-    "side": "west"
-  },
   "center": {
     "lat": 55.606,
     "lon": 12.984
-  }
+  },
+  "sea_bg": true
 }

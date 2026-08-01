@@ -1,0 +1,80 @@
+{
+  "slug": "thessaloniki",
+  "kicker": "Greece",
+  "city": "Thessaloniki",
+  "osm": ".tmp/thessaloniki_osm.json",
+  "article": "greece/field-notes.html",
+  "embed": {
+    "pre": "at what you want. I got a full meal for just 4.5€ which was insanely cheap</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Other Places to Consider -->\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.4
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "White Tower of Thessaloniki and Museum",
+      "cat": "see",
+      "match": "white tower of thessal",
+      "lat": 40.626448,
+      "lon": 22.948382
+    },
+    {
+      "name": "Hagia Sophia of Thessaloniki",
+      "cat": "see",
+      "match": "hagia sophia of thessa",
+      "lat": 40.632809,
+      "lon": 22.946954
+    },
+    {
+      "name": "Platia Aristotelous",
+      "cat": "see",
+      "match": "platia aristotelous",
+      "lat": 40.63285,
+      "lon": 22.941
+    },
+    {
+      "name": "Kapani Market",
+      "cat": "see",
+      "match": "kapani market",
+      "lat": 40.635835,
+      "lon": 22.942872
+    },
+    {
+      "name": "Arch of Galerius",
+      "cat": "see",
+      "match": "arch of galerius",
+      "lat": 40.632224,
+      "lon": 22.951751
+    },
+    {
+      "name": "Τα μικρά Καλύβια",
+      "cat": "eat",
+      "match": "τα μικρά καλύβια",
+      "lat": 40.6345,
+      "lon": 22.943
+    }
+  ],
+  "center": {
+    "lat": 40.6312,
+    "lon": 22.945
+  },
+  "sea_bg": true,
+  "district_labels": [
+    {
+      "text": "CITY CENTER",
+      "lat": 40.6305,
+      "lon": 22.9465
+    }
+  ]
+}

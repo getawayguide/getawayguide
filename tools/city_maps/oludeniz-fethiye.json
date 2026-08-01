@@ -1,0 +1,98 @@
+{
+  "slug": "oludeniz-fethiye",
+  "kicker": "Türkiye",
+  "city": "Fethiye",
+  "osm": ".tmp/oludeniz-fethiye_osm.json",
+  "article": "turkiye/field-notes.html",
+  "embed": {
+    "pre": "reserve in advance!</li></ul></ul>",
+    "post": "<div class=\"fn-city-hd\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Fethiye Old Town",
+      "cat": "see",
+      "match": "fethiye old town",
+      "lat": 36.620272,
+      "lon": 29.109314
+    },
+    {
+      "name": "Ancient City of Telmessos",
+      "cat": "see",
+      "match": "ancient city of telmes",
+      "lat": 36.618214,
+      "lon": 29.117753
+    },
+    {
+      "name": "Walk along the promenade and watch the sunset",
+      "cat": "see",
+      "match": "walk along the promena",
+      "lat": 36.618214,
+      "lon": 29.117753
+    },
+    {
+      "name": "Yeşil Asma Yaprağı Ev Yemekleri & Meze",
+      "cat": "eat",
+      "match": "yeşil asma yaprağı ev ",
+      "lat": 36.655153,
+      "lon": 29.122514
+    },
+    {
+      "name": "Doc Coffee Company",
+      "cat": "eat",
+      "match": "doc coffee company",
+      "lat": 36.65838,
+      "lon": 29.121234
+    },
+    {
+      "name": "Lokum Kokoreç",
+      "cat": "eat",
+      "match": "lokum kokoreç",
+      "lat": 36.656697,
+      "lon": 29.122341
+    },
+    {
+      "name": "El Camino Pub & Hostel",
+      "cat": "stay",
+      "match": "el camino pub & ho",
+      "lat": 36.6214285,
+      "lon": 29.1028959
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 36.637824,
+    "lon": 29.118485
+  },
+  "multi_day_trips": [
+    {
+      "name": "The Lycian Way",
+      "time": ""
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "FETHIYE",
+      "lat": 36.6555,
+      "lon": 29.117
+    },
+    {
+      "text": "ÖLÜDENİZ",
+      "lat": 36.549,
+      "lon": 29.124
+    }
+  ]
+}

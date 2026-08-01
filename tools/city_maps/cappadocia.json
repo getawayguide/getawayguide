@@ -1,0 +1,114 @@
+{
+  "slug": "cappadocia",
+  "kicker": "Türkiye",
+  "city": "Cappadocia",
+  "osm": ".tmp/cappadocia_osm.json",
+  "article": "turkiye/field-notes.html",
+  "embed": {
+    "pre": " fire and breaks it at the table. Fun experience worth doing at least once</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Antalya -->\n  <div class=\"fn-section\" id=\"antalya\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Göreme",
+      "cat": "see",
+      "match": "göreme",
+      "lat": 38.653119,
+      "lon": 34.863308
+    },
+    {
+      "name": "Göreme Open Air Museum",
+      "cat": "see",
+      "match": "göreme open air museum",
+      "lat": 38.641579,
+      "lon": 34.843927
+    },
+    {
+      "name": "Uçhisar",
+      "cat": "see",
+      "match": "uçhisar",
+      "lat": 38.629906,
+      "lon": 34.805403
+    },
+    {
+      "name": "Love Valley",
+      "cat": "see",
+      "match": "love valley",
+      "lat": 38.658907,
+      "lon": 34.821461
+    },
+    {
+      "name": "White Valley",
+      "cat": "see",
+      "match": "white valley",
+      "lat": 38.673903,
+      "lon": 34.829927
+    },
+    {
+      "name": "Red Valley",
+      "cat": "see",
+      "match": "red valley",
+      "lat": 38.64662,
+      "lon": 34.862456
+    },
+    {
+      "name": "Pigeon Valley",
+      "cat": "see",
+      "match": "pigeon valley",
+      "lat": 38.62038,
+      "lon": 34.804694
+    },
+    {
+      "name": "Uçhisar Castle",
+      "cat": "see",
+      "match": "uçhisar castle",
+      "lat": 38.629906,
+      "lon": 34.805403
+    },
+    {
+      "name": "My Mother’s Restaurant",
+      "cat": "eat",
+      "match": "my mother’s restaurant",
+      "lat": 38.642837,
+      "lon": 34.828805
+    },
+    {
+      "name": "Arinna Cappadocia",
+      "cat": "stay",
+      "match": "arinna cappadocia",
+      "lat": 38.6425,
+      "lon": 34.829
+    },
+    {
+      "name": "Terra Cave Hotel",
+      "cat": "stay",
+      "match": "terra cave hotel",
+      "lat": 38.6447,
+      "lon": 34.8306
+    }
+  ],
+  "center": {
+    "lat": 38.639663,
+    "lon": 34.836251
+  },
+  "district_labels": [
+    {
+      "text": "GÖREME",
+      "lat": 38.6435,
+      "lon": 34.829
+    }
+  ]
+}

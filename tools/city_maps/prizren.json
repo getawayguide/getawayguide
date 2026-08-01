@@ -1,0 +1,93 @@
+{
+  "slug": "prizren",
+  "kicker": "Kosovo",
+  "city": "Prizren",
+  "osm": ".tmp/prizren_osm.json",
+  "article": "kosovo/field-notes.html",
+  "embed": {
+    "pre": "Ura Hostel</b></a> - an amazing brand new hostel located right in old town</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Other -->\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Prizren Fortress",
+      "cat": "see",
+      "match": "prizren fortress",
+      "lat": 42.209365,
+      "lon": 20.745397
+    },
+    {
+      "name": "Shatërvan (Town Square)",
+      "cat": "see",
+      "match": "shatërvan (town square",
+      "lat": 42.209004,
+      "lon": 20.740559
+    },
+    {
+      "name": "Albanian League of Prizren",
+      "cat": "see",
+      "match": "albanian league of pri",
+      "lat": 42.211414,
+      "lon": 20.743754
+    },
+    {
+      "name": "Serbian Orthodox Cathedral of St. George",
+      "cat": "see",
+      "match": "serbian orthodox cathe",
+      "lat": 42.208084,
+      "lon": 20.740046
+    },
+    {
+      "name": "Agim (Avdi) Shala monument",
+      "cat": "see",
+      "match": "agim (avdi) shala monu",
+      "lat": 42.209365,
+      "lon": 20.741049
+    },
+    {
+      "name": "Archaeological Museum",
+      "cat": "see",
+      "match": "archaeological museum",
+      "lat": 42.211283,
+      "lon": 20.736689
+    },
+    {
+      "name": "Te Kinezi",
+      "cat": "eat",
+      "match": "te kinezi",
+      "lat": 42.208323,
+      "lon": 20.739488
+    },
+    {
+      "name": "Ura Hostel",
+      "cat": "stay",
+      "match": "ura hostel",
+      "lat": 42.209365,
+      "lon": 20.741049
+    }
+  ],
+  "center": {
+    "lat": 42.209525,
+    "lon": 20.741883
+  },
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 42.209,
+      "lon": 20.7405
+    }
+  ]
+}

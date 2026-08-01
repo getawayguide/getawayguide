@@ -1,0 +1,82 @@
+{
+  "slug": "varanasi",
+  "kicker": "India",
+  "city": "Varanasi",
+  "osm": ".tmp/varanasi_osm.json",
+  "article": "india/field-notes.html",
+  "embed": {
+    "pre": "stay here so it is a great place to make friends with locals</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Dashashwamedh Ghat",
+      "cat": "see",
+      "match": "dashashwamedh ghat",
+      "lat": 25.30761,
+      "lon": 83.01044
+    },
+    {
+      "name": "Kashi Vishwanath Temple",
+      "cat": "see",
+      "match": "kashi vishwanath templ",
+      "lat": 25.310853,
+      "lon": 83.010678
+    },
+    {
+      "name": "Blue Lassi Shop",
+      "cat": "eat",
+      "match": "blue lassi shop",
+      "lat": 25.312317,
+      "lon": 83.011473
+    },
+    {
+      "name": "Aadha-Aadha Café",
+      "cat": "eat",
+      "match": "aadha-aadha café",
+      "lat": 25.305343,
+      "lon": 83.009077
+    },
+    {
+      "name": "Wander Station Varanasi",
+      "cat": "stay",
+      "match": "wander station var",
+      "lat": 25.304742,
+      "lon": 83.0084058
+    }
+  ],
+  "center": {
+    "lat": 25.309031,
+    "lon": 83.010417
+  },
+  "activities": [
+    {
+      "name": "Ganga Aarti ceremony",
+      "href": "https://www.getyourguide.com/en-gb/varanasi-l32154/mysticism-of-varanasi-with-boat-ride-ganga-aarti-t525801/"
+    },
+    {
+      "name": "Boat ride on the Ganges",
+      "href": "https://www.getyourguide.com/en-gb/varanasi-l32154/mysticism-of-varanasi-with-boat-ride-ganga-aarti-t525801/"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD CITY",
+      "lat": 25.3078,
+      "lon": 83.0088
+    }
+  ]
+}

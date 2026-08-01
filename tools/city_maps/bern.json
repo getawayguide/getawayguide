@@ -1,0 +1,79 @@
+{
+  "slug": "bern",
+  "kicker": "Switzerland",
+  "city": "Bern",
+  "osm": ".tmp/bern_osm.json",
+  "article": "switzerland/field-notes.html",
+  "embed": {
+    "pre": " the city. Free to enter the cathedral with a small fee to climb the tower</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Lucerne -->\n  <div class=\"fn-section\" id=\"lucerne\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.75
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Kramgasse",
+      "cat": "see",
+      "match": "kramgasse",
+      "lat": 46.947972,
+      "lon": 7.450213
+    },
+    {
+      "name": "Zytglogge (Astronomical Clock)",
+      "cat": "see",
+      "match": "zytglogge (astronomica",
+      "lat": 46.94803,
+      "lon": 7.447798
+    },
+    {
+      "name": "Einstein House",
+      "cat": "see",
+      "match": "einstein house",
+      "lat": 46.947803,
+      "lon": 7.450001
+    },
+    {
+      "name": "Bear Pit (Bärengraben)",
+      "cat": "see",
+      "match": "bear pit (bärengraben)",
+      "lat": 46.948122,
+      "lon": 7.459452
+    },
+    {
+      "name": "Rosengarten",
+      "cat": "see",
+      "match": "rosengarten",
+      "lat": 46.951489,
+      "lon": 7.460073
+    },
+    {
+      "name": "Berner Münster",
+      "cat": "see",
+      "match": "berner münster",
+      "lat": 46.94724,
+      "lon": 7.451531
+    }
+  ],
+  "center": {
+    "lat": 46.948443,
+    "lon": 7.455936
+  },
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 46.948,
+      "lon": 7.45
+    }
+  ]
+}

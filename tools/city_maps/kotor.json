@@ -1,0 +1,91 @@
+{
+  "slug": "kotor",
+  "kicker": "Montenegro",
+  "city": "Kotor",
+  "osm": ".tmp/kotor_osm.json",
+  "article": "montenegro/field-notes.html",
+  "embed": {
+    "pre": "the middle of Old Town Kotor. They also host a boat party and BBQ everyday</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Perast -->\n  <div class=\"fn-section\" id=\"perast\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cathedral of Saint Tryphon",
+      "cat": "see",
+      "match": "cathedral of saint try",
+      "lat": 42.424163,
+      "lon": 18.771511
+    },
+    {
+      "name": "Kotor Food Market",
+      "cat": "see",
+      "match": "kotor food market",
+      "lat": 42.424037,
+      "lon": 18.770359
+    },
+    {
+      "name": "Castle of San Giovanni",
+      "cat": "see",
+      "match": "castle of san giovanni",
+      "lat": 42.42688,
+      "lon": 18.77302
+    },
+    {
+      "name": "Konoba Roma",
+      "cat": "eat",
+      "match": "konoba roma",
+      "lat": 42.423779,
+      "lon": 18.771375
+    },
+    {
+      "name": "Cesare Old Town Restaurant",
+      "cat": "eat",
+      "match": "cesare old town restau",
+      "lat": 42.424421,
+      "lon": 18.770444
+    },
+    {
+      "name": "Old Town Hostel Kotor",
+      "cat": "stay",
+      "match": "old town hostel ko",
+      "lat": 42.4233924,
+      "lon": 18.7716716
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 42.424656,
+    "lon": 18.771342
+  },
+  "day_trips": [
+    {
+      "name": "Bay of Kotor Boat Tour",
+      "time": "Full Day",
+      "href": "https://www.getyourguide.com/en-gb/kotor-l32202/kotor-blue-cave-and-boka-bay-tour-pickup-t477207/"
+    },
+    {
+      "name": "Perast",
+      "time": "Half Day"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 42.4245,
+      "lon": 18.7705
+    }
+  ]
+}
