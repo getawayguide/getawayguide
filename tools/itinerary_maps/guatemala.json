@@ -1,0 +1,78 @@
+{
+  "iso3": "GTM",
+  "slug": "guatemala",
+  "country_width": 520,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Antigua",
+      "lat": 14.5586,
+      "lon": -90.7295,
+      "days": "3–5 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#antigua"
+    },
+    {
+      "n": 2,
+      "name": "Acatenango",
+      "lat": 14.5006,
+      "lon": -90.8763,
+      "days": "2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#acatenango"
+    },
+    {
+      "n": 3,
+      "name": "Lake Atitlán",
+      "lat": 14.7412,
+      "lon": -91.156,
+      "days": "3–5 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#atitlan"
+    },
+    {
+      "n": 4,
+      "name": "El Paredón",
+      "lat": 13.9297,
+      "lon": -90.9797,
+      "days": "2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#paredon"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Drive · 1 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Shuttle · 3 hr"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Shuttle · 3.5 hr"
+    }
+  ]
+}

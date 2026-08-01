@@ -1,0 +1,72 @@
+{
+  "iso3": "SWE",
+  "slug": "sweden",
+  "country_width": 460,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Stockholm",
+      "lat": 59.3293,
+      "lon": 18.0686,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#stockholm"
+    },
+    {
+      "n": 2,
+      "name": "Malmö",
+      "lat": 55.605,
+      "lon": 13.0038,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#malmo"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Lapland",
+      "lat": 68.3495,
+      "lon": 18.8312,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    },
+    {
+      "name": "Gothenburg",
+      "lat": 57.7089,
+      "lon": 11.9746,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    },
+    {
+      "name": "Gotland",
+      "lat": 57.6348,
+      "lon": 18.2948,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    }
+  ],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Train · 4.5 hr"
+    }
+  ],
+  "area_keep": 0.004
+}

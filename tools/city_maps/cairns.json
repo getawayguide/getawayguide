@@ -1,0 +1,102 @@
+{
+  "slug": "cairns",
+  "kicker": "AUSTRALIA",
+  "city": "Cairns",
+  "osm": ".tmp/cairns_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": "ool and outdoor area. It was a great place to meet people in party, but be warned that it is pretty loud at night if you want to sleep</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"airlie\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cairns Esplanade Lagoon",
+      "lat": -16.91964,
+      "lon": 145.777976,
+      "cat": "see",
+      "match": "cairns esplanade lagoon"
+    },
+    {
+      "name": "Cairns Night Market",
+      "lat": -16.919859,
+      "lon": 145.777009,
+      "cat": "see",
+      "match": "cairns night market"
+    },
+    {
+      "name": "The Roti Shack",
+      "lat": -16.921955,
+      "lon": 145.775459,
+      "cat": "eat",
+      "match": "the roti shack"
+    },
+    {
+      "name": "Perrotta's at the Gallery",
+      "lat": -16.921245,
+      "lon": 145.77711,
+      "cat": "eat",
+      "match": "perrotta's at the galler"
+    },
+    {
+      "name": "Salt House",
+      "lat": -16.918522,
+      "lon": 145.78098,
+      "cat": "eat",
+      "match": "salt house"
+    },
+    {
+      "name": "Gilligan's",
+      "lat": -16.92407,
+      "lon": 145.775267,
+      "cat": "stay",
+      "match": "gilligan's"
+    }
+  ],
+  "center": {
+    "lat": -16.92046,
+    "lon": 145.77855
+  },
+  "day_trips": [
+    {
+      "name": "Fitzroy Island",
+      "time": "Full Day",
+      "match": "fitzroy"
+    },
+    {
+      "name": "Daintree Rainforest & Cape Tribulation",
+      "time": "Full Day",
+      "match": "daintree"
+    },
+    {
+      "name": "Reef Scenic Flight",
+      "time": "Half Day",
+      "match": "scenic flight"
+    },
+    {
+      "name": "Great Barrier Reef Snorkeling",
+      "time": "Full Day",
+      "match": "great barrier reef"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -16.9235,
+      "lon": 145.7745
+    }
+  ]
+}

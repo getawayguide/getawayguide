@@ -1,0 +1,32 @@
+{
+  "iso3": "DEU",
+  "slug": "germany",
+  "country_width": 520,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Munich",
+      "lat": 48.1351,
+      "lon": 11.582,
+      "days": "3–5 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#munich"
+    }
+  ],
+  "dots": [
+    { "name": "Cologne", "lat": 50.9375, "lon": 6.9603, "anchor": "end", "dx": -11, "dy": 0 },
+    { "name": "Frankfurt", "lat": 50.1109, "lon": 8.6821, "anchor": "start", "dx": 11, "dy": 4 }
+  ],
+  "airport": null,
+  "legs": []
+}

@@ -1,0 +1,83 @@
+{
+  "iso3": "FRA",
+  "slug": "france",
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "keep_containing": [
+    46.6,
+    2.2
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Nice",
+      "lat": 43.7102,
+      "lon": 7.262,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#nice"
+    },
+    {
+      "n": 2,
+      "name": "Rouen",
+      "lat": 49.4432,
+      "lon": 1.0993,
+      "days": "1 day",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#rouen"
+    },
+    {
+      "n": 3,
+      "name": "Mont Saint-Michel",
+      "lat": 48.6361,
+      "lon": -1.5115,
+      "days": "day trip",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#mont-saint-michel"
+    },
+    {
+      "n": 4,
+      "name": "Paris",
+      "lat": 48.8566,
+      "lon": 2.3522,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#paris"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Flight · 1.5 hr",
+      "dash": true
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Drive · 2.5 hr"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Train · 3.5 hr"
+    }
+  ]
+}

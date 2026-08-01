@@ -1,0 +1,63 @@
+{
+  "iso3": "HRV",
+  "slug": "croatia",
+  "country_width": 520,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "area_keep": 0.0005,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Split",
+      "lat": 43.5081,
+      "lon": 16.4402,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#split"
+    },
+    {
+      "n": 2,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#dubrovnik"
+    },
+    {
+      "n": 3,
+      "name": "Hvar",
+      "lat": 43.1729,
+      "lon": 16.4412,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#hvar"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 3 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Ferry · 3 hr"
+    }
+  ]
+}

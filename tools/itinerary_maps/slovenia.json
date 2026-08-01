@@ -1,0 +1,46 @@
+{
+  "iso3": "SVN",
+  "slug": "slovenia",
+  "country_width": 540,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Lake Bled",
+      "lat": 46.3625,
+      "lon": 14.0936,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#bled"
+    },
+    {
+      "n": 2,
+      "name": "Ljubljana",
+      "lat": 46.0569,
+      "lon": 14.5058,
+      "days": "1–2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#ljubljana"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 40 min"
+    }
+  ]
+}

@@ -10,15 +10,17 @@ Usage: python tools/gen_og_images.py [--dry-run]
 """
 import os, re, glob, sys
 from PIL import Image, ImageOps
+import thumb_lock  # preserve hand-edited OG images across runs
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
+FORCE = "--force" in sys.argv  # regenerate even hand-edited thumbnails
 DOMAIN = "https://getawayguide.io"
 OG_W, OG_H = 1200, 630
 os.makedirs(os.path.join(ROOT, "Images", "web", "og"), exist_ok=True)
 
 # use a specific dest-card source instead of the default <Name>_1 (e.g. India's best shot is _3)
-SRC_OVERRIDE = {"india": "India_3.JPG", "indonesia": "Bali_2.JPG", "australia": "Australia_3.JPG", "estonia": "Estonia_2.JPG"}
+SRC_OVERRIDE = {"india": "India_3.JPG", "indonesia": "Bali_2.JPG", "australia": "Australia_3.JPG", "estonia": "Estonia_2.JPG", "denmark": "Denmark_3.jpeg"}
 
 def hi_res(slug):
     if slug in SRC_OVERRIDE:
@@ -56,7 +58,11 @@ for slug in slugs:
         src = os.path.join(ROOT, "Images", "web", "dest-cards", "%s.jpg" % slug)
         lowres.append(slug)
     dst = os.path.join(ROOT, "Images", "web", "og", "%s.jpg" % slug)
-    if not DRY: make_og(src, dst, vbias_for(slug))
+    if not DRY:
+        if not FORCE and thumb_lock.is_manual(dst):
+            print("kept hand-edited %s (skipped)" % os.path.relpath(dst, ROOT).replace("\\", "/"))
+        else:
+            make_og(src, dst, vbias_for(slug)); thumb_lock.record(dst)
 
     # point the page's og:image / twitter:image at the new file
     page = os.path.join(ROOT, slug, "field-notes.html")

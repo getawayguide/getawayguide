@@ -1,0 +1,113 @@
+{
+  "slug": "noosa",
+  "kicker": "AUSTRALIA",
+  "city": "Noosa",
+  "osm": ".tmp/noosa_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": " is located out in Noosaville which is far away from the center of town in Hastings Street (closer to the beach and the national park)</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"brisbane\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Hastings Street",
+      "lat": -26.386437,
+      "lon": 153.089239,
+      "cat": "see",
+      "match": "hastings street"
+    },
+    {
+      "name": "Sunshine Beach",
+      "lat": -26.404171,
+      "lon": 153.102238,
+      "cat": "see",
+      "match": "sunshine beach"
+    },
+    {
+      "name": "Dolphin Point",
+      "lat": -26.377227,
+      "lon": 153.107675,
+      "cat": "see",
+      "match": "dolphin point"
+    },
+    {
+      "name": "Hell's Gates",
+      "lat": -26.379206,
+      "lon": 153.119459,
+      "cat": "see",
+      "match": "hell's gates"
+    },
+    {
+      "name": "Fairy Pools",
+      "lat": -26.376558,
+      "lon": 153.115854,
+      "cat": "see",
+      "match": "fairy pools"
+    },
+    {
+      "name": "Alexandria Bay",
+      "lat": -26.385081,
+      "lon": 153.115622,
+      "cat": "see",
+      "match": "alexandria bay"
+    },
+    {
+      "name": "Noosa Spit",
+      "lat": -26.385019,
+      "lon": 153.084073,
+      "cat": "see",
+      "match": "noosa spit"
+    },
+    {
+      "name": "Noosa National Park",
+      "lat": -26.381901,
+      "lon": 153.099162,
+      "cat": "see",
+      "match": "noosa national park"
+    },
+    {
+      "name": "Bounce Noosa",
+      "lat": -26.3997212,
+      "lon": 153.0641326,
+      "cat": "stay",
+      "match": "bounce"
+    }
+  ],
+  "center": {
+    "lat": -26.38829,
+    "lon": 153.10707
+  },
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -26.3968,
+      "lon": 153.0872
+    },
+    {
+      "text": "NOOSA NATIONAL PARK",
+      "lat": -26.3905,
+      "lon": 153.1055
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Noosa Everglades",
+      "time": "Half Day",
+      "match": "everglades"
+    }
+  ]
+}

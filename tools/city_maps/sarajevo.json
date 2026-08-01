@@ -1,0 +1,167 @@
+{
+  "slug": "sarajevo",
+  "kicker": "BOSNIA & HERZEGOVINA",
+  "city": "Sarajevo",
+  "osm": ".tmp/sarajevo_osm.json",
+  "article": "bosnia/field-notes.html",
+  "embed": {
+    "pre": "\">Balkan Han Hostel</a></b> — a very social hostel located near Old Town. They have a happy hour that often turns into a fun night out</li>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Day Trips -->\n  <div class=\"fn-section\" id=\"day-trips\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.42
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Old Town (Baščaršija)",
+      "lat": 43.859807,
+      "lon": 18.431291,
+      "cat": "see",
+      "match": "old town (baščaršija)"
+    },
+    {
+      "name": "Gazi Husrev-beg Mosque",
+      "lat": 43.859151,
+      "lon": 18.429285,
+      "cat": "see",
+      "match": "gazi husrev-beg mosque"
+    },
+    {
+      "name": "City Hall (Vijećnica)",
+      "lat": 43.859193,
+      "lon": 18.433578,
+      "cat": "see",
+      "match": "city hall (vijećnica)"
+    },
+    {
+      "name": "1984 Olympic Bobsled track",
+      "lat": 43.83918,
+      "lon": 18.443367,
+      "cat": "see",
+      "match": "1984 olympic bobsled tra"
+    },
+    {
+      "name": "Bistrik Tower",
+      "lat": 43.842156,
+      "lon": 18.438035,
+      "cat": "see",
+      "match": "bistrik tower"
+    },
+    {
+      "name": "Latin Bridge",
+      "lat": 43.857606,
+      "lon": 18.428957,
+      "cat": "see",
+      "match": "latin bridge"
+    },
+    {
+      "name": "Kovači Cemetery",
+      "lat": 43.861263,
+      "lon": 18.434268,
+      "cat": "see",
+      "match": "kovači cemetery"
+    },
+    {
+      "name": "Yellow Fortress",
+      "lat": 43.861441,
+      "lon": 18.43765,
+      "cat": "see",
+      "match": "yellow fortress"
+    },
+    {
+      "name": "Museum of Crimes Against Humanity and Genocide",
+      "lat": 43.859051,
+      "lon": 18.426387,
+      "cat": "see",
+      "match": "museum of crimes against"
+    },
+    {
+      "name": "Siege of Sarajevo Museum",
+      "lat": 43.859739,
+      "lon": 18.42604,
+      "cat": "see",
+      "match": "siege of sarajevo museum"
+    },
+    {
+      "name": "Tito Museum (Muzej Tito)",
+      "lat": 43.858834,
+      "lon": 18.424226,
+      "cat": "see",
+      "match": "tito museum (muzej tito)"
+    },
+    {
+      "name": "Buregdžinica Sač",
+      "lat": 43.858886,
+      "lon": 18.431348,
+      "cat": "eat",
+      "match": "buregdžinica sač"
+    },
+    {
+      "name": "Inat Kuća (House of Spite)",
+      "lat": 43.85851,
+      "lon": 18.434308,
+      "cat": "eat",
+      "match": "inat kuća (house of spit"
+    },
+    {
+      "name": "Sarajevo Brewery",
+      "lat": 43.856868,
+      "lon": 18.432245,
+      "cat": "eat",
+      "match": "sarajevo brewery"
+    },
+    {
+      "name": "Ćevabdžinica Zmaj Titova",
+      "lat": 43.858979,
+      "lon": 18.41876,
+      "cat": "eat",
+      "match": "ćevabdžinica zmaj titova"
+    },
+    {
+      "name": "Balkan Han Hostel",
+      "lat": 43.860304,
+      "lon": 18.420504,
+      "cat": "stay",
+      "match": "balkan han hostel"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Mostar & Herzegovina Tour",
+      "time": "Full Day",
+      "match": "mostar"
+    },
+    {
+      "name": "Jajce, Travnik & Central Bosnia Tour",
+      "time": "Full Day",
+      "match": "jajce"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 43.8572,
+      "lon": 18.4325
+    },
+    {
+      "text": "DOWNTOWN",
+      "lat": 43.8555,
+      "lon": 18.411
+    },
+    {
+      "text": "TREBEVIĆ",
+      "lat": 43.8378,
+      "lon": 18.4418
+    }
+  ]
+}

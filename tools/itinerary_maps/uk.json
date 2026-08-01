@@ -1,0 +1,29 @@
+{
+  "iso3": "GBR",
+  "slug": "uk",
+  "country_width": 480,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "London",
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#london"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": []
+}

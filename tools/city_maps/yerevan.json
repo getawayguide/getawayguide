@@ -1,0 +1,171 @@
+{
+  "slug": "yerevan",
+  "kicker": "ARMENIA",
+  "city": "Yerevan",
+  "osm": ".tmp/yerevan_osm.json",
+  "article": "armenia/field-notes.html",
+  "embed": {
+    "pre": "I preferred Kantar</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Day Trips from Yerevan -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "center": {
+    "lat": 40.1832,
+    "lon": 44.5128
+  },
+  "desktop": {
+    "pad": 1.42
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.6,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "The Cascade Complex",
+      "lat": 40.1894674,
+      "lon": 44.515414,
+      "cat": "see",
+      "match": "cascade"
+    },
+    {
+      "name": "Republic Square",
+      "lat": 40.1776945,
+      "lon": 44.5126511,
+      "cat": "see",
+      "match": "republic square"
+    },
+    {
+      "name": "National Gallery of Armenia",
+      "lat": 40.1785411,
+      "lon": 44.5138396,
+      "cat": "see",
+      "match": "national gallery"
+    },
+    {
+      "name": "Armenian Genocide Museum",
+      "lat": 40.1858285,
+      "lon": 44.4884786,
+      "cat": "see",
+      "match": "genocide museum"
+    },
+    {
+      "name": "Vernissage Market",
+      "lat": 40.1758116,
+      "lon": 44.5183504,
+      "cat": "see",
+      "match": "vernissage"
+    },
+    {
+      "name": "Blue Mosque",
+      "lat": 40.1782416,
+      "lon": 44.5055163,
+      "cat": "see",
+      "match": "blue mosque"
+    },
+    {
+      "name": "Mother Armenia Monument",
+      "lat": 40.1951425,
+      "lon": 44.5246767,
+      "cat": "see",
+      "match": "mother armenia"
+    },
+    {
+      "name": "Kond Neighborhood",
+      "lat": 40.1824159,
+      "lon": 44.5016751,
+      "cat": "see",
+      "match": "kond neighborhood"
+    },
+    {
+      "name": "Yerevan Brandy Factory",
+      "lat": 40.1765036,
+      "lon": 44.4974233,
+      "cat": "see",
+      "match": "brandy"
+    },
+    {
+      "name": "Yerevan Tavern",
+      "lat": 40.179007,
+      "lon": 44.51008,
+      "cat": "eat",
+      "match": "yerevan tavern"
+    },
+    {
+      "name": "Mayrig Yerevan",
+      "lat": 40.1802698,
+      "lon": 44.5110545,
+      "cat": "eat",
+      "match": "mayrig"
+    },
+    {
+      "name": "Anteb Restaurant",
+      "lat": 40.1819866,
+      "lon": 44.5115891,
+      "cat": "eat",
+      "match": "anteb"
+    },
+    {
+      "name": "Tumanyan Bakery",
+      "lat": 40.1829206,
+      "lon": 44.5169704,
+      "cat": "eat",
+      "match": "tumanyan"
+    },
+    {
+      "name": "Lumen Coffee 1936",
+      "lat": 40.1901999,
+      "lon": 44.5184617,
+      "cat": "eat",
+      "match": "lumen"
+    },
+    {
+      "name": "AfroLab Specialty Coffee",
+      "lat": 40.1826419,
+      "lon": 44.5130054,
+      "cat": "eat",
+      "match": "afrolab"
+    },
+    {
+      "name": "Kantar Hostel",
+      "lat": 40.1748457,
+      "lon": 44.5108097,
+      "cat": "stay",
+      "match": "kantar"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Khor Virap Monastery",
+      "time": "Half Day",
+      "match": "khor virap"
+    },
+    {
+      "name": "Geghard & Garni",
+      "time": "Full Day",
+      "match": "geghard"
+    },
+    {
+      "name": "Lake Sevan",
+      "time": "Full Day",
+      "match": "lake sevan"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 40.1832,
+      "lon": 44.5128
+    },
+    {
+      "text": "KOND",
+      "lat": 40.1836,
+      "lon": 44.5008
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "slug": "brisbane",
+  "kicker": "AUSTRALIA",
+  "city": "Brisbane",
+  "osm": ".tmp/brisbane_osm.json",
+  "article": "australia/field-notes.html",
+  "embed": {
+    "pre": "t was a bit messy when I was there (possibly just my dormmates), but I generally wouldn't recommend it due to location and cleanliness</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"gold-coast\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "South Bank Parklands",
+      "lat": -27.477559,
+      "lon": 153.0224,
+      "cat": "see",
+      "match": "south bank parklands"
+    },
+    {
+      "name": "Streets Beach",
+      "lat": -27.47826,
+      "lon": 153.023599,
+      "cat": "see",
+      "match": "streets beach"
+    },
+    {
+      "name": "Gallery of Modern Art",
+      "lat": -27.470544,
+      "lon": 153.01711,
+      "cat": "see",
+      "match": "gallery of modern art"
+    },
+    {
+      "name": "Story Bridge",
+      "lat": -27.463706,
+      "lon": 153.035745,
+      "cat": "see",
+      "match": "story bridge"
+    },
+    {
+      "name": "Kangaroo Point Cliffs",
+      "lat": -27.477899,
+      "lon": 153.034478,
+      "cat": "see",
+      "match": "kangaroo point cliffs"
+    },
+    {
+      "name": "AJ's Noodle House",
+      "lat": -27.471423,
+      "lon": 153.02626,
+      "cat": "eat",
+      "match": "aj's noodle house"
+    },
+    {
+      "name": "Felons Brewing Co",
+      "lat": -27.462407,
+      "lon": 153.036162,
+      "cat": "eat",
+      "match": "felons brewing co"
+    },
+    {
+      "name": "Roamer Brisbane",
+      "lat": -27.4673229,
+      "lon": 153.0195231,
+      "cat": "stay",
+      "match": "roamer"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Australia Zoo",
+      "time": "Full Day",
+      "match": "australia zoo"
+    },
+    {
+      "name": "Lone Pine Koala Sanctuary",
+      "time": "Half Day",
+      "match": "lone pine"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -27.4675,
+      "lon": 153.0255
+    },
+    {
+      "text": "SOUTH BANK",
+      "lat": -27.4765,
+      "lon": 153.0205
+    },
+    {
+      "text": "WEST END",
+      "lat": -27.4795,
+      "lon": 153.014
+    }
+  ]
+}

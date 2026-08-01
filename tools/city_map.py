@@ -66,6 +66,8 @@ The DESKTOP base is a plain <img> (reliably painted; survives HTML editors); MOB
 keeps the base in the SVG so gesture pan/zoom moves base+pins together.
 """
 import json, math, os, html, re, asyncio, base64, argparse
+from io import BytesIO
+from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")
 PREV = f"{ROOT}/.tmp/previews"
@@ -99,8 +101,10 @@ def merc(lat, lon):
 
 
 def parse_osm(elements):
-    """Split a raw Overpass export into water polygons/lines, parks, roads, and coastline."""
-    water, parks, roads, coast = [], [], {k: [] for k in ROADW}, []
+    """Split a raw Overpass export into water polygons/lines, parks, roads, coastline, and
+    water-island rings (islands that are HOLES in a water multipolygon, e.g. Stockholm's
+    Kungsholmen in Lake Mälaren — filled back as LAND so they don't render flooded)."""
+    water, parks, roads, coast, water_islands = [], [], {k: [] for k in ROADW}, [], []
     for el in elements:
         t = el.get("tags", {})
         if el["type"] == "way" and "geometry" in el:
@@ -111,12 +115,14 @@ def parse_osm(elements):
             elif t.get("waterway") in ("river", "canal"): water.append(("line", g))
             elif t.get("leisure") in ("park", "garden") or t.get("landuse") == "recreation_ground": parks.append(g)
         elif el["type"] == "relation" and t.get("natural") == "water":
-            # a water multipolygon (e.g. the Río de la Plata) arrives as many separate
-            # boundary ways — chain them into closed rings so the body FILLS instead of
-            # drawing slivers. Huge rings get clipped to the frame by the SVG viewBox.
-            outers = [m["geometry"] for m in el.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
-            water.extend(assemble_rings(outers))
-    return water, parks, roads, coast
+            # a water multipolygon (e.g. the Río de la Plata, Lake Mälaren) arrives as many
+            # separate boundary ways — chain outer members into rings so the body FILLS.
+            # inner members are ISLANDS (holes); assemble them so we can paint them back as
+            # land. Huge rings get clipped to the frame by the SVG viewBox.
+            mem = el.get("members", [])
+            water.extend(assemble_rings([m["geometry"] for m in mem if m.get("role") == "outer" and m.get("geometry")]))
+            water_islands.extend(assemble_rings([m["geometry"] for m in mem if m.get("role") == "inner" and m.get("geometry")]))
+    return water, parks, roads, coast, water_islands
 
 
 def assemble_rings(ways):
@@ -259,17 +265,28 @@ def build(cfg_path, embed=False, demo=None):
     slug = cfg["slug"]; city = cfg["city"]; kicker = cfg["kicker"]
     os.makedirs(IMGDIR, exist_ok=True); os.makedirs(PREV, exist_ok=True)
     osm = json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
-    water, parks, roads, coast = parse_osm(osm)
+    water, parks, roads, coast, water_islands = parse_osm(osm)
     up = "../" * cfg["article"].count("/")   # relative depth to repo root (live=../, draft=../../)
 
     # Grouping: default is the see/eat/stay categories. A config may instead define
     # its own ordered `groups` (e.g. by neighborhood) — then each POI carries a
     # `group` key (matching a group's `key`) instead of `cat`, pins are coloured by
     # group, and the legend is grouped/ordered the same way. Each group needs
-    # {key, label, color}; the pin badge text is white and the on-map number uses
-    # the group colour, so pick colours dark enough to read white-on-colour.
+    # {key, label, color}. Text colours are derived from the group colour's lightness
+    # (like the `eat` light-green category): dark colours get a white legend badge +
+    # the colour as the on-map number; LIGHT colours get a dark badge + a darkened
+    # number — so a green ramp (dark→light shades) stays legible on both pin and key.
+    def _lum(hx):
+        r, g, b = (int(hx[i:i + 2], 16) for i in (1, 3, 5))
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    def _dark(hx, f=0.5):
+        return "#" + "".join("%02x" % int(int(hx[i:i + 2], 16) * f) for i in (1, 3, 5))
     if cfg.get("groups"):
-        GRP = {g["key"]: (g["label"], g["color"], "#ffffff", g["color"]) for g in cfg["groups"]}
+        def _grp(g):
+            light = _lum(g["color"]) > 0.5
+            return (g["label"], g["color"], "#1C2821" if light else "#ffffff",
+                    _dark(g["color"]) if light else g["color"])
+        GRP = {g["key"]: _grp(g) for g in cfg["groups"]}
         GRP_ORDER = [g["key"] for g in cfg["groups"]]
         gkey = lambda p: p["group"]
     else:
@@ -290,6 +307,17 @@ def build(cfg_path, embed=False, demo=None):
             if key in t: return u
         return f"https://www.google.com/maps/search/?api=1&query={(name + ' ' + city).replace(' ', '+')}"
     HREF = {p[0]: href_for(p[0], p[4]) for p in POIS}
+
+    # day_trips / multi_day_trips: legend-ONLY entries (NOT drawn on the map), each with an
+    # "↗" off-map marker and a "(time)" note. Multi-day trips (e.g. a 2-3 night sailing trip)
+    # render first under a MULTI-DAY TRIP header, then day trips under DAY TRIPS. Name them to
+    # match how the article frames the excursion (a tour/activity name, not just a place).
+    def _trips(key):
+        return [{"name": d["name"], "time": d.get("time", ""),
+                 "href": d.get("href") or href_for(d["name"], d.get("match", d["name"].lower()))}
+                for d in cfg.get(key, [])]
+    MULTITRIPS = _trips("multi_day_trips")
+    DAYTRIPS = _trips("day_trips")
 
     # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA). Accepts a
     # list `district_labels`, or a single `district_label` for back-compat.
@@ -365,11 +393,23 @@ def build(cfg_path, embed=False, demo=None):
             for kind, s in water_s:
                 o.append(f'<polyline points="{s}" fill="none" stroke="{WATER}" stroke-width="5" stroke-linecap="round"/>'
                          if kind == "line" else f'<polygon points="{s}" fill="{WATER}"/>')
+            # ALWAYS paint the inner rings of water multipolygons back as LAND (holes = islands
+            # like Stockholm's Kungsholmen, or Malmö's canal-ringed old town sitting inside the
+            # harbour relation). SVG doesn't subtract a polygon's holes, so without this the outer
+            # water ring floods the hole — and whether it shows depends on the frame (Malmö was fine
+            # on desktop but flooded on the mobile crop). Not gated on sea_bg: a hole in water is land.
+            for isl in water_islands:
+                s = proj_str(isl)
+                if s: o.append(f'<polygon points="{s}" fill="{LAND}"/>')
             for s in parks_s: o.append(f'<polygon points="{s}" fill="{PARK}"/>')
             for cls in MAJOR:
                 for s in roads_s.get(cls, []):
                     o.append(f'<polyline points="{s}" fill="none" stroke="{CASING}" stroke-width="{ROADW[cls]*1.3+1.8:.1f}" stroke-linecap="round" stroke-linejoin="round"/>')
+            # `"roads":"major"` draws only arterials (skip residential/minor) — declutters
+            # dense mega-cities (e.g. Cairo) where the full street mesh reads as noise.
+            major_only = cfg.get("roads") == "major"
             for cls, wdt in ROADW.items():
+                if major_only and cls not in MAJOR: continue
                 for s in roads_s[cls]:
                     o.append(f'<polyline points="{s}" fill="none" stroke="{TOP}" stroke-width="{wdt*1.3:.1f}" stroke-linecap="round" stroke-linejoin="round"/>')
             o.append('</svg>'); return "\n".join(o)
@@ -378,6 +418,41 @@ def build(cfg_path, embed=False, demo=None):
         open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
         b64 = base64.b64encode(png).decode()
         ext_href = f"{up}Images/web/city-maps/{pngname}.png"
+
+        # A neighborhood/district label names LAND, so NO part of it may sit in water. Sample the
+        # rendered base raster across the label's actual glyph band (works for polygon water AND
+        # sea_bg seas). Trigger on the faintest touch and nudge to the nearest ~all-land spot,
+        # searching rings outward and taking the least-wet candidate at each radius (no directional
+        # bias — moves whichever way reaches land; falls back to the least-wet spot if none is dry).
+        im_wc = Image.open(BytesIO(png)).convert("RGB"); sc = im_wc.width / W
+        WR, WG, WB = 0xB4, 0xD3, 0xD9   # WATER #B4D3D9
+        def _wfrac(cx0, cy0, tw, th):
+            hit = tot = 0
+            for cf in (-.5, -.4, -.3, -.2, -.1, 0, .1, .2, .3, .4, .5):   # across the width incl. both ends
+                for rf in (0.0, -0.35, -0.7):                            # baseline -> cap height
+                    X = int((cx0 + tw * cf) * sc); Y = int((cy0 + th * rf) * sc)
+                    if 0 <= X < im_wc.width and 0 <= Y < im_wc.height:
+                        r, g, b = im_wc.getpixel((X, Y)); tot += 1
+                        if abs(r - WR) < 26 and abs(g - WG) < 26 and abs(b - WB) < 26: hit += 1
+            return hit / tot if tot else 0.0
+        dls_adj = []
+        for d in dls:
+            lx, ly = px(d["lat"], d["lon"])
+            tw = len(d["text"]) * 10.0 * pin_scale; th = 11 * pin_scale
+            if _wfrac(lx, ly, tw, th) > 0.03:
+                best, best_w = (lx, ly), _wfrac(lx, ly, tw, th)
+                for R in range(6, 181, 6):
+                    ring = [(dx, dy) for dx in range(-R, R + 1, 6) for dy in range(-R, R + 1, 6)
+                            if max(abs(dx), abs(dy)) == R
+                            and tw / 2 <= lx + dx <= W - tw / 2 and 12 <= ly + dy <= H - 12]
+                    ring.sort(key=lambda o: o[0] * o[0] + o[1] * o[1])
+                    for dx, dy in ring:
+                        w = _wfrac(lx + dx, ly + dy, tw, th)
+                        if w < best_w: best_w, best = w, (lx + dx, ly + dy)
+                        if w <= 0.02: break          # nearest all-land spot at this radius
+                    if best_w <= 0.02: break
+                lx, ly = best
+            dls_adj.append({"text": d["text"], "x": lx, "y": ly})
 
         def render(active=None, external=False):
             ps = pin_scale
@@ -389,8 +464,8 @@ def build(cfg_path, embed=False, demo=None):
             # paint bug that left the map blank / half-rendered at the edges.
             img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
             o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke">']
-            for d in dls:      # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA)
-                lx, ly = px(d["lat"], d["lon"])
+            for d in dls_adj:  # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA), nudged off water
+                lx, ly = d["x"], d["y"]
                 o.append(f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
                          f'fill="#9DAAA0" text-anchor="middle" stroke="{LAND}" stroke-width="3">{html.escape(d["text"])}</text>')
             for i in range(len(POIS), 0, -1):     # draw high->low so lower (earlier, more important) numbers sit on top
@@ -428,6 +503,13 @@ def build(cfg_path, embed=False, demo=None):
                 ac = " active" if active == i else ""
                 h.append(f'<a class="cmrow{ac}" data-i="{i}" href="{html.escape(HREF[name])}" target="_blank" rel="noopener">'
                          f'<span class="num" style="background:{fill};color:{badge_text}">{i}</span><span class="nm">{html.escape(name)}</span></a>')
+        for hdr, trips in [("MULTI-DAY TRIP", MULTITRIPS), ("DAY TRIPS", DAYTRIPS)]:  # legend-only, off-map
+            if not trips: continue
+            h.append(f'<div class="cmhead">{hdr}</div>')
+            for dt in trips:
+                tm = f'<span class="dt-time"> ({html.escape(dt["time"])})</span>' if dt["time"] else ""
+                h.append(f'<a class="cmrow cmrow-dt" href="{html.escape(dt["href"])}" target="_blank" rel="noopener">'
+                         f'<span class="num num-dt">↗</span><span class="nm">{html.escape(dt["name"])}{tm}</span></a>')
         h.append('</div>'); return "\n".join(h)
 
     hint = "<br>".join(html.escape(l) for l in cfg.get("hint", ["Touch to explore", "Double-tap to open in Google Maps"]))
@@ -482,10 +564,13 @@ CSS = """
 .cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
   backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:9px;box-shadow:0 3px 8px rgba(0,0,0,.16);padding:11px 12px}
 .cmhead{font-size:9.5px;font-weight:700;letter-spacing:1.6px;color:#1C2821;height:16px;display:flex;align-items:flex-end;padding-bottom:1px}
-.cmrow{display:flex;align-items:center;gap:8px;height:16px;padding:0 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
+.cmrow{display:flex;align-items:center;gap:8px;min-height:16px;padding:1px 5px;margin:0 -5px;border-radius:4px;text-decoration:none;transition:background .14s}
 .cmrow.active{background:rgba(28,40,33,.06)}
-.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
-.nm{font-size:11px;font-weight:500;color:#1C2821;white-space:nowrap}
+.num{flex:0 0 15px;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;margin-top:1px}
+.nm{font-size:11px;font-weight:500;color:#1C2821;line-height:1.18;white-space:normal}
+.num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
+.dt-time{color:#8B978F;font-weight:500}
+.cmrow-dt .nm{color:#586159}
 .cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
 .cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
 /* mobile fixed title/instructions overlay (map pans underneath) */

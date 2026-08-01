@@ -1,0 +1,62 @@
+{
+  "iso3": "CUB",
+  "slug": "cuba",
+  "country_width": 640,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Havana",
+      "lat": 23.1136,
+      "lon": -82.3666,
+      "days": "3–4 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#havana"
+    },
+    {
+      "n": 2,
+      "name": "Cienfuegos",
+      "lat": 22.1461,
+      "lon": -80.4364,
+      "days": "day trip",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#cienfuegos"
+    },
+    {
+      "n": 3,
+      "name": "Varadero",
+      "lat": 23.1553,
+      "lon": -81.2519,
+      "days": "1–2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#varadero"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 4 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Bus · 3.5 hr"
+    }
+  ]
+}

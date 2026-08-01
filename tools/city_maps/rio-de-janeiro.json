@@ -1,0 +1,119 @@
+{
+  "slug": "rio-de-janeiro",
+  "kicker": "BRAZIL",
+  "city": "Rio de Janeiro",
+  "osm": ".tmp/rio-de-janeiro_osm.json",
+  "article": "brazil/field-notes.html",
+  "embed": {
+    "pre": "with activities every day and a really cheap bar every night. The location is also great, located right by Ipanema beach</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <!-- Ilha Grande -->\n  <div class=\"fn-section\" id=\"ilha-grande\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "sea_bg": true,
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Copacabana Beach",
+      "lat": -22.969281,
+      "lon": -43.186794,
+      "cat": "see",
+      "match": "copacabana beach"
+    },
+    {
+      "name": "Ipanema Beach",
+      "lat": -22.987064,
+      "lon": -43.204797,
+      "cat": "see",
+      "match": "ipanema beach"
+    },
+    {
+      "name": "Leblon Beach",
+      "lat": -22.987442,
+      "lon": -43.222865,
+      "cat": "see",
+      "match": "leblon beach"
+    },
+    {
+      "name": "Christ the Redeemer",
+      "lat": -22.951916,
+      "lon": -43.210487,
+      "cat": "see",
+      "match": "christ the redeemer"
+    },
+    {
+      "name": "Vidigal neighborhood",
+      "lat": -22.99453,
+      "lon": -43.237825,
+      "cat": "see",
+      "match": "vidigal neighborhood"
+    },
+    {
+      "name": "Olympic Boulevard",
+      "lat": -22.89573,
+      "lon": -43.1802,
+      "cat": "see",
+      "match": "olympic boulevard"
+    },
+    {
+      "name": "Museum of Tomorrow",
+      "lat": -22.89447,
+      "lon": -43.18023,
+      "cat": "see",
+      "match": "museum of tomorrow (muse"
+    },
+    {
+      "name": "Parque Lage",
+      "lat": -22.961123,
+      "lon": -43.212715,
+      "cat": "see",
+      "match": "parque lage"
+    },
+    {
+      "name": "Escadaria Selarón",
+      "lat": -22.915292,
+      "lon": -43.179204,
+      "cat": "see",
+      "match": "escadaria selarón"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Pedra do Telégrafo",
+      "time": "Half Day",
+      "match": "telegrafo"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "CENTRO",
+      "lat": -22.9055,
+      "lon": -43.183
+    },
+    {
+      "text": "COPACABANA",
+      "lat": -22.9695,
+      "lon": -43.1895
+    },
+    {
+      "text": "IPANEMA",
+      "lat": -22.984,
+      "lon": -43.2035
+    },
+    {
+      "text": "LEBLON",
+      "lat": -22.9845,
+      "lon": -43.224
+    }
+  ]
+}

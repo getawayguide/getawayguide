@@ -1,0 +1,158 @@
+{
+  "slug": "melbourne",
+  "kicker": "AUSTRALIA",
+  "city": "Melbourne",
+  "osm": ".tmp/melbourne_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": "elbourne</b></a> — I stayed in this hostel located right next to Queen Victoria Market. It had a large common area and was very social</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Queen Victoria Market",
+      "lat": -37.807388,
+      "lon": 144.957392,
+      "cat": "see",
+      "match": "queen victoria market"
+    },
+    {
+      "name": "Degraves Street",
+      "lat": -37.817082,
+      "lon": 144.965675,
+      "cat": "see",
+      "match": "degraves street"
+    },
+    {
+      "name": "Hosier Lane",
+      "lat": -37.816358,
+      "lon": 144.969077,
+      "cat": "see",
+      "match": "hosier lane"
+    },
+    {
+      "name": "Federation Square",
+      "lat": -37.81774,
+      "lon": 144.969156,
+      "cat": "see",
+      "match": "federation square"
+    },
+    {
+      "name": "Southbank Promenade",
+      "lat": -37.820225,
+      "lon": 144.965024,
+      "cat": "see",
+      "match": "southbank promenade"
+    },
+    {
+      "name": "Melbourne Skydeck",
+      "lat": -37.821691,
+      "lon": 144.964525,
+      "cat": "see",
+      "match": "melbourne skydeck"
+    },
+    {
+      "name": "Fitzroy",
+      "lat": -37.801038,
+      "lon": 144.979261,
+      "cat": "see",
+      "match": "fitzroy"
+    },
+    {
+      "name": "Naked for Satan",
+      "lat": -37.798841,
+      "lon": 144.978237,
+      "cat": "see",
+      "match": "naked for satan"
+    },
+    {
+      "name": "St Kilda",
+      "lat": -37.863826,
+      "lon": 144.981637,
+      "cat": "see",
+      "match": "st kilda"
+    },
+    {
+      "name": "Melbourne Cricket Ground",
+      "lat": -37.819909,
+      "lon": 144.983225,
+      "cat": "see",
+      "match": "melbourne cricket ground"
+    },
+    {
+      "name": "Max on Hardware",
+      "lat": -37.813374,
+      "lon": 144.961248,
+      "cat": "eat",
+      "match": "max on hardware"
+    },
+    {
+      "name": "Schmucks Bagels",
+      "lat": -37.818927,
+      "lon": 144.955305,
+      "cat": "eat",
+      "match": "schmucks bagels"
+    },
+    {
+      "name": "Euro Lane Cafe",
+      "lat": -37.816622,
+      "lon": 144.965495,
+      "cat": "eat",
+      "match": "euro lane cafe"
+    },
+    {
+      "name": "HER",
+      "lat": -37.811498,
+      "lon": 144.964155,
+      "cat": "eat",
+      "match": "her"
+    },
+    {
+      "name": "Little Drifter Melbourne",
+      "lat": -37.8090009,
+      "lon": 144.9592046,
+      "cat": "stay",
+      "match": "little drifter"
+    },
+    {
+      "name": "Ponyfish Island",
+      "lat": -37.819883,
+      "lon": 144.965002,
+      "cat": "eat",
+      "match": "ponyfish"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Great Ocean Road",
+      "time": "Full Day",
+      "match": "great ocean road"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "CBD",
+      "lat": -37.8108,
+      "lon": 144.9672
+    },
+    {
+      "text": "ST KILDA",
+      "lat": -37.867,
+      "lon": 144.9785
+    }
+  ]
+}

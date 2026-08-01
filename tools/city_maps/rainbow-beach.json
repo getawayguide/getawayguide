@@ -1,0 +1,69 @@
+{
+  "slug": "rainbow-beach",
+  "kicker": "AUSTRALIA",
+  "city": "Rainbow Beach",
+  "osm": ".tmp/rainbow-beach_osm.json",
+  "article": "australia/field-notes.html",
+  "embed": {
+    "pre": "stels Rainbow Beach</b></a> — a no-frills hostel located in Rainbow Beach. I ended up meeting other backpackers also on my tour the night before</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"noosa\">"
+  },
+  "sea_bg": true,
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -25.9048,
+      "lon": 153.0895
+    }
+  ],
+  "multi_day_trips": [
+    {
+      "name": "4WD Tag-Along Camping Tour",
+      "time": "2–3 days",
+      "match": "tag-along"
+    }
+  ],
+  "desktop": {
+    "pad": 1.35
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Carlo Sand Blow",
+      "lat": -25.9143033,
+      "lon": 153.0978313,
+      "cat": "see",
+      "match": "carlo"
+    },
+    {
+      "name": "Rainbow Beach Lookout",
+      "lat": -25.9027189,
+      "lon": 153.0940717,
+      "cat": "see",
+      "match": "lookout"
+    },
+    {
+      "name": "Rainbow Beach Surf Club",
+      "lat": -25.9018677,
+      "lon": 153.0926464,
+      "cat": "see",
+      "match": "surf life saving"
+    },
+    {
+      "name": "Freedom Hostels",
+      "lat": -25.9033826,
+      "lon": 153.0899495,
+      "cat": "stay",
+      "match": "freedom hostels"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "iso3": "MAR",
+  "slug": "morocco",
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Fez",
+      "lat": 34.0181,
+      "lon": -5.0078,
+      "days": "2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#fez"
+    },
+    {
+      "n": 2,
+      "name": "Chefchaouen",
+      "lat": 35.1688,
+      "lon": -5.2636,
+      "days": "day trip",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#chefchaouen"
+    },
+    {
+      "n": 3,
+      "name": "Sahara (Merzouga)",
+      "lat": 31.0994,
+      "lon": -4.0122,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#sahara"
+    },
+    {
+      "n": 4,
+      "name": "Marrakesh",
+      "lat": 31.6295,
+      "lon": -7.9811,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#marrakesh"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 4 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Drive · 8 hr"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Drive · 9 hr"
+    }
+  ]
+}

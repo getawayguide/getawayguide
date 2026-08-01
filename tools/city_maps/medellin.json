@@ -1,0 +1,174 @@
+{
+  "slug": "medellin",
+  "kicker": "COLOMBIA",
+  "city": "Medellín",
+  "osm": ".tmp/medellin_osm.json",
+  "article": "colombia/field-notes.html",
+  "embed": {
+    "pre": "er rooftop pool and bar. I had a great time visiting and the facilities seemed to be nice, complete with a coworking space</li>\n      </ul>\n    </ul>\n",
+    "post": "  </div>\n  <!-- Cartagena -->\n  <div class=\"fn-section\" id=\"cartagena\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 6.2515,
+      "lon": -75.5685
+    },
+    {
+      "text": "EL POBLADO",
+      "lat": 6.2085,
+      "lon": -75.568
+    },
+    {
+      "text": "COMUNA 13",
+      "lat": 6.248,
+      "lon": -75.622
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Guatapé & Piedra del Peñol",
+      "time": "Full Day",
+      "match": "guatapé"
+    }
+  ],
+  "desktop": {
+    "pad": 1.5
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Comuna 13",
+      "lat": 6.247937,
+      "lon": -75.622028,
+      "cat": "see",
+      "match": "comuna 13"
+    },
+    {
+      "name": "Inflexión Memorial Park",
+      "lat": 6.191336,
+      "lon": -75.577637,
+      "cat": "see",
+      "match": "inflexión memorial park"
+    },
+    {
+      "name": "the viewpoint from the top of the hill",
+      "lat": 6.248623,
+      "lon": -75.622491,
+      "cat": "see",
+      "match": "the viewpoint from the t"
+    },
+    {
+      "name": "Plaza Botero",
+      "lat": 6.252118,
+      "lon": -75.568614,
+      "cat": "see",
+      "match": "plaza botero"
+    },
+    {
+      "name": "Museo de Antioquia",
+      "lat": 6.252408,
+      "lon": -75.569145,
+      "cat": "see",
+      "match": "museo de antioquia"
+    },
+    {
+      "name": "Casa de la Memoria",
+      "lat": 6.24592,
+      "lon": -75.556556,
+      "cat": "see",
+      "match": "casa de la memoria"
+    },
+    {
+      "name": "San Antonio Plaza",
+      "lat": 6.245607,
+      "lon": -75.568179,
+      "cat": "see",
+      "match": "san antonio plaza"
+    },
+    {
+      "name": "Atanasio Girardot Stadium",
+      "lat": 6.256767,
+      "lon": -75.590173,
+      "cat": "see",
+      "match": "atanasio girardot stadiu"
+    },
+    {
+      "name": "Jardín Botánico",
+      "lat": 6.270548,
+      "lon": -75.563529,
+      "cat": "see",
+      "match": "jardín botánico"
+    },
+    {
+      "name": "Mirador de Las Palmas",
+      "lat": 6.195636,
+      "lon": -75.547527,
+      "cat": "see",
+      "match": "mirador de las palmas"
+    },
+    {
+      "name": "Ajiacos y Mondongos",
+      "lat": 6.20882,
+      "lon": -75.570707,
+      "cat": "eat",
+      "match": "ajiacos y mondongos"
+    },
+    {
+      "name": "Alambique",
+      "lat": 6.210867,
+      "lon": -75.570926,
+      "cat": "eat",
+      "match": "alambique"
+    },
+    {
+      "name": "Las Monas Restaurante",
+      "lat": 6.215155,
+      "lon": -75.572688,
+      "cat": "eat",
+      "match": "las monas restaurante"
+    },
+    {
+      "name": "Cafe 11:11 El Despertar",
+      "lat": 6.213472,
+      "lon": -75.572947,
+      "cat": "eat",
+      "match": "cafe 11:11 el despertar"
+    },
+    {
+      "name": "Parque Lleras",
+      "lat": 6.2088,
+      "lon": -75.568,
+      "cat": "eat",
+      "match": "parque lleras"
+    },
+    {
+      "name": "Los Patios Hostel",
+      "lat": 6.2130693,
+      "lon": -75.5729341,
+      "cat": "stay",
+      "match": "los patios"
+    },
+    {
+      "name": "Masaya Medellín",
+      "lat": 6.2093655,
+      "lon": -75.5720921,
+      "cat": "stay",
+      "match": "masaya"
+    }
+  ],
+  "center": {
+    "lat": 6.2372,
+    "lon": -75.5805
+  },
+  "roads": "major"
+}

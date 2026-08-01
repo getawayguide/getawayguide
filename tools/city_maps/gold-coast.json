@@ -1,0 +1,81 @@
+{
+  "slug": "gold-coast",
+  "kicker": "AUSTRALIA",
+  "city": "Gold Coast",
+  "osm": ".tmp/gold-coast_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": "y the pool during the day and a fun social vibe at night. The staff had their annual party while I was there so there was a pool party</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"byron-bay\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Q1 Tower",
+      "lat": -27.974502,
+      "lon": 153.419547,
+      "cat": "see",
+      "match": "q1 tower"
+    },
+    {
+      "name": "Burleigh Pavilion",
+      "lat": -28.089451,
+      "lon": 153.454813,
+      "cat": "see",
+      "match": "burleigh pavilion"
+    },
+    {
+      "name": "Burleigh Head National Park",
+      "lat": -28.091821,
+      "lon": 153.459174,
+      "cat": "see",
+      "match": "burleigh head national p"
+    },
+    {
+      "name": "Currumbin Wildlife Sanctuary",
+      "lat": -28.137395,
+      "lon": 153.484947,
+      "cat": "see",
+      "match": "currumbin wildlife sanct"
+    },
+    {
+      "name": "Greek on Soul",
+      "lat": -28.001581,
+      "lon": 153.430949,
+      "cat": "eat",
+      "match": "greek on soul"
+    },
+    {
+      "name": "Budds In Surfers",
+      "lat": -27.995206,
+      "lon": 153.426974,
+      "cat": "stay",
+      "match": "budds"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "SURFERS PARADISE",
+      "lat": -28.003,
+      "lon": 153.415
+    },
+    {
+      "text": "BURLEIGH HEADS",
+      "lat": -28.1055,
+      "lon": 153.435
+    }
+  ]
+}

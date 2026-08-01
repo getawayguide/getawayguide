@@ -1,0 +1,99 @@
+{
+  "slug": "punta-arenas",
+  "kicker": "CHILE",
+  "city": "Punta Arenas",
+  "osm": ".tmp/punta-arenas_osm.json",
+  "article": "chile/field-notes.html",
+  "embed": {
+    "pre": ". I met some interesting travelers here with people who just came back from Antarctica or on month long cycling tours around Patagonia</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"puerto-natales\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "sea_bg": true,
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -53.162,
+      "lon": -70.906
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Pingüino Rey Park",
+      "time": "Full Day",
+      "match": "pingüino"
+    },
+    {
+      "name": "Porvenir",
+      "time": "Full Day",
+      "match": "porvenir"
+    }
+  ],
+  "desktop": {
+    "pad": 1.45
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Plaza de Armas",
+      "lat": -53.162692,
+      "lon": -70.907964,
+      "cat": "see",
+      "match": "plaza de armas"
+    },
+    {
+      "name": "The Esplanade",
+      "lat": -53.164581,
+      "lon": -70.900528,
+      "cat": "see",
+      "match": "the esplanade"
+    },
+    {
+      "name": "Punta Arenas Cemetery",
+      "lat": -53.152999,
+      "lon": -70.897648,
+      "cat": "see",
+      "match": "punta arenas cemetery"
+    },
+    {
+      "name": "Museo Regional de Magallanes",
+      "lat": -53.162078,
+      "lon": -70.906186,
+      "cat": "see",
+      "match": "museo regional de magall"
+    },
+    {
+      "name": "Museo Maggiorino Borgatello",
+      "lat": -53.15556,
+      "lon": -70.901941,
+      "cat": "see",
+      "match": "museo maggiorino borgate"
+    },
+    {
+      "name": "Restaurant Estilo Magallánico",
+      "lat": -53.163314,
+      "lon": -70.903653,
+      "cat": "eat",
+      "match": "restaurant estilo magall"
+    },
+    {
+      "name": "Hostal Chiloé",
+      "lat": -53.1638055,
+      "lon": -70.9121093,
+      "cat": "stay",
+      "match": "hostal chilo"
+    }
+  ],
+  "center": {
+    "lat": -53.1575,
+    "lon": -70.9015
+  }
+}

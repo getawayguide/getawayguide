@@ -20,6 +20,7 @@ Usage:
 Always run tools/lint_site.py and a screenshot afterward. Do NOT push until Kevin reviews.
 """
 import os, re, glob, sys, shutil, argparse
+import thumb_lock  # preserve hand-edited dest-card thumbnails across runs
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -68,18 +69,21 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
 # ---- grouped "Field Notes" nav dropdown, regenerated from destinations.html ----
 # The dropdown is identical on every page and changes on every publish, so we rebuild
 # it wholesale from a single source of truth rather than inserting into a flat list.
-AVAILABLE_GUIDES = [("El Salvador", "sv", "el-salvador/index.html"),
-                    ("New Zealand", "nz", "new-zealand/index.html")]
+# Countries that have FULL multi-page guides (not just field notes). They're folded into
+# their continent group in the merged dropdown and flagged with a green dot. (name, iso2,
+# continent, href-to-guide-index). New Zealand's guides are unfinished -> moved to Drafts, omitted.
+FULL_GUIDES = [("El Salvador", "sv", "americas", "el-salvador/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
 _DARK = 'style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821"'
 NAV_RE = re.compile(r'<div class="nav-dropdown[ "].*?</div>\s*</li>', re.DOTALL)
 
-def _nav_a(pfx, name, iso2, href):
+def _nav_a(pfx, name, iso2, href, full=False):
+    dot = '<span class="nav-fulldot" title="Full guide available"></span>' if full else ''
     return ('<a href="%s%s" class="nav-dropdown-item"><img loading="lazy" '
             'src="https://flagcdn.com/16x12/%s.png" width="16" height="12" alt="">'
-            '<span class="country-name">%s</span></a>') % (pfx, href, iso2, name)
+            '<span class="country-name">%s</span>%s</a>') % (pfx, href, iso2, name, dot)
 
 def parse_countries(dest_html):
     """{continent: [(name, iso2, slug) alpha]} joined from destinations.html grid + fieldNotesMap."""
@@ -95,21 +99,29 @@ def parse_countries(dest_html):
     return by_cont
 
 def build_nav(pfx, by_cont):
+    # Merge the FULL_GUIDES (multi-page guide countries) into their continent groups so the
+    # dropdown is ONE unified, continent-grouped list under "Available Guides" (no separate
+    # "Field Notes" section). Full-guide countries get a green dot and link to their guide index.
+    merged = {c: [(n, iso, "%s/field-notes.html" % sl, False) for (n, iso, sl) in lst]
+              for c, lst in by_cont.items()}
+    for name, iso, cont, href in FULL_GUIDES:
+        merged.setdefault(cont, []).append((name, iso, href, True))
+    for c in merged:
+        merged[c].sort(key=lambda t: t[0].lower())
     L = ['<div class="nav-dropdown nav-dropdown-fn">',
          '        <div class="nav-dropdown-col">',
-         '          <span class="nav-dropdown-continent" %s>Available Guides</span>' % _DARK]
-    L += ['          ' + _nav_a(pfx, n, iso, href) for n, iso, href in AVAILABLE_GUIDES]
-    L.append('          <span class="nav-dropdown-continent nav-fn-head" %s>Field Notes</span>' % _DARK)
-    L.append('          <div class="nav-fn-groups">')
+         '          <div class="nav-guides-head"><span class="nav-dropdown-continent" %s>Available Guides</span>'
+         '<span class="nav-guides-legend"><span class="nav-fulldot"></span>In-Depth Guide</span></div>' % _DARK,
+         '          <div class="nav-fn-groups">']
     for col in NAV_SUBCOLS:
-        cols = [c for c in col if by_cont.get(c)]
+        cols = [c for c in col if merged.get(c)]
         if not cols:
             continue
         L.append('            <div class="nav-fn-sub">')
         for c in cols:
             L.append('            <div class="nav-fn-grp">')
             L.append('              <span class="nav-fn-region">%s</span>' % CONT_LABEL[c])
-            L += ['              ' + _nav_a(pfx, n, iso, '%s/field-notes.html' % sl) for n, iso, sl in by_cont[c]]
+            L += ['              ' + _nav_a(pfx, n, iso, target, full) for n, iso, target, full in merged[c]]
             L.append('            </div>')
         L.append('            </div>')
     L += ['          </div>', '        </div>', '        <div class="nav-dropdown-col">',
@@ -130,8 +142,9 @@ def main():
     ap.add_argument("--thumb", default=None, help="source image; default Images/dest-cards/<Name>_1.JPG")
     ap.add_argument("--pos", default="50% 50%", help="dest-card background-position")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true", help="regenerate even a hand-edited thumbnail")
     a = ap.parse_args()
-    global DRY; DRY = a.dry_run
+    global DRY, FORCE; DRY = a.dry_run; FORCE = a.force
     slug, name, iso2, cont = a.slug, a.name, a.iso2.lower(), a.continent
     tag = "[dry-run] " if DRY else ""
     log = []
@@ -241,15 +254,19 @@ def main():
     tsrc = os.path.join(ROOT, thumb)
     tdst = os.path.join(ROOT, "Images", "web", "dest-cards", "%s.jpg" % slug)
     if os.path.exists(tsrc):
-        if not DRY:
+        if not DRY and not FORCE and thumb_lock.is_manual(tdst):
+            log.append("kept hand-edited thumbnail %s (skipped)" % rel(tdst))
+        elif not DRY:
             from PIL import Image, ImageOps
             im = ImageOps.exif_transpose(Image.open(tsrc)); W, H = im.size; icc = im.info.get("icc_profile")
             box = (600, 900) if H > W else ((1200, 800) if W > H else (900, 900))
             im = im.convert("RGB"); im.thumbnail(box, Image.LANCZOS)
             kw = {"format": "JPEG", "quality": 85, "optimize": True}
             if icc: kw["icc_profile"] = icc
-            im.save(tdst, **kw)
-        log.append("thumbnail %s -> %s" % (thumb, rel(tdst)))
+            im.save(tdst, **kw); thumb_lock.record(tdst)
+            log.append("thumbnail %s -> %s" % (thumb, rel(tdst)))
+        else:
+            log.append("thumbnail %s -> %s" % (thumb, rel(tdst)))
     else:
         log.append("WARN: thumbnail source not found: %s (add manually)" % thumb)
 

@@ -1,0 +1,108 @@
+{
+  "slug": "byron-bay",
+  "kicker": "AUSTRALIA",
+  "city": "Byron Bay",
+  "osm": ".tmp/byron-bay_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": "r\">The Surf House</a>. My friends stayed here and had a great experience. Unsurprisingly, most of the crowd here is focused on surfing</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"sydney\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Main Beach",
+      "lat": -28.640772,
+      "lon": 153.614943,
+      "cat": "see",
+      "match": "main beach"
+    },
+    {
+      "name": "The Pass",
+      "lat": -28.636848,
+      "lon": 153.628741,
+      "cat": "see",
+      "match": "the pass"
+    },
+    {
+      "name": "Wategos Beach",
+      "lat": -28.635513,
+      "lon": 153.634925,
+      "cat": "see",
+      "match": "wategos beach"
+    },
+    {
+      "name": "Cape Byron Lighthouse walk",
+      "lat": -28.634968,
+      "lon": 153.636021,
+      "cat": "see",
+      "match": "cape byron lighthouse wa"
+    },
+    {
+      "name": "Byron Bay Markets",
+      "lat": -28.64392,
+      "lon": 153.610496,
+      "cat": "see",
+      "match": "byron bay markets"
+    },
+    {
+      "name": "Byron Hot Bread Bakery",
+      "lat": -28.644864,
+      "lon": 153.613407,
+      "cat": "eat",
+      "match": "byron hot bread bakery"
+    },
+    {
+      "name": "Bay Leaf Cafe",
+      "lat": -28.645211,
+      "lon": 153.613238,
+      "cat": "eat",
+      "match": "bay leaf cafe"
+    },
+    {
+      "name": "The Northern",
+      "lat": -28.643099,
+      "lon": 153.612387,
+      "cat": "eat",
+      "match": "the northern"
+    },
+    {
+      "name": "Wake Up! Byron Bay",
+      "lat": -28.63876,
+      "lon": 153.60915,
+      "cat": "stay",
+      "match": "wake up"
+    }
+  ],
+  "center": {
+    "lat": -28.64009,
+    "lon": 153.629
+  },
+  "day_trips": [
+    {
+      "name": "Bangalow",
+      "time": "Half Day",
+      "match": "bangalow"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -28.646,
+      "lon": 153.61
+    }
+  ]
+}

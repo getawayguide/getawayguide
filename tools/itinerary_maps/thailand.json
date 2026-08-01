@@ -1,0 +1,97 @@
+{
+  "iso3": "THA",
+  "slug": "thailand",
+  "country_width": 480,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "area_keep": 0.0004,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Bangkok",
+      "lat": 13.7563,
+      "lon": 100.5018,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#bangkok"
+    },
+    {
+      "n": 2,
+      "name": "Chiang Mai",
+      "lat": 18.7883,
+      "lon": 98.9853,
+      "days": "3–4 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#chiang-mai"
+    },
+    {
+      "n": 3,
+      "name": "Phuket",
+      "lat": 7.8804,
+      "lon": 98.3923,
+      "days": "3–4 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#phuket"
+    },
+    {
+      "n": 4,
+      "name": "Krabi",
+      "lat": 8.0863,
+      "lon": 98.9063,
+      "days": "2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#krabi"
+    },
+    {
+      "n": 5,
+      "name": "Koh Phi Phi",
+      "lat": 7.7407,
+      "lon": 98.7784,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 34,
+      "href": "#phi-phi"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Flight · 1.5 hr",
+      "dash": true
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Flight · 2 hr",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Ferry · 2 hr"
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "Ferry · 1.5 hr"
+    }
+  ]
+}

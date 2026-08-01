@@ -1,0 +1,81 @@
+{
+  "slug": "luxor",
+  "kicker": "EGYPT",
+  "city": "Luxor",
+  "osm": ".tmp/luxor_osm.json",
+  "article": "egypt/field-notes.html",
+  "embed": {
+    "pre": "misa Hotel Luxor</b></a> — a nice hotel located on the banks of the Nile. It was a good price ~$60 for a room with a view of the river</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"aswan\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "EAST BANK",
+      "lat": 25.7,
+      "lon": 32.645
+    },
+    {
+      "text": "WEST BANK",
+      "lat": 25.735,
+      "lon": 32.6055
+    }
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Luxor Temple",
+      "lat": 25.699502,
+      "lon": 32.639051,
+      "cat": "see",
+      "match": "luxor temple"
+    },
+    {
+      "name": "The Valley of the Kings",
+      "lat": 25.740164,
+      "lon": 32.601411,
+      "cat": "see",
+      "match": "the valley of the kings"
+    },
+    {
+      "name": "Karnak Temple",
+      "lat": 25.710136,
+      "lon": 32.650136,
+      "cat": "see",
+      "match": "karnak temple"
+    },
+    {
+      "name": "Temple of Hatshepsut",
+      "lat": 25.738277,
+      "lon": 32.606491,
+      "cat": "see",
+      "match": "temple of hatshepsut"
+    },
+    {
+      "name": "Colossi of Memnon",
+      "lat": 25.720495,
+      "lon": 32.610441,
+      "cat": "see",
+      "match": "colossi of memnon"
+    },
+    {
+      "name": "Pyramisa Hotel Luxor",
+      "lat": 25.6865649,
+      "lon": 32.6306535,
+      "cat": "stay",
+      "match": "pyramisa"
+    }
+  ],
+  "roads": "major"
+}

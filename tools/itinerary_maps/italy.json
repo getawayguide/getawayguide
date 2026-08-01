@@ -1,0 +1,46 @@
+{
+  "iso3": "ITA",
+  "slug": "italy",
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Cinque Terre",
+      "lat": 44.1281,
+      "lon": 9.7095,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#cinque-terre"
+    },
+    {
+      "n": 2,
+      "name": "Milan",
+      "lat": 45.4642,
+      "lon": 9.19,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#milan"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Train · 3 hr"
+    }
+  ]
+}

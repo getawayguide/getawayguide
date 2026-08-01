@@ -1,0 +1,88 @@
+{
+  "slug": "airlie-beach",
+  "kicker": "AUSTRALIA",
+  "city": "Airlie Beach",
+  "osm": ".tmp/airlie-beach_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": " at. RV and campervans are also allowed here. They offer luggage storage which is useful for items you don't want to bring on the sail</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"kgari\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Airlie Beach Lagoon",
+      "lat": -20.267306,
+      "lon": 148.717383,
+      "cat": "see",
+      "match": "airlie beach lagoon"
+    },
+    {
+      "name": "Boathaven Beach",
+      "lat": -20.268501,
+      "lon": 148.725827,
+      "cat": "see",
+      "match": "boathaven beach"
+    },
+    {
+      "name": "The Boat House (Boaty's)",
+      "lat": -20.268087,
+      "lon": 148.716023,
+      "cat": "eat",
+      "match": "the boat house (boaty's)"
+    },
+    {
+      "name": "Paddy's Shenanigans Irish Bar",
+      "lat": -20.268369,
+      "lon": 148.717176,
+      "cat": "eat",
+      "match": "paddy's shenanigans iris"
+    },
+    {
+      "name": "Nomads Airlie Beach",
+      "lat": -20.268167,
+      "lon": 148.716168,
+      "cat": "stay",
+      "match": "nomads airlie beach"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -20.2705,
+      "lon": 148.7155
+    }
+  ],
+  "multi_day_trips": [
+    {
+      "name": "Whitsundays Sailing Trip",
+      "time": "2–3 nights",
+      "match": "whitsunday"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Whitehaven Beach",
+      "time": "Full Day",
+      "match": "whitehaven"
+    },
+    {
+      "name": "Reef Scenic Flight",
+      "time": "Half Day",
+      "match": "reef"
+    }
+  ]
+}

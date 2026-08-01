@@ -99,5 +99,17 @@
       "cat": "stay",
       "match": "blue door"
     }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 41.3235,
+      "lon": 19.8205
+    },
+    {
+      "text": "BLLOKU",
+      "lat": 41.3188,
+      "lon": 19.8168
+    }
   ]
 }

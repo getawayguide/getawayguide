@@ -1,0 +1,112 @@
+{
+  "iso3": "VNM",
+  "slug": "vietnam",
+  "country_width": 460,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Hanoi",
+      "lat": 21.0278,
+      "lon": 105.8342,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#hanoi"
+    },
+    {
+      "n": 2,
+      "name": "Ha Long Bay",
+      "lat": 20.9101,
+      "lon": 107.1839,
+      "days": "1–2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#ha-long-bay"
+    },
+    {
+      "n": 3,
+      "name": "Hoi An",
+      "lat": 15.8801,
+      "lon": 108.338,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#hoi-an"
+    },
+    {
+      "n": 4,
+      "name": "Da Nang",
+      "lat": 16.0544,
+      "lon": 108.2022,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#da-nang"
+    },
+    {
+      "n": 5,
+      "name": "Ho Chi Minh City",
+      "lat": 10.8231,
+      "lon": 106.6297,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#saigon"
+    },
+    {
+      "n": 6,
+      "name": "Mui Ne",
+      "lat": 10.933,
+      "lon": 108.287,
+      "days": "1–2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#mui-ne"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 2.5 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Flight · 1.5 hr",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Drive · 45 min"
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "Flight · 1.5 hr",
+      "dash": true
+    },
+    {
+      "a": 4,
+      "b": 5,
+      "label": "Bus · 4 hr"
+    }
+  ]
+}

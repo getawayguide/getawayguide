@@ -1,0 +1,128 @@
+{
+  "slug": "sydney",
+  "kicker": "AUSTRALIA",
+  "city": "Sydney",
+  "osm": ".tmp/sydney_osm.json",
+  "article": "australia/field-notes.html",
+  "sea_bg": true,
+  "embed": {
+    "pre": "s I stayed in. However, there is a good location and it is an easy walk to the CBD, the Opera House and the botanical garden from here</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"melbourne\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Sydney Opera House",
+      "lat": -33.857198,
+      "lon": 151.215123,
+      "cat": "see",
+      "match": "sydney opera house"
+    },
+    {
+      "name": "Sydney Harbour Bridge",
+      "lat": -33.852117,
+      "lon": 151.210781,
+      "cat": "see",
+      "match": "sydney harbour bridge"
+    },
+    {
+      "name": "Coogee Beach",
+      "lat": -33.920338,
+      "lon": 151.258132,
+      "cat": "see",
+      "match": "coogee beach"
+    },
+    {
+      "name": "Bronte Beach",
+      "lat": -33.903623,
+      "lon": 151.268292,
+      "cat": "see",
+      "match": "bronte beach"
+    },
+    {
+      "name": "Bondi Beach",
+      "lat": -33.890698,
+      "lon": 151.272412,
+      "cat": "see",
+      "match": "bondi beach"
+    },
+    {
+      "name": "Taronga Zoo",
+      "lat": -33.843832,
+      "lon": 151.241375,
+      "cat": "see",
+      "match": "taronga zoo"
+    },
+    {
+      "name": "Manly Beach",
+      "lat": -33.797742,
+      "lon": 151.28894,
+      "cat": "see",
+      "match": "manly beach"
+    },
+    {
+      "name": "Chinatown Sydney",
+      "lat": -33.879356,
+      "lon": 151.204157,
+      "cat": "see",
+      "match": "chinatown sydney"
+    },
+    {
+      "name": "The Fine Food Store",
+      "lat": -33.858425,
+      "lon": 151.208617,
+      "cat": "eat",
+      "match": "the fine food store"
+    },
+    {
+      "name": "Manly Wharf",
+      "lat": -33.799739,
+      "lon": 151.284214,
+      "cat": "eat",
+      "match": "manly wharf"
+    },
+    {
+      "name": "Mad Monkey Potts Point",
+      "lat": -33.872275,
+      "lon": 151.224216,
+      "cat": "stay",
+      "match": "mad monkey"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Blue Mountains",
+      "time": "Full Day",
+      "match": "blue mountains"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "CBD",
+      "lat": -33.868,
+      "lon": 151.2075
+    },
+    {
+      "text": "BONDI",
+      "lat": -33.895,
+      "lon": 151.268
+    },
+    {
+      "text": "MANLY",
+      "lat": -33.7986,
+      "lon": 151.2862
+    }
+  ]
+}

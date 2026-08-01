@@ -1,0 +1,115 @@
+{
+  "slug": "helsinki",
+  "kicker": "FINLAND",
+  "city": "Helsinki",
+  "osm": ".tmp/helsinki_osm.json",
+  "article": "finland/field-notes.html",
+  "embed": {
+    "pre": "otherwise pricey city</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "sea_bg": true,
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "center": {
+    "lat": 60.168,
+    "lon": 24.936
+  },
+  "desktop": {
+    "pad": 1.55
+  },
+  "mobile": {
+    "pad": 1.12,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "day_trips": [
+    {
+      "name": "Porvoo",
+      "time": "Full Day",
+      "match": "porvoo"
+    }
+  ],
+  "pois": [
+    {
+      "name": "Suomenlinna Fortress",
+      "lat": 60.1454,
+      "lon": 24.9881,
+      "cat": "see",
+      "match": "suomenlinna"
+    },
+    {
+      "name": "Senate Square",
+      "lat": 60.1694794,
+      "lon": 24.9522867,
+      "cat": "see",
+      "match": "senate square"
+    },
+    {
+      "name": "Presidential Palace",
+      "lat": 60.1683956,
+      "lon": 24.956342,
+      "cat": "see",
+      "match": "presidential palace"
+    },
+    {
+      "name": "House of Nobility",
+      "lat": 60.1698838,
+      "lon": 24.9562658,
+      "cat": "see",
+      "match": "house of nobility"
+    },
+    {
+      "name": "Market Square",
+      "lat": 60.1675,
+      "lon": 24.9556,
+      "cat": "see",
+      "match": "market square"
+    },
+    {
+      "name": "Allas Sea Pool",
+      "lat": 60.1670996,
+      "lon": 24.9571624,
+      "cat": "see",
+      "match": "allas"
+    },
+    {
+      "name": "Temppeliaukio Church",
+      "lat": 60.1730251,
+      "lon": 24.925235,
+      "cat": "see",
+      "match": "temppeliaukio"
+    },
+    {
+      "name": "Seurasaari Island",
+      "lat": 60.1814921,
+      "lon": 24.8840972,
+      "cat": "see",
+      "match": "seurasaari"
+    },
+    {
+      "name": "Kolme Kruunua",
+      "lat": 60.174337,
+      "lon": 24.9589451,
+      "cat": "eat",
+      "match": "kolme kruunua"
+    },
+    {
+      "name": "Lappi Ravintola",
+      "lat": 60.1666812,
+      "lon": 24.9369451,
+      "cat": "eat",
+      "match": "lappi"
+    },
+    {
+      "name": "The Yard Hostel",
+      "lat": 60.1680664,
+      "lon": 24.9396246,
+      "cat": "stay",
+      "match": "yard"
+    }
+  ]
+}

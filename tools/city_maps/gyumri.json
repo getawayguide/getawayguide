@@ -1,0 +1,100 @@
+{
+  "slug": "gyumri",
+  "kicker": "ARMENIA",
+  "city": "Gyumri",
+  "osm": ".tmp/gyumri_osm.json",
+  "article": "armenia/field-notes.html",
+  "embed": {
+    "pre": "\">KTOR M</a></b> — an underground restaurant near the main square. Get the Khurjin (meat, cheese and mushrooms wrapped in lavash tied in a knot)</li>\n    </ul>\n",
+    "post": "  </div>\n\n  <!-- Other Places -->\n  <div class=\"fn-section\" id=\"other-places\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 40.78295,
+      "lon": 43.84235
+    }
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Vardanants Square",
+      "lat": 40.785183,
+      "lon": 43.8416164,
+      "cat": "see",
+      "match": "vardanants"
+    },
+    {
+      "name": "St. All Saviors Church",
+      "lat": 40.784088,
+      "lon": 43.8412203,
+      "cat": "see",
+      "match": "all saviors"
+    },
+    {
+      "name": "Holy Mother Cathedral",
+      "lat": 40.7861976,
+      "lon": 43.8423039,
+      "cat": "see",
+      "match": "holy mother"
+    },
+    {
+      "name": "Abovyan Street",
+      "lat": 40.7869323,
+      "lon": 43.8411318,
+      "cat": "see",
+      "match": "abovyan"
+    },
+    {
+      "name": "Rijkov Walking Street",
+      "lat": 40.7865301,
+      "lon": 43.8435948,
+      "cat": "see",
+      "match": "rijkov"
+    },
+    {
+      "name": "Gyumri Market",
+      "lat": 40.7817844,
+      "lon": 43.8433239,
+      "cat": "see",
+      "match": "gyumri market"
+    },
+    {
+      "name": "Mother Armenia of Gyumri",
+      "lat": 40.7805008,
+      "lon": 43.8247741,
+      "cat": "see",
+      "match": "mother armenia"
+    },
+    {
+      "name": "Black Circular Fortress",
+      "lat": 40.7824713,
+      "lon": 43.8253236,
+      "cat": "see",
+      "match": "circular fortress"
+    },
+    {
+      "name": "KTOR M",
+      "lat": 40.7858215,
+      "lon": 43.8404513,
+      "cat": "eat",
+      "match": "ktor"
+    }
+  ],
+  "center": {
+    "lat": 40.78372,
+    "lon": 43.83842
+  }
+}

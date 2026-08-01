@@ -55,6 +55,10 @@ body.dest-map-open nav{display:none}
 .art-card-name{font-family:'Montserrat',sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
 .art-card-btn{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
 .art-card-soon{}
+.art-card-badge{position:absolute;top:.7rem;left:.7rem;z-index:2;display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.6);color:#fff;font-family:'Montserrat',sans-serif;font-size:.52rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:.34rem .62rem;border-radius:999px}
+.art-card-badge-dot{width:5px;height:5px;border-radius:50%;background:#7FE0AE;flex:0 0 auto}
+.home-dest-soon{cursor:default}
+.home-dest-soon .art-card-btn{border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.8)}
 @media(max-width:1024px){
   .dest-map-wrap{padding:.75rem 3rem 0}
   .dest-articles-section{padding:2rem 3rem 5rem}
@@ -119,17 +123,16 @@ body.dest-map-open nav{display:none}
       <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='destinations.html'">Destinations <span class="nav-caret">?</span></a>
       <div class="nav-dropdown nav-dropdown-fn">
         <div class="nav-dropdown-col">
-          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span>
-          <a href="el-salvador/index.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span></a>
-          <a href="new-zealand/index.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/nz.png" width="16" height="12" alt=""><span class="country-name">New Zealand</span></a>
-          <span class="nav-dropdown-continent nav-fn-head" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Field Notes</span>
+          <div class="nav-guides-head"><span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span><span class="nav-guides-legend"><span class="nav-fulldot"></span>In-Depth Guide</span></div>
           <div class="nav-fn-groups">
             <div class="nav-fn-sub">
             <div class="nav-fn-grp">
               <span class="nav-fn-region">Europe</span>
               <a href="albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
               <a href="bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
+              <a href="denmark/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
               <a href="estonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ee.png" width="16" height="12" alt=""><span class="country-name">Estonia</span></a>
+              <a href="finland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/fi.png" width="16" height="12" alt=""><span class="country-name">Finland</span></a>
               <a href="georgia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
               <a href="greece/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
               <a href="hungary/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
@@ -138,6 +141,7 @@ body.dest-map-open nav{display:none}
               <a href="montenegro/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
               <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
               <a href="serbia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
+              <a href="sweden/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/se.png" width="16" height="12" alt=""><span class="country-name">Sweden</span></a>
               <a href="switzerland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
             </div>
             <div class="nav-fn-grp">
@@ -161,6 +165,7 @@ body.dest-map-open nav{display:none}
               <a href="brazil/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
               <a href="chile/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/cl.png" width="16" height="12" alt=""><span class="country-name">Chile</span></a>
               <a href="colombia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
+              <a href="el-salvador/index.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span><span class="nav-fulldot" title="Full guide available"></span></a>
               <a href="mexico/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
               <a href="peru/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
             </div>
@@ -227,7 +232,6 @@ body.dest-map-open nav{display:none}
     <button class="map-close-btn" onclick="toggleMapFS()" aria-label="Close map">✕</button>
     <div class="map-legend">
       <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Articles Available</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#8FAF7E"></span>Field Notes</span>
       <span class="legend-item"><span class="legend-dot" style="background:#c8ddd5"></span>Countries Visited</span>
     </div>
     <div id="world-map"></div>
@@ -237,7 +241,7 @@ body.dest-map-open nav{display:none}
   <section class="dest-articles-section" id="articles-section">
     <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
       Available Articles
-      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Thoughtfully Written and Researched Travel Guides</span>
+      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Detailed guides and quick field notes from every place I've been</span>
     </h2>
     <div class="filter-bar-inline">
       <span class="filter-label">Filter by</span>
@@ -250,47 +254,6 @@ body.dest-map-open nav{display:none}
     </div>
     <div class="home-dest-grid" id="articles-grid">
 
-      <!-- El Salvador -->
-      <div class="home-dest-card" data-continent="americas" onclick="location.href='el-salvador/index.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:50% 78%"></div>
-        <div class="dest-overlay"></div>
-        <div class="art-card-info">
-          <p class="art-card-name">El Salvador</p>
-          <span class="art-card-btn">Explore</span>
-        </div>
-      </div>
-
-      <!-- New Zealand -->
-      <div class="home-dest-card" data-continent="oceania" onclick="location.href='new-zealand/index.html'" style="cursor:pointer">
-        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:50% 60%"></div>
-        <div class="dest-overlay"></div>
-        <div class="art-card-info">
-          <p class="art-card-name">New Zealand</p>
-          <span class="art-card-btn art-card-soon">Coming Soon</span>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Field Notes -->
-  <section class="dest-articles-section" id="field-notes-section" style="padding-top:0">
-    <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
-      Field Notes
-      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Quick and Dirty Travel Recommendations</span>
-    </h2>
-    <div class="filter-bar-inline">
-      <span class="filter-label">Filter by</span>
-      <button class="filter-btn active" onclick="filterFieldNotes('all',this)">All</button>
-      <button class="filter-btn" onclick="filterFieldNotes('europe',this)">Europe</button>
-      <button class="filter-btn" onclick="filterFieldNotes('americas',this)">Americas</button>
-      <button class="filter-btn" onclick="filterFieldNotes('asia',this)">Asia</button>
-      <button class="filter-btn" onclick="filterFieldNotes('africa',this)">Africa</button>
-      <button class="filter-btn" onclick="filterFieldNotes('oceania',this)">Oceania</button>
-    </div>
-    <div class="home-dest-grid" id="field-notes-grid">
-
-      <!-- Albania -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='albania/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/albania.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -300,7 +263,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Argentina -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='argentina/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/argentina.jpg');background-size:cover;background-position:50% 30%"></div>
         <div class="dest-overlay"></div>
@@ -310,7 +272,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Armenia -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='armenia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/armenia.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -320,7 +281,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Australia -->
       <div class="home-dest-card" data-continent="oceania" onclick="location.href='australia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/australia.jpg');background-size:cover;background-position:50% 72%"></div>
         <div class="dest-overlay"></div>
@@ -330,7 +290,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Bosnia -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='bosnia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/bosnia.jpg');background-size:cover;background-position:50% 30%"></div>
         <div class="dest-overlay"></div>
@@ -340,7 +299,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Brazil -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='brazil/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/brazil.jpg');background-size:cover;background-position:50% 20%"></div>
         <div class="dest-overlay"></div>
@@ -350,7 +308,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Chile -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='chile/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/chile.jpg');background-size:cover;background-position:50% 60%"></div>
         <div class="dest-overlay"></div>
@@ -360,7 +317,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Colombia -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='colombia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/colombia.jpg');background-size:cover;background-position:50% 62%"></div>
         <div class="dest-overlay"></div>
@@ -370,7 +326,15 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Egypt -->
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='denmark/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/denmark.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Denmark</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
       <div class="home-dest-card" id="dest-egypt" data-continent="africa" onclick="location.href='egypt/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/egypt.jpg');background-size:cover;background-position:50% 10%"></div>
         <div class="dest-overlay"></div>
@@ -380,7 +344,16 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Estonia -->
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='el-salvador/index.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:50% 78%"></div>
+        <div class="dest-overlay"></div>
+        <span class="art-card-badge"><span class="art-card-badge-dot"></span>In-Depth Guide</span>
+        <div class="art-card-info">
+          <p class="art-card-name">El Salvador</p>
+          <span class="art-card-btn">Explore</span>
+        </div>
+      </div>
+
       <div class="home-dest-card" id="dest-estonia" data-continent="europe" onclick="location.href='estonia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/estonia.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -390,7 +363,15 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Georgia -->
+      <div class="home-dest-card" id="dest-finland" data-continent="europe" onclick="location.href='finland/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/finland.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Finland</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
       <div class="home-dest-card" data-continent="europe" onclick="location.href='georgia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/georgia.jpg');background-size:cover;background-position:50% 45%"></div>
         <div class="dest-overlay"></div>
@@ -400,7 +381,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Greece -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='greece/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/greece.jpg');background-size:cover;background-position:50% 32%"></div>
         <div class="dest-overlay"></div>
@@ -410,7 +390,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Hungary -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='hungary/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/hungary.jpg?v=2');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -420,7 +399,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- India -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='india/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/india.jpg');background-size:cover;background-position:50% 30%"></div>
         <div class="dest-overlay"></div>
@@ -430,7 +408,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Indonesia -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='indonesia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/indonesia.jpg');background-size:cover;background-position:50% 10%"></div>
         <div class="dest-overlay"></div>
@@ -440,7 +417,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Kosovo -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='kosovo/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/kosovo.jpg');background-size:cover;background-position:50% 58%"></div>
         <div class="dest-overlay"></div>
@@ -450,7 +426,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Latvia -->
       <div class="home-dest-card" id="dest-latvia" data-continent="europe" onclick="location.href='latvia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/latvia.jpg');background-size:cover;background-position:18% 50%"></div>
         <div class="dest-overlay"></div>
@@ -460,7 +435,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Mexico -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='mexico/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/mexico.jpg');background-size:cover;background-position:50% 52%"></div>
         <div class="dest-overlay"></div>
@@ -470,7 +444,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Montenegro -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='montenegro/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/montenegro.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -480,7 +453,15 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- North Macedonia -->
+      <div class="home-dest-card home-dest-soon" data-continent="oceania">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:50% 60%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">New Zealand</p>
+          <span class="art-card-btn art-card-soon">Coming Soon</span>
+        </div>
+      </div>
+
       <div class="home-dest-card" data-continent="europe" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/north-macedonia.jpg');background-size:cover;background-position:50% 45%"></div>
         <div class="dest-overlay"></div>
@@ -490,7 +471,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Peru -->
       <div class="home-dest-card" data-continent="americas" onclick="location.href='peru/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/peru.jpg');background-size:cover;background-position:50% 42%"></div>
         <div class="dest-overlay"></div>
@@ -500,7 +480,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Philippines -->
       <div class="home-dest-card" data-continent="asia" onclick="location.href='philippines/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/philippines.jpg');background-size:cover;background-position:50% 78%"></div>
         <div class="dest-overlay"></div>
@@ -510,7 +489,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Serbia -->
       <div class="home-dest-card" data-continent="europe" onclick="location.href='serbia/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/serbia.jpg');background-size:cover;background-position:50% 38%"></div>
         <div class="dest-overlay"></div>
@@ -520,7 +498,15 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-      <!-- Switzerland -->
+      <div class="home-dest-card" id="dest-sweden" data-continent="europe" onclick="location.href='sweden/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/sweden.jpg');background-size:cover;background-position:50% 28%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Sweden</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
       <div class="home-dest-card" data-continent="europe" onclick="location.href='switzerland/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/switzerland.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -530,8 +516,6 @@ body.dest-map-open nav{display:none}
         </div>
       </div>
 
-
-      <!-- Tanzania -->
       <div class="home-dest-card" data-continent="africa" onclick="location.href='tanzania/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/tanzania.jpg');background-size:cover;background-position:50% 50%"></div>
         <div class="dest-overlay"></div>
@@ -540,7 +524,7 @@ body.dest-map-open nav{display:none}
           <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
-      <!-- Türkiye -->
+
       <div class="home-dest-card" data-continent="asia" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
         <div class="dest-bg" style="background-image:url('Images/web/dest-cards/turkiye.jpg');background-size:cover;background-position:50% 40%"></div>
         <div class="dest-overlay"></div>
@@ -552,6 +536,7 @@ body.dest-map-open nav{display:none}
 
     </div>
   </section>
+
 
   <footer>
     <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
@@ -604,13 +589,6 @@ function filterArticles(continent, btn) {
     card.style.display = (continent === 'all' || card.dataset.continent === continent) ? '' : 'none';
   });
 }
-function filterFieldNotes(continent, btn) {
-  document.querySelectorAll('#field-notes-section .filter-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  document.querySelectorAll('#field-notes-grid .home-dest-card').forEach(function(card){
-    card.style.display = (continent === 'all' || card.dataset.continent === continent) ? '' : 'none';
-  });
-}
 (function(){
   var p=window.location.pathname.split('/').pop()||'index.html';
   var m={'index.html':'nav-home','':'nav-home','destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
@@ -624,10 +602,6 @@ function applyHashFilter(){
   var btns=document.querySelectorAll('#articles-section .filter-btn');
   for(var i=0;i<btns.length;i++){
     if(btns[i].textContent.trim().toLowerCase()===hash){filterArticles(hash,btns[i]);break;}
-  }
-  var fnBtns=document.querySelectorAll('#field-notes-section .filter-btn');
-  for(var i=0;i<fnBtns.length;i++){
-    if(fnBtns[i].textContent.trim().toLowerCase()===hash){filterFieldNotes(hash,fnBtns[i]);break;}
   }
   setTimeout(function(){
     var s=document.getElementById('articles-section');
@@ -753,8 +727,10 @@ var fieldNotesMap = {
   "BR": { name: "Brazil",          url: "brazil/field-notes.html" },
   "CL": { name: "Chile",          url: "chile/field-notes.html" },
   "CO": { name: "Colombia",        url: "colombia/field-notes.html" },
+  "DK": { name: "Denmark",        url: "denmark/field-notes.html" },
   "EG": { name: "Egypt",          url: "egypt/field-notes.html" },
   "EE": { name: "Estonia",        url: "estonia/field-notes.html" },
+  "FI": { name: "Finland",        url: "finland/field-notes.html" },
   "GE": { name: "Georgia",         url: "georgia/field-notes.html" },
   "GR": { name: "Greece",          url: "greece/field-notes.html" },
   "HU": { name: "Hungary",         url: "hungary/field-notes.html" },
@@ -768,6 +744,7 @@ var fieldNotesMap = {
   "PE": { name: "Peru",            url: "peru/field-notes.html" },
   "PH": { name: "Philippines",     url: "philippines/field-notes.html" },
   "RS": { name: "Serbia",          url: "serbia/field-notes.html" },
+  "SE": { name: "Sweden",         url: "sweden/field-notes.html" },
   "CH": { name: "Switzerland",     url: "switzerland/field-notes.html" },
   "TZ": { name: "Tanzania",        url: "tanzania/field-notes.html" },
   "TR": { name: "Türkiye",         url: "turkiye/field-notes.html" }
@@ -790,7 +767,7 @@ fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
 });
 
 var fnTpl = fieldNotesSeries.mapPolygons.template;
-fnTpl.fill = am4core.color("#8FAF7E");
+fnTpl.fill = am4core.color("#2D6B50");
 fnTpl.stroke = am4core.color("#ffffff");
 fnTpl.strokeWidth = 0.4;
 fnTpl.focusable = false; // no blue a11y focus rectangle on tap
@@ -801,7 +778,7 @@ fieldNotesSeries.tooltip.getFillFromObject = false;
 fieldNotesSeries.tooltip.label.padding(10, 14, 10, 14);
 fnTpl.tooltipHTML = "{tipHtml}";
 fnTpl.cursorOverStyle = am4core.MouseCursorStyle.pointer;
-fnTpl.states.create("hover").properties.fill = am4core.color("#A3C292");
+fnTpl.states.create("hover").properties.fill = am4core.color("#3d8a66");
 fnTpl.events.on("hit", function(ev) {
   var id = ev.target.dataItem && ev.target.dataItem.dataContext && ev.target.dataItem.dataContext.id;
   if (!id || !fieldNotesMap[id] || !fieldNotesMap[id].url) return;
@@ -811,7 +788,7 @@ fnTpl.events.on("hit", function(ev) {
 // -- Layer 4: Featured countries (article or coming soon) ---------------------
 var featuredMap = {
   "SV": { name: "El Salvador",  url: "el-salvador/index.html" },
-  "NZ": { name: "New Zealand",  url: "new-zealand/index.html" }
+  "NZ": { name: "New Zealand",  url: "" }
 };
 
 var featuredSeries = chart.series.push(new am4maps.MapPolygonSeries());

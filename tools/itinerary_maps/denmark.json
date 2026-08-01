@@ -1,0 +1,54 @@
+{
+  "airport": null,
+  "country_width": 520,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": 79.9,
+      "dy": -5.4,
+      "lat": 56.0389,
+      "lon": 12.6215,
+      "name": "Kronborg Castle"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 6,
+      "lat": 55.6415,
+      "lon": 12.0803,
+      "name": "Roskilde"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 56.1629,
+      "lon": 10.2039,
+      "name": "Aarhus"
+    }
+  ],
+  "iso3": "DNK",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "denmark",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "2–3 days",
+      "dx": 14,
+      "dy": 4,
+      "href": "#copenhagen",
+      "lat": 55.6761,
+      "lon": 12.5683,
+      "n": 1,
+      "name": "Copenhagen"
+    }
+  ]
+}

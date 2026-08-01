@@ -1,0 +1,54 @@
+{
+  "airport": null,
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 66.5039478,
+      "lon": 25.7293906,
+      "name": "Lapland"
+    },
+    {
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "lat": 61.2612666,
+      "lon": 28.2100733,
+      "name": "Lakeland"
+    },
+    {
+      "anchor": "middle",
+      "dx": 3.1,
+      "dy": -11.4,
+      "lat": 60.4518,
+      "lon": 22.2666,
+      "name": "Turku"
+    }
+  ],
+  "iso3": "FIN",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "finland",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": 4,
+      "href": "#helsinki",
+      "lat": 60.1699,
+      "lon": 24.9384,
+      "n": 1,
+      "name": "Helsinki"
+    }
+  ]
+}

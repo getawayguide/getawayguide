@@ -1,0 +1,116 @@
+{
+  "slug": "cairo",
+  "kicker": "EGYPT",
+  "city": "Cairo",
+  "osm": ".tmp/cairo_osm.json",
+  "article": "egypt/field-notes.html",
+  "embed": {
+    "pre": "a view of the Great Pyramid of Giza. You can even get a room with a view of the pyramids for as little as ~$40 per night</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"luxor\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 30.045,
+      "lon": 31.2355
+    },
+    {
+      "text": "ISLAMIC CAIRO",
+      "lat": 30.0405,
+      "lon": 31.26
+    },
+    {
+      "text": "COPTIC CAIRO",
+      "lat": 30.006,
+      "lon": 31.2305
+    },
+    {
+      "text": "GIZA",
+      "lat": 29.98,
+      "lon": 31.132
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Saqqara & Memphis",
+      "time": "Full Day",
+      "match": "saqqara"
+    }
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Great Sphinx",
+      "lat": 29.9753,
+      "lon": 31.1376,
+      "cat": "see",
+      "match": "great sphinx"
+    },
+    {
+      "name": "Tahrir Square",
+      "lat": 30.044397,
+      "lon": 31.235717,
+      "cat": "see",
+      "match": "tahrir square"
+    },
+    {
+      "name": "The Egyptian Museum in Cairo",
+      "lat": 30.048317,
+      "lon": 31.233667,
+      "cat": "see",
+      "match": "the egyptian museum in c"
+    },
+    {
+      "name": "Grand Egyptian Museum",
+      "lat": 29.994575,
+      "lon": 31.119074,
+      "cat": "see",
+      "match": "grand egyptian museum"
+    },
+    {
+      "name": "Khan el-Khalili",
+      "lat": 30.047739,
+      "lon": 31.262254,
+      "cat": "see",
+      "match": "khan el-khalili"
+    },
+    {
+      "name": "Citadel of Saladin",
+      "lat": 30.028746,
+      "lon": 31.259714,
+      "cat": "see",
+      "match": "citadel of saladin"
+    },
+    {
+      "name": "Hanging Church",
+      "lat": 30.005239,
+      "lon": 31.230169,
+      "cat": "see",
+      "match": "hanging church"
+    },
+    {
+      "name": "Nine Pyramids View Hotel",
+      "lat": 29.967179,
+      "lon": 31.1460213,
+      "cat": "stay",
+      "match": "nine pyramids"
+    }
+  ],
+  "center": {
+    "lat": 30.01182,
+    "lon": 31.22288
+  },
+  "roads": "major"
+}

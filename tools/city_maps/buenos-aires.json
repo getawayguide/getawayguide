@@ -8,43 +8,201 @@
     "pre": "for only ~$24/night</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"el-calafate\">"
   },
-  "hint": ["Touch to explore", "Double-tap to open in Google Maps"],
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
   "groups": [
-    { "key": "palermo",  "label": "PALERMO",             "color": "#2F6E4C" },
-    { "key": "recoleta", "label": "RECOLETA & MONSERRAT", "color": "#9A5F3C" },
-    { "key": "santelmo", "label": "SAN TELMO",            "color": "#9C7A2E" },
-    { "key": "laboca",   "label": "LA BOCA",              "color": "#B24B3E" }
+    {
+      "key": "palermo",
+      "label": "PALERMO",
+      "color": "#2F6E4C"
+    },
+    {
+      "key": "recoleta",
+      "label": "RECOLETA & MONSERRAT",
+      "color": "#9A5F3C"
+    },
+    {
+      "key": "santelmo",
+      "label": "SAN TELMO",
+      "color": "#9C7A2E"
+    },
+    {
+      "key": "laboca",
+      "label": "LA BOCA",
+      "color": "#B24B3E"
+    }
   ],
   "district_labels": [
-    { "text": "PALERMO",   "lat": -34.5810, "lon": -58.4090 },
-    { "text": "RECOLETA",  "lat": -34.5905, "lon": -58.3975 },
-    { "text": "MONSERRAT", "lat": -34.6095, "lon": -58.3805 },
-    { "text": "SAN TELMO", "lat": -34.6205, "lon": -58.3715 },
-    { "text": "LA BOCA",   "lat": -34.6360, "lon": -58.3625 }
+    {
+      "text": "PALERMO",
+      "lat": -34.581,
+      "lon": -58.409
+    },
+    {
+      "text": "RECOLETA",
+      "lat": -34.5905,
+      "lon": -58.3975
+    },
+    {
+      "text": "MONSERRAT",
+      "lat": -34.6095,
+      "lon": -58.3805
+    },
+    {
+      "text": "SAN TELMO",
+      "lat": -34.6205,
+      "lon": -58.3715
+    },
+    {
+      "text": "LA BOCA",
+      "lat": -34.636,
+      "lon": -58.3625
+    }
   ],
-  "desktop": { "pad": 1.45 },
-  "mobile":  { "pad": 1.25, "init_w": 0.9, "init_x": 0.5, "init_y": 0.5 },
+  "desktop": {
+    "pad": 1.45
+  },
+  "mobile": {
+    "pad": 1.25,
+    "init_w": 0.9,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
   "pois": [
-    { "name": "Parque Tres de Febrero", "lat": -34.5708801, "lon": -58.4171029, "group": "palermo",  "match": "tres de febrero" },
-    { "name": "Avant Garten",           "lat": -34.5702294, "lon": -58.4214601, "group": "palermo",  "match": "avant garten" },
-    { "name": "MALBA",                  "lat": -34.5769032, "lon": -58.4033959, "group": "palermo",  "match": "museo de arte latinoamericano" },
-    { "name": "Costa Rica Street",      "lat": -34.5861127, "lon": -58.4300782, "group": "palermo",  "match": "costa rica street" },
-    { "name": "Dandy",                  "lat": -34.5891457, "lon": -58.410348,  "group": "palermo",  "match": "dandy" },
-    { "name": "Crobar Club",            "lat": -34.5694172, "lon": -58.4205188, "group": "palermo",  "match": "crobar" },
-
-    { "name": "Recoleta Cemetery",       "lat": -34.5876575, "lon": -58.3935953, "group": "recoleta", "match": "recoleta cemetery" },
-    { "name": "El Ateneo Grand Splendid","lat": -34.5959828, "lon": -58.3942623, "group": "recoleta", "match": "ateneo" },
-    { "name": "Café Tortoni",           "lat": -34.6086531, "lon": -58.3782121, "group": "recoleta", "match": "tortoni" },
-    { "name": "Plaza de Mayo",          "lat": -34.6083667, "lon": -58.3722832, "group": "recoleta", "match": "plaza de mayo" },
-    { "name": "Casa Rosada",            "lat": -34.6080556, "lon": -58.3702778, "group": "recoleta", "match": "casa rosada" },
-    { "name": "Viajero Buenos Aires",   "lat": -34.6137701, "lon": -58.3754855, "group": "recoleta", "match": "viajero" },
-
-    { "name": "Mercado de San Telmo",   "lat": -34.6193062, "lon": -58.37282,   "group": "santelmo", "match": "mercado de san telmo" },
-    { "name": "San Telmo Sunday Fair",  "lat": -34.6114448, "lon": -58.371905,  "group": "santelmo", "match": "san telmo sunday street fair" },
-    { "name": "Mi Tío Pizzería",        "lat": -34.6172,    "lon": -58.3748,    "group": "santelmo", "match": "mi tío" },
-    { "name": "Parrilla Del Carmen",    "lat": -34.6149707, "lon": -58.3719331, "group": "santelmo", "match": "parrilla del carmen" },
-
-    { "name": "El Caminito",            "lat": -34.6393887, "lon": -58.3616954, "group": "laboca",   "match": "caminito" },
-    { "name": "La Bombonera",           "lat": -34.6356109, "lon": -58.3647563, "group": "laboca",   "match": "bombonera" }
+    {
+      "name": "Parque Tres de Febrero",
+      "lat": -34.5708801,
+      "lon": -58.4171029,
+      "group": "palermo",
+      "match": "tres de febrero"
+    },
+    {
+      "name": "Avant Garten",
+      "lat": -34.5702294,
+      "lon": -58.4214601,
+      "group": "palermo",
+      "match": "avant garten"
+    },
+    {
+      "name": "MALBA",
+      "lat": -34.5769032,
+      "lon": -58.4033959,
+      "group": "palermo",
+      "match": "museo de arte latinoamericano"
+    },
+    {
+      "name": "Costa Rica Street",
+      "lat": -34.5861127,
+      "lon": -58.4300782,
+      "group": "palermo",
+      "match": "costa rica street"
+    },
+    {
+      "name": "Dandy",
+      "lat": -34.5891457,
+      "lon": -58.410348,
+      "group": "palermo",
+      "match": "dandy"
+    },
+    {
+      "name": "Crobar Club",
+      "lat": -34.5694172,
+      "lon": -58.4205188,
+      "group": "palermo",
+      "match": "crobar"
+    },
+    {
+      "name": "Recoleta Cemetery",
+      "lat": -34.5876575,
+      "lon": -58.3935953,
+      "group": "recoleta",
+      "match": "recoleta cemetery"
+    },
+    {
+      "name": "El Ateneo Grand Splendid",
+      "lat": -34.5959828,
+      "lon": -58.3942623,
+      "group": "recoleta",
+      "match": "ateneo"
+    },
+    {
+      "name": "Café Tortoni",
+      "lat": -34.6086531,
+      "lon": -58.3782121,
+      "group": "recoleta",
+      "match": "tortoni"
+    },
+    {
+      "name": "Plaza de Mayo",
+      "lat": -34.6083667,
+      "lon": -58.3722832,
+      "group": "recoleta",
+      "match": "plaza de mayo"
+    },
+    {
+      "name": "Casa Rosada",
+      "lat": -34.6080556,
+      "lon": -58.3702778,
+      "group": "recoleta",
+      "match": "casa rosada"
+    },
+    {
+      "name": "Viajero Buenos Aires",
+      "lat": -34.6137701,
+      "lon": -58.3754855,
+      "group": "recoleta",
+      "match": "viajero"
+    },
+    {
+      "name": "Mercado de San Telmo",
+      "lat": -34.6193062,
+      "lon": -58.37282,
+      "group": "santelmo",
+      "match": "mercado de san telmo"
+    },
+    {
+      "name": "San Telmo Sunday Fair",
+      "lat": -34.6114448,
+      "lon": -58.371905,
+      "group": "santelmo",
+      "match": "san telmo sunday street fair"
+    },
+    {
+      "name": "Mi Tío Pizzería",
+      "lat": -34.6172,
+      "lon": -58.3748,
+      "group": "santelmo",
+      "match": "mi tío"
+    },
+    {
+      "name": "Parrilla Del Carmen",
+      "lat": -34.6149707,
+      "lon": -58.3719331,
+      "group": "santelmo",
+      "match": "parrilla del carmen"
+    },
+    {
+      "name": "El Caminito",
+      "lat": -34.6393887,
+      "lon": -58.3616954,
+      "group": "laboca",
+      "match": "caminito"
+    },
+    {
+      "name": "La Bombonera",
+      "lat": -34.6356109,
+      "lon": -58.3647563,
+      "group": "laboca",
+      "match": "bombonera"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Colonia del Sacramento",
+      "time": "Full Day",
+      "match": "colonia"
+    }
   ]
 }

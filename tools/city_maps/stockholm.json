@@ -1,0 +1,204 @@
+{
+  "slug": "stockholm",
+  "kicker": "SWEDEN",
+  "city": "Stockholm",
+  "osm": ".tmp/stockholm_osm.json",
+  "article": "sweden/field-notes.html",
+  "embed": {
+    "pre": "I really enjoyed staying here</span></li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"malmo\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "district_labels": [
+    {
+      "text": "ÖSTERMALM",
+      "lat": 59.339,
+      "lon": 18.087
+    },
+    {
+      "text": "NORRMALM",
+      "lat": 59.336,
+      "lon": 18.059
+    },
+    {
+      "text": "GAMLA STAN",
+      "lat": 59.3247,
+      "lon": 18.0706
+    },
+    {
+      "text": "DJURGÅRDEN",
+      "lat": 59.3235,
+      "lon": 18.101
+    },
+    {
+      "text": "SÖDERMALM",
+      "lat": 59.3135,
+      "lon": 18.076
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Stockholm Archipelago",
+      "time": "Full Day",
+      "match": "archipelago"
+    }
+  ],
+  "pois": [
+    {
+      "name": "Östermalms Saluhall",
+      "lat": 59.3359085,
+      "lon": 18.0776901,
+      "match": "saluhall",
+      "group": "ostermalm"
+    },
+    {
+      "name": "Stortorget",
+      "lat": 59.3251078,
+      "lon": 18.0706785,
+      "match": "stortorget",
+      "group": "gamlastan"
+    },
+    {
+      "name": "Royal Palace",
+      "lat": 59.3268,
+      "lon": 18.0717,
+      "match": "royal palace",
+      "group": "gamlastan"
+    },
+    {
+      "name": "Mårten Trotzigs gränd",
+      "lat": 59.3230076,
+      "lon": 18.0727666,
+      "match": "trotzigs",
+      "group": "gamlastan"
+    },
+    {
+      "name": "City Hall",
+      "lat": 59.327789,
+      "lon": 18.0551788,
+      "match": "city hall",
+      "group": "gamlastan"
+    },
+    {
+      "name": "Nordiska Museet",
+      "lat": 59.3291464,
+      "lon": 18.09389,
+      "match": "nordiska",
+      "group": "djurgarden"
+    },
+    {
+      "name": "Vasa Museum",
+      "lat": 59.3280594,
+      "lon": 18.0913656,
+      "match": "vasa",
+      "group": "djurgarden"
+    },
+    {
+      "name": "ABBA Museum",
+      "lat": 59.3250909,
+      "lon": 18.0967807,
+      "match": "abba museum",
+      "group": "djurgarden"
+    },
+    {
+      "name": "Skansen",
+      "lat": 59.3263227,
+      "lon": 18.1058582,
+      "match": "skansen",
+      "group": "djurgarden"
+    },
+    {
+      "name": "Fotografiska",
+      "lat": 59.3179619,
+      "lon": 18.0848269,
+      "match": "fotografiska",
+      "group": "sodermalm"
+    },
+    {
+      "name": "Mariaberget",
+      "lat": 59.3208688,
+      "lon": 18.0628129,
+      "match": "mariaberget",
+      "group": "sodermalm"
+    },
+    {
+      "name": "TAK",
+      "lat": 59.3307105,
+      "lon": 18.0671693,
+      "match": "tak",
+      "group": "norrmalm"
+    },
+    {
+      "name": "Akkurat",
+      "lat": 59.3198621,
+      "lon": 18.0686914,
+      "match": "akkurat",
+      "group": "sodermalm"
+    },
+    {
+      "name": "Omnipollos Hatt",
+      "lat": 59.3180636,
+      "lon": 18.0722704,
+      "match": "omnipollos",
+      "group": "sodermalm"
+    },
+    {
+      "name": "Djurgårdsbron Bar",
+      "lat": 59.3311283,
+      "lon": 18.0939126,
+      "match": "djurgårdsbron",
+      "group": "djurgarden"
+    },
+    {
+      "name": "City Backpackers",
+      "lat": 59.3399,
+      "lon": 18.0556,
+      "match": "city backpackers",
+      "group": "norrmalm"
+    }
+  ],
+  "center": {
+    "lat": 59.33387,
+    "lon": 18.08432
+  },
+  "sea_bg": true,
+  "groups": [
+    {
+      "key": "ostermalm",
+      "label": "ÖSTERMALM",
+      "color": "#1F5138"
+    },
+    {
+      "key": "norrmalm",
+      "label": "NORRMALM",
+      "color": "#2F7E57"
+    },
+    {
+      "key": "gamlastan",
+      "label": "GAMLA STAN",
+      "color": "#57A57D"
+    },
+    {
+      "key": "djurgarden",
+      "label": "DJURGÅRDEN",
+      "color": "#86C2A0"
+    },
+    {
+      "key": "sodermalm",
+      "label": "SÖDERMALM",
+      "color": "#B8DCC6"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "iso3": "ESP",
+  "slug": "spain",
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "area_keep": 0.001,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Barcelona",
+      "lat": 41.3874,
+      "lon": 2.1686,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#barcelona"
+    },
+    {
+      "n": 2,
+      "name": "Madrid",
+      "lat": 40.4168,
+      "lon": -3.7038,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#madrid"
+    },
+    {
+      "n": 3,
+      "name": "Seville",
+      "lat": 37.3891,
+      "lon": -5.9845,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#seville"
+    },
+    {
+      "n": 4,
+      "name": "Ibiza",
+      "lat": 38.9067,
+      "lon": 1.4206,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#ibiza"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Train · 2.5 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Train · 2.5 hr"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Flight · 1 hr",
+      "dash": true
+    }
+  ]
+}

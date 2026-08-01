@@ -1,0 +1,151 @@
+{
+  "slug": "copenhagen",
+  "kicker": "DENMARK",
+  "city": "Copenhagen",
+  "osm": ".tmp/copenhagen_osm.json",
+  "article": "denmark/field-notes.html",
+  "embed": {
+    "pre": "can save a lot</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "INDRE BY",
+      "lat": 55.6805,
+      "lon": 12.576
+    },
+    {
+      "text": "NØRREBRO",
+      "lat": 55.6975,
+      "lon": 12.547
+    },
+    {
+      "text": "VESTERBRO",
+      "lat": 55.6685,
+      "lon": 12.554
+    },
+    {
+      "text": "CHRISTIANSHAVN",
+      "lat": 55.672,
+      "lon": 12.59
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Malmö, Sweden",
+      "time": "Half Day",
+      "href": "https://getawayguide.io/sweden/field-notes#malmo"
+    }
+  ],
+  "desktop": {
+    "pad": 1.5
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Nyhavn",
+      "lat": 55.679736,
+      "lon": 12.5908855,
+      "cat": "see",
+      "match": "nyhavn"
+    },
+    {
+      "name": "Rosenborg Castle",
+      "lat": 55.6856935,
+      "lon": 12.5774199,
+      "cat": "see",
+      "match": "rosenborg castle"
+    },
+    {
+      "name": "Botanical Garden",
+      "lat": 55.6869091,
+      "lon": 12.5739827,
+      "cat": "see",
+      "match": "botanical garden"
+    },
+    {
+      "name": "Round Tower (Rundetårn)",
+      "lat": 55.6813577,
+      "lon": 12.5757938,
+      "cat": "see",
+      "match": "round tower"
+    },
+    {
+      "name": "Christiania",
+      "lat": 55.6772107,
+      "lon": 12.610452,
+      "cat": "see",
+      "match": "christiania"
+    },
+    {
+      "name": "Superkilen",
+      "lat": 55.6996781,
+      "lon": 12.5423968,
+      "cat": "see",
+      "match": "superkilen"
+    },
+    {
+      "name": "Ny Carlsberg Glyptotek",
+      "lat": 55.6725342,
+      "lon": 12.5717657,
+      "cat": "see",
+      "match": "ny carlsberg glyptotek"
+    },
+    {
+      "name": "Tivoli Gardens",
+      "lat": 55.6734266,
+      "lon": 12.5691891,
+      "cat": "see",
+      "match": "tivoli gardens"
+    },
+    {
+      "name": "Little Mermaid",
+      "lat": 55.6928661,
+      "lon": 12.5992896,
+      "cat": "see",
+      "match": "little mermaid"
+    },
+    {
+      "name": "Kastellet",
+      "lat": 55.6913826,
+      "lon": 12.5937449,
+      "cat": "see",
+      "match": "kastellet"
+    },
+    {
+      "name": "Restaurant Klubben",
+      "lat": 55.6711195,
+      "lon": 12.5457687,
+      "cat": "eat",
+      "match": "restaurant klubben"
+    },
+    {
+      "name": "Torvehallerne",
+      "lat": 55.6838669,
+      "lon": 12.5695512,
+      "cat": "eat",
+      "match": "torvehallerne"
+    },
+    {
+      "name": "Broens Gadekøkken",
+      "lat": 55.6776804,
+      "lon": 12.5972626,
+      "cat": "eat",
+      "match": "broens gadek"
+    }
+  ],
+  "center": {
+    "lat": 55.6905,
+    "lon": 12.5875
+  },
+  "sea_bg": true
+}

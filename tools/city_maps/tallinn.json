@@ -9,9 +9,21 @@
     "post": "<!--citymap:tallinn:end-->"
   },
   "district_labels": [
-    { "text": "VANALINN", "lat": 59.4365, "lon": 24.7465 },
-    { "text": "TOOMPEA", "lat": 59.4352, "lon": 24.7378 },
-    { "text": "TELLISKIVI", "lat": 59.4416, "lon": 24.7288 }
+    {
+      "text": "VANALINN",
+      "lat": 59.4365,
+      "lon": 24.7465
+    },
+    {
+      "text": "TOOMPEA",
+      "lat": 59.4352,
+      "lon": 24.7378
+    },
+    {
+      "text": "TELLISKIVI",
+      "lat": 59.4416,
+      "lon": 24.7288
+    }
   ],
   "center": {
     "lat": 59.4362,

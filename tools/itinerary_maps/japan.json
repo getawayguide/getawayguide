@@ -1,0 +1,94 @@
+{
+  "iso3": "JPN",
+  "slug": "japan",
+  "country_width": 600,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Tokyo",
+      "lat": 35.6762,
+      "lon": 139.6503,
+      "days": "4–5 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#tokyo"
+    },
+    {
+      "n": 2,
+      "name": "Kyoto",
+      "lat": 35.0116,
+      "lon": 135.7681,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#kyoto"
+    },
+    {
+      "n": 3,
+      "name": "Nara",
+      "lat": 34.6851,
+      "lon": 135.8048,
+      "days": "half day",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 34,
+      "href": "#nara"
+    },
+    {
+      "n": 4,
+      "name": "Osaka",
+      "lat": 34.6937,
+      "lon": 135.5023,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": -30,
+      "href": "#osaka"
+    },
+    {
+      "n": 5,
+      "name": "Hiroshima",
+      "lat": 34.3853,
+      "lon": 132.4553,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#hiroshima"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Train · 2.5 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Train · 45 min"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Train · 45 min"
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "Train · 1.5 hr"
+    }
+  ]
+}

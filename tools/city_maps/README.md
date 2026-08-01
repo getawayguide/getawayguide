@@ -53,12 +53,29 @@ their neighborhood group** (no separate eat/stay groups — assign each by area)
 `district_labels`). Colours must be dark enough for white pin numbers. Tall legends
 on big cities can cover the opposite-corner cluster — shift the frame with `center`.
 
-DISTRICT LABELS: `district_labels` is a list of `{text, lat, lon}` faint place names
-baked on the map (a single `district_label` still works). Place them clear of the
-title (top-left) and the key (top-right).
+DISTRICT / ORIENTATION LABELS: `district_labels` is a list of `{text, lat, lon}` faint
+uppercase place names baked on the map (a single `district_label` still works). Place
+them clear of the title (top-left) and the key (top-right). **Every map should carry a
+DOWNTOWN (or CBD / CENTRO) label plus one label per named neighborhood/area the article
+discusses** (BONDI/CBD/MANLY, ST KILDA, SURFERS PARADISE, NOOSA NATIONAL PARK, SOUTH BANK…)
+so readers can orient and know where to base. **A broad AREA name is a label, never a pin**
+— pins are for specific places, so move area names (South Bank, Surfers Paradise) out of `pois`.
+
+DAY TRIPS: `day_trips` is a list of `{name, time, match?, href?}` rendered as a final
+legend-only **DAY TRIPS** section — a dash "–" marker (no number = clearly NOT on the map)
+and a `(time)` estimate ("Half Day"/"Full Day"). Use it for the article's day-trip / far
+nature spots that are too far to plot (reef & Daintree for Cairns, Blue Mountains for
+Sydney, Great Ocean Road for Melbourne, Mostar for Sarajevo…). `match` finds the article's
+Google-Maps link like a POI does.
+
+LEGEND: long labels wrap to two lines automatically. The whole legend must still fit the
+470px map — keep pins + day-trips + headers to **≈24–25 rows**; if it overflows, trim the
+least-essential pins. Store `&` (not `&amp;`) in POI names — the tool escapes once.
 
 Render note: the DESKTOP base map is a plain `<img>` (browsers/editors keep it);
-MOBILE keeps the base inside the SVG so gestures move base+pins together.
+MOBILE keeps the base inside the SVG so gestures move base+pins together. HTML editors
+can strip the mobile pin overlay — if a page's mobile map shows the base with no pins,
+just re-run `--embed` to regenerate it.
 
 ## Fetching OSM street data (PowerShell — the Bash tool has no network)
 

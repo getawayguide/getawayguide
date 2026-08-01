@@ -1,0 +1,87 @@
+{
+  "slug": "malmo",
+  "kicker": "SWEDEN",
+  "city": "Malmö",
+  "osm": ".tmp/malmo_osm.json",
+  "article": "sweden/field-notes.html",
+  "embed": {
+    "pre": "cinnamon or cardamom bun</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 55.6058,
+      "lon": 12.9968
+    },
+    {
+      "text": "WESTERN HARBOUR",
+      "lat": 55.612,
+      "lon": 12.979
+    }
+  ],
+  "desktop": {
+    "pad": 1.7
+  },
+  "mobile": {
+    "pad": 1.45,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Lilla Torg",
+      "lat": 55.6050909,
+      "lon": 12.9987743,
+      "cat": "see",
+      "match": "lilla torg"
+    },
+    {
+      "name": "Malmö Castle",
+      "lat": 55.6053,
+      "lon": 12.9885,
+      "cat": "see",
+      "match": "malmohus"
+    },
+    {
+      "name": "Slottsträdgården",
+      "lat": 55.6034722,
+      "lon": 12.9865705,
+      "cat": "see",
+      "match": "slottstradgarden"
+    },
+    {
+      "name": "Form/Design Center",
+      "lat": 55.6046,
+      "lon": 12.998,
+      "cat": "see",
+      "match": "form design"
+    },
+    {
+      "name": "Bullen Två Krögare",
+      "lat": 55.6058,
+      "lon": 12.9995,
+      "cat": "eat",
+      "match": "bullen"
+    },
+    {
+      "name": "Konditori Katarina",
+      "lat": 55.5971764,
+      "lon": 13.0013641,
+      "cat": "eat",
+      "match": "konditori katarina"
+    }
+  ],
+  "sea": {
+    "side": "west"
+  },
+  "center": {
+    "lat": 55.606,
+    "lon": 12.984
+  }
+}

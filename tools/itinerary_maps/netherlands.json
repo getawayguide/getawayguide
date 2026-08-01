@@ -1,0 +1,29 @@
+{
+  "iso3": "NLD",
+  "slug": "netherlands",
+  "country_width": 500,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Amsterdam",
+      "lat": 52.3676,
+      "lon": 4.9041,
+      "days": "3–4 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#amsterdam"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": []
+}

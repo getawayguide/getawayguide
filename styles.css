@@ -69,6 +69,10 @@ a.nav-dropdown-continent[style*="color:#1C2821"]{color:#1C2821!important;font-we
 .nav-fn-sub{display:flex;flex-direction:column}
 .nav-fn-grp{display:flex;flex-direction:column;gap:.1rem;padding-bottom:.3rem}
 .nav-fn-region{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400;font-size:.85rem;letter-spacing:0;text-transform:none;color:rgba(28,40,33,.4);padding:.2rem 0 .25rem}
+.nav-guides-head{display:flex;align-items:baseline;justify-content:space-between;gap:1.2rem}
+.nav-guides-legend{display:inline-flex;align-items:center;gap:.35rem;font-family:'Montserrat',sans-serif;font-size:.5rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:rgba(28,40,33,.5);white-space:nowrap}
+.nav-fulldot{width:6px;height:6px;border-radius:50%;background:#2D6B50;display:inline-block;flex:0 0 auto}
+.nav-dropdown-item .nav-fulldot{margin-left:.35rem}
 .nav-fn-sub .nav-fn-grp:first-child .nav-fn-region{padding-top:0}
 
 /* PAGE SYSTEM */
@@ -435,7 +439,11 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .home-dest-card{aspect-ratio:1.9/1}
   #dest-egypt .dest-bg{background-position:50% 25% !important}
   #dest-estonia .dest-bg{background-position:50% 46% !important}
+  /* Dedicated landscape crops (fixed images, decoupled from the portrait card so they never
+     drift when a dest-card or its background-position changes) */
   #dest-latvia .dest-bg{background-image:url('Images/web/dest-cards/latvia-landscape.jpg') !important;background-position:50% 50% !important}
+  #dest-finland .dest-bg{background-image:url('Images/web/dest-cards/finland-landscape.jpg') !important;background-position:50% 50% !important}
+  #dest-sweden .dest-bg{background-image:url('Images/web/dest-cards/sweden-landscape.jpg') !important;background-position:50% 50% !important}
   .posts-grid{grid-template-columns:1fr}
   .post-card-image{aspect-ratio:16/9}
   .about-strip{grid-template-columns:1fr;min-height:auto}

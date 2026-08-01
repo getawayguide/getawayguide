@@ -1,0 +1,78 @@
+{
+  "iso3": "NIC",
+  "slug": "nicaragua",
+  "country_width": 520,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "León",
+      "lat": 12.4379,
+      "lon": -86.878,
+      "days": "1–2 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#leon"
+    },
+    {
+      "n": 2,
+      "name": "Granada",
+      "lat": 11.9344,
+      "lon": -85.956,
+      "days": "1–2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#granada"
+    },
+    {
+      "n": 3,
+      "name": "San Juan del Sur",
+      "lat": 11.2536,
+      "lon": -85.8703,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#sjds"
+    },
+    {
+      "n": 4,
+      "name": "Ometepe Island",
+      "lat": 11.504,
+      "lon": -85.58,
+      "days": "2–3 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#ometepe"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Shuttle · 3 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Shuttle · 2.5 hr"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Bus + ferry · 3 hr"
+    }
+  ]
+}

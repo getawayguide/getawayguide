@@ -1,0 +1,94 @@
+{
+  "iso3": "PRT",
+  "slug": "portugal",
+  "country_width": 460,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "simplify": 3000,
+  "smooth": false,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Lagos",
+      "lat": 37.1028,
+      "lon": -8.6742,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#lagos"
+    },
+    {
+      "n": 2,
+      "name": "Albufeira",
+      "lat": 37.0891,
+      "lon": -8.2475,
+      "days": "2–3 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 34,
+      "href": "#albufeira"
+    },
+    {
+      "n": 3,
+      "name": "Faro",
+      "lat": 37.0194,
+      "lon": -7.9304,
+      "days": "1 day",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#faro"
+    },
+    {
+      "n": 4,
+      "name": "Lisbon",
+      "lat": 38.7223,
+      "lon": -9.1393,
+      "days": "3–4 days",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "#lisbon"
+    },
+    {
+      "n": 5,
+      "name": "Sintra",
+      "lat": 38.7979,
+      "lon": -9.3906,
+      "days": "day trip",
+      "anchor": "end",
+      "dx": -14,
+      "dy": -30,
+      "href": "#sintra"
+    }
+  ],
+  "dots": [],
+  "airport": null,
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Train · 1 hr"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "Train · 40 min"
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "Train · 3 hr"
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "Train · 40 min"
+    }
+  ]
+}

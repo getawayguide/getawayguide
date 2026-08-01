@@ -1,0 +1,91 @@
+{
+  "slug": "santiago",
+  "kicker": "CHILE",
+  "city": "Santiago",
+  "osm": ".tmp/santiago_osm.json",
+  "article": "chile/field-notes.html",
+  "embed": {
+    "pre": " located in the heart of downtown Santiago. I booked a loft apartment for ~$50 USD which was a great value for the space</li>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": -33.4395,
+      "lon": -70.6505
+    },
+    {
+      "text": "BARRIO LASTARRIA",
+      "lat": -33.4372,
+      "lon": -70.6385
+    }
+  ],
+  "desktop": {
+    "pad": 1.75
+  },
+  "mobile": {
+    "pad": 1.15,
+    "init_w": 0.85,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cerro Santa Lucía",
+      "lat": -33.439927,
+      "lon": -70.643439,
+      "cat": "see",
+      "match": "cerro santa lucía"
+    },
+    {
+      "name": "Plaza de Armas",
+      "lat": -33.437415,
+      "lon": -70.651278,
+      "cat": "see",
+      "match": "plaza de armas"
+    },
+    {
+      "name": "Catedral Metropolitana",
+      "lat": -33.43775,
+      "lon": -70.651912,
+      "cat": "see",
+      "match": "catedral metropolitana"
+    },
+    {
+      "name": "Centro Cultural la Moneda (CCM)",
+      "lat": -33.44375,
+      "lon": -70.653807,
+      "cat": "see",
+      "match": "centro cultural la moned"
+    },
+    {
+      "name": "La Moneda Palace",
+      "lat": -33.442419,
+      "lon": -70.653946,
+      "cat": "see",
+      "match": "la moneda palace"
+    },
+    {
+      "name": "Paseo Bandera",
+      "lat": -33.438624,
+      "lon": -70.65248,
+      "cat": "see",
+      "match": "paseo bandera"
+    },
+    {
+      "name": "Park Plaza Apart Hotel",
+      "lat": -33.4387424,
+      "lon": -70.644776,
+      "cat": "stay",
+      "match": "park plaza"
+    }
+  ],
+  "center": {
+    "lat": -33.4402,
+    "lon": -70.647
+  }
+}

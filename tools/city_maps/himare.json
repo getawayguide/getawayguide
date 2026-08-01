@@ -114,5 +114,21 @@
       "cat": "stay",
       "match": "himara downtown"
     }
-  ]
+  ],
+  "day_trips": [
+    {
+      "name": "Grama Bay Boat Tour",
+      "time": "Full Day",
+      "match": "grama"
+    },
+    {
+      "name": "Coastal Hike",
+      "time": "Half Day",
+      "match": "hike"
+    }
+  ],
+  "center": {
+    "lat": 40.103,
+    "lon": 19.739
+  }
 }
