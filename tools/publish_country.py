@@ -143,6 +143,8 @@ def main():
     ap.add_argument("--pos", default="50% 50%", help="dest-card background-position")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="regenerate even a hand-edited thumbnail")
+    ap.add_argument("--skip-generators", action="store_true",
+                    help="don't run OG/JSON-LD/sitemap generators + lint afterwards")
     a = ap.parse_args()
     global DRY, FORCE; DRY = a.dry_run; FORCE = a.force
     slug, name, iso2, cont = a.slug, a.name, a.iso2.lower(), a.continent
@@ -167,14 +169,19 @@ def main():
 
     # 2. nav is regenerated for every page in step 4c (needs the updated destinations data first)
 
-    # 3. index flag-card
+    # 3. index flag-card — only if that section still exists. The 2026-07 restructure REMOVED
+    #    the "Field Notes" flag strip from index.html; this used to log "already present" for a
+    #    section that no longer exists, which read like success. Skip explicitly instead.
     ip = os.path.join(ROOT, "index.html"); s = read(ip)
-    fc = lambda indent, pfx: ('%s<a href="%s/field-notes.html" class="fn-flag-card">'
-        '<img src="https://flagcdn.com/32x24/%s.png" width="32" height="24" alt="%s">'
-        '<span class="fn-flag-name">%s</span></a>') % (indent, slug, iso2, name, name)
-    fc_re = r'[ \t]*<a href="[a-z-]+/field-notes\.html" class="fn-flag-card"><img[^>]*><span class="fn-flag-name">(?P<n>[^<]+)</span></a>'
-    s2, ch = insert_after_alpha(s, fc_re, "n", name, fc); write(ip, s2)
-    log.append("index flag-card: " + ("added" if ch else "already present"))
+    if "fn-flag-card" in s:
+        fc = lambda indent, pfx: ('%s<a href="%s/field-notes.html" class="fn-flag-card">'
+            '<img src="https://flagcdn.com/32x24/%s.png" width="32" height="24" alt="%s">'
+            '<span class="fn-flag-name">%s</span></a>') % (indent, slug, iso2, name, name)
+        fc_re = r'[ \t]*<a href="[a-z-]+/field-notes\.html" class="fn-flag-card"><img[^>]*><span class="fn-flag-name">(?P<n>[^<]+)</span></a>'
+        s2, ch = insert_after_alpha(s, fc_re, "n", name, fc); write(ip, s2)
+        log.append("index flag-card: " + ("added" if ch else "already present"))
+    else:
+        log.append("index flag-card: n/a (section removed in the 2026-07 restructure)")
 
     # 4. destinations grid card + fieldNotesMap
     dp = os.path.join(ROOT, "destinations.html"); s = read(dp)
@@ -188,24 +195,34 @@ def main():
             '%s    <p class="art-card-name">%s</p>' % (indent, name),
             '%s    <span class="art-card-btn">Read Notes</span>' % indent,
             '%s  </div>' % indent, '%s</div>' % indent]))
-    card_re = r'[ \t]*<div class="home-dest-card" data-continent="[a-z]+" onclick="location\.href=\'[a-z-]+/field-notes\.html\'"[^>]*>(?:.*?art-card-name">(?P<n>[^<]+)</p>)'
-    # card matcher needs DOTALL; do a manual alphabetical insert among grid cards
-    grid_cards = list(re.finditer(r'<!-- ([^>]+?) -->\s*\n\s*<div class="home-dest-card" data-continent="[a-z]+" onclick="location\.href=\'([a-z-]+)/field-notes\.html\'"', s))
+    # Alphabetical insert among the cards in #articles-grid. The 2026-07 restructure merged
+    # the two grids and dropped the `<!-- Name -->` comment that used to precede each card,
+    # so anchor on the card div itself and read its .art-card-name (NOT the old comment —
+    # that regex silently matched nothing, so publishes reported success while inserting
+    # nothing, which also dropped the country from parse_countries -> from the nav).
+    def grid_cards(html):
+        out = []
+        for m in re.finditer(r'[ \t]*<div class="home-dest-card"[^>]*>', html):
+            nm = re.search(r'class="art-card-name">([^<]+)<', html[m.end():m.end() + 800])
+            if nm:
+                out.append((m.start(), nm.group(1).strip()))
+        return out
+    cards = grid_cards(s)
+    if not cards:
+        sys.exit("ERROR: no .home-dest-card entries found in destinations.html — the grid markup "
+                 "changed again; update grid_cards() before publishing.")
     if not re.search(r"location\.href='%s/field-notes\.html'" % slug, s):
-        target = None
-        for m in grid_cards:
-            if m.group(1).strip().lower() > name.lower(): target = m; break
         ins = card("      ") + "\n\n"
-        if target is not None:
-            ls = s.rfind("\n", 0, target.start()) + 1
+        nxt = next((pos for pos, nm in cards if nm.lower() > name.lower()), None)
+        if nxt is not None:
+            ls = s.rfind("\n", 0, nxt) + 1
             s = s[:ls] + ins + s[ls:]
-        elif grid_cards:
-            # after last card's closing </div> (find end of that card block)
-            last = grid_cards[-1]
-            end = s.index("</div>", s.index("art-card-info", last.end()))
-            end = s.index("</div>", end + 1)  # card closing
-            s = s[:end+6] + "\n\n" + card("      ") + s[end+6:]
-        log.append("destinations grid card added")
+        else:                                   # alphabetically last: append after the final card
+            lastpos = cards[-1][0]
+            end = s.index("</div>", s.index("art-card-info", lastpos))
+            end = s.index("</div>", end + 1)    # the card's own closing tag
+            s = s[:end + 6] + "\n\n" + card("      ") + s[end + 6:]
+        log.append("destinations grid card added (among %d)" % len(cards))
     else:
         log.append("destinations grid card already present")
     # fieldNotesMap
@@ -288,7 +305,98 @@ def main():
     else:
         log.append("would rebuild search-index.js")
 
+    # 7b. City-map drift (Kevin's 2026-07-31 rule): articles gain bullets after their city map
+    #     was built, and the editor can strip the mobile pin overlay. Warn if the live article
+    #     no longer matches its map configs so the maps get re-extracted before pushing.
+    maps = []
+    for cfgp in glob.glob(os.path.join(ROOT, "tools", "city_maps", "*.json")):
+        try:
+            import json as _json
+            c = _json.load(open(cfgp, encoding="utf-8"))
+        except Exception:
+            continue
+        if c.get("article") in ("%s/field-notes.html" % slug, "Drafts/%s/field-notes.html" % slug):
+            maps.append((os.path.basename(cfgp)[:-5], c))
+    if maps:
+        art = read(dst) if os.path.exists(dst) else html   # dry-run: use the in-memory page
+        stale = [m for m, c in maps if c.get("article") != "%s/field-notes.html" % slug]
+        gone = [(m, p["name"]) for m, c in maps for p in c.get("pois", [])
+                if p["name"] not in art]
+        nomap = [m for m, c in maps if "city-maps/%s.png" % m not in art]
+        log.append("city maps for %s: %d config(s)" % (slug, len(maps)))
+        if stale:
+            # Repoint them at the live page. This matters beyond tidiness: city_map.py derives
+            # the image path depth from article.count("/"), so a config left on Drafts/ would
+            # emit ../../Images/... and break every map image on the published page.
+            if not DRY:
+                import json as _json
+                for m, c in maps:
+                    if m not in stale: continue
+                    p = os.path.join(ROOT, "tools", "city_maps", m + ".json")
+                    c["article"] = "%s/field-notes.html" % slug
+                    _json.dump(c, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                log.append("    repointed %d map config(s) to %s/: %s" % (len(stale), slug, ", ".join(stale)))
+            else:
+                log.append("    would repoint %d map config(s) Drafts/ -> %s/: %s" % (len(stale), slug, ", ".join(stale)))
+        if nomap: log.append("    ! not embedded in the live page: %s (rebuild with --embed)" % ", ".join(nomap))
+        if gone:  log.append("    ! %d pin(s) no longer named in the article, e.g. %s"
+                             % (len(gone), "; ".join("%s:%s" % g for g in gone[:3])))
+        if not (stale or nomap or gone):
+            log.append("    maps look in sync (re-extract anyway if you edited the article recently)")
+
+    # 7c. Post-publish generators + lint (protocol steps 7-8). Separate top-level scripts,
+    #     so run them as subprocesses rather than importing.
+    if not DRY and not a.skip_generators:
+        import subprocess
+        for script, why in [("gen_og_images.py", "OG images"), ("add_structured_data.py", "JSON-LD"),
+                            ("gen_sitemap.py", "sitemap")]:
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", script)],
+                               cwd=ROOT, capture_output=True, text=True)
+            if r.returncode == 0:
+                log.append("ran %s (%s)" % (script, why))
+            else:
+                tail = (r.stderr or r.stdout or "").strip().splitlines()
+                log.append("WARN: %s failed - run manually. %s" % (script, tail[-1] if tail else ""))
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "lint_site.py"), "--ci"],
+                           cwd=ROOT, capture_output=True, text=True)
+        log.append("lint_site --ci: PASS" if r.returncode == 0
+                   else "LINT FAILED - run: py tools/lint_site.py")
+    elif DRY:
+        log.append("would run gen_og_images / add_structured_data / gen_sitemap / lint_site --ci")
+
+    # 8. VERIFY. Every wiring step above has silently no-opped at least once when the site
+    #    markup drifted (the grid-card comment anchor, the removed index flag strip). Assert
+    #    the end state instead of trusting the steps, so a publish can never *look* fine
+    #    while leaving the country off destinations / the nav / the search index.
+    if not DRY:
+        problems = []
+        d = read(os.path.join(ROOT, "destinations.html"))
+        if "location.href='%s/field-notes.html'" % slug not in d:
+            problems.append("destinations.html has no grid card for %s" % slug)
+        if '"%s":' % iso2.upper() not in d:
+            problems.append("destinations.html fieldNotesMap missing %s" % iso2.upper())
+        by = parse_countries(d)
+        if not any(x[2] == slug for v in by.values() for x in v):
+            problems.append("parse_countries() cannot see %s -> it will be MISSING from the nav" % slug)
+        missing_nav = [nr for np, nr in live_pages()
+                       if '<div class="nav-dropdown' in read(np)
+                       and '%s/field-notes.html' % slug not in read(np)]
+        if missing_nav:
+            problems.append("nav dropdown missing %s on %d page(s), e.g. %s"
+                            % (slug, len(missing_nav), ", ".join(missing_nav[:3])))
+        if not os.path.exists(dst):
+            problems.append("live page %s was not written" % rel(dst))
+        if os.path.exists(os.path.join(ROOT, "Drafts", slug)):
+            problems.append("Drafts/%s/ still exists" % slug)
+        if problems:
+            log.append("VERIFY FAILED:")
+            log += ["    ! " + p for p in problems]
+        else:
+            log.append("verified: live page, destinations card + map entry, nav on all pages")
+
     print(tag + ("\n" + tag).join("- " + x for x in log))
+    if not DRY and any("VERIFY FAILED" in x for x in log):
+        sys.exit("\nPublish did NOT fully wire up %s — fix the items above before pushing." % slug)
     print("\nNext: python tools/lint_site.py  &&  python tools/gen_sitemap.py  &&  screenshot the 3 pages. Do not push until reviewed.")
 
 if __name__ == "__main__":

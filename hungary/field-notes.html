@@ -423,7 +423,12 @@ function setup(cm){
    var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
- bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
+ // Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser
+ // replays a compatibility click whose target can be the just-repositioned bubble, which
+ // would open a link the user never asked for. Touch is handled explicitly instead.
+ bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)window.open(armedHref,'_blank');});
+ bub.addEventListener('touchend',function(e){e.stopPropagation();e.preventDefault();lastTouch=Date.now();
+   if(armedHref)window.open(armedHref,'_blank');},{passive:false});
  function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
  // ---- momentum ----
  var vX=0,vY=0,raf=null;
@@ -440,7 +445,7 @@ function setup(cm){
  // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
  var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
-   stopGlide();
+   stopGlide(); lastTouch=Date.now();
    if(e.touches.length>=2){
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
@@ -474,6 +479,7 @@ function setup(cm){
    e.preventDefault();
  },{passive:false});
  vp.addEventListener('touchend',function(e){
+   lastTouch=Date.now();
    if(e.touches.length>0) return;
    if(cap&&moved>10){glide();}
    else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
@@ -489,12 +495,17 @@ function setup(cm){
    panP=null; anchor=null; cap=false;
  });
  // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
+ // A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend.
+ // Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed,
+ // so a single tap opened Google Maps immediately. Ignore mouse input just after a touch.
+ var lastTouch=0; function fromTouch(){return Date.now()-lastTouch<700;}
  var md=false,mp=null;
- vp.addEventListener('mousedown',function(e){stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
- window.addEventListener('mousemove',function(e){if(!md)return;
+ vp.addEventListener('mousedown',function(e){if(fromTouch())return;stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
+ window.addEventListener('mousemove',function(e){if(!md||fromTouch())return;
    var dx=e.clientX-mp.x, dy=e.clientY-mp.y; moved+=Math.hypot(dx,dy);
    tx+=dx; ty+=dy; mp={x:e.clientX,y:e.clientY}; clampT(); apply(); if(moved>8)hideBub();});
  window.addEventListener('mouseup',function(e){
+   if(fromTouch()){md=false;return;}
    if(md&&moved<6){var g=pinAt(e.clientX,e.clientY);
      if(g){var i=g.getAttribute('data-i'); if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
      else hideBub();}
