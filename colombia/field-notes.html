@@ -362,9 +362,20 @@
 .cmmap svg{display:block;width:100%;height:auto}
 .cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
 .cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
-/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
-.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform.
+   touch-action:pan-y lets a straight vertical swipe scroll the ARTICLE (so the map never traps the page)
+   while horizontal drags + all pinches are captured by the map. */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden;background:#F4F2EC;touch-action:pan-y;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmworld img,.cmworld svg{pointer-events:none}      /* gestures are handled on the viewport */
+.cmworld .cmpin{pointer-events:auto}
+.cmzoom{position:absolute;right:9px;bottom:9px;display:flex;flex-direction:column;gap:5px;z-index:5}
+.cmzoom button{width:33px;height:33px;padding:0;border:0;border-radius:8px;background:rgba(255,255,255,.93);
+  box-shadow:0 2px 6px rgba(0,0,0,.22);color:#1C2821;font:600 19px/1 Montserrat,Arial;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.cmzoom button:active{background:#fff}
+.cmzoom button[disabled]{opacity:.35}
 .cmpin{transition:transform .16s ease;cursor:pointer}
 .cmpin.active{transform:translateY(-6px)}
 .cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
@@ -418,14 +429,26 @@ function setup(cm){
  cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
    el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
    el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
- var isMob=cm.classList.contains('mob');
- if(!isMob) return;                        // desktop variant is static (landscape + key)
+ if(!cm.classList.contains('mob')) return;      // desktop variant is static (landscape + key)
  var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
- var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
- var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
- // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
- function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
- function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height;
+ // ---- view state: scale (px per base unit) + translation (px). Google-Maps style:
+ // minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that.
+ var s=1, tx=0, ty=0, minS=1, maxS=1, vw=0, vh=0;
+ function measure(){vw=vp.clientWidth; vh=vp.clientHeight;
+   if(!vw||!vh) return false;
+   minS=Math.min(vw/W, vh/H); maxS=minS*7; return true;}
+ function clampT(){var cw=W*s, ch=H*s;          // keep content in view; center it on an axis it underfills
+   tx = cw<=vw ? (vw-cw)/2 : Math.min(0, Math.max(vw-cw, tx));
+   ty = ch<=vh ? (vh-ch)/2 : Math.min(0, Math.max(vh-ch, ty));}
+ function apply(){world.style.transform='translate('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px) scale('+s.toFixed(5)+')';
+   if(zin){zin.disabled = s>=maxS-1e-6; zout.disabled = s<=minS+1e-6;}}
+ function zoomAt(ns,px,py){                     // zoom keeping the (px,py) viewport point pinned
+   ns=Math.max(minS,Math.min(maxS,ns));
+   var ax=(px-tx)/s, ay=(py-ty)/s;
+   s=ns; tx=px-ax*s; ty=py-ay*s; clampT(); apply();}
+ function rel(t){var r=vp.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top};}
+ // ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ----
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
@@ -441,36 +464,106 @@ function setup(cm){
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
  bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
- var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
- function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
+ // ---- momentum ----
+ var vX=0,vY=0,raf=null;
+ function stopGlide(){if(raf){cancelAnimationFrame(raf);raf=null;}}
+ function glide(){stopGlide();
+   if(Math.abs(vX)<0.4&&Math.abs(vY)<0.4) return;
+   var step=function(){vX*=0.94; vY*=0.94;
+     if(Math.abs(vX)<0.25&&Math.abs(vY)<0.25){raf=null;return;}
+     var px=tx,py=ty; tx+=vX; ty+=vY; clampT(); apply();
+     if(tx===px) vX=0;                          // hit an edge: kill that axis
+     if(ty===py) vY=0;
+     raf=requestAnimationFrame(step);};
+   raf=requestAnimationFrame(step);}
+ // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
+ var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
-   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
-     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
-   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+   stopGlide();
+   if(e.touches.length>=2){
+     var a=rel(e.touches[0]),b=rel(e.touches[1]);
+     startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
+     var c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       // content point under the pinch midpoint
+     cap=true; e.preventDefault();
+   }else if(e.touches.length===1){
+     anchor=null; panP=rel(e.touches[0]); cap=false; moved=0; vX=vY=0; lastT=e.timeStamp||Date.now();
+   }
  },{passive:false});
- vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
-   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
-     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
-   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
-     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
-     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ vp.addEventListener('touchmove',function(e){
+   if(e.touches.length>=2&&anchor){             // pinch: scale about the midpoint, and follow its drift
+     var a=rel(e.touches[0]),b=rel(e.touches[1]);
+     var d=Math.hypot(a.x-b.x,a.y-b.y)||1, c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+     s=Math.max(minS,Math.min(maxS,startS*d/startD));
+     tx=c.x-anchor.x*s; ty=c.y-anchor.y*s; clampT(); apply(); hideBub();
+     e.preventDefault(); return;
+   }
+   if(e.touches.length!==1||!panP) return;
+   var p=rel(e.touches[0]), dx=p.x-panP.x, dy=p.y-panP.y;
+   moved+=Math.hypot(dx,dy);
+   if(!cap){                                    // decide once: horizontal-ish drag -> the map takes it,
+     if(moved<6) return;                        // straight vertical swipe -> let the article scroll
+     if(Math.abs(dx)<=Math.abs(dy)){panP=null;return;}
+     cap=true;
+   }
+   var now=e.timeStamp||Date.now(), dt=Math.max(8,now-lastT); lastT=now;
+   vX=dx/dt*16; vY=dy/dt*16;
+   tx+=dx; ty+=dy; panP=p; clampT(); apply();
+   if(moved>8) hideBub();
+   e.preventDefault();
  },{passive:false});
  vp.addEventListener('touchend',function(e){
-   if(e.touches.length===0){
-     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
-       var g=node&&node.closest?node.closest('.cmpin'):null;
-       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
-       else hideBub();}
-     mode=null;}
+   if(e.touches.length>0) return;
+   if(cap&&moved>10){glide();}
+   else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
+     var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
+     if(g){var i=g.getAttribute('data-i');
+       if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+     else{
+       var p=rel(c);
+       if(now-tapT<300&&Math.hypot(p.x-tapX,p.y-tapY)<32){zoomAt(s*1.9,p.x,p.y);tapT=0;}
+       else{hideBub();tapT=now;tapX=p.x;tapY=p.y;}
+     }
+   }
+   panP=null; anchor=null; cap=false;
  });
- var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
- w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
- y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
- window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
+ var md=false,mp=null;
+ vp.addEventListener('mousedown',function(e){stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
+ window.addEventListener('mousemove',function(e){if(!md)return;
+   var dx=e.clientX-mp.x, dy=e.clientY-mp.y; moved+=Math.hypot(dx,dy);
+   tx+=dx; ty+=dy; mp={x:e.clientX,y:e.clientY}; clampT(); apply(); if(moved>8)hideBub();});
+ window.addEventListener('mouseup',function(e){
+   if(md&&moved<6){var g=pinAt(e.clientX,e.clientY);
+     if(g){var i=g.getAttribute('data-i'); if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+     else hideBub();}
+   md=false;});
+ vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
+   var p=rel(e); zoomAt(s*Math.pow(1.0016,-e.deltaY), p.x, p.y);},{passive:false});
+ // ---- zoom buttons (discoverable, one-handed) ----
+ var zc=document.createElement('div'); zc.className='cmzoom';
+ var zin=document.createElement('button'); zin.type='button'; zin.textContent='+'; zin.setAttribute('aria-label','Zoom in');
+ var zout=document.createElement('button'); zout.type='button'; zout.textContent='\u2212'; zout.setAttribute('aria-label','Zoom out');
+ zc.appendChild(zin); zc.appendChild(zout); cm.appendChild(zc);
+ function zbtn(f){return function(e){e.preventDefault();e.stopPropagation();stopGlide();zoomAt(s*f,vw/2,vh/2);};}
+ zin.addEventListener('click',zbtn(1.7)); zout.addEventListener('click',zbtn(1/1.7));
+ // ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ----
+ function init(){
+   if(!measure()) return false;
+   var iw=parseFloat(cm.getAttribute('data-iw')||0.8);
+   var ix=parseFloat(cm.getAttribute('data-ix')||0.5), iy=parseFloat(cm.getAttribute('data-iy')||0.5);
+   s=Math.max(minS,Math.min(maxS,vw/(iw*W)));
+   tx=-Math.max(0,W-vw/s)*ix*s; ty=-Math.max(0,H-vh/s)*iy*s;
+   clampT(); apply(); return true;}
+ if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   // hidden until the mq matches
+ var rt=null;
+ window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
+   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         // keep the centred content point put
+   if(!measure())return;
+   s=Math.max(minS,Math.min(maxS,s)); tx=vw/2-ax*s; ty=vh/2-ay*s; clampT(); apply();},120);});
  var dm=cm.getAttribute('data-demo');
- if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},220);}
 }
 document.querySelectorAll('.citymap').forEach(setup);
 })();
@@ -523,9 +616,20 @@ document.querySelectorAll('.citymap').forEach(setup);
 .cmmap svg{display:block;width:100%;height:auto}
 .cmbase{display:block;width:100%;height:auto}          /* base map = plain img (reliably painted, editor-safe) */
 .cmbase+svg{position:absolute;top:0;left:0}            /* pins overlay sits on top of the img */
-/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform */
-.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden}
+/* mobile gesture map: a portrait window; .cmworld (img + pins) is panned/zoomed by JS via CSS transform.
+   touch-action:pan-y lets a straight vertical swipe scroll the ARTICLE (so the map never traps the page)
+   while horizontal drags + all pinches are captured by the map. */
+.citymap.mob .cmmap{aspect-ratio:0.72;overflow:hidden;background:#F4F2EC;touch-action:pan-y;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .cmworld{position:absolute;top:0;left:0;width:660px;transform-origin:0 0;will-change:transform}
+.cmworld img,.cmworld svg{pointer-events:none}      /* gestures are handled on the viewport */
+.cmworld .cmpin{pointer-events:auto}
+.cmzoom{position:absolute;right:9px;bottom:9px;display:flex;flex-direction:column;gap:5px;z-index:5}
+.cmzoom button{width:33px;height:33px;padding:0;border:0;border-radius:8px;background:rgba(255,255,255,.93);
+  box-shadow:0 2px 6px rgba(0,0,0,.22);color:#1C2821;font:600 19px/1 Montserrat,Arial;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.cmzoom button:active{background:#fff}
+.cmzoom button[disabled]{opacity:.35}
 .cmpin{transition:transform .16s ease;cursor:pointer}
 .cmpin.active{transform:translateY(-6px)}
 .cmkey{position:absolute;top:15px;right:15px;width:226px;background:rgba(255,255,255,.82);
@@ -576,14 +680,26 @@ function setup(cm){
  cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
    el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
    el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
- var isMob=cm.classList.contains('mob');
- if(!isMob) return;                        // desktop variant is static (landscape + key)
+ if(!cm.classList.contains('mob')) return;      // desktop variant is static (landscape + key)
  var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
- var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height, x=0,y=0,w=W,h=H;
- var DAR=parseFloat(cm.getAttribute('data-dar')||0.72);   // portrait window (w/h=DAR) into the wider base
- // pan/zoom the base(img)+pins together via a CSS transform on .cmworld (base coords -> px)
- function apply(){var Vw=vp.clientWidth; if(!Vw) return; var k=Vw/w; world.style.transform='translate('+(-x*k)+'px,'+(-y*k)+'px) scale('+k+')';}
- function clamp(){w=Math.max(W/6,Math.min(W,H*DAR,w));h=w/DAR;x=Math.max(0,Math.min(W-w,x));y=Math.max(0,Math.min(H-h,y));}
+ var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height;
+ // ---- view state: scale (px per base unit) + translation (px). Google-Maps style:
+ // minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that.
+ var s=1, tx=0, ty=0, minS=1, maxS=1, vw=0, vh=0;
+ function measure(){vw=vp.clientWidth; vh=vp.clientHeight;
+   if(!vw||!vh) return false;
+   minS=Math.min(vw/W, vh/H); maxS=minS*7; return true;}
+ function clampT(){var cw=W*s, ch=H*s;          // keep content in view; center it on an axis it underfills
+   tx = cw<=vw ? (vw-cw)/2 : Math.min(0, Math.max(vw-cw, tx));
+   ty = ch<=vh ? (vh-ch)/2 : Math.min(0, Math.max(vh-ch, ty));}
+ function apply(){world.style.transform='translate('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px) scale('+s.toFixed(5)+')';
+   if(zin){zin.disabled = s>=maxS-1e-6; zout.disabled = s<=minS+1e-6;}}
+ function zoomAt(ns,px,py){                     // zoom keeping the (px,py) viewport point pinned
+   ns=Math.max(minS,Math.min(maxS,ns));
+   var ax=(px-tx)/s, ay=(py-ty)/s;
+   s=ns; tx=px-ax*s; ty=py-ay*s; clampT(); apply();}
+ function rel(t){var r=vp.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top};}
+ // ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ----
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
@@ -599,36 +715,106 @@ function setup(cm){
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
  bub.addEventListener('click',function(){if(armedHref)window.open(armedHref,'_blank');});
- var mode=null,sd=0,sw=0,anc=null,ps=null,moved=0,sx=0,sy=0;
- function P(e,i){return {x:e.touches[i].clientX,y:e.touches[i].clientY};}
+ function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
+ // ---- momentum ----
+ var vX=0,vY=0,raf=null;
+ function stopGlide(){if(raf){cancelAnimationFrame(raf);raf=null;}}
+ function glide(){stopGlide();
+   if(Math.abs(vX)<0.4&&Math.abs(vY)<0.4) return;
+   var step=function(){vX*=0.94; vY*=0.94;
+     if(Math.abs(vX)<0.25&&Math.abs(vY)<0.25){raf=null;return;}
+     var px=tx,py=ty; tx+=vX; ty+=vY; clampT(); apply();
+     if(tx===px) vX=0;                          // hit an edge: kill that axis
+     if(ty===py) vY=0;
+     raf=requestAnimationFrame(step);};
+   raf=requestAnimationFrame(step);}
+ // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
+ var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
-   if(e.touches.length===2){mode='pinch';var a=P(e,0),b=P(e,1),r=vp.getBoundingClientRect();
-     sd=Math.hypot(a.x-b.x,a.y-b.y);sw=w;var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-     anc={x:x+(mx-r.left)/r.width*w,y:y+(my-r.top)/r.height*h};e.preventDefault();}
-   else if(e.touches.length===1){mode='pan';ps=P(e,0);sx=x;sy=y;moved=0;}
+   stopGlide();
+   if(e.touches.length>=2){
+     var a=rel(e.touches[0]),b=rel(e.touches[1]);
+     startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
+     var c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       // content point under the pinch midpoint
+     cap=true; e.preventDefault();
+   }else if(e.touches.length===1){
+     anchor=null; panP=rel(e.touches[0]); cap=false; moved=0; vX=vY=0; lastT=e.timeStamp||Date.now();
+   }
  },{passive:false});
- vp.addEventListener('touchmove',function(e){var r=vp.getBoundingClientRect();
-   if(mode==='pinch'&&e.touches.length>=2){hideBub();var a=P(e,0),b=P(e,1),d=Math.hypot(a.x-b.x,a.y-b.y);
-     if(d>0&&sd>0){w=sw*sd/d;clamp();var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-       x=anc.x-(mx-r.left)/r.width*w;y=anc.y-(my-r.top)/r.height*h;clamp();apply();}e.preventDefault();}
-   else if(mode==='pan'&&e.touches.length===1){var p=P(e,0),dx=p.x-ps.x,dy=p.y-ps.y;
-     moved=Math.max(moved,Math.hypot(dx,dy));if(moved>8)hideBub();
-     if(w<W-0.5){x=sx-dx/r.width*w;y=sy-dy/r.height*h;clamp();apply();e.preventDefault();}}
+ vp.addEventListener('touchmove',function(e){
+   if(e.touches.length>=2&&anchor){             // pinch: scale about the midpoint, and follow its drift
+     var a=rel(e.touches[0]),b=rel(e.touches[1]);
+     var d=Math.hypot(a.x-b.x,a.y-b.y)||1, c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+     s=Math.max(minS,Math.min(maxS,startS*d/startD));
+     tx=c.x-anchor.x*s; ty=c.y-anchor.y*s; clampT(); apply(); hideBub();
+     e.preventDefault(); return;
+   }
+   if(e.touches.length!==1||!panP) return;
+   var p=rel(e.touches[0]), dx=p.x-panP.x, dy=p.y-panP.y;
+   moved+=Math.hypot(dx,dy);
+   if(!cap){                                    // decide once: horizontal-ish drag -> the map takes it,
+     if(moved<6) return;                        // straight vertical swipe -> let the article scroll
+     if(Math.abs(dx)<=Math.abs(dy)){panP=null;return;}
+     cap=true;
+   }
+   var now=e.timeStamp||Date.now(), dt=Math.max(8,now-lastT); lastT=now;
+   vX=dx/dt*16; vY=dy/dt*16;
+   tx+=dx; ty+=dy; panP=p; clampT(); apply();
+   if(moved>8) hideBub();
+   e.preventDefault();
  },{passive:false});
  vp.addEventListener('touchend',function(e){
-   if(e.touches.length===0){
-     if(mode==='pan'&&moved<10){var c=e.changedTouches[0],node=document.elementFromPoint(c.clientX,c.clientY);
-       var g=node&&node.closest?node.closest('.cmpin'):null;
-       if(g){var i=g.getAttribute('data-i');if(armed===i){if(armedHref)window.open(armedHref,'_blank');}else showBub(g);}
-       else hideBub();}
-     mode=null;}
+   if(e.touches.length>0) return;
+   if(cap&&moved>10){glide();}
+   else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
+     var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
+     if(g){var i=g.getAttribute('data-i');
+       if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+     else{
+       var p=rel(c);
+       if(now-tapT<300&&Math.hypot(p.x-tapX,p.y-tapY)<32){zoomAt(s*1.9,p.x,p.y);tapT=0;}
+       else{hideBub();tapT=now;tapX=p.x;tapY=p.y;}
+     }
+   }
+   panP=null; anchor=null; cap=false;
  });
- var iw=parseFloat(cm.getAttribute('data-iw')||0.8);       // open zoomed into the cluster; pan the wider base
- w=W*iw;clamp();x=(W-w)*parseFloat(cm.getAttribute('data-ix')||0.5);
- y=(H-h)*parseFloat(cm.getAttribute('data-iy')||0.5);clamp();apply();
- window.addEventListener('resize',apply);   // viewport width changes -> recompute transform
+ // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
+ var md=false,mp=null;
+ vp.addEventListener('mousedown',function(e){stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
+ window.addEventListener('mousemove',function(e){if(!md)return;
+   var dx=e.clientX-mp.x, dy=e.clientY-mp.y; moved+=Math.hypot(dx,dy);
+   tx+=dx; ty+=dy; mp={x:e.clientX,y:e.clientY}; clampT(); apply(); if(moved>8)hideBub();});
+ window.addEventListener('mouseup',function(e){
+   if(md&&moved<6){var g=pinAt(e.clientX,e.clientY);
+     if(g){var i=g.getAttribute('data-i'); if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+     else hideBub();}
+   md=false;});
+ vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
+   var p=rel(e); zoomAt(s*Math.pow(1.0016,-e.deltaY), p.x, p.y);},{passive:false});
+ // ---- zoom buttons (discoverable, one-handed) ----
+ var zc=document.createElement('div'); zc.className='cmzoom';
+ var zin=document.createElement('button'); zin.type='button'; zin.textContent='+'; zin.setAttribute('aria-label','Zoom in');
+ var zout=document.createElement('button'); zout.type='button'; zout.textContent='\u2212'; zout.setAttribute('aria-label','Zoom out');
+ zc.appendChild(zin); zc.appendChild(zout); cm.appendChild(zc);
+ function zbtn(f){return function(e){e.preventDefault();e.stopPropagation();stopGlide();zoomAt(s*f,vw/2,vh/2);};}
+ zin.addEventListener('click',zbtn(1.7)); zout.addEventListener('click',zbtn(1/1.7));
+ // ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ----
+ function init(){
+   if(!measure()) return false;
+   var iw=parseFloat(cm.getAttribute('data-iw')||0.8);
+   var ix=parseFloat(cm.getAttribute('data-ix')||0.5), iy=parseFloat(cm.getAttribute('data-iy')||0.5);
+   s=Math.max(minS,Math.min(maxS,vw/(iw*W)));
+   tx=-Math.max(0,W-vw/s)*ix*s; ty=-Math.max(0,H-vh/s)*iy*s;
+   clampT(); apply(); return true;}
+ if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   // hidden until the mq matches
+ var rt=null;
+ window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
+   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         // keep the centred content point put
+   if(!measure())return;
+   s=Math.max(minS,Math.min(maxS,s)); tx=vw/2-ax*s; ty=vh/2-ay*s; clampT(); apply();},120);});
  var dm=cm.getAttribute('data-demo');
- if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},120);}
+ if(dm){setTimeout(function(){var g=cm.querySelector('.cmpin[data-i="'+dm+'"]');if(g)showBub(g);},220);}
 }
 document.querySelectorAll('.citymap').forEach(setup);
 })();

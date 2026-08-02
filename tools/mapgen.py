@@ -77,6 +77,14 @@ SEA_BG = {"santorini", "ios", "mykonos", "naxos", "zanzibar", "puerto-escondido"
 
 CAP = {"see": 13, "eat": 5, "stay": 3}  # keep the legend under ~24 rows
 
+def article_path(slug):
+    """Live article if it exists, else the Drafts/ copy (drafts sit one folder deeper)."""
+    for rel in (f"{slug}/field-notes.html", f"Drafts/{slug}/field-notes.html"):
+        if os.path.exists(f"{ROOT}/{rel}"):
+            return rel
+    raise SystemExit(f"no article found for {slug} (looked in ./ and Drafts/)")
+
+
 def build_config(slug, sid, inner, html, order, kicker):
     ps = pois_for(inner)
     kept, n = [], {"see": 0, "eat": 0, "stay": 0}
@@ -95,7 +103,7 @@ def build_config(slug, sid, inner, html, order, kicker):
         pois.append(p)
     pre, post = embed_anchors(html, sid, order)
     cfg = {"slug": sid, "kicker": kicker, "city": cityname(inner),
-           "osm": ".tmp/%s_osm.json" % sid, "article": "%s/field-notes.html" % (kicker.lower().replace(' ', '-')),
+           "osm": ".tmp/%s_osm.json" % sid, "article": article_path(slug),
            "embed": {"pre": pre, "post": post},
            "hint": ["Touch to explore", "Double-tap to open in Google Maps"],
            "desktop": {"pad": 1.4}, "mobile": {"pad": 1.2, "init_w": 0.82, "init_x": 0.5, "init_y": 0.5},
@@ -106,7 +114,7 @@ def build_config(slug, sid, inner, html, order, kicker):
 
 def main():
     slug = sys.argv[1]; mode = sys.argv[2]
-    html = open(f"{ROOT}/{slug}/field-notes.html", encoding="utf-8").read()
+    html = open(f"{ROOT}/{article_path(slug)}", encoding="utf-8").read()
     secs = sections(html)
     order = list(secs.keys())
     kicker = slug.replace('-', ' ').title() if slug != "north-macedonia" else "North Macedonia"
