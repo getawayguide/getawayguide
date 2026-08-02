@@ -97,7 +97,8 @@
       "cat": "stay",
       "match": "francesco's hostel",
       "lat": 36.7236,
-      "lon": 25.282
+      "lon": 25.282,
+      "href": "https://www.google.com/maps/place/Francesco's/@36.723485,25.2800989,17z/data=!4m9!3m8!1s0x14984781258e1167:0xf5cf8f4457608472!5m2!4m1!1i2!8m2!3d36.723485!4d25.2800989!16s%2Fg%2F1tft0w26?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "sea_bg": true,

@@ -116,6 +116,7 @@
               <span class="nav-fn-region">Europe</span>
               <a href="../albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
               <a href="../bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
+              <a href="../croatia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/hr.png" width="16" height="12" alt=""><span class="country-name">Croatia</span></a>
               <a href="../denmark/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
               <a href="../estonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/ee.png" width="16" height="12" alt=""><span class="country-name">Estonia</span></a>
               <a href="../finland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="https://flagcdn.com/16x12/fi.png" width="16" height="12" alt=""><span class="country-name">Finland</span></a>
@@ -343,26 +344,26 @@ function setup(cm){
  cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
    el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
    el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
- if(!cm.classList.contains('mob')) return;      // desktop variant is static (landscape + key)
+ if(!cm.classList.contains('mob')) return;      /*  desktop variant is static (landscape + key) */
  var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
  var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height;
- // ---- view state: scale (px per base unit) + translation (px). Google-Maps style:
- // minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that.
+ /*  ---- view state: scale (px per base unit) + translation (px). Google-Maps style: */
+ /*  minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that. */
  var s=1, tx=0, ty=0, minS=1, maxS=1, vw=0, vh=0;
  function measure(){vw=vp.clientWidth; vh=vp.clientHeight;
    if(!vw||!vh) return false;
    minS=Math.min(vw/W, vh/H); maxS=minS*7; return true;}
- function clampT(){var cw=W*s, ch=H*s;          // keep content in view; center it on an axis it underfills
+ function clampT(){var cw=W*s, ch=H*s;          /*  keep content in view; center it on an axis it underfills */
    tx = cw<=vw ? (vw-cw)/2 : Math.min(0, Math.max(vw-cw, tx));
    ty = ch<=vh ? (vh-ch)/2 : Math.min(0, Math.max(vh-ch, ty));}
  function apply(){world.style.transform='translate('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px) scale('+s.toFixed(5)+')';
    if(zin){zin.disabled = s>=maxS-1e-6; zout.disabled = s<=minS+1e-6;}}
- function zoomAt(ns,px,py){                     // zoom keeping the (px,py) viewport point pinned
+ function zoomAt(ns,px,py){                     /*  zoom keeping the (px,py) viewport point pinned */
    ns=Math.max(minS,Math.min(maxS,ns));
    var ax=(px-tx)/s, ay=(py-ty)/s;
    s=ns; tx=px-ax*s; ty=py-ay*s; clampT(); apply();}
  function rel(t){var r=vp.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top};}
- // ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ----
+ /*  ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ---- */
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
@@ -374,17 +375,17 @@ function setup(cm){
    var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
    bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
    bub.style.top=Math.max(4,top)+'px';
-   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   /*  arrow points at the pin */
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
- // Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser
- // replays a compatibility click whose target can be the just-repositioned bubble, which
- // would open a link the user never asked for. Touch is handled explicitly instead.
+ /*  Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser */
+ /*  replays a compatibility click whose target can be the just-repositioned bubble, which */
+ /*  would open a link the user never asked for. Touch is handled explicitly instead. */
  bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)window.open(armedHref,'_blank');});
  bub.addEventListener('touchend',function(e){e.stopPropagation();e.preventDefault();lastTouch=Date.now();
    if(armedHref)window.open(armedHref,'_blank');},{passive:false});
  function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
- // ---- momentum ----
+ /*  ---- momentum ---- */
  var vX=0,vY=0,raf=null;
  function stopGlide(){if(raf){cancelAnimationFrame(raf);raf=null;}}
  function glide(){stopGlide();
@@ -392,11 +393,11 @@ function setup(cm){
    var step=function(){vX*=0.94; vY*=0.94;
      if(Math.abs(vX)<0.25&&Math.abs(vY)<0.25){raf=null;return;}
      var px=tx,py=ty; tx+=vX; ty+=vY; clampT(); apply();
-     if(tx===px) vX=0;                          // hit an edge: kill that axis
+     if(tx===px) vX=0;                          /*  hit an edge: kill that axis */
      if(ty===py) vY=0;
      raf=requestAnimationFrame(step);};
    raf=requestAnimationFrame(step);}
- // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
+ /*  ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ---- */
  var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
    stopGlide(); lastTouch=Date.now();
@@ -404,14 +405,14 @@ function setup(cm){
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
      var c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       // content point under the pinch midpoint
+     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       /*  content point under the pinch midpoint */
      cap=true; e.preventDefault();
    }else if(e.touches.length===1){
      anchor=null; panP=rel(e.touches[0]); cap=false; moved=0; vX=vY=0; lastT=e.timeStamp||Date.now();
    }
  },{passive:false});
  vp.addEventListener('touchmove',function(e){
-   if(e.touches.length>=2&&anchor){             // pinch: scale about the midpoint, and follow its drift
+   if(e.touches.length>=2&&anchor){             /*  pinch: scale about the midpoint, and follow its drift */
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      var d=Math.hypot(a.x-b.x,a.y-b.y)||1, c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
      s=Math.max(minS,Math.min(maxS,startS*d/startD));
@@ -421,8 +422,8 @@ function setup(cm){
    if(e.touches.length!==1||!panP) return;
    var p=rel(e.touches[0]), dx=p.x-panP.x, dy=p.y-panP.y;
    moved+=Math.hypot(dx,dy);
-   if(!cap){                                    // decide once: horizontal-ish drag -> the map takes it,
-     if(moved<6) return;                        // straight vertical swipe -> let the article scroll
+   if(!cap){                                    /*  decide once: horizontal-ish drag -> the map takes it, */
+     if(moved<6) return;                        /*  straight vertical swipe -> let the article scroll */
      if(Math.abs(dx)<=Math.abs(dy)){panP=null;return;}
      cap=true;
    }
@@ -436,7 +437,7 @@ function setup(cm){
    lastTouch=Date.now();
    if(e.touches.length>0) return;
    if(cap&&moved>10){glide();}
-   else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
+   else if(moved<10){                           /*  a tap: pin -> name / open, empty map -> double-tap zooms */
      var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
      if(g){var i=g.getAttribute('data-i');
        if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
@@ -448,10 +449,10 @@ function setup(cm){
    }
    panP=null; anchor=null; cap=false;
  });
- // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
- // A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend.
- // Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed,
- // so a single tap opened Google Maps immediately. Ignore mouse input just after a touch.
+ /*  ---- mouse / trackpad (narrow desktop windows show this variant too) ---- */
+ /*  A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend. */
+ /*  Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed, */
+ /*  so a single tap opened Google Maps immediately. Ignore mouse input just after a touch. */
  var lastTouch=0; function fromTouch(){return Date.now()-lastTouch<700;}
  var md=false,mp=null;
  vp.addEventListener('mousedown',function(e){if(fromTouch())return;stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
@@ -466,14 +467,14 @@ function setup(cm){
    md=false;});
  vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
    var p=rel(e); zoomAt(s*Math.pow(1.0016,-e.deltaY), p.x, p.y);},{passive:false});
- // ---- zoom buttons (discoverable, one-handed) ----
+ /*  ---- zoom buttons (discoverable, one-handed) ---- */
  var zc=document.createElement('div'); zc.className='cmzoom';
  var zin=document.createElement('button'); zin.type='button'; zin.textContent='+'; zin.setAttribute('aria-label','Zoom in');
  var zout=document.createElement('button'); zout.type='button'; zout.textContent='\u2212'; zout.setAttribute('aria-label','Zoom out');
  zc.appendChild(zin); zc.appendChild(zout); cm.appendChild(zc);
  function zbtn(f){return function(e){e.preventDefault();e.stopPropagation();stopGlide();zoomAt(s*f,vw/2,vh/2);};}
  zin.addEventListener('click',zbtn(1.7)); zout.addEventListener('click',zbtn(1/1.7));
- // ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ----
+ /*  ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ---- */
  function init(){
    if(!measure()) return false;
    var iw=parseFloat(cm.getAttribute('data-iw')||0.8);
@@ -481,10 +482,10 @@ function setup(cm){
    s=Math.max(minS,Math.min(maxS,vw/(iw*W)));
    tx=-Math.max(0,W-vw/s)*ix*s; ty=-Math.max(0,H-vh/s)*iy*s;
    clampT(); apply(); return true;}
- if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   // hidden until the mq matches
+ if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   /*  hidden until the mq matches */
  var rt=null;
  window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
-   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         // keep the centred content point put
+   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         /*  keep the centred content point put */
    if(!measure())return;
    s=Math.max(minS,Math.min(maxS,s)); tx=vw/2-ax*s; ty=vh/2-ay*s; clampT(); apply();},120);});
  var dm=cm.getAttribute('data-demo');
@@ -514,8 +515,8 @@ document.querySelectorAll('.citymap').forEach(setup);
     </ul>
     <div class="fn-sub-hd">Where to Eat</div>
     <ul>
-      <li><b><a href="google.com/maps/place/Sarajeva+Steakhouse+-+Prizren,+Shadërvan,+Prizren/@41.9949011,21.4262225,14.73z/data=!4m5!3m4!1s0x135395005a162fe9:0x5db368ece5b1d068!8m2!3d42.2093648!4d20.7410492?entry=ttu&amp;g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D">Steakhouse Sarajeva</a></b> — a fancy restaurant by the water that was surprisingly cheap. Get the Balkan burger here! It was one of the best things I had in Kosovo</li>
-      <li><b><a href="Restaurant te Syla">Restaurant Te Syla</a></b> — a traditional Albanian restaurant by the river. Get the Qebap (their name for Cevapi)</li>
+      <li><b><a href="https://www.google.com/maps/place/Sarajeva+Steakhouse+-+Prizren,+Shadërvan,+Prizren/@41.9949011,21.4262225,14.73z/data=!4m5!3m4!1s0x135395005a162fe9:0x5db368ece5b1d068!8m2!3d42.2093648!4d20.7410492?entry=ttu&amp;g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D">Steakhouse Sarajeva</a></b> — a fancy restaurant by the water that was surprisingly cheap. Get the Balkan burger here! It was one of the best things I had in Kosovo</li>
+      <li><b><a href="https://www.google.com/maps/place/Restaurant+te+Syla/@42.2093724,20.739626,17z/data=!3m1!4b1!4m6!3m5!1s0x135395127936b59b:0xc61461e06cd41704!8m2!3d42.2093724!4d20.739626!16s%2Fg%2F1pp2vfmyq?hl=en&amp;entry=ttu&amp;g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D">Restaurant Te Syla</a></b> — a traditional Albanian restaurant by the river. Get the Qebap (their name for Cevapi)</li>
       <li><a href="https://www.google.com/maps/place/Te+Kinezi/@42.2083233,20.7347244,17z/data=!4m10!1m2!2m1!1sbrewery!3m6!1s0x135395125df17f9f:0x58096f1b5815cfbc!8m2!3d42.2083233!4d20.739488!15sCgdicmV3ZXJ5WgkiB2JyZXdlcnmSAQNiYXKaAURDaTlEUVVsUlFVTnZaRU5vZEhsalJqbHZUMnBzV1ZORVJucGtWemxKWVZab2MxVXdlR2hhU0UxM1UyeHdWV013UlJBQuABAPoBBAgAEDM!16s%2Fg%2F11f54j68y_?entry=ttu&amp;g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D"><b>Te Kinezi</b></a> — a great spot to sit outside and enjoy the local craft beer. A great spot to meet locals at night</li>
     </ul>
     <div class="fn-sub-hd">Where to Stay</div>
@@ -588,26 +589,26 @@ function setup(cm){
  cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
    el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
    el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
- if(!cm.classList.contains('mob')) return;      // desktop variant is static (landscape + key)
+ if(!cm.classList.contains('mob')) return;      /*  desktop variant is static (landscape + key) */
  var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
  var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height;
- // ---- view state: scale (px per base unit) + translation (px). Google-Maps style:
- // minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that.
+ /*  ---- view state: scale (px per base unit) + translation (px). Google-Maps style: */
+ /*  minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that. */
  var s=1, tx=0, ty=0, minS=1, maxS=1, vw=0, vh=0;
  function measure(){vw=vp.clientWidth; vh=vp.clientHeight;
    if(!vw||!vh) return false;
    minS=Math.min(vw/W, vh/H); maxS=minS*7; return true;}
- function clampT(){var cw=W*s, ch=H*s;          // keep content in view; center it on an axis it underfills
+ function clampT(){var cw=W*s, ch=H*s;          /*  keep content in view; center it on an axis it underfills */
    tx = cw<=vw ? (vw-cw)/2 : Math.min(0, Math.max(vw-cw, tx));
    ty = ch<=vh ? (vh-ch)/2 : Math.min(0, Math.max(vh-ch, ty));}
  function apply(){world.style.transform='translate('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px) scale('+s.toFixed(5)+')';
    if(zin){zin.disabled = s>=maxS-1e-6; zout.disabled = s<=minS+1e-6;}}
- function zoomAt(ns,px,py){                     // zoom keeping the (px,py) viewport point pinned
+ function zoomAt(ns,px,py){                     /*  zoom keeping the (px,py) viewport point pinned */
    ns=Math.max(minS,Math.min(maxS,ns));
    var ax=(px-tx)/s, ay=(py-ty)/s;
    s=ns; tx=px-ax*s; ty=py-ay*s; clampT(); apply();}
  function rel(t){var r=vp.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top};}
- // ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ----
+ /*  ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ---- */
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
@@ -619,17 +620,17 @@ function setup(cm){
    var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
    bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
    bub.style.top=Math.max(4,top)+'px';
-   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   /*  arrow points at the pin */
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
- // Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser
- // replays a compatibility click whose target can be the just-repositioned bubble, which
- // would open a link the user never asked for. Touch is handled explicitly instead.
+ /*  Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser */
+ /*  replays a compatibility click whose target can be the just-repositioned bubble, which */
+ /*  would open a link the user never asked for. Touch is handled explicitly instead. */
  bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)window.open(armedHref,'_blank');});
  bub.addEventListener('touchend',function(e){e.stopPropagation();e.preventDefault();lastTouch=Date.now();
    if(armedHref)window.open(armedHref,'_blank');},{passive:false});
  function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
- // ---- momentum ----
+ /*  ---- momentum ---- */
  var vX=0,vY=0,raf=null;
  function stopGlide(){if(raf){cancelAnimationFrame(raf);raf=null;}}
  function glide(){stopGlide();
@@ -637,11 +638,11 @@ function setup(cm){
    var step=function(){vX*=0.94; vY*=0.94;
      if(Math.abs(vX)<0.25&&Math.abs(vY)<0.25){raf=null;return;}
      var px=tx,py=ty; tx+=vX; ty+=vY; clampT(); apply();
-     if(tx===px) vX=0;                          // hit an edge: kill that axis
+     if(tx===px) vX=0;                          /*  hit an edge: kill that axis */
      if(ty===py) vY=0;
      raf=requestAnimationFrame(step);};
    raf=requestAnimationFrame(step);}
- // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
+ /*  ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ---- */
  var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
    stopGlide(); lastTouch=Date.now();
@@ -649,14 +650,14 @@ function setup(cm){
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
      var c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       // content point under the pinch midpoint
+     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       /*  content point under the pinch midpoint */
      cap=true; e.preventDefault();
    }else if(e.touches.length===1){
      anchor=null; panP=rel(e.touches[0]); cap=false; moved=0; vX=vY=0; lastT=e.timeStamp||Date.now();
    }
  },{passive:false});
  vp.addEventListener('touchmove',function(e){
-   if(e.touches.length>=2&&anchor){             // pinch: scale about the midpoint, and follow its drift
+   if(e.touches.length>=2&&anchor){             /*  pinch: scale about the midpoint, and follow its drift */
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      var d=Math.hypot(a.x-b.x,a.y-b.y)||1, c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
      s=Math.max(minS,Math.min(maxS,startS*d/startD));
@@ -666,8 +667,8 @@ function setup(cm){
    if(e.touches.length!==1||!panP) return;
    var p=rel(e.touches[0]), dx=p.x-panP.x, dy=p.y-panP.y;
    moved+=Math.hypot(dx,dy);
-   if(!cap){                                    // decide once: horizontal-ish drag -> the map takes it,
-     if(moved<6) return;                        // straight vertical swipe -> let the article scroll
+   if(!cap){                                    /*  decide once: horizontal-ish drag -> the map takes it, */
+     if(moved<6) return;                        /*  straight vertical swipe -> let the article scroll */
      if(Math.abs(dx)<=Math.abs(dy)){panP=null;return;}
      cap=true;
    }
@@ -681,7 +682,7 @@ function setup(cm){
    lastTouch=Date.now();
    if(e.touches.length>0) return;
    if(cap&&moved>10){glide();}
-   else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
+   else if(moved<10){                           /*  a tap: pin -> name / open, empty map -> double-tap zooms */
      var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
      if(g){var i=g.getAttribute('data-i');
        if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
@@ -693,10 +694,10 @@ function setup(cm){
    }
    panP=null; anchor=null; cap=false;
  });
- // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
- // A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend.
- // Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed,
- // so a single tap opened Google Maps immediately. Ignore mouse input just after a touch.
+ /*  ---- mouse / trackpad (narrow desktop windows show this variant too) ---- */
+ /*  A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend. */
+ /*  Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed, */
+ /*  so a single tap opened Google Maps immediately. Ignore mouse input just after a touch. */
  var lastTouch=0; function fromTouch(){return Date.now()-lastTouch<700;}
  var md=false,mp=null;
  vp.addEventListener('mousedown',function(e){if(fromTouch())return;stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
@@ -711,14 +712,14 @@ function setup(cm){
    md=false;});
  vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
    var p=rel(e); zoomAt(s*Math.pow(1.0016,-e.deltaY), p.x, p.y);},{passive:false});
- // ---- zoom buttons (discoverable, one-handed) ----
+ /*  ---- zoom buttons (discoverable, one-handed) ---- */
  var zc=document.createElement('div'); zc.className='cmzoom';
  var zin=document.createElement('button'); zin.type='button'; zin.textContent='+'; zin.setAttribute('aria-label','Zoom in');
  var zout=document.createElement('button'); zout.type='button'; zout.textContent='\u2212'; zout.setAttribute('aria-label','Zoom out');
  zc.appendChild(zin); zc.appendChild(zout); cm.appendChild(zc);
  function zbtn(f){return function(e){e.preventDefault();e.stopPropagation();stopGlide();zoomAt(s*f,vw/2,vh/2);};}
  zin.addEventListener('click',zbtn(1.7)); zout.addEventListener('click',zbtn(1/1.7));
- // ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ----
+ /*  ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ---- */
  function init(){
    if(!measure()) return false;
    var iw=parseFloat(cm.getAttribute('data-iw')||0.8);
@@ -726,10 +727,10 @@ function setup(cm){
    s=Math.max(minS,Math.min(maxS,vw/(iw*W)));
    tx=-Math.max(0,W-vw/s)*ix*s; ty=-Math.max(0,H-vh/s)*iy*s;
    clampT(); apply(); return true;}
- if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   // hidden until the mq matches
+ if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   /*  hidden until the mq matches */
  var rt=null;
  window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
-   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         // keep the centred content point put
+   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         /*  keep the centred content point put */
    if(!measure())return;
    s=Math.max(minS,Math.min(maxS,s)); tx=vw/2-ax*s; ty=vh/2-ay*s; clampT(); apply();},120);});
  var dm=cm.getAttribute('data-demo');

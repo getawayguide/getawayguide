@@ -319,9 +319,13 @@ def main():
             maps.append((os.path.basename(cfgp)[:-5], c))
     if maps:
         art = read(dst) if os.path.exists(dst) else html   # dry-run: use the in-memory page
+        # compare against UNESCAPED article text, else every pin whose name contains & or '
+        # looks "missing" (the article stores &amp;)
+        import html as _html
+        art_txt = _html.unescape(art)
         stale = [m for m, c in maps if c.get("article") != "%s/field-notes.html" % slug]
         gone = [(m, p["name"]) for m, c in maps for p in c.get("pois", [])
-                if p["name"] not in art]
+                if p["name"] not in art_txt]
         nomap = [m for m, c in maps if "city-maps/%s.png" % m not in art]
         log.append("city maps for %s: %d config(s)" % (slug, len(maps)))
         if stale:

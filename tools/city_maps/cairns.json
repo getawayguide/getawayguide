@@ -63,7 +63,8 @@
       "lat": -16.92407,
       "lon": 145.775267,
       "cat": "stay",
-      "match": "gilligan's"
+      "match": "gilligan's",
+      "href": "https://www.google.com/maps/place/Gilligan's+Hotel+%26+Resort/@-16.9239536,145.7753871,17z/data=!4m9!3m8!1s0x69786693e10aa977:0x699c6ab3e6f9ef41!5m2!4m1!1i2!8m2!3d-16.9239536!4d145.7753871!16s%2Fg%2F1tfb6pkw?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "center": {

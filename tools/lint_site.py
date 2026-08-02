@@ -93,9 +93,20 @@ for path, r in pages():
         if "—" not in ln: continue
         if re.search(r"<title>|<meta|<h1|<h2|fn-sub-hd|toc-", ln): continue
         for m in re.finditer("—", ln):
-            before = ln[:m.start()].rstrip()
-            vb = strip_tags(ln[:m.start()])
-            if before and (before[-1] != ">" or VERB.search(vb)):
+            # Distinguish the ALLOWED `Name — description` lead-in from a genuine in-sentence
+            # dash by how much running prose precedes it inside its own <li>/<p>/sentence.
+            # (The old test — "does the char before the dash close a tag?" — flagged every
+            # lead-in whose name ended in a parenthetical, e.g. "Philae Temple (near Aswan) —",
+            # producing ~97% false positives.)
+            q = ln.rfind('"', 0, m.start()); eq = ln.rfind("=", 0, max(0, q))
+            if q > 0 and eq > 0 and q - eq <= 2 and ln.find('"', m.start()) > m.start():
+                continue                                    # inside an attribute, not prose
+            head = max(ln.rfind("<li", 0, m.start()), ln.rfind("<p", 0, m.start()),
+                       ln.rfind(". ", 0, m.start()), 0)
+            pre = re.sub(r"^\W+", "", strip_tags(ln[head:m.start()]).strip())
+            lead_in = (len(pre.split()) <= 9 and
+                       not re.search(r"\b(is|are|was|were|has|have|will|can|you|we|it|they)\b", pre, re.I))
+            if pre and not lead_in:
                 add("em-dash", r, i, strip_tags(ln[max(0, m.start()-35):m.start()+30]).strip())
                 break
 

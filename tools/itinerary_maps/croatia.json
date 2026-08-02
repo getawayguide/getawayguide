@@ -20,30 +20,30 @@
       "days": "2–3 days",
       "anchor": "end",
       "dx": -14,
-      "dy": 4,
+      "dy": -22,
       "href": "#split"
     },
     {
       "n": 2,
-      "name": "Dubrovnik",
-      "lat": 42.6507,
-      "lon": 18.0944,
-      "days": "2–3 days",
-      "anchor": "start",
-      "dx": 14,
-      "dy": 4,
-      "href": "#dubrovnik"
-    },
-    {
-      "n": 3,
       "name": "Hvar",
       "lat": 43.1729,
       "lon": 16.4412,
       "days": "2–3 days",
       "anchor": "end",
-      "dx": -14,
-      "dy": 4,
+      "dx": -16,
+      "dy": 26,
       "href": "#hvar"
+    },
+    {
+      "n": 3,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "days": "2 days",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#dubrovnik"
     }
   ],
   "dots": [],
@@ -52,12 +52,15 @@
     {
       "a": 0,
       "b": 1,
-      "label": "Bus · 3 hr"
+      "label": "Ferry · 1 hr",
+      "chip_side": 1,
+      "chip_off": 14,
+      "chip_dx": 70
     },
     {
       "a": 1,
       "b": 2,
-      "label": "Ferry · 3 hr"
+      "label": "Ferry · 3.5 hr"
     }
   ]
 }

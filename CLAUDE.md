@@ -104,6 +104,32 @@ Run all three scripts in that order any time photos are added or changed.
 
 Use `--all` only when changes affect site-wide styles (e.g. styles.css). For page-specific changes, screenshot just the affected page(s).
 
+## Writing Rule — American English Only
+
+I'm American, so everything published under my name has to read in my voice. **Always use
+American spellings, never British ones.** This applies to all prose: drafts, live articles,
+page copy, meta descriptions.
+
+| Use | Not |
+|---|---|
+| color, harbor, favorite, neighbor, flavor | colour, harbour, favourite, neighbour, flavour |
+| center, theater, meter, liter | centre, theatre, metre, litre |
+| traveling, traveled, traveler, canceled | travelling, travelled, traveller, cancelled |
+| organized, realize, customization, prioritizing | organised, realise, customisation, prioritising |
+| gray, story (a building floor), catalog, specialty | grey, storey, catalogue, speciality |
+| while, among, skeptical, program | whilst, amongst, sceptical, programme |
+
+Drafts assembled from mixed sources pick these up constantly, so sweep before publishing:
+`python tools/americanize.py --dry-run` (then without the flag to apply).
+
+**The one exception is proper names** — never "correct" the spelling of a real place or
+business: *Viaduct Harbour*, *Lady Janes Ice Cream Parlour*, *Centre Pompidou*, *Sydney Harbour
+Bridge*. The tool protects these (a capitalized British word preceded by another capitalized
+word is treated as part of a name) and skips anything inside a tag, so `href`/`alt` text and
+embedded map code are never rewritten.
+
+Related: see the no-em-dashes rule in my writing style — both exist so the writing sounds like me.
+
 ## Bottom Line
 
 You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.

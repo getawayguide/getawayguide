@@ -1,0 +1,150 @@
+{
+  "slug": "dubrovnik",
+  "kicker": "Croatia",
+  "city": "Dubrovnik",
+  "osm": ".tmp/dubrovnik_osm.json",
+  "article": "croatia/field-notes.html",
+  "embed": {
+    "pre": "rer\">Lapad</a> neighborhoods, both a short walk or bus ride from the walls</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"hvar\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.45
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.92,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Dubrovnik City Walls",
+      "cat": "see",
+      "match": "dubrovnik city walls",
+      "lat": 42.6399806,
+      "lon": 18.1114944
+    },
+    {
+      "name": "Franciscan Church and Monastery",
+      "cat": "see",
+      "match": "franciscan church and ",
+      "lat": 42.64176,
+      "lon": 18.107783
+    },
+    {
+      "name": "Rector's Palace",
+      "cat": "see",
+      "match": "rector's palace",
+      "lat": 42.640338,
+      "lon": 18.110643
+    },
+    {
+      "name": "Jesuit Stairs",
+      "cat": "see",
+      "match": "jesuit stairs",
+      "lat": 42.639612,
+      "lon": 18.10937
+    },
+    {
+      "name": "Porat Dubrovnik",
+      "cat": "see",
+      "match": "porat dubrovnik",
+      "lat": 42.650661,
+      "lon": 18.094424
+    },
+    {
+      "name": "Fort Lovrijenac",
+      "cat": "see",
+      "match": "fort lovrijenac",
+      "lat": 42.64063,
+      "lon": 18.104298
+    },
+    {
+      "name": "Mount Srđ",
+      "cat": "see",
+      "match": "mount srđ",
+      "lat": 42.65,
+      "lon": 18.11
+    },
+    {
+      "name": "Homeland War Museum",
+      "cat": "see",
+      "match": "homeland war museum",
+      "lat": 42.649975,
+      "lon": 18.110731
+    },
+    {
+      "name": "Restaurant Kopun",
+      "cat": "eat",
+      "match": "restaurant kopun",
+      "lat": 42.639479,
+      "lon": 18.109546
+    },
+    {
+      "name": "Gil's Little Bistro",
+      "cat": "eat",
+      "match": "gil's little bistro",
+      "lat": 42.641539,
+      "lon": 18.109267
+    },
+    {
+      "name": "Mlinar",
+      "cat": "eat",
+      "match": "mlinar",
+      "lat": 42.6414518,
+      "lon": 18.1080779
+    },
+    {
+      "name": "Buža Bar",
+      "cat": "eat",
+      "match": "buža bar",
+      "lat": 42.639053,
+      "lon": 18.108707
+    },
+    {
+      "name": "Bard Mala Buža",
+      "cat": "eat",
+      "match": "bard mala buža",
+      "lat": 42.63892,
+      "lon": 18.110476
+    },
+    {
+      "name": "Hostel Angelina",
+      "cat": "stay",
+      "match": "hostel angelina",
+      "lat": 42.639805,
+      "lon": 18.109775,
+      "href": "https://www.google.com/maps/place/Hostel+Villa+Angelina+Old+Town+Dubrovnik/@42.6398054,18.109775,17z/data=!4m9!3m8!1s0x134c0b32b8fc2ab1:0x7a4b258e62cd4a9e!5m2!4m1!1i2!8m2!3d42.6398054!4d18.109775!16s%2Fg%2F1hg4s85yr?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 42.6405,
+      "lon": 18.108
+    },
+    {
+      "text": "PLOČE",
+      "lat": 42.64295,
+      "lon": 18.11598
+    },
+    {
+      "text": "MOUNT SRĐ",
+      "lat": 42.6495,
+      "lon": 18.1075
+    }
+  ],
+  "sea_bg": true,
+  "day_trips": [
+    {
+      "name": "Lokrum Island",
+      "time": "Half Day",
+      "match": "lokrum island"
+    }
+  ]
+}

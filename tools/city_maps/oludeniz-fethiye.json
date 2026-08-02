@@ -69,7 +69,8 @@
       "cat": "stay",
       "match": "el camino pub & ho",
       "lat": 36.6214285,
-      "lon": 29.1028959
+      "lon": 29.1028959,
+      "href": "https://www.google.com/maps/place/El+Camino+Pub%26Hostel/@36.621457,29.1028043,17z/data=!4m9!3m8!1s0x14c0417ca28ab155:0x300021e8fe969460!5m2!4m1!1i2!8m2!3d36.621457!4d29.1028043!16s%2Fg%2F11cny0zp19?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "sea_bg": true,

@@ -1,0 +1,171 @@
+{
+  "slug": "split",
+  "kicker": "Croatia",
+  "city": "Split",
+  "osm": ".tmp/split_osm.json",
+  "article": "croatia/field-notes.html",
+  "embed": {
+    "pre": "p to the 'booze' half of the name, so pack earplugs</li>\n      <li>[Hotel]</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"dubrovnik\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Diocletian's Palace",
+      "cat": "see",
+      "match": "diocletian's palace",
+      "lat": 43.508265,
+      "lon": 16.440175
+    },
+    {
+      "name": "Cathedral of Saint Domnius",
+      "cat": "see",
+      "match": "cathedral of saint dom",
+      "lat": 43.508103,
+      "lon": 16.44048
+    },
+    {
+      "name": "Split Golden Gate",
+      "cat": "see",
+      "match": "split golden gate",
+      "lat": 43.509192,
+      "lon": 16.440679
+    },
+    {
+      "name": "Riva promenade",
+      "cat": "see",
+      "match": "riva promenade",
+      "lat": 43.507751,
+      "lon": 16.438496
+    },
+    {
+      "name": "Republic Square",
+      "cat": "see",
+      "match": "republic square",
+      "lat": 43.508829,
+      "lon": 16.436318
+    },
+    {
+      "name": "Marjan Hill",
+      "cat": "see",
+      "match": "marjan hill",
+      "lat": 43.509144,
+      "lon": 16.422652
+    },
+    {
+      "name": "Croatian National Theater",
+      "cat": "see",
+      "match": "croatian national thea",
+      "lat": 43.510996,
+      "lon": 16.437226
+    },
+    {
+      "name": "Plaža Ježinac",
+      "cat": "see",
+      "match": "plaža ježinac",
+      "lat": 43.503877,
+      "lon": 16.418262
+    },
+    {
+      "name": "Kasjuni Beach",
+      "cat": "see",
+      "match": "kasjuni beach",
+      "lat": 43.506162,
+      "lon": 16.400708
+    },
+    {
+      "name": "Zalogajnica Dioklecijan",
+      "cat": "eat",
+      "match": "zalogajnica dioklecija",
+      "lat": 43.507821,
+      "lon": 16.439315
+    },
+    {
+      "name": "Mlinar",
+      "cat": "eat",
+      "match": "mlinar",
+      "lat": 43.509165,
+      "lon": 16.438305
+    },
+    {
+      "name": "ST Burek",
+      "cat": "eat",
+      "match": "st burek",
+      "lat": 43.509795,
+      "lon": 16.438218
+    },
+    {
+      "name": "Kebab House",
+      "cat": "eat",
+      "match": "kebab house",
+      "lat": 43.508404,
+      "lon": 16.443053
+    },
+    {
+      "name": "Charlie's Bar",
+      "cat": "eat",
+      "match": "charlie's bar",
+      "lat": 43.509569,
+      "lon": 16.439191
+    },
+    {
+      "name": "Booze & Snooze Social Hostel",
+      "cat": "stay",
+      "match": "booze & snooze social ",
+      "lat": 43.509286,
+      "lon": 16.438398,
+      "href": "https://www.google.com/maps/place/Split+Hostel+Booze+and+Snooze/@43.5092859,16.4383975,17z/data=!3m1!4b1!4m9!3m8!1s0x13355dfe4358f76b:0xd594c49628b2e1ca!5m2!4m1!1i2!8m2!3d43.5092859!4d16.4383975!16s%2Fg%2F11h0t_z8h8?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Cornaro Hotel",
+      "cat": "stay",
+      "match": "cornaro hotel",
+      "lat": 43.509946,
+      "lon": 16.439133,
+      "href": "https://www.google.com/maps/place/Cornaro+Hotel+Split/@43.509946,16.4391333,17z/data=!4m9!3m8!1s0x13355dfde174b823:0x5614a29c7578699!5m2!4m1!1i2!8m2!3d43.509946!4d16.4391333!16s%2Fg%2F11b5phsq_h?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Klis Fortress",
+      "time": "Half Day",
+      "match": "klis fortress"
+    },
+    {
+      "name": "Trogir",
+      "time": "Half Day",
+      "match": "trogir"
+    },
+    {
+      "name": "Krka National Park",
+      "time": "Full Day",
+      "match": "krka national park"
+    },
+    {
+      "name": "Blue Lagoon island boat tour",
+      "time": "Full Day",
+      "match": "blue lagoon"
+    }
+  ],
+  "activities": [],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 43.5082,
+      "lon": 16.4405
+    }
+  ],
+  "sea_bg": true
+}

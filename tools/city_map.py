@@ -236,6 +236,23 @@ def landmass_polys(coast, px, W, H, pins, flip=False):
             j = i
         return c
 
+    # An open chain can END INSIDE the frame because the Overpass fetch bbox cut it, not
+    # because the shore stops there. Its runs then fail the on-border test below and the
+    # whole chain is dropped — silently rendering that entire sea as LAND (Split's Adriatic).
+    # Detect a cut end (it sits on the coastline data's own bbox) and extend it straight out
+    # along its final bearing so the run still reaches the border and can close.
+    clat = [q["lat"] for g in coast for q in g]; clon = [q["lon"] for g in coast for q in g]
+    dtol = max((max(clat) - min(clat)) * 0.02, (max(clon) - min(clon)) * 0.02, 1e-6) if clat else 0
+    def cut(q):                                     # is this endpoint on the fetched data's edge?
+        return (abs(q["lat"] - min(clat)) < dtol or abs(max(clat) - q["lat"]) < dtol or
+                abs(q["lon"] - min(clon)) < dtol or abs(max(clon) - q["lon"]) < dtol)
+    def ray(a, b):                                  # a point far past the frame continuing a->b
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        n = math.hypot(dx, dy)
+        if n < 1e-9: return b
+        k = 4 * (W + H) / n
+        return (b[0] + dx * k, b[1] + dy * k)
+
     islands = []; runs = []
     for r in assemble_rings(coast):
         p = [px(q["lat"], q["lon"]) for q in r]
@@ -243,6 +260,8 @@ def landmass_polys(coast, px, W, H, pins, flip=False):
         if (r[0]["lat"], r[0]["lon"]) == (r[-1]["lat"], r[-1]["lon"]):
             islands.append(p)                       # closed loop = an island, fill as-is
         else:
+            if not onb(p[0]) and cut(r[0]):  p = [ray(p[1], p[0])] + p
+            if not onb(p[-1]) and cut(r[-1]): p = p + [ray(p[-2], p[-1])]
             runs += [rr for rr in runs_of(p) if onb(rr[0]) and onb(rr[-1])]
     # pick the border-walk direction that puts the most on-land pins inside the closed land.
     # `flip` (cfg "sea_flip") forces the OTHER direction when a near-shore pin fools the heuristic.
@@ -349,12 +368,12 @@ def build(cfg_path, embed=False, demo=None):
         hy = max(abs(p[1] - cy) for p in fmx) * pad or 1e-9
         scale = min(W / (2 * hx), H / (2 * hy))
 
-        # LEGEND-CLEAR RULE (desktop only): the floating key sits fixed top-right, so a pin
-        # projected into that corner ends up hidden underneath it. If the config framing puts
-        # any pin under the key, search nearby framings (bias the center up/right so pins slide
-        # down/left, zooming out only as needed) and take the closest one that clears the key
-        # AND keeps every pin in frame. If the current framing is already clear, nothing changes
-        # (hand-tuned `center`/`pad` are respected).
+        # LEGEND-CLEAR RULE (desktop only): the floating key sits fixed top-right and the
+        # kicker+city title sits fixed top-LEFT, so a pin projected into either corner ends up
+        # hidden underneath. If the config framing puts any pin under one of them, search nearby
+        # framings (bias the center so pins slide clear, zooming out only as needed) and take the
+        # closest one that clears BOTH AND keeps every pin in frame. If the current framing is
+        # already clear, nothing changes (hand-tuned `center`/`pad` are respected).
         if not mobile and not os.environ.get("CM_NO_LEGEND_CLEAR"):
             rows = heads = 0
             for _cat in GRP_ORDER:
@@ -364,12 +383,16 @@ def build(cfg_path, embed=False, demo=None):
             Lw = 226 + 34                 # key width + right margin + a little slack
             Lh = 15 + 24 + heads * 17 + rows * 16 + 6
             Lx0 = W - Lw
+            # title block: kicker + city drawn at x≈title_px*0.62, baseline title_px*1.66
+            Tx1 = title_px * 0.62 + len(city) * title_px * 0.60 + 12
+            Ty1 = title_px * 1.9
 
             def _project(cx0, cy0, s0):
                 return [(W / 2 + (p[0] - cx0) * s0, H / 2 - (p[1] - cy0) * s0) for p in fmx]
 
-            def _under(pts):              # pins whose marker (x±9, y-30..y+2) pokes into the key box
-                return sum(1 for X, Y in pts if X + 9 >= Lx0 and Y - 30 <= Lh)
+            def _under(pts):              # pins whose marker (x±9, y-30..y+2) hits the key or title
+                return sum(1 for X, Y in pts
+                           if (X + 9 >= Lx0 and Y - 30 <= Lh) or (X - 9 <= Tx1 and Y - 30 <= Ty1))
 
             def _inframe(pts):
                 return all(6 <= X <= W - 6 and 30 <= Y <= H - 6 for X, Y in pts)
@@ -382,15 +405,16 @@ def build(cfg_path, embed=False, demo=None):
                 # small pans first, then progressively larger zoom-outs. Cost prefers the
                 # framing closest to the original (least zoom-out, least shift) that clears the key.
                 for padf in (1.0, 1.1, 1.22, 1.4, 1.6, 1.9, 2.3):
-                    for ex in (0, .08, .16, .28, .42, .6):     # +lon -> pins slide LEFT (off the key)
-                        for ey in (0, .08, .16, .28, .42):     # +lat -> pins slide DOWN (below the key)
+                    # +lon -> pins slide LEFT (off the key); -lon -> RIGHT (off the title)
+                    for ex in (0, .08, -.08, .16, -.16, .28, -.28, .42, -.42, .6, -.6):
+                        for ey in (0, .08, .16, .28, .42):     # +lat -> pins slide DOWN (below both)
                             ccx = cx + ex * spanx; ccy = cy + ey * spany
                             hxx = max(abs(p[0] - ccx) for p in fmx) * pad * padf
                             hyy = max(abs(p[1] - ccy) for p in fmx) * pad * padf
                             s0 = min(W / (2 * hxx), H / (2 * hyy))
                             pts = _project(ccx, ccy, s0)
                             if not _inframe(pts): continue
-                            cost = _under(pts) * 1000 + (orig / s0 - 1) * 60 + ex * 6 + ey * 6
+                            cost = _under(pts) * 1000 + (orig / s0 - 1) * 60 + abs(ex) * 6 + ey * 6
                             if best is None or cost < best[0]: best = (cost, ccx, ccy, s0)
                 if best is not None:
                     _, cx, cy, scale = best
@@ -604,6 +628,19 @@ def build(cfg_path, embed=False, demo=None):
     if embed:
         e = cfg["embed"]; p = f"{ROOT}/{cfg['article']}"
         s = open(p, encoding="utf-8").read()
+        # If this map is ALREADY in the page, replace that fragment in place. The embed
+        # anchors are quotes from the surrounding prose, so they go stale the moment the
+        # article is edited - but an existing map is unambiguous, so re-embedding after an
+        # edit should not depend on them.
+        marker = f"city-maps/{slug}.png"
+        if marker in s:
+            fig = s.rindex('<figure class="citymap-fig">', 0, s.index(marker))
+            ys = s.rindex("<style>", 0, fig)
+            sc = s.index("<script>", s.index("</figure>", fig))
+            se = s.index("</script>", sc) + len("</script>")
+            open(p, "w", encoding="utf-8", newline="").write(s[:ys] + frag.strip() + s[se:])
+            print(f"re-embedded {slug} in place -> {cfg['article']}")
+            return frag
         # Validate the anchors before writing — a missing/misordered anchor otherwise silently
         # mangles the article (post is searched AFTER pre so the map region is always pre..post).
         if e["pre"] not in s:
@@ -670,26 +707,26 @@ function setup(cm){
  cm.querySelectorAll('.cmpin,.cmrow').forEach(function(el){var i=el.getAttribute('data-i');
    el.addEventListener('mouseenter',function(){all(i).forEach(function(e){e.classList.add('active')})});
    el.addEventListener('mouseleave',function(){all(i).forEach(function(e){e.classList.remove('active')})});});
- if(!cm.classList.contains('mob')) return;      // desktop variant is static (landscape + key)
+ if(!cm.classList.contains('mob')) return;      /*  desktop variant is static (landscape + key) */
  var world=cm.querySelector('.cmworld'), vp=cm.querySelector('.cmmap');
  var vb=svg.viewBox.baseVal, W=vb.width, H=vb.height;
- // ---- view state: scale (px per base unit) + translation (px). Google-Maps style:
- // minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that.
+ /*  ---- view state: scale (px per base unit) + translation (px). Google-Maps style: */
+ /*  minS shows the WHOLE base (zoom-out is never blocked), maxS is 7x that. */
  var s=1, tx=0, ty=0, minS=1, maxS=1, vw=0, vh=0;
  function measure(){vw=vp.clientWidth; vh=vp.clientHeight;
    if(!vw||!vh) return false;
    minS=Math.min(vw/W, vh/H); maxS=minS*7; return true;}
- function clampT(){var cw=W*s, ch=H*s;          // keep content in view; center it on an axis it underfills
+ function clampT(){var cw=W*s, ch=H*s;          /*  keep content in view; center it on an axis it underfills */
    tx = cw<=vw ? (vw-cw)/2 : Math.min(0, Math.max(vw-cw, tx));
    ty = ch<=vh ? (vh-ch)/2 : Math.min(0, Math.max(vh-ch, ty));}
  function apply(){world.style.transform='translate('+tx.toFixed(2)+'px,'+ty.toFixed(2)+'px) scale('+s.toFixed(5)+')';
    if(zin){zin.disabled = s>=maxS-1e-6; zout.disabled = s<=minS+1e-6;}}
- function zoomAt(ns,px,py){                     // zoom keeping the (px,py) viewport point pinned
+ function zoomAt(ns,px,py){                     /*  zoom keeping the (px,py) viewport point pinned */
    ns=Math.max(minS,Math.min(maxS,ns));
    var ax=(px-tx)/s, ay=(py-ty)/s;
    s=ns; tx=px-ax*s; ty=py-ay*s; clampT(); apply();}
  function rel(t){var r=vp.getBoundingClientRect(); return {x:t.clientX-r.left, y:t.clientY-r.top};}
- // ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ----
+ /*  ---- name bubble (tap a pin to name it, tap it again to open Google Maps) ---- */
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
@@ -701,17 +738,17 @@ function setup(cm){
    var left=pr.left+pr.width/2-cr.left-bub.offsetWidth/2, top=pr.top-cr.top-bub.offsetHeight-9;
    bub.style.left=Math.max(6,Math.min(cr.width-bub.offsetWidth-6,left))+'px';
    bub.style.top=Math.max(4,top)+'px';
-   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   // arrow points at the pin
+   var arx=(pr.left+pr.width/2-cr.left)-parseFloat(bub.style.left);   /*  arrow points at the pin */
    bub.style.setProperty('--arrow-left',Math.max(12,Math.min(bub.offsetWidth-12,arx))+'px');
    clearAct(); g.classList.add('active');}
- // Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser
- // replays a compatibility click whose target can be the just-repositioned bubble, which
- // would open a link the user never asked for. Touch is handled explicitly instead.
+ /*  Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser */
+ /*  replays a compatibility click whose target can be the just-repositioned bubble, which */
+ /*  would open a link the user never asked for. Touch is handled explicitly instead. */
  bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)window.open(armedHref,'_blank');});
  bub.addEventListener('touchend',function(e){e.stopPropagation();e.preventDefault();lastTouch=Date.now();
    if(armedHref)window.open(armedHref,'_blank');},{passive:false});
  function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
- // ---- momentum ----
+ /*  ---- momentum ---- */
  var vX=0,vY=0,raf=null;
  function stopGlide(){if(raf){cancelAnimationFrame(raf);raf=null;}}
  function glide(){stopGlide();
@@ -719,11 +756,11 @@ function setup(cm){
    var step=function(){vX*=0.94; vY*=0.94;
      if(Math.abs(vX)<0.25&&Math.abs(vY)<0.25){raf=null;return;}
      var px=tx,py=ty; tx+=vX; ty+=vY; clampT(); apply();
-     if(tx===px) vX=0;                          // hit an edge: kill that axis
+     if(tx===px) vX=0;                          /*  hit an edge: kill that axis */
      if(ty===py) vY=0;
      raf=requestAnimationFrame(step);};
    raf=requestAnimationFrame(step);}
- // ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ----
+ /*  ---- gestures: 1 finger = pan (captured once it reads as a map drag), 2 fingers = pinch+pan ---- */
  var anchor=null,startD=0,startS=1,panP=null,cap=false,moved=0,lastT=0,tapT=0,tapX=0,tapY=0;
  vp.addEventListener('touchstart',function(e){
    stopGlide(); lastTouch=Date.now();
@@ -731,14 +768,14 @@ function setup(cm){
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      startD=Math.hypot(a.x-b.x,a.y-b.y)||1; startS=s;
      var c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       // content point under the pinch midpoint
+     anchor={x:(c.x-tx)/s, y:(c.y-ty)/s};       /*  content point under the pinch midpoint */
      cap=true; e.preventDefault();
    }else if(e.touches.length===1){
      anchor=null; panP=rel(e.touches[0]); cap=false; moved=0; vX=vY=0; lastT=e.timeStamp||Date.now();
    }
  },{passive:false});
  vp.addEventListener('touchmove',function(e){
-   if(e.touches.length>=2&&anchor){             // pinch: scale about the midpoint, and follow its drift
+   if(e.touches.length>=2&&anchor){             /*  pinch: scale about the midpoint, and follow its drift */
      var a=rel(e.touches[0]),b=rel(e.touches[1]);
      var d=Math.hypot(a.x-b.x,a.y-b.y)||1, c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
      s=Math.max(minS,Math.min(maxS,startS*d/startD));
@@ -748,8 +785,8 @@ function setup(cm){
    if(e.touches.length!==1||!panP) return;
    var p=rel(e.touches[0]), dx=p.x-panP.x, dy=p.y-panP.y;
    moved+=Math.hypot(dx,dy);
-   if(!cap){                                    // decide once: horizontal-ish drag -> the map takes it,
-     if(moved<6) return;                        // straight vertical swipe -> let the article scroll
+   if(!cap){                                    /*  decide once: horizontal-ish drag -> the map takes it, */
+     if(moved<6) return;                        /*  straight vertical swipe -> let the article scroll */
      if(Math.abs(dx)<=Math.abs(dy)){panP=null;return;}
      cap=true;
    }
@@ -763,7 +800,7 @@ function setup(cm){
    lastTouch=Date.now();
    if(e.touches.length>0) return;
    if(cap&&moved>10){glide();}
-   else if(moved<10){                           // a tap: pin -> name / open, empty map -> double-tap zooms
+   else if(moved<10){                           /*  a tap: pin -> name / open, empty map -> double-tap zooms */
      var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
      if(g){var i=g.getAttribute('data-i');
        if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
@@ -775,10 +812,10 @@ function setup(cm){
    }
    panP=null; anchor=null; cap=false;
  });
- // ---- mouse / trackpad (narrow desktop windows show this variant too) ----
- // A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend.
- // Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed,
- // so a single tap opened Google Maps immediately. Ignore mouse input just after a touch.
+ /*  ---- mouse / trackpad (narrow desktop windows show this variant too) ---- */
+ /*  A touch also fires COMPATIBILITY mouse events (mousedown/mouseup) right after touchend. */
+ /*  Without this guard the mouseup re-ran the pin logic on the pin touchend had just armed, */
+ /*  so a single tap opened Google Maps immediately. Ignore mouse input just after a touch. */
  var lastTouch=0; function fromTouch(){return Date.now()-lastTouch<700;}
  var md=false,mp=null;
  vp.addEventListener('mousedown',function(e){if(fromTouch())return;stopGlide();md=true;mp={x:e.clientX,y:e.clientY};moved=0;e.preventDefault();});
@@ -793,14 +830,14 @@ function setup(cm){
    md=false;});
  vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
    var p=rel(e); zoomAt(s*Math.pow(1.0016,-e.deltaY), p.x, p.y);},{passive:false});
- // ---- zoom buttons (discoverable, one-handed) ----
+ /*  ---- zoom buttons (discoverable, one-handed) ---- */
  var zc=document.createElement('div'); zc.className='cmzoom';
  var zin=document.createElement('button'); zin.type='button'; zin.textContent='+'; zin.setAttribute('aria-label','Zoom in');
  var zout=document.createElement('button'); zout.type='button'; zout.textContent='\\u2212'; zout.setAttribute('aria-label','Zoom out');
  zc.appendChild(zin); zc.appendChild(zout); cm.appendChild(zc);
  function zbtn(f){return function(e){e.preventDefault();e.stopPropagation();stopGlide();zoomAt(s*f,vw/2,vh/2);};}
  zin.addEventListener('click',zbtn(1.7)); zout.addEventListener('click',zbtn(1/1.7));
- // ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ----
+ /*  ---- init: open framed on the cluster (data-iw/ix/iy), then free to pan/zoom anywhere ---- */
  function init(){
    if(!measure()) return false;
    var iw=parseFloat(cm.getAttribute('data-iw')||0.8);
@@ -808,10 +845,10 @@ function setup(cm){
    s=Math.max(minS,Math.min(maxS,vw/(iw*W)));
    tx=-Math.max(0,W-vw/s)*ix*s; ty=-Math.max(0,H-vh/s)*iy*s;
    clampT(); apply(); return true;}
- if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   // hidden until the mq matches
+ if(!init()){var t=setInterval(function(){if(init())clearInterval(t);},120);}   /*  hidden until the mq matches */
  var rt=null;
  window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
-   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         // keep the centred content point put
+   var ax=(vw/2-tx)/s, ay=(vh/2-ty)/s;         /*  keep the centred content point put */
    if(!measure())return;
    s=Math.max(minS,Math.min(maxS,s)); tx=vw/2-ax*s; ty=vh/2-ay*s; clampT(); apply();},120);});
  var dm=cm.getAttribute('data-demo');

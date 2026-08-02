@@ -46,21 +46,24 @@
       "lat": 55.6053,
       "lon": 12.9885,
       "cat": "see",
-      "match": "malmohus"
+      "match": "malmohus",
+      "href": "https://www.google.com/maps/place/Malm%C3%B6+Castle/@55.6049011,12.9875581,17z/data=!3m1!4b1!4m6!3m5!1s0x4653a400187d3ec5:0xe060808a82a0eb09!8m2!3d55.6049011!4d12.9875581!16zL20vMGQxczA2?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Slottsträdgården",
       "lat": 55.6034722,
       "lon": 12.9865705,
       "cat": "see",
-      "match": "slottstradgarden"
+      "match": "slottstradgarden",
+      "href": "https://www.google.com/maps/place/Slottstr%C3%A4dg%C3%A5rden/@55.6035512,12.9881232,17z/data=!3m1!4b1!4m6!3m5!1s0x4653a6aa86bad329:0xf0855637f4fe7624!8m2!3d55.6035512!4d12.9881232!16s%2Fg%2F1vbl65q_?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Form/Design Center",
       "lat": 55.6046,
       "lon": 12.998,
       "cat": "see",
-      "match": "form design"
+      "match": "form design",
+      "href": "https://www.google.com/maps/place/Form%2FDesign+Center/@55.6045272,12.9991634,17z/data=!3m1!4b1!4m6!3m5!1s0x4653a3fddb1f965b:0x22de5747e1673a8a!8m2!3d55.6045272!4d12.9991634!16s%2Fg%2F11dyjwn05?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Bullen Två Krögare",
