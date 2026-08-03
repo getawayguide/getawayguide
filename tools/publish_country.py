@@ -76,6 +76,16 @@ FULL_GUIDES = [("El Salvador", "sv", "americas", "el-salvador/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
+# real continent silhouettes (tools/gen_continent_icons.py), not emoji: emoji read as
+# clip-art next to this site's type, and at 13px 🌍/🌎/🌏 are indistinguishable anyway.
+# Served as cached SVG files rather than inlined - the paths are ~10KB and the nav is on
+# 45 pages, so inlining would add ~400KB of markup site-wide.
+CONT_ICON = ["europe", "asia", "americas", "africa", "oceania", "all"]
+
+
+def _cont_ico(pfx, key):
+    return ('<img class="nav-cont-ico" src="%sImages/web/continents/%s.svg" width="13" '
+            'height="13" alt="" aria-hidden="true" loading="lazy">' % (pfx, key))
 _DARK = 'style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821"'
 NAV_RE = re.compile(r'<div class="nav-dropdown[ "].*?</div>\s*</li>', re.DOTALL)
 
@@ -124,12 +134,24 @@ def build_nav(pfx, by_cont):
             L += ['              ' + _nav_a(pfx, n, iso, target, full) for n, iso, target, full in merged[c]]
             L.append('            </div>')
         L.append('            </div>')
-    L += ['          </div>', '        </div>', '        <div class="nav-dropdown-col">',
-          '          <span class="nav-dropdown-continent" %s>Explore Destinations</span>' % _DARK,
-          '          <a href="%sdestinations.html" class="nav-dropdown-continent" style="white-space:nowrap">&#127758; Explore Map</a>' % pfx]
-    L += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s</a>' % (pfx, c, CONT_LABEL[c])
+    # right-hand column: a visual entry to the interactive map, then the continent jumps.
+    # The thumbnail is a still (tools/gen_nav_map_preview.py) rather than a live chart, so
+    # opening the menu costs nothing and doesn't wait on the amCharts CDN.
+    L += ['          </div>', '        </div>',
+          '        <div class="nav-dropdown-col nav-dropdown-map">',
+          '          <a href="%sdestinations.html#explore-map" class="nav-map-card">' % pfx,
+          '            <span class="nav-map-title">Explore Interactive Map</span>',
+          '            <img src="%sImages/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" '
+          'loading="lazy" decoding="async" alt="World map of the countries I have travelled to">' % pfx,
+          '          </a>',
+          '          <span class="nav-dropdown-continent" %s>Explore by Continent</span>' % _DARK]
+    L += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s%s</a>'
+          % (pfx, c, _cont_ico(pfx, c), CONT_LABEL[c])
           for c in ("africa", "americas", "asia", "europe", "oceania")]
-    L += ['          <a href="%sdestinations.html" class="nav-dropdown-continent" style="color:#1C2821;white-space:nowrap">All Destinations</a>' % pfx,
+    # no icon on All Destinations - it isn't a continent, and a globe next to five
+    # landmasses read as a sixth entry rather than the catch-all
+    L += ['          <a href="%sdestinations.html" class="nav-dropdown-continent nav-all-dest">'
+          'All Destinations</a>' % pfx,
           '        </div>', '      </div>']
     return "\n".join(L)
 

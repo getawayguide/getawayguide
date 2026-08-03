@@ -60,10 +60,35 @@ a.nav-dropdown-continent[style*="color:#1C2821"]{color:#1C2821!important;font-we
 .nav-dropdown-spacer{height:1.2rem}
 .nav-dropdown-all{font-family:'Montserrat',sans-serif;font-weight:500;font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;color:var(--terra);text-decoration:none;padding:.3rem 0;margin-top:.25rem}
 /* Destinations dropdown — Field Notes grouped by continent under Available Guides */
-.nav-dropdown.nav-dropdown-fn{grid-template-columns:max-content 170px;min-width:0}
+.nav-dropdown.nav-dropdown-fn{grid-template-columns:max-content 296px;min-width:0}
 .nav-dropdown-fn .nav-dropdown-col{padding:0}
 .nav-dropdown-fn .nav-dropdown-col:first-child{padding-right:1rem}
 .nav-dropdown-fn .nav-dropdown-col:last-child{padding-left:1.3rem}
+/* right column: still preview of the interactive map, then the continent jumps */
+/* `.nav-links a` dims every nav anchor to .45, which washed the map thumbnail out.
+   Selector is scoped to match that specificity rather than reaching for !important. */
+.nav-links a.nav-map-card{display:block;text-decoration:none;margin-bottom:.5rem;opacity:1}
+/* text-transform/letter-spacing reset: this title sits inside an <a>, so it would inherit
+   the uppercase+tracking `.nav-links a` applies */
+.nav-map-title{display:block;font-family:'Lora',Georgia,serif;font-size:.95rem;font-style:normal;font-weight:400;color:#1C2821;padding:.3rem 0;margin-bottom:.5rem;white-space:nowrap;text-transform:none;letter-spacing:0}
+.nav-map-thumb{display:block;width:280px;height:150px;object-fit:cover;border:none;border-radius:6px;transition:transform .25s ease,box-shadow .25s ease}
+.nav-map-card:hover .nav-map-thumb{transform:translateY(-2px);box-shadow:0 10px 26px var(--shadow)}
+.nav-map-card:hover .nav-map-title{opacity:.75}
+/* continent jumps: same type as the country list in the left column, not the italic
+   serif they inherited from .nav-dropdown-continent */
+/* size/weight copied from what the COUNTRY links actually compute to: `.nav-links a`
+   (.65rem/500) outranks `.nav-dropdown-item` (.6rem/400), so matching the latter left the
+   continents visibly smaller and lighter than the list opposite them */
+.nav-dropdown-map a.nav-dropdown-continent{font-family:'Montserrat',sans-serif;font-style:normal;
+  font-weight:500;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink);
+  opacity:.45;padding:.22rem 0;margin-bottom:0;display:flex;align-items:center;gap:.45rem;
+  transition:opacity .15s,color .15s}
+.nav-dropdown-map a.nav-dropdown-continent:hover{opacity:1;color:var(--terra)}
+.nav-cont-ico{font-style:normal;font-size:.78rem;line-height:1;flex:0 0 auto}
+/* small gap above: it's the catch-all, not a sixth continent, so it reads better
+   set slightly apart from the five above it */
+a.nav-dropdown-continent.nav-all-dest{color:#1C2821!important;white-space:nowrap;opacity:.7;
+  margin-top:.35rem}
 .nav-fn-head{margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(28,40,33,.1)}
 .nav-fn-groups{display:flex;gap:1.4rem;margin-top:-.15rem}
 .nav-fn-sub{display:flex;flex-direction:column}
@@ -395,8 +420,14 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .mobile-nav-links > li > a:hover,
   .mnav-row .mnav-parent:hover{color:var(--terra);opacity:1}
   /* Destinations: text navigates, chevron toggles the submenu */
-  .mnav-row{display:flex;align-items:center}
+  /* the rule below moves the divider from the link to the ROW, so it spans the chevron
+     too; when the submenu is open the continent list supplies its own dividers */
+  .mnav-row{display:flex;align-items:center;border-bottom:1px solid var(--b-subtle)}
+  .mobile-nav-links > li:has(.mobile-nav-continents.open) .mnav-row{border-bottom:none}
   .mnav-row .mnav-parent{flex:1;border-bottom:none}
+  /* search sits at the end of the drawer; its link is inline-flex, so a border would
+     underline just the word rather than the row */
+  .mobile-nav-links > li.mnav-search > a{border-bottom:none}
   .mnav-chev-btn{background:none;border:none;cursor:pointer;color:var(--ink);opacity:.55;
     padding:.5rem .2rem .5rem 1.3rem;line-height:1;align-self:stretch;display:flex;align-items:center}
   .mnav-chev-btn:hover{opacity:1;color:var(--terra)}
@@ -419,6 +450,14 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   }
   .mobile-nav-continents a:hover{opacity:1;color:var(--terra)}
   .mobile-nav-continents a.mnc-map{color:var(--terra);opacity:.85;font-weight:600}
+  /* map preview card + "Explore by Continent" label, mirroring the desktop dropdown.
+     The map sits BELOW the continents here and is deliberately smaller — full width it
+     pushed the continent links off screen. */
+  /* the map thumbnail was dropped on mobile - at drawer width it pushed the continent
+     links off screen, so the map is a plain link here and keeps its preview on desktop */
+  .mnc-ico{display:inline-block;vertical-align:-.18em;margin-right:.5rem}
+
+  .mobile-nav-continents.open{max-height:760px}
   .mobile-drawer-footer{margin-top:3rem;font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;opacity:.25}
 
   .section{padding:2.5rem 1.5rem}
@@ -446,6 +485,7 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   #dest-latvia .dest-bg{background-image:url('Images/web/dest-cards/latvia-landscape.jpg') !important;background-position:50% 50% !important}
   #dest-finland .dest-bg{background-image:url('Images/web/dest-cards/finland-landscape.jpg') !important;background-position:50% 50% !important}
   #dest-sweden .dest-bg{background-image:url('Images/web/dest-cards/sweden-landscape.jpg') !important;background-position:50% 50% !important}
+  #dest-georgia .dest-bg{background-image:url('Images/web/dest-cards/georgia-landscape.jpg') !important;background-position:50% 50% !important}
   .posts-grid{grid-template-columns:1fr}
   .post-card-image{aspect-ratio:16/9}
   .about-strip{grid-template-columns:1fr;min-height:auto}
