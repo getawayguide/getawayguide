@@ -96,8 +96,9 @@
       "name": "Your Zanzibar Place",
       "cat": "stay",
       "match": "your zanzibar plac",
-      "lat": -6.163,
-      "lon": 39.188
+      "lat": -6.272801,
+      "lon": 39.535404,
+      "href": "https://www.google.com/maps/place/Your+Zanzibar+Place/@-6.2728013,39.5354042,17z/data=!4m9!3m8!1s0x185d3d98871b9ca5:0x9a9b6e909980957e!5m2!4m1!1i2!8m2!3d-6.2728013!4d39.5354042!16s%2Fg%2F1tx75rw6?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "sea_bg": true,

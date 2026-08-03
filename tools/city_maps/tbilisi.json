@@ -61,9 +61,10 @@
       "name": "Holy Trinity Cathedral",
       "cat": "see",
       "match": "holy trinity cathedral",
-      "lat": 41.730642,
-      "lon": 44.807505,
-      "frame": false
+      "lat": 41.697652,
+      "lon": 44.816452,
+      "frame": false,
+      "href": "https://www.google.com/maps/place/Holy+Trinity+Cathedral+of+Tbilisi/@41.6976516,44.8164521,17z/data=!3m1!4b1!4m6!3m5!1s0x40440cfd14a9a29b:0x9a438625d9da2c32!8m2!3d41.6976516!4d44.8164521!16zL20vMGZkcXlj?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Rike Park",
@@ -76,8 +77,9 @@
       "name": "Sololaki Street",
       "cat": "see",
       "match": "sololaki street",
-      "lat": 41.69601,
-      "lon": 44.800232
+      "lat": 41.688002,
+      "lon": 44.800406,
+      "href": "https://www.google.com/maps/place/Sololaki+St,+T'bilisi,+Georgia/@41.6880023,44.8004061,17z/data=!3m1!4b1!4m6!3m5!1s0x40440cf301279b71:0x9013ad407862a3c2!8m2!3d41.6880023!4d44.8004061!16s%2Fg%2F11h04vf1h?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Mother of Georgia",

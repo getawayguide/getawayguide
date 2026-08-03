@@ -81,10 +81,11 @@
     },
     {
       "name": "Christiania",
-      "lat": 55.6772107,
-      "lon": 12.610452,
+      "lat": 55.673412,
+      "lon": 12.596406,
       "cat": "see",
-      "match": "christiania"
+      "match": "christiania",
+      "href": "https://www.google.com/maps/place/Freetown+Christiania,+Copenhagen+Municipality,+Denmark/@55.677963,12.6051861,15z/data=!3m1!4b1!4m6!3m5!1s0x4652533907ed3da7:0xae183de2099528b9!8m2!3d55.673412!4d12.5964061!16zL20vMDFsa3N4?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Superkilen",

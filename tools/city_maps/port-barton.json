@@ -35,7 +35,8 @@
       "cat": "see",
       "match": "coconut beach",
       "lat": 10.4106748,
-      "lon": 119.1625087
+      "lon": 119.1625087,
+      "href": "https://www.google.com/maps/place/Coconut+Beach/@10.4107098,119.1608906,17z/data=!3m1!4b1!4m6!3m5!1s0x33b5c57be8102153:0xa7ba031eacb24f2b!8m2!3d10.4107098!4d119.1608906!16s%2Fg%2F11fj8dvdrt?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Barton Bistro",
@@ -62,8 +63,9 @@
       "name": "Dam Dam Hostel",
       "cat": "stay",
       "match": "dam dam",
-      "lat": 10.4118,
-      "lon": 119.1782
+      "lat": 10.407395,
+      "lon": 119.174313,
+      "href": "https://www.google.com/maps/place/Dam+Dam+Place/@10.4073949,119.1743131,17z/data=!4m9!3m8!1s0x33b5c4d022fe14db:0xcd6b0f81a6affd71!5m2!4m1!1i2!8m2!3d10.4073949!4d119.1743131!16s%2Fg%2F11hbqkfbtp?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "district_labels": [

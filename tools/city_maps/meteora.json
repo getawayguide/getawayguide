@@ -70,8 +70,9 @@
       "name": "Holy Trinity (Agia Triada)",
       "cat": "see",
       "match": "holy trinity",
-      "lat": 39.7043,
-      "lon": 21.6358
+      "lat": 39.713135,
+      "lon": 21.635801,
+      "href": "https://www.google.com/maps/place/Monastery+of+the+Holy+Trinity/@39.7131354,21.6358012,17z/data=!3m1!4b1!4m6!3m5!1s0x13590fb8d0fce117:0x75df6fbc3e84dc17!8m2!3d39.7131354!4d21.6358012!16s%2Fm%2F0h3wfr8?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "St. Stephen (Agios Stefanos)",
@@ -85,14 +86,16 @@
       "cat": "see",
       "match": "viewpoint meteora",
       "lat": 39.72127,
-      "lon": 21.63431
+      "lon": 21.63431,
+      "href": "https://www.google.com/maps/place/Viewpoint+Meteora/@39.6981795,21.6048675,14z/data=!4m10!1m2!2m1!1sViewpoint+Meteora+Meteora!3m6!1s0x13590f9984a3256d:0xc694131912a554b5!8m2!3d39.7212713!4d21.634305!15sChlWaWV3cG9pbnQgTWV0ZW9yYSBNZXRlb3JhWhsiGXZpZXdwb2ludCBtZXRlb3JhIG1ldGVvcmGSAQtzY2VuaWNfc3BvdJoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQydGFWbEZ0ZUROVVZXUnNVVEE1YVZWRlVYUlNWa3BFVkZkT05tRlhZeEFC4AEA-gEECAAQTA!16s%2Fg%2F11t3l5p_9q?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Main Observation Deck of Meteora",
       "cat": "see",
       "match": "main observation deck",
       "lat": 39.71928,
-      "lon": 21.63701
+      "lon": 21.63701,
+      "href": "https://www.google.com/maps/place/Main+Observation+Deck+of+Meteora/@39.7192801,21.6370082,17z/data=!3m1!4b1!4m6!3m5!1s0x13590fbc977fc5cf:0x5ff5eed33a7adff9!8m2!3d39.7192801!4d21.6370082!16s%2Fg%2F11c5b6h2xg?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Holy Spirit Rock hike",

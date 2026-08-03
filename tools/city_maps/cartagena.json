@@ -51,10 +51,11 @@
     },
     {
       "name": "Walls of Cartagena de Indias",
-      "lat": 10.4265,
-      "lon": -75.5525,
+      "lat": 10.42961,
+      "lon": -75.544865,
       "cat": "see",
-      "match": "walls of cartagena de in"
+      "match": "walls of cartagena de in",
+      "href": "https://www.google.com/maps/place/Walls+of+Cartagena/@10.4296098,-75.544865,17z/data=!3m1!4b1!4m6!3m5!1s0x8ef62f9f3fb420c7:0x2553d110a2ea22e0!8m2!3d10.4296098!4d-75.544865!16s%2Fg%2F1yg4fj782?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Café del Mar",
@@ -107,10 +108,11 @@
     },
     {
       "name": "Convento de La Popa",
-      "lat": 10.4193,
-      "lon": -75.532,
+      "lat": 10.419159,
+      "lon": -75.525547,
       "cat": "see",
-      "match": "convento de la popa"
+      "match": "convento de la popa",
+      "href": "https://www.google.com/maps/place/Convent+of+Santa+Cruz+de+la+Popa/@10.4191591,-75.5255469,17z/data=!3m1!4b1!4m6!3m5!1s0x8ef6258045a531eb:0x80ecab65742149db!8m2!3d10.4191591!4d-75.5255469!16s%2Fg%2F11c6vvkzcn?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Restaurante 1595",
@@ -135,10 +137,11 @@
     },
     {
       "name": "Viajero Cartagena",
-      "lat": 10.4199361,
-      "lon": -75.5474459,
+      "lat": 10.427039,
+      "lon": -75.54689,
       "cat": "stay",
-      "match": "viajero"
+      "match": "viajero",
+      "href": "https://www.google.com/maps/place/Viajero+Cartagena+-+Centro+Hostel/@10.4270391,-75.5468902,17z/data=!4m9!3m8!1s0x8ef625876a913435:0x5ba3fdca234c1fb2!5m2!4m1!1i2!8m2!3d10.4270391!4d-75.5468902!16s%2Fg%2F1td7_46f?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ]
 }

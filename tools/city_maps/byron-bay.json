@@ -81,10 +81,11 @@
     },
     {
       "name": "Wake Up! Byron Bay",
-      "lat": -28.63876,
-      "lon": 153.60915,
+      "lat": -28.634741,
+      "lon": 153.598663,
       "cat": "stay",
-      "match": "wake up"
+      "match": "wake up",
+      "href": "https://www.google.com/maps/place/Wake+Up!+Byron+Bay/@-28.6347408,153.5986633,17z/data=!4m9!3m8!1s0x6b906396a047e911:0xf1fe1e5bd3f9dc28!5m2!4m1!1i2!8m2!3d-28.6347408!4d153.5986633!16s%2Fg%2F11f5mpgc_0?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "center": {

@@ -1,0 +1,106 @@
+{
+  "slug": "ljubljana",
+  "kicker": "Slovenia",
+  "city": "Ljubljana",
+  "osm": ".tmp/ljubljana_osm.json",
+  "article": "slovenia/field-notes.html",
+  "embed": {
+    "pre": " on foot. It's a compact, safe, easy city to base in for the whole country</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Ljubljana Castle",
+      "cat": "see",
+      "match": "ljubljana castle",
+      "lat": 46.048782,
+      "lon": 14.508538
+    },
+    {
+      "name": "Triple Bridge",
+      "cat": "see",
+      "match": "triple bridge",
+      "lat": 46.051133,
+      "lon": 14.50621
+    },
+    {
+      "name": "Dragon Bridge",
+      "cat": "see",
+      "match": "dragon bridge",
+      "lat": 46.051932,
+      "lon": 14.510414
+    },
+    {
+      "name": "Ljubljanica River",
+      "cat": "see",
+      "match": "ljubljanica river",
+      "lat": 46.04975,
+      "lon": 14.505693,
+      "href": "https://www.google.com/maps/place/Cankarjevo+nabre%C5%BEje,+1000+Ljubljana,+Slovenia/@46.0497498,14.5056927,17z/data=!3m1!4b1!4m6!3m5!1s0x47652d639c0e1951:0x42528a729ff0d4e!8m2!3d46.0497498!4d14.5056927!16s%2Fg%2F1tl8jhkd?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Metelkova",
+      "cat": "see",
+      "match": "metelkova",
+      "lat": 46.056914,
+      "lon": 14.516926
+    },
+    {
+      "name": "Klobasarna",
+      "cat": "eat",
+      "match": "klobasarna",
+      "lat": 46.050412,
+      "lon": 14.507884
+    },
+    {
+      "name": "ibis Styles Ljubljana / The Fuzzy Log",
+      "cat": "stay",
+      "match": "ibis styles ljubljana ",
+      "lat": 46.055711,
+      "lon": 14.507378,
+      "href": "https://www.google.com/maps/place/ibis+Styles+Ljubljana+Centre/@46.0557074,14.5073853,17z/data=!4m10!1m2!2m1!1sibis+Styles+Ljubljana+Centre+hotel!3m6!1s0x4765331a8a598047:0x4898a9c2edea3250!8m2!3d46.0557109!4d14.507378!15sCiJpYmlzIFN0eWxlcyBManVibGphbmEgQ2VudHJlIGhvdGVsIgOIAQFaJCIiaWJpcyBzdHlsZXMgbGp1YmxqYW5hIGNlbnRyZSBob3RlbJIBBWhvdGVsmgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVVJHY0haRE1uWkJSUkFC4AEA-gEECFsQRg!16s%2Fg%2F11k4gcx9mt?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Prešeren Square",
+      "cat": "see",
+      "match": "prešeren square",
+      "lat": 46.051471,
+      "lon": 14.506073
+    },
+    {
+      "name": "Franciscan Church",
+      "cat": "see",
+      "match": "franciscan church",
+      "lat": 46.051853,
+      "lon": 14.506073,
+      "href": "https://www.google.com/maps/place/Franciscan+Church+of+the+Annunciation/@46.0518527,14.5060733,17z/data=!3m1!4b1!4m6!3m5!1s0x47652d6249544d69:0xb316a4d45816f722!8m2!3d46.0518527!4d14.5060733!16s%2Fg%2F1hc0hpl48?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "St. Nicholas Cathedral",
+      "cat": "see",
+      "match": "st. nicholas cathedral",
+      "lat": 46.050817,
+      "lon": 14.508145
+    },
+    {
+      "name": "Loni-Pek Pekarstvo",
+      "cat": "eat",
+      "match": "loni-pek pekarstvo",
+      "lat": 46.045131,
+      "lon": 14.505008
+    }
+  ]
+}

@@ -326,13 +326,29 @@ def build(cfg_path, embed=False, demo=None):
     # resolve each pin's Google-Maps link: explicit href > a matching link in the
     # article > a generic maps search for "<name> <city>"
     art = open(f"{ROOT}/{cfg['article']}", encoding="utf-8").read() if cfg.get("article") else ""
-    links = [(u.replace("&amp;", "&"), re.sub(r"<[^>]+>", "", t).strip().lower())
-             for u, t in re.findall(r'<a\b[^>]*href="(https://www\.google\.com/maps/[^"]+)"[^>]*>(.*?)</a>', art, re.S)]
+
+    def _links(html):
+        return [(u.replace("&amp;", "&"), re.sub(r"<[^>]+>", "", t).strip().lower())
+                for u, t in re.findall(
+                    r'<a\b[^>]*href="(https://www\.google\.com/maps/[^"]+)"[^>]*>(.*?)</a>', html, re.S)]
+
+    # Prefer a link from THIS CITY'S OWN section. Matching across the whole article means a
+    # place name that also appears in another city's section wins on first occurrence, so
+    # Melbourne's "Fitzroy" linked to Fitzroy Island in Cairns (2322km) and Dubrovnik's
+    # "Mlinar" to Split's. The config slug is the fn-section id, so scope to that first and
+    # only fall back to the whole article when the section has no match.
+    sec = ""
+    _m = re.search(r'<div class="fn-section" id="%s"' % re.escape(slug), art)
+    if _m:
+        _n = re.search(r'<div class="fn-section" id="', art[_m.end():])
+        sec = art[_m.start():_m.end() + _n.start()] if _n else art[_m.start():]
+    sec_links, links = _links(sec), _links(art)
     explicit = {p["name"]: p["href"] for p in cfg["pois"] if p.get("href")}
     def href_for(name, key):
         if name in explicit: return explicit[name]
-        for u, t in links:
-            if key in t: return u
+        for pool in (sec_links, links):
+            for u, t in pool:
+                if key in t: return u
         return f"https://www.google.com/maps/search/?api=1&query={(name + ' ' + city).replace(' ', '+')}"
     HREF = {p[0]: href_for(p[0], p[4]) for p in POIS}
 

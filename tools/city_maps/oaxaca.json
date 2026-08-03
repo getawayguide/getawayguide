@@ -26,8 +26,8 @@
       "name": "Templo de Santo Domingo de Guzmán",
       "cat": "see",
       "match": "templo de santo doming",
-      "lat": 17.05423,
-      "lon": -96.71323
+      "lat": 17.065794,
+      "lon": -96.72324
     },
     {
       "name": "Museum of Cultures of Oaxaca",
@@ -47,8 +47,8 @@
       "name": "La Popular",
       "cat": "eat",
       "match": "la popular",
-      "lat": 17.043803,
-      "lon": -96.76811
+      "lat": 17.066817,
+      "lon": -96.724816
     },
     {
       "name": "Roy's Tacos",
@@ -68,8 +68,8 @@
       "name": "Casa Angel Hostel",
       "cat": "stay",
       "match": "casa angel hostel",
-      "lat": 17.0916677,
-      "lon": -96.717044
+      "lat": 17.067762,
+      "lon": -96.72628
     }
   ],
   "center": {

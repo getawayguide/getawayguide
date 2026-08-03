@@ -82,8 +82,9 @@
       "name": "Fairfield by Marriott Jaipur",
       "cat": "stay",
       "match": "fairfield by marri",
-      "lat": 26.885,
-      "lon": 75.805
+      "lat": 26.92267,
+      "lon": 75.794173,
+      "href": "https://www.google.com/maps/place/Fairfield+by+Marriott+Jaipur/@26.8629084,75.8018682,12z/data=!4m10!1m2!2m1!1sFairfield+by+Marriott+Jaipur+Jaipur!3m6!1s0x396db3f76be1318b:0x2436fe1af743870e!8m2!3d26.92267!4d75.794173!15sCiNGYWlyZmllbGQgYnkgTWFycmlvdHQgSmFpcHVyIEphaXB1ciIDiAEBWiUiI2ZhaXJmaWVsZCBieSBtYXJyaW90dCBqYWlwdXIgamFpcHVykgEFaG90ZWzgAQA!16s%2Fg%2F11svr9xzjy?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Govindam Retreat",

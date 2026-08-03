@@ -47,8 +47,9 @@
       "name": "Chandni Chowk",
       "cat": "see",
       "match": "chandni chowk",
-      "lat": 28.655983,
-      "lon": 77.232194
+      "lat": 28.650533,
+      "lon": 77.230337,
+      "href": "https://www.google.com/maps/place/Chandni+Chowk,+Delhi,+India/@28.6513747,77.2316374,15z/data=!3m1!4b1!4m6!3m5!1s0x390cfd1a88dcc559:0x24fa43c081dbe51!8m2!3d28.6505331!4d77.230337!16zL20vMDJyNmtj?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "India Gate",
@@ -61,8 +62,9 @@
       "name": "Haldiram's",
       "cat": "eat",
       "match": "haldiram's",
-      "lat": 28.576312,
-      "lon": 77.195003
+      "lat": 28.634231,
+      "lon": 77.222173,
+      "href": "https://www.google.com/maps/place/Haldiram's+-+Connaught+Place/@28.6081099,77.1813316,12z/data=!4m10!1m2!2m1!1sHaldiram's+Delhi!3m6!1s0x390cfd49daa29f51:0x69e7cc948429a889!8m2!3d28.634231!4d77.2221732!15sChBIYWxkaXJhbSdzIERlbGhpIgOIAQFaEiIQaGFsZGlyYW0ncyBkZWxoaZIBEWZhbWlseV9yZXN0YXVyYW504AEA!16s%2Fg%2F1hm4qghsy?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Hindustan Hostel",

@@ -26,8 +26,9 @@
       "name": "Cloud 9",
       "cat": "see",
       "match": "cloud 9",
-      "lat": 9.783753,
-      "lon": 126.156571
+      "lat": 9.813662,
+      "lon": 126.165141,
+      "href": "https://www.google.com/maps/place/Cloud+9+Surfing+Area/@9.8136625,126.1651406,17z/data=!3m1!4b1!4m6!3m5!1s0x330409ed5e3da33d:0xd2bbc5516a66d5cb!8m2!3d9.8136625!4d126.1651406!16s%2Fg%2F11g6xrwdmp?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Explore General Luna Downtown",
@@ -90,8 +91,9 @@
       "name": "Mad Monkey Siargao",
       "cat": "stay",
       "match": "mad monkey siargao",
-      "lat": 9.796,
-      "lon": 126.1585
+      "lat": 9.810204,
+      "lon": 126.158923,
+      "href": "https://www.google.com/maps/place/Mad+Monkey+Siargao/@9.8102035,126.1589229,17z/data=!4m9!3m8!1s0x3304092dd794a263:0xaa6e6d2770ac5a41!5m2!4m1!1i2!8m2!3d9.8102035!4d126.1589229!16s%2Fg%2F11h0x1lqr9?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Kayan Siargao",

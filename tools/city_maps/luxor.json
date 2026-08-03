@@ -50,10 +50,11 @@
     },
     {
       "name": "Karnak Temple",
-      "lat": 25.710136,
-      "lon": 32.650136,
+      "lat": 25.718835,
+      "lon": 32.65727,
       "cat": "see",
-      "match": "karnak temple"
+      "match": "karnak temple",
+      "href": "https://www.google.com/maps/place/Karnak/@25.7188346,32.6572703,17z/data=!3m1!4b1!4m6!3m5!1s0x1449159228fec0cd:0xc71ae8c008c259d8!8m2!3d25.7188346!4d32.6572703!16zL20vMDE0d3k0?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Temple of Hatshepsut",

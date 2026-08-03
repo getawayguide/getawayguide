@@ -345,13 +345,67 @@ def main():
         if nomap: log.append("    ! not embedded in the live page: %s (rebuild with --embed)" % ", ".join(nomap))
         if gone:  log.append("    ! %d pin(s) no longer named in the article, e.g. %s"
                              % (len(gone), "; ".join("%s:%s" % g for g in gone[:3])))
-        if not (stale or nomap or gone):
+
+        # ACCOMMODATION (Kevin, 2026-08-02: "often missed"). Hostels are usually linked to
+        # Hostelworld/Booking, which carry no coordinates, so mapgen silently drops them and
+        # the map ships with no ACCOMMODATION section at all. Flag any map whose article
+        # section HAS a "Where to Stay" block but whose config has no `stay` pin.
+        # Also list places the section links on Maps that never made it onto the map.
+        secs = dict(re.findall(r'<div class="fn-section" id="([^"]+)">', art) and [])
+        ms = list(re.finditer(r'<div class="fn-section" id="([^"]+)">', art))
+        body = {}
+        for i, mm in enumerate(ms):
+            end = ms[i + 1].start() if i + 1 < len(ms) else len(art)
+            body[mm.group(1)] = re.sub(r'<figure class="citymap-fig">.*?</figure>', "",
+                                       art[mm.start():end], flags=re.S)
+        nostay, uncovered = [], []
+        for m, c in maps:
+            seg = body.get(m, "")
+            if not seg:
+                continue
+            if re.search(r'fn-sub-hd">\s*Where to Stay', seg, re.I) and \
+               not any(p.get("cat") == "stay" for p in c.get("pois", [])):
+                nostay.append(m)
+            keys = [p.get("match", p["name"].lower()) for p in c.get("pois", [])]
+            keys += [t.get("match", t["name"].lower())
+                     for k in ("day_trips", "multi_day_trips", "activities") for t in c.get(k, [])]
+            for _t in re.findall(
+                    r'<a[^>]*href="https://www\.google\.com/maps/[^"]+"[^>]*>(.*?)</a>', seg, re.S):
+                nm = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", _t)).strip()
+                low = nm.lower()
+                if not nm or low in (c.get("city", "").lower(), slug):
+                    continue
+                if not any(k in low or low[:22] in k for k in keys):
+                    uncovered.append((m, nm))
+        if nostay:
+            log.append("    ! NO ACCOMMODATION pin on: %s  (article has a Where to Stay block - "
+                       "add it with: py tools/resolve_place.py --add <map> \"<hotel> <city>\" \"<label>\")"
+                       % ", ".join(nostay))
+        if uncovered:
+            seen, shown = set(), []
+            for m, nm in uncovered:
+                if (m, nm) in seen: continue
+                seen.add((m, nm)); shown.append("%s:%s" % (m, nm))
+            log.append("    ! %d article place(s) not on a map, e.g. %s"
+                       % (len(shown), "; ".join(shown[:4])))
+        if not (stale or nomap or gone or nostay or uncovered):
             log.append("    maps look in sync (re-extract anyway if you edited the article recently)")
 
     # 7c. Post-publish generators + lint (protocol steps 7-8). Separate top-level scripts,
     #     so run them as subprocesses rather than importing.
     if not DRY and not a.skip_generators:
         import subprocess
+        # a freshly-promoted draft carries Google-Docs paste artifacts and whole-line-bold
+        # that the live-page passes never saw; clean them before the lint gate below
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "strip_paste_artifacts.py"), slug],
+                           cwd=ROOT, capture_output=True, text=True)
+        log.append("ran strip_paste_artifacts.py (%s)" % (r.stdout or "").strip().splitlines()[-1:] or "-")
+        page = read(dst)
+        if "<b><b>" in page:
+            n = page.count("<b><b>")
+            write(dst, page.replace("<b><b>", "<b>").replace("</b></b>", "</b>"))
+            log.append("collapsed %d nested <b> (whole-line bold)" % n)
+
         for script, why in [("gen_og_images.py", "OG images"), ("add_structured_data.py", "JSON-LD"),
                             ("gen_sitemap.py", "sitemap")]:
             r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", script)],
@@ -361,6 +415,23 @@ def main():
             else:
                 tail = (r.stderr or r.stdout or "").strip().splitlines()
                 log.append("WARN: %s failed - run manually. %s" % (script, tail[-1] if tail else ""))
+
+        # every pin's coords vs the place its own link opens (catches a pin in the wrong part
+        # of town, e.g. Oaxaca's "La Popular" 5km out on Monte Alban)
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "check_pin_coords.py")],
+                           cwd=ROOT, capture_output=True, text=True)
+        bad = sum(int(x.rsplit(":", 1)[1]) for x in (r.stdout or "").splitlines()
+                  if x.startswith(("BAD LINK", "BAD PIN", "UNCLEAR")) and ":" in x)
+        log.append("check_pin_coords: %s" % ("clean" if not bad else
+                   "%d pin(s) off - run: py tools/check_pin_coords.py" % bad))
+
+        # publishing changes the nav on live pages only, so every remaining draft goes stale
+        drafts = [os.path.basename(os.path.dirname(p)) for p in
+                  glob.glob(os.path.join(ROOT, "Drafts", "*", "field-notes.html"))]
+        if drafts:
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "update_draft_nav.py")] + drafts,
+                               cwd=ROOT, capture_output=True, text=True)
+            log.append("refreshed nav on %d remaining draft(s)" % len(drafts))
         r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "lint_site.py"), "--ci"],
                            cwd=ROOT, capture_output=True, text=True)
         log.append("lint_site --ci: PASS" if r.returncode == 0

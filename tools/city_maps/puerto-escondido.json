@@ -75,15 +75,15 @@
       "name": "Cactus",
       "cat": "eat",
       "match": "cactus",
-      "lat": 15.8362,
-      "lon": -97.0458
+      "lat": 15.849421,
+      "lon": -97.053849
     },
     {
       "name": "Mar y Wana",
       "cat": "eat",
       "match": "mar y wana",
-      "lat": 15.8364,
-      "lon": -97.0455
+      "lat": 15.850233,
+      "lon": -97.053512
     }
   ],
   "sea_bg": true,

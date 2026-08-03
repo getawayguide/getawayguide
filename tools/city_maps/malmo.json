@@ -67,17 +67,19 @@
     },
     {
       "name": "Bullen Två Krögare",
-      "lat": 55.6058,
-      "lon": 12.9995,
+      "lat": 55.59996,
+      "lon": 13.001399,
       "cat": "eat",
-      "match": "bullen"
+      "match": "bullen",
+      "href": "https://www.google.com/maps/place/Bullen+-+Tv%C3%A5+Kr%C3%B6gare/@55.5999602,13.0013993,17z/data=!3m1!4b1!4m6!3m5!1s0x4653a157a62b210f:0x5a20e510e643a755!8m2!3d55.5999602!4d13.0013993!16s%2Fg%2F1z44b4613?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Konditori Katarina",
-      "lat": 55.5971764,
-      "lon": 13.0013641,
+      "lat": 55.607115,
+      "lon": 13.000068,
       "cat": "eat",
-      "match": "konditori katarina"
+      "match": "konditori katarina",
+      "href": "https://www.google.com/maps/place/Konditori+Katarina/@55.5858651,12.9877819,13z/data=!4m10!1m2!2m1!1sKonditori+Katarina+Malm%C3%B6!3m6!1s0x4653a3fc18982fc9:0x6ce3464440edd168!8m2!3d55.6071155!4d13.0000683!15sChlLb25kaXRvcmkgS2F0YXJpbmEgTWFsbcO2IgOIAQFaGyIZa29uZGl0b3JpIGthdGFyaW5hIG1hbG3DtpIBBGNhZmXgAQA!16s%2Fg%2F11c2n9xlgk?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "center": {

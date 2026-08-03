@@ -106,10 +106,13 @@ async def resolve_many(queries, cache, headful=False, pause=400):
                         pass
                 final = pg.url
                 if "/maps/place/" in final:
-                    ll = re.search(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", final) or re.search(r"/@(-?[\d.]+),(-?[\d.]+)", final)
+                    # a Maps URL can carry several !3d!4d pairs (embedded context blocks
+                    # come FIRST) - place_coords picks the subject's, not a neighbour's
+                    from resolve_place import place_coords
+                    ll = place_coords(final)
                     rec = {"ok": True, "url": final,
-                           "lat": float(ll.group(1)) if ll else None,
-                           "lon": float(ll.group(2)) if ll else None}
+                           "lat": ll[0] if ll else None,
+                           "lon": ll[1] if ll else None}
             except Exception as e:
                 rec = {"ok": False, "err": str(e)[:90]}
             cache[q] = rec

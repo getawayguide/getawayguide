@@ -1,0 +1,116 @@
+{
+  "slug": "bled",
+  "kicker": "Slovenia",
+  "city": "Lake Bled",
+  "osm": ".tmp/bled_osm.json",
+  "article": "slovenia/field-notes.html",
+  "embed": {
+    "pre": " guesthouses and hostels, and the whole town is small enough to do on foot</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"ljubljana\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Mala Osojnica",
+      "cat": "see",
+      "match": "mala osojnica",
+      "lat": 46.35756,
+      "lon": 14.081014
+    },
+    {
+      "name": "Bled Island",
+      "cat": "see",
+      "match": "bled island",
+      "lat": 46.362293,
+      "lon": 14.090048
+    },
+    {
+      "name": "Bled Castle",
+      "cat": "see",
+      "match": "bled castle",
+      "lat": 46.369703,
+      "lon": 14.100521
+    },
+    {
+      "name": "Mega Burger",
+      "cat": "eat",
+      "match": "mega burger",
+      "lat": 46.371114,
+      "lon": 14.106677
+    },
+    {
+      "name": "Velika Osojnica",
+      "cat": "see",
+      "match": "velika osojnica",
+      "lat": 46.357044,
+      "lon": 14.075295,
+      "href": "https://www.google.com/maps/place/Velika+Osojnica/@46.3569439,14.0747222,15z/data=!4m10!1m2!2m1!1sVelika+Osojnica+summit+hill+Bled!3m6!1s0x477a91d75579c99d:0xb407e950eed2f383!8m2!3d46.3570439!4d14.0752953!15sCiBWZWxpa2EgT3Nvam5pY2Egc3VtbWl0IGhpbGwgQmxlZFoiIiB2ZWxpa2Egb3Nvam5pY2Egc3VtbWl0IGhpbGwgYmxlZJIBC2hpa2luZ19hcmVhmgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDJwU1FsTklXbEZOTVZaNVUyeEtUazVzWkhKVlZrSlRXbGRPVldGV1JSQULgAQD6AQQIABBF!16s%2Fg%2F11h4fhrpbs?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Ojstrica",
+      "cat": "see",
+      "match": "ojstrica",
+      "lat": 46.359556,
+      "lon": 14.078575
+    },
+    {
+      "name": "Church of the Assumption of the Blessed Virgin Mary",
+      "cat": "see",
+      "match": "church of the assumpti",
+      "lat": 46.362576,
+      "lon": 14.090218
+    },
+    {
+      "name": "Velika Zaka",
+      "cat": "see",
+      "match": "velika zaka",
+      "lat": 46.361889,
+      "lon": 14.0825
+    },
+    {
+      "name": "Gostilna Pri Planincu",
+      "cat": "eat",
+      "match": "gostilna pri planincu",
+      "lat": 46.371486,
+      "lon": 14.106242
+    },
+    {
+      "name": "Spica",
+      "cat": "eat",
+      "match": "spica",
+      "lat": 46.369912,
+      "lon": 14.107261
+    },
+    {
+      "name": "Pizzeria Rustika",
+      "cat": "eat",
+      "match": "pizzeria rustika",
+      "lat": 46.371304,
+      "lon": 14.104299
+    },
+    {
+      "name": "Ace of Spades Hostel",
+      "cat": "stay",
+      "match": "ace of spades hostel",
+      "lat": 46.372279,
+      "lon": 14.10453,
+      "href": "https://www.google.com/maps/place/Ace+of+spades+hostel/@46.3722793,14.10453,17z/data=!4m9!3m8!1s0x477a912c13c212e1:0x3fca1277863e50bb!5m2!4m1!1i2!8m2!3d46.3722793!4d14.10453!16s%2Fg%2F11cnp0djmr?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 46.364337,
+    "lon": 14.093846
+  }
+}

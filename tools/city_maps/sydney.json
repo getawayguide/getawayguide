@@ -95,10 +95,11 @@
     },
     {
       "name": "Mad Monkey Potts Point",
-      "lat": -33.872275,
-      "lon": 151.224216,
+      "lat": -33.89187,
+      "lon": 151.246548,
       "cat": "stay",
-      "match": "mad monkey"
+      "match": "mad monkey",
+      "href": "https://www.google.com/maps/place/Holiday+Inn+%26+Suites+Sydney+Bondi+Junction,+an+IHG+Hotel/@-33.8729611,151.2241569,17z/data=!4m9!1m2!2m1!1sMad+Monkey+Potts+Point+Sydney!3m5!1s0x6b12adf0931b0d03:0xc772f93f820d1d49!8m2!3d-33.89187!4d151.246548!16s%2Fg%2F11rnf_25b0?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "day_trips": [

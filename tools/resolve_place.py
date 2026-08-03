@@ -33,6 +33,29 @@ def _save(c):
     json.dump(c, open(CACHE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
+def place_coords(url):
+    """(lat, lon) of the place a /maps/place/ URL is ABOUT.
+
+    A Maps URL can carry several !3d<lat>!4d<lon> pairs: Google embeds context blocks
+    (`!2sMonte Alban, Oaxaca, Mexico!3b1!8m2!3d…!4d…`) BEFORE the subject's own block, so
+    taking the first pair silently returns a different place - that is how Oaxaca's
+    "La Popular" ended up pinned on Monte Alban, 5km away.
+
+    The `/@lat,lon,zoom` viewport is always centred on the subject, so when there are
+    several pairs pick the one nearest the viewport; otherwise take the LAST pair (the
+    subject's block comes last), and fall back to the viewport itself.
+    """
+    pairs = [(float(a), float(b)) for a, b in
+             re.findall(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", url)]
+    at = re.search(r"/@(-?[\d.]+),(-?[\d.]+)", url)
+    view = (float(at.group(1)), float(at.group(2))) if at else None
+    if pairs:
+        if view and len(pairs) > 1:
+            return min(pairs, key=lambda p: (p[0] - view[0]) ** 2 + (p[1] - view[1]) ** 2)
+        return pairs[-1]
+    return view
+
+
 async def resolve(queries, use_cache=True):
     """{query: {ok, url, lat, lon, name}} - cached entries are returned without a browser."""
     cache = _load()
@@ -66,11 +89,10 @@ async def resolve(queries, use_cache=True):
                             pass
                     if "/maps/place/" in pg.url:
                         u = pg.url
-                        ll = (re.search(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", u) or
-                              re.search(r"/@(-?[\d.]+),(-?[\d.]+)", u))
+                        ll = place_coords(u)
                         rec = {"ok": bool(ll), "url": u,
-                               "lat": float(ll.group(1)) if ll else None,
-                               "lon": float(ll.group(2)) if ll else None,
+                               "lat": ll[0] if ll else None,
+                               "lon": ll[1] if ll else None,
                                "name": urllib.parse.unquote(
                                    u.split("/maps/place/")[1].split("/@")[0]).replace("+", " ")}
                 except Exception as e:
