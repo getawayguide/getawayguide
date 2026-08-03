@@ -439,6 +439,8 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   .home-dest-card{aspect-ratio:1.9/1}
   #dest-egypt .dest-bg{background-position:50% 25% !important}
   #dest-estonia .dest-bg{background-position:50% 46% !important}
+  /* centred crop cut the bottom off Bled island; 65% clears the shoreline both sides */
+  #dest-slovenia .dest-bg{background-position:50% 65% !important}
   /* Dedicated landscape crops (fixed images, decoupled from the portrait card so they never
      drift when a dest-card or its background-position changes) */
   #dest-latvia .dest-bg{background-image:url('Images/web/dest-cards/latvia-landscape.jpg') !important;background-position:50% 50% !important}
