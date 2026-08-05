@@ -24,7 +24,11 @@ import glob, html as htmlmod, os, re, sys, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
-QUALITY = 80
+# 85, not 80: measured against the jpg it replaces, q80 is 42% smaller but +0.46 mean
+# error (visibly lossier than the fallback), while q85 is still 31% smaller at EXACTLY
+# the jpg's fidelity. Free bytes, no quality cost - q80 was trading quality for size on
+# a site whose whole point is the photographs.
+QUALITY = 85
 
 IMG_TAG = re.compile(r"<img\b[^>]*>")
 PICTURE = re.compile(r"<picture>.*?</picture>", re.S)
