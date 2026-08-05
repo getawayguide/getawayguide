@@ -41,6 +41,8 @@ async def shoot(page, width, height, full_top):
 
 
 def fit(png, bg="#F4F2EC"):
+    # a page screenshot is already sRGB, so there is no profile to carry here - noted so
+    # the omission doesn't read as the same bug as the photo pipeline
     from PIL import Image
     im = Image.open(io.BytesIO(png)).convert("RGB")
     s = max(W / im.width, H / im.height)

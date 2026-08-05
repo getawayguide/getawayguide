@@ -30,23 +30,59 @@ IMG_TAG = re.compile(r"<img\b[^>]*>")
 PICTURE = re.compile(r"<picture>.*?</picture>", re.S)
 
 
+ORIG_EXT = (".JPEG", ".jpg", ".JPG", ".jpeg", ".png", ".PNG")
+
+
+def original_for(mob_jpg):
+    """The untouched source behind a -mob-*.jpg, if it can be found.
+
+    Images/web/<Country>/<path>/<Name>-mob-2x.jpg  ->  Images/<Country>/<path>/<Name>.*
+    Returns None when the shapes differ, so a CROPPED variant is never silently reframed.
+    """
+    rel = os.path.relpath(mob_jpg, ROOT).replace("\\", "/")
+    if not rel.startswith("Images/web/"):
+        return None
+    stem = re.sub(r"-mob-\dx\.jpg$", "", rel[len("Images/web/"):])
+    for ext in ORIG_EXT:
+        p = os.path.join(ROOT, "Images", stem + ext)
+        if os.path.exists(p):
+            from PIL import Image, ImageOps
+            a = Image.open(mob_jpg).size
+            b = ImageOps.exif_transpose(Image.open(p)).size
+            if abs(a[0] / a[1] - b[0] / b[1]) < 0.02:      # pure resize, not a crop
+                return p
+            return None
+    return None
+
+
 def encode(jpg, force=False):
     """Write <same>.webp next to a -mob-*.jpg. Returns (made, saved_kb).
 
+    Encodes from the ORIGINAL where possible. The -mob-*.jpg is itself a JPEG re-encode,
+    so going through it stacks generation loss; encoding straight from the original is
+    ~14% truer to the source at the same file size (measured mean error 3.16 -> 2.72).
+
     The ICC profile MUST be carried over. These photos are Display P3, and P3 pixel
-    values rendered as sRGB (which is what a browser assumes when no profile is present)
-    come out visibly desaturated - the images look grey. The desktop variants already
-    preserve it; dropping it on mobile is what made the two tiers look different.
+    values rendered as sRGB (what a browser assumes when no profile is present) come out
+    visibly desaturated - the images look grey. The desktop variants already preserve it;
+    dropping it on mobile is what made the two tiers look different on the same page.
     """
     webp = os.path.splitext(jpg)[0] + ".webp"
     if os.path.exists(webp) and not force:
         return False, 0
     if DRY:
         return True, 0
-    from PIL import Image
-    src = Image.open(jpg)
-    icc = src.info.get("icc_profile")
-    im = src.convert("RGB")
+    from PIL import Image, ImageOps
+    target = Image.open(jpg).size
+    orig = original_for(jpg)
+    if orig:
+        src = ImageOps.exif_transpose(Image.open(orig))
+        icc = src.info.get("icc_profile") or Image.open(jpg).info.get("icc_profile")
+        im = src.convert("RGB").resize(target, Image.LANCZOS)
+    else:
+        src = Image.open(jpg)
+        icc = src.info.get("icc_profile")
+        im = src.convert("RGB")
     im.save(webp, "WEBP", quality=QUALITY, method=6, icc_profile=icc)
     return True, (os.path.getsize(jpg) - os.path.getsize(webp)) / 1024
 

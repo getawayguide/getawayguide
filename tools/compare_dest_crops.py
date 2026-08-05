@@ -37,17 +37,19 @@ def dest_card_rule(dest_html, slug):
 
 
 def mobile_crop(img_rel, bias, out):
-    from PIL import Image
+    from PIL import Image, ImageOps
     p = os.path.join(ROOT, img_rel.replace("/", os.sep))
     if not os.path.exists(p):
         return None
-    im = Image.open(p).convert("RGB")
+    src = ImageOps.exif_transpose(Image.open(p))
+    icc = src.info.get("icc_profile")   # else the comparison is a different colour space
+    im = src.convert("RGB")             # than what actually ships
     band = round(im.width / ASPECT)
     if band > im.height:                       # already landscape enough
         band = im.height
     top = round((im.height - band) * bias)
     im.crop((0, top, im.width, top + band)).resize((570, 300), Image.LANCZOS) \
-        .save(out, "JPEG", quality=86)
+        .save(out, "JPEG", quality=86, icc_profile=icc)
     return True
 
 
