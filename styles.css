@@ -69,8 +69,9 @@ a.nav-dropdown-continent[style*="color:#1C2821"]{color:#1C2821!important;font-we
    Selector is scoped to match that specificity rather than reaching for !important. */
 .nav-links a.nav-map-card{display:block;text-decoration:none;margin-bottom:.5rem;opacity:1}
 /* text-transform/letter-spacing reset: this title sits inside an <a>, so it would inherit
-   the uppercase+tracking `.nav-links a` applies */
-.nav-map-title{display:block;font-family:'Lora',Georgia,serif;font-size:.95rem;font-style:normal;font-weight:400;color:#1C2821;padding:.3rem 0;margin-bottom:.5rem;white-space:nowrap;text-transform:none;letter-spacing:0}
+   the uppercase+tracking `.nav-links a` applies. Everything else is a pixel match for
+   "Explore by Continent" (.nav-dropdown-continent) so the two headings read as a pair. */
+.nav-map-title{display:block;font-family:'Lora',Georgia,serif;font-size:.95rem;font-style:italic;font-weight:300;color:#1C2821;padding:.3rem 0;margin-bottom:.5rem;white-space:nowrap;text-transform:none;letter-spacing:0}
 .nav-map-thumb{display:block;width:280px;height:150px;object-fit:cover;border:none;border-radius:6px;transition:transform .25s ease,box-shadow .25s ease}
 .nav-map-card:hover .nav-map-thumb{transform:translateY(-2px);box-shadow:0 10px 26px var(--shadow)}
 .nav-map-card:hover .nav-map-title{opacity:.75}

@@ -66,31 +66,41 @@ credentials.json, token.json  # Google OAuth (gitignored)
 
 **Core principle:** Local files are just for processing. Anything I need to see or use lives in cloud services. Everything in `.tmp/` is disposable.
 
-## Image System — Two Versions Required
+## Image System — Responsive, WebP on Both Tiers
 
-Every article body image must always have two versions:
+Every article body image is served from `Images/web/` at two tiers, each with a 1x/2x/3x
+`srcset` and a WebP alongside the JPEG. **The full-resolution original under `Images/` is
+never served to a visitor** — it is the archive the variants are built from.
 
-| Version | Path | Dimensions | Quality | Loads on |
-|---------|------|------------|---------|----------|
-| Desktop compressed | `Images/web/El Salvador/...` | Portrait 600×900 · Landscape 1200×800 | 85 | Desktop (≥769px) |
-| Mobile original | `Images/El Salvador/...` | Full resolution original | Original | Mobile (<769px) |
+| Tier | Files | Serves |
+|------|-------|--------|
+| Desktop | `Images/web/<Country>/…-1x/-2x/-3x.{webp,jpg}` | ≥769px |
+| Mobile | `Images/web/<Country>/…-mob-1x/-2x/-3x.{webp,jpg}` | <769px |
 
-This is implemented via `<picture>` elements in the article HTML:
 ```html
 <picture>
-  <source media="(min-width:769px)" srcset="../Images/web/El Salvador/X/Y.jpg">
-  <img src="../Images/El Salvador/X/Y.ORIG_EXT" style="position:absolute;...">
+  <source type="image/webp" media="(min-width:769px)" srcset="…-1x.webp 576w, …-3x.webp 1728w" sizes="576px">
+  <source                   media="(min-width:769px)" srcset="…-1x.jpg  576w, …-3x.jpg  1728w" sizes="576px">
+  <source type="image/webp" srcset="…-mob-1x.webp 393w, …-mob-3x.webp 1179w" sizes="393px">
+  <img src="…-mob-2x.jpg" srcset="…-mob-1x.jpg 393w, …-mob-3x.jpg 1179w" sizes="393px">
 </picture>
 ```
 
-**Hero/cover photos** always use the full-resolution original on all devices — no compression.
+The `<img src>` is only the fallback for clients that ignore `srcset`; point it at
+`-mob-2x.jpg`, **never at the original** (some are 13MB — that used to be the fallback).
 
 **Whenever new photos are added to an article page, you must:**
-1. Run `python tools/recompress_desktop.py` — generates/updates the `Images/web/` compressed version
-2. Run `python tools/add_picture_mobile.py` — wraps any unwrapped `<img>` tags in `<picture>` elements
-3. Run `python tools/fix_case.py` — fixes case-sensitivity for GitHub Pages (Linux)
+1. `python tools/recompress_desktop.py` — desktop variants into `Images/web/`
+2. `python tools/add_picture_mobile.py` — wrap bare `<img>` tags in `<picture>`
+3. `python tools/gen_mobile_webp.py` — mobile WebP + fixes the `src` fallback
+4. `python tools/fix_img_perf.py` — `loading` + intrinsic `width`/`height` (layout shift)
+5. `python tools/fix_case.py` — case-sensitivity for GitHub Pages (Linux)
 
-Run all three scripts in that order any time photos are added or changed.
+Run them in that order any time photos are added or changed.
+
+**No third-party image hosts.** Nav flags are local (`Images/web/flags/`, via
+`tools/localize_flags.py`); they used to come from flagcdn.com, which put an external
+origin in the critical path of the nav on all 45 pages.
 
 ## Visual QA — Screenshot Rule
 

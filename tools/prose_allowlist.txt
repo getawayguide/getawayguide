@@ -1,0 +1,19 @@
+# Words the spell check should accept. One per line, lowercase.
+# Place names, foods, transport and brands that a general dictionary lacks.
+bua
+doi
+donki
+flor
+nuoc
+ras
+tha
+thit
+cao
+lau
+khlong
+wat
+phra
+suthep
+kho
+trung
+maa

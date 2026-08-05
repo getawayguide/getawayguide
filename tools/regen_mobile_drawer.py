@@ -35,7 +35,7 @@ def block(pfx, open_cls):
     more room than they earn, and the continent names are self-explanatory in a list. The
     desktop dropdown keeps both."""
     L = ['<div class="mobile-nav-continents%s">' % open_cls,
-         '        <a href="%sdestinations.html#explore-map" class="mnc-map">Explore Interactive Map</a>' % pfx]
+         '        <a href="%sdestinations.html#explore-map" class="mnc-map">Explore the Interactive Map</a>' % pfx]
     L += ['        <a href="%sdestinations.html#%s">%s%s</a>'
           % (pfx, slug, ico(pfx, slug), label) for slug, label in CONTS]
     L += ['        <a href="%sdestinations.html">All Destinations</a>' % pfx,

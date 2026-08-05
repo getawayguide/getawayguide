@@ -88,7 +88,7 @@ def main():
     countries, seen = [], set()
     for href, flag, name in re.findall(
             r'<a href="([^"]+)" class="nav-dropdown-item">'
-            r'<img[^>]*flagcdn\.com/\d+x\d+/([a-z]+)\.png[^>]*>'
+            r'<img[^>]*flags/([a-z]+)\.png[^>]*>'
             r'<span class="country-name">([^<]+)</span>', index_html):
         url = href.lstrip("./")
         if url in seen:

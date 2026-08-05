@@ -1,0 +1,179 @@
+{
+  "slug": "amsterdam",
+  "kicker": "Netherlands",
+  "city": "Amsterdam",
+  "osm": ".tmp/amsterdam_osm.json",
+  "article": "netherlands/field-notes.html",
+  "embed": {
+    "pre": "n walking distance of most of the city; Amsterdam is pricey, so book early</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Jordaan",
+      "cat": "see",
+      "match": "jordaan",
+      "lat": 52.375416,
+      "lon": 4.881096
+    },
+    {
+      "name": "Rijksmuseum",
+      "cat": "see",
+      "match": "rijksmuseum",
+      "lat": 52.359843,
+      "lon": 4.88504
+    },
+    {
+      "name": "Anne Frank House",
+      "cat": "see",
+      "match": "anne frank house",
+      "lat": 52.375156,
+      "lon": 4.884081
+    },
+    {
+      "name": "Vondelpark",
+      "cat": "see",
+      "match": "vondelpark",
+      "lat": 52.357197,
+      "lon": 4.864119
+    },
+    {
+      "name": "Dam Square",
+      "cat": "see",
+      "match": "dam square",
+      "lat": 52.373116,
+      "lon": 4.892351
+    },
+    {
+      "name": "Albert Cuyp Market",
+      "cat": "see",
+      "match": "albert cuyp market",
+      "lat": 52.355233,
+      "lon": 4.891779
+    },
+    {
+      "name": "NDSM",
+      "cat": "see",
+      "match": "ndsm",
+      "lat": 52.400374,
+      "lon": 4.892954
+    },
+    {
+      "name": "Red Light District",
+      "cat": "see",
+      "match": "red light district",
+      "lat": 52.373408,
+      "lon": 4.898281
+    },
+    {
+      "name": "The Pancake Bakery",
+      "cat": "eat",
+      "match": "the pancake bakery",
+      "lat": 52.377589,
+      "lon": 4.886264
+    },
+    {
+      "name": "The Flying Pig",
+      "cat": "stay",
+      "match": "the flying pig",
+      "lat": 52.360321,
+      "lon": 4.878403,
+      "href": "https://www.google.com/maps/place/The+Flying+Pig/@52.3603214,4.8784034,17z/data=!3m1!4b1!4m9!3m8!1s0x47c609e5bdc68699:0xb18dfc4ad299b1c8!5m2!4m1!1i2!8m2!3d52.3603214!4d4.8784034!16s%2Fg%2F1tjgzkjk?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwMi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "The Hoxton, Amsterdam",
+      "cat": "stay",
+      "match": "the hoxton, amsterdam",
+      "lat": 52.371872,
+      "lon": 4.887428,
+      "href": "https://www.google.com/maps/place/The+Hoxton,+Amsterdam/@52.3718724,4.8874276,17z/data=!4m9!3m8!1s0x47c609c3f2548721:0xba964e66b859bcad!5m2!4m1!1i2!8m2!3d52.3718724!4d4.8874276!16s%2Fg%2F11bv19dhv9?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwMi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Hyatt Regency Amsterdam",
+      "cat": "stay",
+      "match": "hyatt regency amsterda",
+      "lat": 52.36174,
+      "lon": 4.911745,
+      "href": "https://www.google.com/maps/place/Hyatt+Regency+Amsterdam/@52.3617399,4.9117451,17z/data=!4m9!3m8!1s0x47c6099971ddb735:0x60080acd7eb71850!5m2!4m1!1i2!8m2!3d52.3617399!4d4.9117451!16s%2Fg%2F11c0rmgfv6?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwMi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Royal Palace",
+      "cat": "see",
+      "match": "royal palace",
+      "lat": 52.373184,
+      "lon": 4.891376
+    },
+    {
+      "name": "STRAAT Museum",
+      "cat": "see",
+      "match": "straat museum",
+      "lat": 52.402138,
+      "lon": 4.89426
+    },
+    {
+      "name": "Heineken Experience",
+      "cat": "see",
+      "match": "heineken experience",
+      "lat": 52.357831,
+      "lon": 4.891825
+    },
+    {
+      "name": "Jimmy Woo",
+      "cat": "eat",
+      "match": "jimmy woo",
+      "lat": 52.36478,
+      "lon": 4.882275
+    }
+  ],
+  "center": {
+    "lat": 52.377803,
+    "lon": 4.8812
+  },
+  "day_trips": [
+    {
+      "name": "Utrecht",
+      "match": "utrecht",
+      "time": "Half Day"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "GRACHTENGORDEL",
+      "lat": 52.3667,
+      "lon": 4.89454
+    },
+    {
+      "text": "DE PIJP",
+      "lat": 52.35417,
+      "lon": 4.89908
+    },
+    {
+      "text": "AMSTERDAM NOORD",
+      "lat": 52.39616,
+      "lon": 4.92961
+    },
+    {
+      "text": "PLANTAGE",
+      "lat": 52.36723,
+      "lon": 4.91254
+    },
+    {
+      "text": "JORDAAN",
+      "lat": 52.37542,
+      "lon": 4.8811
+    }
+  ]
+}

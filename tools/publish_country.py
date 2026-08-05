@@ -92,8 +92,8 @@ NAV_RE = re.compile(r'<div class="nav-dropdown[ "].*?</div>\s*</li>', re.DOTALL)
 def _nav_a(pfx, name, iso2, href, full=False):
     dot = '<span class="nav-fulldot" title="Full guide available"></span>' if full else ''
     return ('<a href="%s%s" class="nav-dropdown-item"><img loading="lazy" '
-            'src="https://flagcdn.com/16x12/%s.png" width="16" height="12" alt="">'
-            '<span class="country-name">%s</span>%s</a>') % (pfx, href, iso2, name, dot)
+            'src="%sImages/web/flags/%s.png" width="16" height="12" alt="">'
+            '<span class="country-name">%s</span>%s</a>') % (pfx, href, pfx, iso2, name, dot)
 
 def parse_countries(dest_html):
     """{continent: [(name, iso2, slug) alpha]} joined from destinations.html grid + fieldNotesMap."""
@@ -140,7 +140,7 @@ def build_nav(pfx, by_cont):
     L += ['          </div>', '        </div>',
           '        <div class="nav-dropdown-col nav-dropdown-map">',
           '          <a href="%sdestinations.html#explore-map" class="nav-map-card">' % pfx,
-          '            <span class="nav-map-title">Explore Interactive Map</span>',
+          '            <span class="nav-map-title">Explore the Interactive Map</span>',
           '            <img src="%sImages/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" '
           'loading="lazy" decoding="async" alt="World map of the countries I have travelled to">' % pfx,
           '          </a>',
@@ -197,7 +197,7 @@ def main():
     ip = os.path.join(ROOT, "index.html"); s = read(ip)
     if "fn-flag-card" in s:
         fc = lambda indent, pfx: ('%s<a href="%s/field-notes.html" class="fn-flag-card">'
-            '<img src="https://flagcdn.com/32x24/%s.png" width="32" height="24" alt="%s">'
+            '<img src="Images/web/flags/%s.png" width="32" height="24" alt="%s">'
             '<span class="fn-flag-name">%s</span></a>') % (indent, slug, iso2, name, name)
         fc_re = r'[ \t]*<a href="[a-z-]+/field-notes\.html" class="fn-flag-card"><img[^>]*><span class="fn-flag-name">(?P<n>[^<]+)</span></a>'
         s2, ch = insert_after_alpha(s, fc_re, "n", name, fc); write(ip, s2)
@@ -380,7 +380,7 @@ def main():
             end = ms[i + 1].start() if i + 1 < len(ms) else len(art)
             body[mm.group(1)] = re.sub(r'<figure class="citymap-fig">.*?</figure>', "",
                                        art[mm.start():end], flags=re.S)
-        nostay, uncovered = [], []
+        nostay, uncovered, nolabels = [], [], []
         for m, c in maps:
             seg = body.get(m, "")
             if not seg:
@@ -388,6 +388,15 @@ def main():
             if re.search(r'fn-sub-hd">\s*Where to Stay', seg, re.I) and \
                not any(p.get("cat") == "stay" for p in c.get("pois", [])):
                 nostay.append(m)
+            # DISTRICT LABELS: articles name neighbourhoods constantly ("stay in De Pijp"),
+            # and they read far better as faint map labels than as pins on a street corner.
+            # A map with none is usually a map that never got them, not one that didn't need
+            # them - so flag it and list the neighbourhood-ish names the section mentions.
+            if not c.get("district_labels") and not c.get("district_label"):
+                hood = re.compile(r"\b(?:the\s+)?([A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)\s+"
+                                  r"(?:neighbou?rhood|district|quarter|barrio|old town)", re.I)
+                names = {h.strip() for h in hood.findall(re.sub(r"<[^>]+>", " ", seg))}
+                nolabels.append((m, sorted(names)[:5]))
             keys = [p.get("match", p["name"].lower()) for p in c.get("pois", [])]
             keys += [t.get("match", t["name"].lower())
                      for k in ("day_trips", "multi_day_trips", "activities") for t in c.get(k, [])]
@@ -410,18 +419,36 @@ def main():
                 seen.add((m, nm)); shown.append("%s:%s" % (m, nm))
             log.append("    ! %d article place(s) not on a map, e.g. %s"
                        % (len(shown), "; ".join(shown[:4])))
-        if not (stale or nomap or gone or nostay or uncovered):
+        for m, names in nolabels:
+            log.append("    ! NO NEIGHBORHOOD LABELS on %s%s  (add district_labels: "
+                       "[{text,lat,lon}] - see tools/city_maps/amsterdam.json)"
+                       % (m, ("; article mentions " + ", ".join(names)) if names else ""))
+        if not (stale or nomap or gone or nostay or uncovered or nolabels):
             log.append("    maps look in sync (re-extract anyway if you edited the article recently)")
 
     # 7c. Post-publish generators + lint (protocol steps 7-8). Separate top-level scripts,
     #     so run them as subprocesses rather than importing.
     if not DRY and not a.skip_generators:
         import subprocess
+        # the nav flags are served locally, so a NEW country needs its flag downloaded or
+        # the dropdown shows a broken image (Netherlands shipped without nl.png)
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "localize_flags.py"),
+                            "--fetch", "--rewrite"], cwd=ROOT, capture_output=True, text=True)
+        fl = os.path.join(ROOT, "Images", "web", "flags", "%s.png" % a.iso2.lower())
+        log.append("flag %s.png: %s" % (a.iso2.lower(),
+                                        "ok" if os.path.exists(fl) else "MISSING - fetch it manually"))
+
         # a freshly-promoted draft carries Google-Docs paste artifacts and whole-line-bold
         # that the live-page passes never saw; clean them before the lint gate below
         r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "strip_paste_artifacts.py"), slug],
                            cwd=ROOT, capture_output=True, text=True)
         log.append("ran strip_paste_artifacts.py (%s)" % (r.stdout or "").strip().splitlines()[-1:] or "-")
+
+        # prose QA: double spaces, repeated words, spacing around punctuation
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "lint_prose.py"), "--fix"],
+                           cwd=ROOT, capture_output=True, text=True)
+        head = (r.stdout or "").strip().splitlines()
+        log.append("ran lint_prose.py --fix (%s)" % (head[0] if head else "-"))
         page = read(dst)
         if "<b><b>" in page:
             n = page.count("<b><b>")
