@@ -48,13 +48,16 @@ def main():
                       % re.escape(a.slug), dest)
         bias = int(m.group(1)) / 100 if m else 0.5
 
-    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+    src_im = ImageOps.exif_transpose(Image.open(src))
+    icc = src_im.info.get("icc_profile")   # Display P3; without it the card looks grey
+    im = src_im.convert("RGB")
     s = max(W / im.width, H / im.height)
     im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
     x = (im.width - W) // 2
     y = max(0, min(im.height - H, round((im.height - H) * bias)))
     out = os.path.join(ROOT, "Images", "web", "dest-cards", "%s-landscape.jpg" % a.slug)
-    im.crop((x, y, x + W, y + H)).save(out, "JPEG", quality=84, optimize=True)
+    im.crop((x, y, x + W, y + H)).save(out, "JPEG", quality=84, optimize=True,
+                                       icc_profile=icc)
     print("%s  <- %s  y=%d%%  (%dx%d, %.0f KB)"
           % (os.path.relpath(out, ROOT).replace("\\", "/"), os.path.basename(src),
              round(bias * 100), W, H, os.path.getsize(out) / 1024))

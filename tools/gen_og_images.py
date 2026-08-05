@@ -72,11 +72,14 @@ def make_og(src, dst, vbias, portrait_ar=None):
     straight from the original to 1.9:1 keeps more of the width, so the preview and the
     card end up framed differently (Colombia, Tanzania, India, Chile, Brazil).
     """
-    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+    src_im = ImageOps.exif_transpose(Image.open(src))
+    icc = src_im.info.get("icc_profile")             # these photos are Display P3; dropping
+    im = src_im.convert("RGB")                       # the profile renders them desaturated
     if portrait_ar:
         im = _cover(im, portrait_ar, 0.5)            # step 1: the portrait thumbnail
     im = _cover(im, OG_W / OG_H, vbias)              # step 2: the landscape card
-    im.resize((OG_W, OG_H), Image.LANCZOS).save(dst, format="JPEG", quality=82, optimize=True)
+    im.resize((OG_W, OG_H), Image.LANCZOS).save(dst, format="JPEG", quality=82,
+                                                optimize=True, icc_profile=icc)
 
 # A country's OG image and its MOBILE landscape dest-card are both 1.9:1, so they should
 # show the same thing - otherwise the same country is framed two ways depending on where

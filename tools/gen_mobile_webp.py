@@ -30,16 +30,24 @@ IMG_TAG = re.compile(r"<img\b[^>]*>")
 PICTURE = re.compile(r"<picture>.*?</picture>", re.S)
 
 
-def encode(jpg):
-    """Write <same>.webp next to a -mob-*.jpg. Returns (made, saved_kb)."""
+def encode(jpg, force=False):
+    """Write <same>.webp next to a -mob-*.jpg. Returns (made, saved_kb).
+
+    The ICC profile MUST be carried over. These photos are Display P3, and P3 pixel
+    values rendered as sRGB (which is what a browser assumes when no profile is present)
+    come out visibly desaturated - the images look grey. The desktop variants already
+    preserve it; dropping it on mobile is what made the two tiers look different.
+    """
     webp = os.path.splitext(jpg)[0] + ".webp"
-    if os.path.exists(webp):
+    if os.path.exists(webp) and not force:
         return False, 0
     if DRY:
         return True, 0
     from PIL import Image
-    im = Image.open(jpg).convert("RGB")
-    im.save(webp, "WEBP", quality=QUALITY, method=6)
+    src = Image.open(jpg)
+    icc = src.info.get("icc_profile")
+    im = src.convert("RGB")
+    im.save(webp, "WEBP", quality=QUALITY, method=6, icc_profile=icc)
     return True, (os.path.getsize(jpg) - os.path.getsize(webp)) / 1024
 
 

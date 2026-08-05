@@ -98,6 +98,19 @@ The `<img src>` is only the fallback for clients that ignore `srcset`; point it 
 
 Run them in that order any time photos are added or changed.
 
+**ALWAYS carry the ICC profile through.** These photos are **Display P3**. Pillow's
+`.convert("RGB")` silently drops the profile, and a browser then reads P3 pixel values as
+sRGB, which renders them **visibly desaturated — the photos look grey**. Every tool that
+writes an image must pass it on:
+
+```python
+src = ImageOps.exif_transpose(Image.open(path))
+icc = src.info.get("icc_profile")          # grab BEFORE convert()
+src.convert("RGB").save(dst, quality=84, icc_profile=icc)
+```
+
+This is the same class of bug as the System.Drawing one — see [[feedback_image_files]].
+
 **No third-party image hosts.** Nav flags are local (`Images/web/flags/`, via
 `tools/localize_flags.py`); they used to come from flagcdn.com, which put an external
 origin in the critical path of the nav on all 45 pages.
