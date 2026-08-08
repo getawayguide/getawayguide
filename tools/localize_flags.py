@@ -11,15 +11,59 @@ and rewrites every flagcdn.com reference to the local copy.
 
   py tools/localize_flags.py --list      # which flags are referenced
   py tools/localize_flags.py --fetch     # download them (PowerShell)
+  py tools/localize_flags.py --all       # download EVERY country's flag (see below)
   py tools/localize_flags.py --rewrite   # point the HTML at the local copies
+
+WHY --all EXISTS. `referenced()` scans for LITERAL flagcdn URLs, which only finds the flags
+hard-coded as <img> tags in the nav. destinations.html builds its tooltip flag at runtime:
+
+    src="Images/web/flags/" + id.toLowerCase() + ".png"
+
+There is no literal URL there to match, so the first localisation pass downloaded 33 flags
+and left every other country's tooltip pointing at a file that does not exist - a broken
+image for 26 of the 50 visited countries and for every country on the all-countries layer.
+The map can show ANY country, so the local set has to cover any country: --all fetches the
+full ISO-3166-1 alpha-2 list. Roughly 250 files at ~600 bytes each, so ~150KB total.
 """
-import glob, os, re, sys, urllib.request
+import glob, json, os, re, sys, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "Images", "web", "flags")
 # the nav asks for 16x12; grab 32x24 so it stays crisp on retina and let width/height scale it
 REMOTE = "https://flagcdn.com/32x24/%s.png"
+CODES = "https://flagcdn.com/en/codes.json"
 REF = re.compile(r'https://flagcdn\.com/\d+x\d+/([a-z]{2})\.png')
+# flag URLs assembled in JS from a country id - invisible to REF, hence --all
+RUNTIME = re.compile(r'flags/["\']?\s*\+\s*\w+')
+
+
+CODES_CACHE = os.path.join(ROOT, ".tmp", "flagcdn_codes.json")
+
+
+def all_codes():
+    """Every ISO-3166-1 alpha-2 code flagcdn serves (its list also carries subdivisions
+    like gb-eng and us-ca, which the map never asks for, so keep 2-letter codes only).
+
+    Prefers the cached list: Python's certificate store rejects flagcdn in this
+    environment, so the list is fetched with PowerShell into .tmp/flagcdn_codes.json.
+    """
+    data = None
+    if os.path.exists(CODES_CACHE):
+        data = json.load(open(CODES_CACHE, encoding="utf-8-sig"))
+    else:
+        req = urllib.request.Request(CODES, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.load(r)
+    return sorted(c for c in data if re.fullmatch(r"[a-z]{2}", c))
+
+
+def runtime_builders():
+    """Pages that construct a flag path in JS, so a literal-URL scan cannot see their needs."""
+    hits = []
+    for p, rel in pages():
+        if RUNTIME.search(open(p, encoding="utf-8", errors="replace").read()):
+            hits.append(rel)
+    return hits
 
 
 def pages():
@@ -85,11 +129,35 @@ def rewrite():
     return not missing
 
 
+def audit():
+    """Which local flags are missing for anything a page can ask for at runtime."""
+    have = {f[:-4] for f in os.listdir(OUT)} if os.path.isdir(OUT) else set()
+    builders = runtime_builders()
+    print("local flags: %d" % len(have))
+    if builders:
+        print("pages that build flag URLs in JS (need the FULL set): %s" % ", ".join(builders))
+        try:
+            need = all_codes()
+        except Exception as e:
+            print("  (could not fetch the code list: %s)" % str(e)[:60])
+            return False
+        gap = [c for c in need if c not in have]
+        print("  ISO codes served by flagcdn: %d | missing locally: %d" % (len(need), len(gap)))
+        if gap:
+            print("  e.g. %s ... (run --all)" % " ".join(gap[:14]))
+        return not gap
+    return True
+
+
 if __name__ == "__main__":
     isos = referenced()
     if "--list" in sys.argv or len(sys.argv) == 1:
-        print("%d distinct flags referenced: %s" % (len(isos), " ".join(isos)))
+        print("%d distinct flags referenced literally: %s" % (len(isos), " ".join(isos)))
+    if "--audit" in sys.argv:
+        audit()
     if "--fetch" in sys.argv:
         fetch(isos)
+    if "--all" in sys.argv:
+        fetch(all_codes())
     if "--rewrite" in sys.argv:
         rewrite()
