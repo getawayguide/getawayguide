@@ -36,24 +36,23 @@ def _save(c):
 def place_coords(url):
     """(lat, lon) of the place a /maps/place/ URL is ABOUT.
 
-    A Maps URL can carry several !3d<lat>!4d<lon> pairs: Google embeds context blocks
-    (`!2sMonte Alban, Oaxaca, Mexico!3b1!8m2!3d…!4d…`) BEFORE the subject's own block, so
-    taking the first pair silently returns a different place - that is how Oaxaca's
+    A Maps URL can carry several !3d<lat>!4d<lon> pairs. Google nests them CONTEXT FIRST,
+    SUBJECT LAST: an adjacent `!2s<label>` names the context (usually the city, sometimes a
+    neighbouring business), and the subject's own coords follow the final `!1s<feature-id>`.
+    Taking the first pair returns a different place entirely - that is how Oaxaca's
     "La Popular" ended up pinned on Monte Alban, 5km away.
 
-    The `/@lat,lon,zoom` viewport is always centred on the subject, so when there are
-    several pairs pick the one nearest the viewport; otherwise take the LAST pair (the
-    subject's block comes last), and fall back to the viewport itself.
+    Always take the LAST pair. An earlier version picked the pair nearest the `/@` viewport
+    on the theory that the viewport tracks the subject; it doesn't when Google frames the
+    shot on the city instead, and that was wrong on 132 of the 467 multi-pair links on this
+    site (Sombor resolving to Novi Sad, 81km; an abandoned Soviet plane to a restaurant,
+    41km). The `/@` viewport is only a fallback for URLs carrying no pair at all.
     """
-    pairs = [(float(a), float(b)) for a, b in
-             re.findall(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", url)]
-    at = re.search(r"/@(-?[\d.]+),(-?[\d.]+)", url)
-    view = (float(at.group(1)), float(at.group(2))) if at else None
+    pairs = re.findall(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", url)
     if pairs:
-        if view and len(pairs) > 1:
-            return min(pairs, key=lambda p: (p[0] - view[0]) ** 2 + (p[1] - view[1]) ** 2)
-        return pairs[-1]
-    return view
+        return float(pairs[-1][0]), float(pairs[-1][1])
+    at = re.search(r"/@(-?[\d.]+),(-?[\d.]+)", url)
+    return (float(at.group(1)), float(at.group(2))) if at else None
 
 
 async def resolve(queries, use_cache=True):

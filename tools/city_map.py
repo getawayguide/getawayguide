@@ -390,18 +390,26 @@ def build(cfg_path, embed=False, demo=None):
         # framings (bias the center so pins slide clear, zooming out only as needed) and take the
         # closest one that clears BOTH AND keeps every pin in frame. If the current framing is
         # already clear, nothing changes (hand-tuned `center`/`pad` are respected).
+        # Boxes the fixed chrome occupies, in variant pixels. Both the legend-clear rule below
+        # and the district-label placer further down need these, so compute them once here.
+        rows = heads = 0
+        for _cat in GRP_ORDER:
+            if any(p[3] == _cat for p in POIS): heads += 1; rows += sum(p[3] == _cat for p in POIS)
+        for _tr in (MULTITRIPS, DAYTRIPS, ACTIVITIES):
+            if _tr: heads += 1; rows += len(_tr) + sum(len(t["name"]) > 24 for t in _tr)  # long names wrap
+        Lw = 226 + 34                 # key width + right margin + a little slack
+        Lh = 15 + 24 + heads * 17 + rows * 16 + 6
+        Lx0 = W - Lw
+        # title block: kicker + city drawn at x≈title_px*0.62, baseline title_px*1.66.
+        # Mobile has no SVG title but an HTML overlay in the same corner carrying the city
+        # name AND the two hint lines, so it reserves a taller, wider box.
+        Tx1 = title_px * 0.62 + len(city) * title_px * 0.60 + 12
+        Ty1 = title_px * 1.9
+        if mobile:
+            Tx1 = max(Tx1, title_px * 0.62 + 26 * title_px * 0.30)   # widest hint line
+            Ty1 = title_px * 1.9 + len(cfg.get("hint") or []) * title_px * 0.62
+
         if not mobile and not os.environ.get("CM_NO_LEGEND_CLEAR"):
-            rows = heads = 0
-            for _cat in GRP_ORDER:
-                if any(p[3] == _cat for p in POIS): heads += 1; rows += sum(p[3] == _cat for p in POIS)
-            for _tr in (MULTITRIPS, DAYTRIPS, ACTIVITIES):
-                if _tr: heads += 1; rows += len(_tr) + sum(len(t["name"]) > 24 for t in _tr)  # long names wrap
-            Lw = 226 + 34                 # key width + right margin + a little slack
-            Lh = 15 + 24 + heads * 17 + rows * 16 + 6
-            Lx0 = W - Lw
-            # title block: kicker + city drawn at x≈title_px*0.62, baseline title_px*1.66
-            Tx1 = title_px * 0.62 + len(city) * title_px * 0.60 + 12
-            Ty1 = title_px * 1.9
 
             def _project(cx0, cy0, s0):
                 return [(W / 2 + (p[0] - cx0) * s0, H / 2 - (p[1] - cy0) * s0) for p in fmx]
@@ -538,21 +546,46 @@ def build(cfg_path, embed=False, demo=None):
                         r, g, b = im_wc.getpixel((X, Y)); tot += 1
                         if abs(r - WR) < 26 and abs(g - WG) < 26 and abs(b - WB) < 26: hit += 1
             return hit / tot if tot else 0.0
+        # ...and it must not disappear under the fixed chrome either. The title (top-left, both
+        # variants) and the key (top-right, desktop) are painted OVER the map, so a label landing
+        # there is simply lost — Ghent's PATERSHOL sat across the "Ghent" wordmark and SINT-JACOBS
+        # was swallowed by the key. Score chrome the same way water is scored so one search
+        # relocates a label that is wet, covered, or both.
+        def _chrome(cx0, cy0, tw, th):
+            # Desktop only. The mobile title/hint is a FIXED HTML overlay sitting above a raster
+            # the reader pans and zooms, so a label's baked-in position says nothing about where
+            # it will be relative to the title — and any label can be panned under it regardless.
+            # Nothing to solve there; on mobile keep a redundant label out of the config instead.
+            if mobile:
+                return 0.0
+            hit = tot = 0
+            for cf in (-.5, -.25, 0, .25, .5):
+                for rf in (0.0, -0.7):
+                    # +14px margin: Lh/Ty1 are estimates from row counts and glyph widths, and a
+                    # label flush against the edge still reads as "tucked under" the panel
+                    X = cx0 + tw * cf; Y = cy0 + th * rf; tot += 1
+                    if (X <= Tx1 + 14 and Y <= Ty1 + 14) or \
+                       (X >= Lx0 - 14 and Y <= Lh + 14): hit += 1
+            return hit / tot if tot else 0.0
+
+        def _cost(cx0, cy0, tw, th):
+            return _wfrac(cx0, cy0, tw, th) + _chrome(cx0, cy0, tw, th)
+
         dls_adj = []
         for d in dls:
             lx, ly = px(d["lat"], d["lon"])
             tw = len(d["text"]) * 10.0 * pin_scale; th = 11 * pin_scale
-            if _wfrac(lx, ly, tw, th) > 0.03:
-                best, best_w = (lx, ly), _wfrac(lx, ly, tw, th)
+            if _cost(lx, ly, tw, th) > 0.03:
+                best, best_w = (lx, ly), _cost(lx, ly, tw, th)
                 for R in range(6, 181, 6):
                     ring = [(dx, dy) for dx in range(-R, R + 1, 6) for dy in range(-R, R + 1, 6)
                             if max(abs(dx), abs(dy)) == R
                             and tw / 2 <= lx + dx <= W - tw / 2 and 12 <= ly + dy <= H - 12]
                     ring.sort(key=lambda o: o[0] * o[0] + o[1] * o[1])
                     for dx, dy in ring:
-                        w = _wfrac(lx + dx, ly + dy, tw, th)
+                        w = _cost(lx + dx, ly + dy, tw, th)
                         if w < best_w: best_w, best = w, (lx + dx, ly + dy)
-                        if w <= 0.02: break          # nearest all-land spot at this radius
+                        if w <= 0.02: break          # nearest clear, dry spot at this radius
                     if best_w <= 0.02: break
                 lx, ly = best
             dls_adj.append({"text": d["text"], "x": lx, "y": ly})
