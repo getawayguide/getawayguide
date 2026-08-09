@@ -260,5 +260,12 @@ window.addEventListener('beforeunload',e=>{ if(dirty){e.preventDefault();e.retur
 
 
 if __name__ == "__main__":
+    # The Windows console defaults to cp1252, which cannot encode the arrow below. Without
+    # this the banner raises UnicodeEncodeError and the server never starts at all, which
+    # looks like the editor is broken when it is only the greeting that failed.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     print("Map label editor → http://localhost:5002")
     app.run(port=5002, debug=False)

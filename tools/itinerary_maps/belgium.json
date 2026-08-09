@@ -1,71 +1,79 @@
 {
-  "iso3": "BEL",
-  "slug": "belgium",
+  "airport": null,
   "country_width": 520,
-  "margins": {
-    "l": 240,
-    "r": 240,
-    "t": 130,
-    "b": 130
-  },
-  "simplify": 3000,
-  "smooth": false,
-  "stops": [
-    {
-      "n": 1,
-      "name": "Brussels",
-      "lat": 50.8503,
-      "lon": 4.3517,
-      "days": "1–2 days",
-      "anchor": "start",
-      "dx": 14,
-      "dy": 4,
-      "href": "#brussels"
-    },
-    {
-      "n": 2,
-      "name": "Ghent",
-      "lat": 51.0543,
-      "lon": 3.7174,
-      "days": "1 day",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 4,
-      "href": "#ghent"
-    },
-    {
-      "n": 3,
-      "name": "Bruges",
-      "lat": 51.2093,
-      "lon": 3.2247,
-      "days": "1–2 days",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 4,
-      "href": "#bruges"
-    }
-  ],
   "dots": [
     {
-      "name": "Tomorrowland",
-      "lat": 51.0897,
-      "lon": 4.3714,
       "anchor": "start",
       "dx": 11,
-      "dy": 4
+      "dy": 4,
+      "lat": 51.0897,
+      "lon": 4.3714,
+      "name": "Tomorrowland"
     }
   ],
-  "airport": null,
+  "iso3": "BEL",
   "legs": [
     {
       "a": 0,
       "b": 1,
-      "label": "Train · 30 min"
+      "label": "Train · 30 min",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -32.8,
+      "chip_dy": 26.7
     },
     {
       "a": 1,
       "b": 2,
-      "label": "Train · 25 min"
+      "label": "Train · 25 min",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 34.7,
+      "chip_dy": -29.7
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "belgium",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "1–2 days",
+      "dx": 14,
+      "dy": 4,
+      "href": "#brussels",
+      "lat": 50.8503,
+      "lon": 4.3517,
+      "n": 1,
+      "name": "Brussels"
+    },
+    {
+      "anchor": "end",
+      "days": "1 day",
+      "dx": -14.9,
+      "dy": 11.7,
+      "href": "#ghent",
+      "lat": 51.0543,
+      "lon": 3.7174,
+      "n": 2,
+      "name": "Ghent"
+    },
+    {
+      "anchor": "end",
+      "days": "1–2 days",
+      "dx": -16.6,
+      "dy": -10.5,
+      "href": "#bruges",
+      "lat": 51.2093,
+      "lon": 3.2247,
+      "n": 3,
+      "name": "Bruges"
     }
   ]
 }

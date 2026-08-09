@@ -1,0 +1,121 @@
+{
+  "slug": "bruges",
+  "kicker": "Belgium",
+  "city": "Bruges",
+  "osm": ".tmp/bruges_osm.json",
+  "article": "belgium/field-notes.html",
+  "embed": {
+    "pre": "ing, and staying a night (rather than day-tripping) is what makes the town</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"tomorrowland\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.05
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.55,
+    "init_x": 0.02,
+    "init_y": 0.78
+  },
+  "pois": [
+    {
+      "name": "Belfry of Bruges",
+      "cat": "see",
+      "match": "belfry of bruges",
+      "lat": 51.20815,
+      "lon": 3.2248
+    },
+    {
+      "name": "Market Square (Markt)",
+      "cat": "see",
+      "match": "market square",
+      "lat": 51.20869,
+      "lon": 3.22441
+    },
+    {
+      "name": "Rozenhoedkaai (Rosary Quay)",
+      "cat": "see",
+      "match": "rosary quay",
+      "lat": 51.20737,
+      "lon": 3.22787
+    },
+    {
+      "name": "Basilica of the Holy Blood",
+      "cat": "see",
+      "match": "basilica of the holy b",
+      "lat": 51.20813,
+      "lon": 3.22654
+    },
+    {
+      "name": "De Burg",
+      "cat": "see",
+      "match": "de burg",
+      "lat": 51.20851,
+      "lon": 3.22684
+    },
+    {
+      "name": "Bruges City Hall",
+      "cat": "see",
+      "match": "bruges city hall",
+      "lat": 51.20832,
+      "lon": 3.2271
+    },
+    {
+      "name": "Church of Our Lady",
+      "cat": "see",
+      "match": "church of our lady",
+      "lat": 51.20469,
+      "lon": 3.22445
+    },
+    {
+      "name": "Fish Market",
+      "cat": "see",
+      "match": "fish market",
+      "lat": 51.20788,
+      "lon": 3.22832
+    },
+    {
+      "name": "Kruispoort gate",
+      "cat": "see",
+      "match": "kruispoort gate",
+      "lat": 51.21258,
+      "lon": 3.24009
+    },
+    {
+      "name": "2be Bar (The Beerwall)",
+      "cat": "eat",
+      "match": "2be shop",
+      "lat": 51.207472,
+      "lon": 3.227022,
+      "href": "https://www.google.com/maps/place/2be+Bar+(The+Beerwall)/@51.2073436,3.2269122,17z/data=!4m10!1m2!2m1!1s2be+Beer+Wall+Bruges!3m6!1s0x47c3510072ebf35f:0x88404c218700e83e!8m2!3d51.2074724!4d3.2270221!15sChQyYmUgQmVlciBXYWxsIEJydWdlc1oWIhQyYmUgYmVlciB3YWxsIGJydWdlc5IBA2JhcpoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQydG9OVTFITlhaVU1GSkNWVVp3YjFreU9YUmliWGhZVGtSUk5VOVdSUkFC4AEA-gEFCJECEDw!16s%2Fg%2F11w9p532r0?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "St Christopher's / Bauhaus",
+      "cat": "stay",
+      "match": "bauhaus",
+      "lat": 51.211937,
+      "lon": 3.237618,
+      "href": "https://www.google.com/maps/place/St+Christopher's+Bruges+-+The+Bauhaus/@51.2119375,3.2376183,17z/data=!4m9!3m8!1s0x47c350c9def5fe99:0x8b7e54f0200fb03f!5m2!4m1!1i2!8m2!3d51.2119375!4d3.2376183!16s%2Fg%2F1tfx41jd?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwNC4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 51.208635,
+    "lon": 3.23225
+  },
+  "district_labels": [
+    {
+      "text": "SINT-WALBURGA",
+      "lat": 51.2096,
+      "lon": 3.22985
+    },
+    {
+      "text": "LANGESTRAAT",
+      "lat": 51.20898,
+      "lon": 3.23598
+    }
+  ]
+}

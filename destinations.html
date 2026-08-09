@@ -132,6 +132,7 @@ body.dest-map-open nav{display:none}
             <div class="nav-fn-grp">
               <span class="nav-fn-region">Europe</span>
               <a href="albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
+              <a href="belgium/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/be.png" width="16" height="12" alt=""><span class="country-name">Belgium</span></a>
               <a href="bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
               <a href="croatia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/hr.png" width="16" height="12" alt=""><span class="country-name">Croatia</span></a>
               <a href="denmark/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
@@ -295,6 +296,16 @@ body.dest-map-open nav{display:none}
         <div class="dest-overlay"></div>
         <div class="art-card-info">
           <p class="art-card-name">Australia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Belgium -->
+      <div class="home-dest-card" id="dest-belgium" data-continent="europe" onclick="location.href='belgium/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('Images/web/dest-cards/belgium.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Belgium</p>
           <span class="art-card-btn">Read Notes</span>
         </div>
       </div>
@@ -653,7 +664,15 @@ window.addEventListener('hashchange',applyHashFilter);
 (function(){
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(e){
-      if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}
+      if(e.isIntersecting){
+        var el=e.target;
+        el.style.opacity='1';el.style.transform='translateY(0)';
+        obs.unobserve(el);
+        /* Hand the element back to the stylesheet once the reveal has played. The inline
+           transform this sets outranks .home-dest-card:hover, so leaving it in place kills
+           the hover lift for every card that has scrolled into view. */
+        setTimeout(function(){el.style.transform='';el.style.transition='';},560);
+      }
     });
   },{threshold:.05});
   document.querySelectorAll('#articles-grid .home-dest-card').forEach(function(el){
@@ -763,6 +782,7 @@ var fieldNotesMap = {
   "AR": { name: "Argentina",      url: "argentina/field-notes.html" },
   "AM": { name: "Armenia",         url: "armenia/field-notes.html" },
   "AU": { name: "Australia",      url: "australia/field-notes.html" },
+  "BE": { name: "Belgium",        url: "belgium/field-notes.html" },
   "BA": { name: "Bosnia",          url: "bosnia/field-notes.html" },
   "BR": { name: "Brazil",          url: "brazil/field-notes.html" },
   "CL": { name: "Chile",          url: "chile/field-notes.html" },

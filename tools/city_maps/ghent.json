@@ -1,0 +1,115 @@
+{
+  "slug": "ghent",
+  "kicker": "Belgium",
+  "city": "Ghent",
+  "osm": ".tmp/ghent_osm.json",
+  "article": "belgium/field-notes.html",
+  "embed": {
+    "pre": "ask for a canal-facing room when you do</li>\n      </ul>\n    </ul>\n    <ul></ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"bruges\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.08
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.95,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "St Michael's Bridge",
+      "cat": "see",
+      "match": "st michael's bridge",
+      "lat": 51.05388,
+      "lon": 3.72054
+    },
+    {
+      "name": "Graslei & Korenlei",
+      "cat": "see",
+      "match": "graslei",
+      "lat": 51.054835,
+      "lon": 3.720495
+    },
+    {
+      "name": "Belfry of Ghent",
+      "cat": "see",
+      "match": "belfry of ghent",
+      "lat": 51.05375,
+      "lon": 3.72476
+    },
+    {
+      "name": "Saint Bavo's Cathedral",
+      "cat": "see",
+      "match": "saint bavo's cathedral",
+      "lat": 51.05323,
+      "lon": 3.72651
+    },
+    {
+      "name": "St Nicholas' Church",
+      "cat": "see",
+      "match": "st. nicholas' cathedral",
+      "lat": 51.05394,
+      "lon": 3.72311
+    },
+    {
+      "name": "Gravensteen Castle",
+      "cat": "see",
+      "match": "gravensteen castle",
+      "lat": 51.05718,
+      "lon": 3.72072
+    },
+    {
+      "name": "Patershol",
+      "cat": "see",
+      "match": "patershol",
+      "lat": 51.05799,
+      "lon": 3.72348
+    },
+    {
+      "name": "Vrijdagmarkt",
+      "cat": "see",
+      "match": "vrijdagmarkt",
+      "lat": 51.05695,
+      "lon": 3.72633
+    },
+    {
+      "name": "Graffiti Street",
+      "cat": "see",
+      "match": "graffiti street",
+      "lat": 51.05549,
+      "lon": 3.72463
+    },
+    {
+      "name": "Souplounge",
+      "cat": "eat",
+      "match": "souplounge",
+      "lat": 51.05771,
+      "lon": 3.72411
+    },
+    {
+      "name": "Hostel Uppelink",
+      "cat": "stay",
+      "match": "hostel uppelink",
+      "lat": 51.053932,
+      "lon": 3.719864,
+      "href": "https://www.google.com/maps/place/Hostel+Uppelink/@51.053932,3.7198638,17z/data=!4m9!3m8!1s0x47c3714138d112b7:0x5e81b379fa6970c2!5m2!4m1!1i2!8m2!3d51.053932!4d3.7198638!16s%2Fg%2F1hd_z2khj?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwNC4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 51.05561,
+    "lon": 3.723425
+  },
+  "district_labels": [
+    {
+      "text": "SINT-JACOBS",
+      "lat": 51.05642,
+      "lon": 3.72784
+    }
+  ]
+}

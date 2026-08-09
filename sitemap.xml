@@ -2,277 +2,283 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://getawayguide.io/</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/about.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/albania/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/argentina/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/armenia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/australia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://getawayguide.io/belgium/field-notes.html</loc>
+    <lastmod>2026-08-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/bosnia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/brazil/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/chile/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/colombia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/contact.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/croatia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/denmark/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/destinations.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/egypt/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/7-waterfalls-hike.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/el-salvador-itinerary.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/el-tunco.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/ruta-de-las-flores.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/santa-ana.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/el-salvador/top-10-el-salvador.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/estonia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/finland/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/georgia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/greece/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/hungary/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/india/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/indonesia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/kosovo/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/latvia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/mexico/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/montenegro/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/netherlands/field-notes.html</loc>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/north-macedonia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/peru/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/philippines/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/posts.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/privacy.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/resources.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/serbia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/slovenia/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/sweden/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/switzerland/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/tanzania/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://getawayguide.io/turkiye/field-notes.html</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
