@@ -6,6 +6,8 @@ Scans live HTML pages (excludes Drafts/, .tmp/, .git/) and reports:
   1. duplicate id attributes on a page (invalid HTML; breaks anchor nav)
   2. broken in-page anchors  (href="#x" with no id="x")
   3. broken internal file links (href="foo.html" whose target file is missing)
+ 3b. assets referenced by a live page that are not in the repo (held-back draft files,
+     which 404 on the deployed site), or referenced with the wrong case (Linux host)
   4. Google-Docs paste artifacts (font-size:1rem, opaque color:rgb(28,40,33))
   5. in-sentence em dashes (Kevin's no-em-dash rule; bullet separators are fine)
   6. Field-Notes nav-dropdown drift (a page missing/extra country vs the norm)
@@ -19,7 +21,7 @@ Usage:
   python tools/lint_site.py --quiet    # summary only
 Exit code is non-zero if any issues are found (so it can gate a push).
 """
-import re, sys, os, glob
+import re, sys, os, glob, subprocess, unicodedata, urllib.parse
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +44,35 @@ def pages():
 
 def lineno(text, idx): return text.count("\n", 0, idx) + 1
 def strip_tags(s): return re.sub(r"<[^>]+>", "", s)
+
+
+def nfc(s): return unicodedata.normalize("NFC", s)
+
+
+def committed_files():
+    """Every path that will exist on the server: the git index plus HEAD.
+
+    Deliberately NOT the filesystem. Draft-only city maps and configs live on disk but are
+    held back from every push, so `os.path.exists` says yes about a file the deployed site
+    has never seen. A live page pointing at one 404s in production and looks perfect locally.
+
+    -z because git octal-escapes non-ASCII paths otherwise, and NFC because the accented
+    photo folders can be recorded either way. Getting both wrong reported eight healthy
+    El Salvador images as missing.
+    """
+    out = set()
+    for args in (["ls-files", "-z"], ["ls-tree", "-r", "-z", "--name-only", "HEAD"]):
+        r = subprocess.run(["git"] + args, cwd=ROOT, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        if r.returncode == 0:
+            out |= {nfc(p) for p in r.stdout.split("\0") if p}
+    return out
+
+
+COMMITTED = committed_files()
+LOWER = {p.lower() for p in COMMITTED}
+ASSET = re.compile(r"""(?:src|href)=["']([^"'>]+)["']|url\(['"]?([^)'"]+)['"]?\)""")
+REMOTE = ("http://", "https://", "//", "mailto:", "tel:", "data:", "javascript:", "#")
 
 findings = defaultdict(list)   # check name -> list of (file, line, msg)
 def add(check, f, line, msg): findings[check].append((f, line, msg))
@@ -81,6 +112,30 @@ for path, r in pages():
         dest = os.path.normpath(os.path.join(os.path.dirname(path), target))
         if not os.path.exists(dest):
             add("broken-link", r, lineno(html, m.start()), 'links to missing file: %s' % target)
+
+    # 3b. assets that exist on disk but are not in the repo (held-back draft files), and
+    #     references whose case does not match — Linux serves this site, Windows does not care
+    if COMMITTED and not r.startswith("Drafts/"):
+        base = os.path.dirname(r)
+        for m in ASSET.finditer(html):
+            raw = (m.group(1) or m.group(2) or "").split("#")[0].split("?")[0].strip()
+            if not raw or raw.startswith(REMOTE):
+                continue
+            u = urllib.parse.unquote(raw)
+            t = u.lstrip("/") if u.startswith("/") else "%s/%s" % (base, u) if base else u
+            t = nfc(os.path.normpath(t).replace("\\", "/"))
+            if t.endswith("/") or "." not in os.path.basename(t):
+                continue
+            if t in COMMITTED:
+                continue
+            if t.lower() in LOWER:
+                add("asset-case", r, lineno(html, m.start()),
+                    "case does not match the committed file: %s" % raw)
+            elif os.path.exists(os.path.join(ROOT, t)):
+                add("unpublished-asset", r, lineno(html, m.start()),
+                    "on disk but not in the repo, so it 404s live: %s" % raw)
+            else:
+                add("missing-asset", r, lineno(html, m.start()), "no such file: %s" % raw)
 
     # 4. paste artifacts (skip <style>/<script>)
     for m in re.finditer(r'font-size:\s*1rem', clean):
@@ -143,16 +198,20 @@ if nav_lists:
             add("nav-drift", f, 0, "; ".join(parts))
 
 # ---- report ----
-ORDER = ["duplicate-id", "broken-link", "broken-anchor", "nav-drift", "nested-bold",
-         "paste-artifact", "em-dash", "img-no-alt", "meta"]
+ORDER = ["duplicate-id", "broken-link", "broken-anchor", "unpublished-asset", "missing-asset",
+         "asset-case", "nav-drift", "nested-bold", "paste-artifact", "em-dash", "img-no-alt",
+         "meta"]
 LABEL = {
     "duplicate-id": "Duplicate id attributes", "broken-link": "Broken internal file links",
     "broken-anchor": "Broken in-page anchors", "nav-drift": "Nav Field-Notes list drift",
     "nested-bold": "Nested <b> (whole-line bold)", "paste-artifact": "Google-Docs paste artifacts",
     "em-dash": "In-sentence em dashes", "img-no-alt": "Images missing alt", "meta": "Missing title/meta",
+    "unpublished-asset": "Assets not in the repo (404 live)",
+    "missing-asset": "Assets that do not exist", "asset-case": "Asset case mismatch (Linux host)",
 }
 # breaking issues that should fail CI (vs. style/quality warnings like em dashes)
-ERROR_CHECKS = {"duplicate-id", "broken-link", "broken-anchor", "nav-drift"}
+ERROR_CHECKS = {"duplicate-id", "broken-link", "broken-anchor", "nav-drift",
+                "unpublished-asset", "missing-asset", "asset-case"}
 CI = "--ci" in sys.argv
 
 total = sum(len(v) for v in findings.values())
@@ -161,11 +220,13 @@ print("=" * 60)
 print("  lint_site.py — %d issue(s) across %d live pages (%d error, %d warning)"
       % (total, sum(1 for _ in pages()), errors, total - errors))
 print("=" * 60)
-for k in ORDER:
+# anything not in ORDER still gets printed: a new check used to be counted in the header and
+# then silently dropped from the detail list, which reads as "3 errors" with nothing under it
+for k in ORDER + [k for k in sorted(findings) if k not in ORDER]:
     v = findings.get(k, [])
     if not v: continue
     sev = "ERROR" if k in ERROR_CHECKS else "warn"
-    print("\n[%s] %s — %d  (%s)" % (k, LABEL[k], len(v), sev))
+    print("\n[%s] %s — %d  (%s)" % (k, LABEL.get(k, k), len(v), sev))
     if QUIET: continue
     for f, line, msg in v[:40]:
         loc = "%s:%d" % (f, line) if line else f
