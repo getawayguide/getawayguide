@@ -1,0 +1,148 @@
+{
+  "slug": "munich",
+  "kicker": "Germany",
+  "city": "Munich",
+  "osm": ".tmp/munich_osm.json",
+  "article": "germany/field-notes.html",
+  "embed": {
+    "pre": "s up, and even hostel beds and the campsites out by the fairground go fast</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"oktoberfest\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.05
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Augustiner-Bräu",
+      "cat": "see",
+      "match": "augustiner-bräu",
+      "lat": 48.1329,
+      "lon": 11.54994
+    },
+    {
+      "name": "Hacker-Pschorr",
+      "cat": "see",
+      "match": "hacker-pschorr",
+      "lat": 48.13299,
+      "lon": 11.54875
+    },
+    {
+      "name": "Hofbräu Festzelt",
+      "cat": "see",
+      "match": "hofbräu festzelt",
+      "lat": 48.13247,
+      "lon": 11.54907,
+      "href": "https://www.google.com/maps/place/Hofbr%C3%A4u-Festzelt/@48.1313318,11.5495089,16z/data=!4m10!1m2!2m1!1sHofbraeu+Festzelt+Oktoberfest+Theresienwiese+Munich!3m6!1s0x479ddf0050fae6f1:0xb1d9a594aa018d51!8m2!3d48.1324738!4d11.5490688!15sCjNIb2ZicmFldSBGZXN0emVsdCBPa3RvYmVyZmVzdCBUaGVyZXNpZW53aWVzZSBNdW5pY2haNSIzaG9mYnJhZXUgZmVzdHplbHQgb2t0b2JlcmZlc3QgdGhlcmVzaWVud2llc2UgbXVuaWNokgENZmVzdGl2YWxfaGFsbJoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyeG9iV015Vmxsa1JtTjVXbGRHWmxsc09VMVZXRnBIWXpOb2FtSnRZeEFC4AEA-gEECD0QQA!16s%2Fg%2F11xp3j4lf3?hl=en&entry=ttu&g_ep=EgoyMDI2MDgwNS4xIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Marienplatz",
+      "cat": "see",
+      "match": "marienplatz",
+      "lat": 48.137144,
+      "lon": 11.575399
+    },
+    {
+      "name": "English Garden",
+      "cat": "see",
+      "match": "english garden",
+      "lat": 48.164861,
+      "lon": 11.606404
+    },
+    {
+      "name": "St Peter's Church & Tower",
+      "cat": "see",
+      "match": "st. peter's church",
+      "lat": 48.13668,
+      "lon": 11.5756
+    },
+    {
+      "name": "Viktualienmarkt",
+      "cat": "see",
+      "match": "viktualienmarkt",
+      "lat": 48.13547,
+      "lon": 11.57637
+    },
+    {
+      "name": "Asamkirche",
+      "cat": "see",
+      "match": "asamkirche",
+      "lat": 48.13514,
+      "lon": 11.56966
+    },
+    {
+      "name": "Karlsplatz (Stachus)",
+      "cat": "see",
+      "match": "karlsplatz",
+      "lat": 48.13925,
+      "lon": 11.56602
+    },
+    {
+      "name": "Odeonsplatz",
+      "cat": "see",
+      "match": "odeonsplatz",
+      "lat": 48.14205,
+      "lon": 11.5774
+    },
+    {
+      "name": "Munich Residence",
+      "cat": "see",
+      "match": "munich residence",
+      "lat": 48.1418,
+      "lon": 11.57949
+    },
+    {
+      "name": "Augustiner Biergarten",
+      "cat": "eat",
+      "match": "augustiner bierg",
+      "lat": 48.14373,
+      "lon": 11.55124
+    },
+    {
+      "name": "Hofbräuhaus München",
+      "cat": "eat",
+      "match": "hofbräuhaus",
+      "lat": 48.13764,
+      "lon": 11.57975
+    },
+    {
+      "name": "Khanittha Im Werksviertel",
+      "cat": "eat",
+      "match": "khanittha",
+      "lat": 48.12466,
+      "lon": 11.60574
+    },
+    {
+      "name": "Wombat's Werksviertel",
+      "cat": "stay",
+      "match": "wombat",
+      "lat": 48.124286,
+      "lon": 11.606465
+    }
+  ],
+  "center": {
+    "lat": 48.151643,
+    "lon": 11.575149
+  },
+  "district_labels": [
+    {
+      "text": "ALTSTADT",
+      "lat": 48.133,
+      "lon": 11.569
+    },
+    {
+      "text": "WERKSVIERTEL",
+      "lat": 48.1256,
+      "lon": 11.6055
+    }
+  ]
+}

@@ -38,7 +38,12 @@ def start_server():
         def log_message(self, *args):
             pass
 
-    server = http.server.HTTPServer(("127.0.0.1", PORT), SilentHandler)
+    # Threading, not plain HTTPServer: destinations.html pulls ~36 dest-card photos at once
+    # and a single-threaded server answers them one at a time while Chromium holds six
+    # connections open waiting. Pages captured mid-load, and the stalls looked like broken
+    # CSS rather than a slow server. (Same fix the map screenshots needed.)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), SilentHandler)
+    server.daemon_threads = True
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     os.chdir(original_dir)
@@ -104,6 +109,33 @@ async def screenshot_pages(pages, selector=None):
                         }
                     });
                 }""")
+
+                # The reveal above is what STARTS the dest-card background fetches: Chromium
+                # will not load a background-image for an element at opacity:0, so those
+                # requests only go out once we flip them visible. Screenshotting immediately
+                # caught the cards mid-fetch and every destinations/index capture came back
+                # with blank cards (just the overlay gradient and the label). Wait for them.
+                # onload/onerror rather than decode(), which rejects on a request still in
+                # flight and would abort the whole run.
+                try:
+                    await page.evaluate("""async () => {
+                        const urls = new Set();
+                        document.querySelectorAll('*').forEach(function(el) {
+                            const b = getComputedStyle(el).backgroundImage;
+                            if (!b || b === 'none') return;
+                            for (const m of b.matchAll(/url\\("?([^")]+)"?\\)/g)) urls.add(m[1]);
+                        });
+                        const all = Promise.all([...urls].map(u => new Promise(function(res) {
+                            const i = new Image();
+                            i.onload = i.onerror = res;
+                            i.src = u;
+                        })));
+                        // never let a stalled asset hold the capture hostage
+                        await Promise.race([all, new Promise(r => setTimeout(r, 8000))]);
+                    }""")
+                    await page.wait_for_timeout(400)
+                except Exception:
+                    pass
 
                 out_path = SCREENSHOTS_DIR / f"{name}-{vp_name}.png"
                 if selector:

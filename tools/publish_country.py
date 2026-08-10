@@ -12,6 +12,12 @@ Does, in order:
   6. Remove the empty Drafts/<slug>/ folder
   7. Rebuild search-index.js so the new country/text is searchable (also adds the
      search.js script tag to the moved page, which drafts lack)
+  8. SEO metadata — keyword <title>/og:title, "<Country> Travel Guide" H1, trimmed
+     description, rel=canonical, og:type article, Article datePublished/dateModified.
+     This is NOT optional and NOT a follow-up: Belgium and Germany both went live with
+     the old "X - Field Notes" title and no canonical because it used to be a separate
+     manual step. The run ends by asserting canonical + og:type + dates are present and
+     says so in the log.
 
 Usage:
   python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe \
@@ -464,6 +470,45 @@ def main():
             else:
                 tail = (r.stderr or r.stdout or "").strip().splitlines()
                 log.append("WARN: %s failed - run manually. %s" % (script, tail[-1] if tail else ""))
+
+        # SEO METADATA. Belgium and Germany both shipped with the old "X - Field Notes"
+        # title, no rel=canonical, og:type website and no Article dates, because this step
+        # did not exist and nobody remembers to run it by hand. It runs here now.
+        #
+        # The date + proposal generators read `git ls-files`, so a page published seconds ago
+        # is invisible to them until it is staged. Stage it first; the publish is going to be
+        # committed anyway.
+        subprocess.run(["git", "add", "--", rel(dst)], cwd=ROOT, capture_output=True, text=True)
+        seo_ok = True
+        for script, why in [(os.path.join(".tmp", "seo_content_dates.py"), "prose dates"),
+                            (os.path.join(".tmp", "seo_proposals.py"), "title/H1 proposals"),
+                            (os.path.join(".tmp", "seo_descriptions.py"), "descriptions")]:
+            p = os.path.join(ROOT, script)
+            if not os.path.exists(p):
+                log.append("WARN: %s missing - SEO metadata NOT applied" % script)
+                seo_ok = False
+                break
+            r = subprocess.run([sys.executable, p], cwd=ROOT, capture_output=True, text=True)
+            if r.returncode != 0:
+                tail = (r.stderr or r.stdout or "").strip().splitlines()
+                log.append("WARN: %s failed (%s) %s" % (script, why, tail[-1] if tail else ""))
+                seo_ok = False
+                break
+        if seo_ok:
+            for script, why in [("seo_apply.py", "title / H1 / description / og / JSON-LD"),
+                                ("seo_meta.py", "canonical / og:type / Article dates")]:
+                args = [sys.executable, os.path.join(ROOT, "tools", script)]
+                if script == "seo_meta.py":
+                    args += ["--canonical", "--og-type", "--dates"]
+                r = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
+                head = (r.stdout or "").strip().splitlines()
+                log.append("ran %s (%s): %s" % (script, why, head[-1] if head else "-"))
+            page = read(dst)
+            missing = [w for w, probe in (("canonical", 'rel="canonical"'),
+                                          ("og:type article", 'content="article"'),
+                                          ("Article dates", '"datePublished"')) if probe not in page]
+            log.append("SEO metadata: %s" % ("complete" if not missing
+                                             else "STILL MISSING " + ", ".join(missing)))
 
         # every pin's coords vs the place its own link opens (catches a pin in the wrong part
         # of town, e.g. Oaxaca's "La Popular" 5km out on Monte Alban)

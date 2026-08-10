@@ -153,6 +153,55 @@ embedded map code are never rewritten.
 
 Related: see the no-em-dashes rule in my writing style — both exist so the writing sounds like me.
 
+## Batched Tasks — Finish the Whole List
+
+When I hand you a list of tasks and tell you I'm stepping away ("I'm going to the gym",
+"going for a walk", "take your time"), **do every item before reporting back.** Don't
+finish two or three, write me a status, and wait.
+
+The reason I tell you I'm away is that you have a long runway. Stopping in the middle
+wastes exactly the window I cleared for you, and I come back to a summary of unfinished
+work instead of finished work.
+
+- Anything I send mid-turn is an **addition to the queue**, not an interruption to stop
+  and answer on its own.
+- Only stop to ask if going ahead would be unsafe, or would make the work useless if the
+  assumption turned out wrong. Otherwise state the assumption, keep going, and flag it at
+  the end.
+- Run the test suites as you go rather than saving all verification for the end.
+- Give me one consolidated report when the whole list is done, including anything you
+  left out and why.
+
+## Publishing a Country — SEO Metadata Is Part of the Job
+
+**A country is not published until its SEO metadata is in place.** This is a step of the
+publish, not a follow-up task, and it is wired into `tools/publish_country.py` so it runs
+automatically. Belgium and Germany both went live without it because it used to be manual.
+
+Every published page must have:
+
+| | |
+|---|---|
+| `<title>` and `og:title` | `<Country> Travel Guide: City, City & City`, **under 60 chars** |
+| `<h1>` | `<Country> Travel Guide` (not the bare country name) |
+| meta + `og:description` | **under 160 chars**, no em dash |
+| `rel="canonical"` | from the page's own `og:url` |
+| `og:type` | `article` (About/Privacy/index stay `website`) |
+| JSON-LD | `datePublished` + `dateModified`, and `headline` matching the `<title>` |
+
+Never target "Field Notes" in a title. It's brand, and nobody searches it. Lead with the
+keyword, then spend the rest of the 60 characters on real place names from the page.
+
+`dateModified` comes from the last commit that changed the page's **prose**, not `git log -1`
+— sitewide asset passes touch every page at once, and publishing that everywhere is untrue
+and reads as a bulk refresh. A page published today has no commits yet, so it dates as today.
+
+The generators live in `.tmp/` (`seo_content_dates.py`, `seo_proposals.py`,
+`seo_descriptions.py`) and feed `tools/seo_apply.py` + `tools/seo_meta.py`. They read
+`git ls-files`, so the new page has to be staged before they can see it — the publish tool
+does that for you. The run asserts canonical, og:type and dates are present and logs
+`SEO metadata: complete`. If it says anything else, the country is not finished.
+
 ## Bottom Line
 
 You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.

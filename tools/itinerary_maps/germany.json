@@ -1,32 +1,78 @@
 {
-  "iso3": "DEU",
-  "slug": "germany",
+  "airport": null,
   "country_width": 520,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": 48.9,
+      "dy": -6.1,
+      "lat": 50.9375,
+      "lon": 6.9603,
+      "name": "Cologne"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 50.1109,
+      "lon": 8.6821,
+      "name": "Frankfurt"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 52.52,
+      "lon": 13.405,
+      "name": "Berlin"
+    },
+    {
+      "anchor": "middle",
+      "dx": -3.3,
+      "dy": -11.8,
+      "lat": 47.5576,
+      "lon": 10.7498,
+      "name": "Neuschwanstein Castle"
+    },
+    {
+      "anchor": "start",
+      "dx": -37.7,
+      "dy": 21.5,
+      "lat": 50.1615,
+      "lon": 7.7009,
+      "name": "Rhine Valley"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 53.5488,
+      "lon": 9.9872,
+      "name": "Hamburg"
+    }
+  ],
+  "iso3": "DEU",
+  "legs": [],
   "margins": {
+    "b": 130,
     "l": 240,
     "r": 240,
-    "t": 130,
-    "b": 130
+    "t": 130
   },
   "simplify": 3000,
+  "slug": "germany",
   "smooth": false,
   "stops": [
     {
-      "n": 1,
-      "name": "Munich",
+      "anchor": "start",
+      "days": "3–5 days",
+      "dx": -85.8,
+      "dy": -21.7,
+      "href": "#munich",
       "lat": 48.1351,
       "lon": 11.582,
-      "days": "3–5 days",
-      "anchor": "start",
-      "dx": 14,
-      "dy": 4,
-      "href": "#munich"
+      "n": 1,
+      "name": "Munich"
     }
-  ],
-  "dots": [
-    { "name": "Cologne", "lat": 50.9375, "lon": 6.9603, "anchor": "end", "dx": -11, "dy": 0 },
-    { "name": "Frankfurt", "lat": 50.1109, "lon": 8.6821, "anchor": "start", "dx": 11, "dy": 4 }
-  ],
-  "airport": null,
-  "legs": []
+  ]
 }
