@@ -146,8 +146,15 @@ for path, r in pages():
     # 5. in-sentence em dashes (body prose only; skip headings/toc/title/meta/script/style)
     for i, ln in enumerate(re.split(r"\n", clean), 1):
         if "—" not in ln: continue
-        if re.search(r"<title>|<meta|<h1|<h2|fn-sub-hd|toc-", ln): continue
+        if re.search(r"<title>|<meta|fn-sub-hd|toc-", ln): continue
+        # A dash inside a heading is a separator, not prose. Skip by SPAN, not by line: these
+        # files put a whole card on one line, so `<h3>Ruta de las Flores — ...</h3>` sits in
+        # the same line as its <p> excerpt, and skipping the line would blind the excerpt too.
+        heads = [(m.start(), m.end()) for m in
+                 re.finditer(r"<h[1-4]\b.*?</h[1-4]>", ln, re.S | re.I)]
         for m in re.finditer("—", ln):
+            if any(a <= m.start() < b for a, b in heads):
+                continue
             # Distinguish the ALLOWED `Name — description` lead-in from a genuine in-sentence
             # dash by how much running prose precedes it inside its own <li>/<p>/sentence.
             # (The old test — "does the char before the dash close a tag?" — flagged every
@@ -156,11 +163,25 @@ for path, r in pages():
             q = ln.rfind('"', 0, m.start()); eq = ln.rfind("=", 0, max(0, q))
             if q > 0 and eq > 0 and q - eq <= 2 and ln.find('"', m.start()) > m.start():
                 continue                                    # inside an attribute, not prose
-            head = max(ln.rfind("<li", 0, m.start()), ln.rfind("<p", 0, m.start()),
-                       ln.rfind(". ", 0, m.start()), 0)
+            block = max(ln.rfind("<li", 0, m.start()), ln.rfind("<p", 0, m.start()), 0)
+            # The documented lead-in is `<b>Name</b> — description` opening its own bullet, so
+            # match that shape instead of inferring it from length. Two real lead-ins were
+            # being flagged only because the bolded name was long: a Fitz Roy hike with the
+            # distance in parentheses, and "Alcaldía Municipal de Santa Ana and Monumento a la
+            # Libertad". Word count cannot tell those from prose; the markup can. Tags may
+            # also sit between the bold close and the dash (Belgium wraps the dash itself
+            # in a <span>), so the tail allows them.
+            if re.match(r"^\s*(?:<(?!b\b|strong\b)[^>]+>\s*)*<(b|strong)\b[^>]*>.*?</\1>\s*(?:<[^>]+>\s*)*$",
+                        ln[block:m.start()], re.S):
+                continue
+            head = max(block, ln.rfind(". ", 0, m.start()), 0)
             pre = re.sub(r"^\W+", "", strip_tags(ln[head:m.start()]).strip())
+            # first person belongs with the other pronouns already here: a bullet like
+            # "I walked past the cathedral <b>twice</b> — it was closed" is narration, not a
+            # lead-in, but it is short and carries none of the listed verbs, so it slipped through
             lead_in = (len(pre.split()) <= 9 and
-                       not re.search(r"\b(is|are|was|were|has|have|will|can|you|we|it|they)\b", pre, re.I))
+                       not re.search(r"\b(is|are|was|were|has|have|will|can|you|we|it|they|i|my|me|our)\b",
+                                     pre, re.I))
             if pre and not lead_in:
                 add("em-dash", r, i, strip_tags(ln[max(0, m.start()-35):m.start()+30]).strip())
                 break
