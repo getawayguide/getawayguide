@@ -609,19 +609,28 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
 .article-day-body{font-family:'Jost',sans-serif;font-size:.98rem;line-height:1.85;color:rgba(28,40,33,.68);font-weight:300}
 
 /* IMG PAIR — 2-col portrait grid; full-bleed on mobile */
-.img-pair{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1.5rem auto;width:79%}
+/* max-width pins the pair to the size it renders at on an article page.
+   Article pages set .article-body to 825px inline, field notes use the
+   950px default, so a plain 79% made the same two photos 675px wide on
+   field notes and 576px on articles. Cap it so a pair is a pair. */
+.img-pair{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1.5rem auto;width:79%;max-width:576px}
 /* Safari fix: min-width:0 prevents grid items from overflowing their column */
 .img-pair > span,.img-pair > div{min-width:0}
 @media(max-width:540px){
-  .img-pair{display:grid!important;grid-template-columns:1fr 1fr!important;width:calc(100% + 2.5rem)!important;margin-left:-1.25rem!important;gap:0.15rem;margin-top:0.15rem;margin-bottom:0.15rem}
+  .img-pair{display:grid!important;grid-template-columns:1fr 1fr!important;width:calc(100% + 2.5rem)!important;max-width:none!important;margin-left:-1.25rem!important;gap:0.15rem;margin-top:0.15rem;margin-bottom:0.15rem}
   .img-pair > span,.img-pair > div{min-width:0;border-radius:0!important}
 }
 
 /* IMG LANDSCAPE — full-width landscape; full-bleed on mobile */
-.img-landscape{display:block;width:79%;margin:0.15rem auto 1.5rem;position:relative;overflow:hidden;border-radius:2px;aspect-ratio:3/2}
+/* max-width = the size this renders at on an article page: the 825px body
+   minus its 3rem side padding is a 729px content box, and 79% of that is
+   576px - the same cap as .img-pair, which is how the two blocks have
+   always related on the reference pages. Field notes' wider body was
+   showing the identical markup 100px wider. */
+.img-landscape{display:block;width:79%;max-width:576px;margin:0.15rem auto 1.5rem;position:relative;overflow:hidden;border-radius:2px;aspect-ratio:3/2}
 .img-landscape img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
 @media(max-width:540px){
-  .img-landscape{width:calc(100% + 2.5rem);margin-left:-1.25rem;border-radius:0;margin-bottom:0.5rem;margin-top:0.15rem}
+  .img-landscape{width:calc(100% + 2.5rem);max-width:none;margin-left:-1.25rem;border-radius:0;margin-bottom:0.5rem;margin-top:0.15rem}
 }
 
 /* COUNTRY ARTICLE CARDS */
