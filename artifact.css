@@ -1504,8 +1504,15 @@ footer { margin-top:0 !important; }
     rgba(18,26,21,.76) 100%) !important; }
   /* 3 -- photo pairs run edge to edge on the phone */
   .pair, .artbody .pair, .gg-ab2 .pair {
-    width:100vw !important; max-width:100vw !important;
-    margin-left:calc(-50vw + 50%) !important; margin-right:0 !important;
+    /* full bleed by NEGATIVE MARGIN, not 100vw. On iOS 100vw can be wider than
+       the visual viewport, and this rule also pulled left while pinning
+       margin-right:0, so the box could only ever spill to the RIGHT -- which
+       is exactly the clipped body text on the about page. A negative margin
+       equal to the container's own gutter lands on the screen edge by
+       construction and cannot exceed it. */
+    width:auto !important; max-width:none !important;
+    margin-left:calc(-1 * var(--bleed, 24px)) !important;
+    margin-right:calc(-1 * var(--bleed, 24px)) !important;
     grid-template-columns:1fr 1fr !important; gap:2px !important; }
   /* 23 -- one consistent gutter down the about page */
   .gg-ab2 { padding-left:1.25rem !important; padding-right:1.25rem !important; }
@@ -2506,9 +2513,10 @@ body.gg-404, body.gg-404 .nf-hero { background:var(--paper) !important; }
   .artbody .ls, .artbody .day-shot, .artbody .fr,
   .article-body .ls, .article-body .day-shot, .article-body .fr,
   .article-body > picture, .artbody > picture {
-    width:100vw !important; max-width:100vw !important;
-    margin-left:calc(50% - 50vw) !important;
-    margin-right:calc(50% - 50vw) !important; }
+    /* same reasoning as .pair above: gutter-based, never viewport-based */
+    width:auto !important; max-width:none !important;
+    margin-left:calc(-1 * var(--bleed, 24px)) !important;
+    margin-right:calc(-1 * var(--bleed, 24px)) !important; }
   /* A city map's base raster is `width:100%` of a frame that is itself wider
      than the phone. It must keep exactly that: `auto` (or `revert`) resolves
      to 0 while the PNG is still loading and the map vanishes. */
@@ -3391,8 +3399,9 @@ footer { padding:2.6rem 96px !important; }
   .cards > a:active, .country-article-card:active,
   .country-articles-grid > a:active, .tiles .tile:active,
   .home-dest-card:active { transform:scale(.985); opacity:.9; }
-  .cards > a .card-h::after {
-    content:"\00a0\2192"; color:var(--accent); font-size:.85em; }
+  /* the arrow that used to sit on the headline is gone: it read as part
+     of the sentence and, firing on every card, said nothing. The card's
+     own call to action does that job now. */
 
   /* The live map's tooltips render white-on-white on a phone: the desktop rule
      that inks them is scoped to the hover state, which a touch screen never
@@ -3437,3 +3446,111 @@ footer { padding:2.6rem 96px !important; }
 .more:hover, .section-link:hover { color:var(--accent) !important; }
 .sec-head .more:hover::after, .sec-head .section-link:hover::after {
   transform:translateX(3px); }
+
+/* ==========================================================================
+   NARROW-SCREEN ROBUSTNESS
+   A real iPhone clipped the about page's body text off the right edge while
+   headless Chromium showed no overflow at 320/360/390/430. Two causes, both
+   invisible to a desktop test:
+
+   1. iOS Safari inflates text on its own ("text autosizing") unless a page
+      opts out. Inflated type widened the three-column stats bar past the
+      viewport, and once the document is wider than the screen every block in
+      it is too -- which is why the prose was cut off, not just the bar.
+   2. The page had been served before the webfonts were fixed, so it fell back
+      to a system face with wider metrics. A layout that only fits in its
+      intended font is a layout that breaks the first time the font is slow.
+
+   The fix is to opt out of autosizing and to let the bar shrink and wrap, so
+   neither a fallback face nor a larger accessibility size can burst it.
+   ========================================================================== */
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+
+.ab-stats, .ab-stats.plain, .ab-stats.boxed, .gg-mapstats {
+  flex-wrap:wrap !important; }
+.ab-stats > *, .ab-stats.plain > *, .ab-stats.boxed > *, .gg-mapstats > * {
+  min-width:0 !important; flex:1 1 auto; }
+/* a long label breaks rather than forcing the row wider than the screen */
+.ab-stats .l, .gg-mapstats .l { overflow-wrap:anywhere; hyphens:auto; }
+
+/* nothing in running prose may push the page sideways: a long place name, an
+   unbroken URL or a wide inline element all used to be able to */
+.article-body, .artbody, .fn-section, .measure, .ab-stats,
+.article-body p, .artbody p, .fn-section p, .measure p,
+.article-body li, .artbody li, .fn-section li {
+  overflow-wrap:break-word; }
+
+@media (max-width:420px) {
+  /* below this the three stats no longer fit on one row in any font */
+  .ab-stats.plain, .ab-stats.boxed {
+    display:grid !important; grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:14px 10px; }
+  .ab-stats.plain > *, .ab-stats.boxed > * { border-left:0 !important;
+    padding-left:0 !important; }
+}
+
+/* --bleed is each container's own mobile side padding, so a full-bleed child
+   reaches the screen edge exactly and never a pixel past it. */
+@media (max-width:768px) {
+  .article-body, .artbody, .fn-section, .measure { --bleed:24px; }
+  .gg-ab2, .gg-ab2 .main { --bleed:1.25rem; }
+  .sec.pad, .pad { --bleed:24px; }
+
+  /* Belt and braces. `clip` rather than `hidden`: hidden turns the element
+     into a scroll container and breaks position:sticky, clip does not. If any
+     rule still tries to push the page sideways, the reader never sees the
+     text cut off -- they just do not get a phantom horizontal scroll. */
+  html { overflow-x:clip; }
+}
+
+/* ==========================================================================
+   MAKING A CARD READ AS CLICKABLE ON A PHONE
+   An arrow glued to the headline was the wrong instrument: it read as part of
+   the sentence, and it fired on every card so it stopped meaning anything.
+   A card says "tap me" the way a card does -- by looking like an object with
+   an edge, and by carrying its own call to action at the bottom, which is the
+   thing a thumb is actually aiming for.
+   ========================================================================== */
+@media (max-width:768px) {
+  .cards > a {
+    display:block; position:relative;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line-soft); }
+  .cards > a:last-child { border-bottom:0; }
+
+  /* the call to action, generated so no markup changes are needed */
+  .cards > a .card-p::after {
+    content:"Read the guide \2192";
+    display:block; margin-top:12px;
+    font-family:"Hanken Grotesk", -apple-system, "Segoe UI", Helvetica, Arial,
+      sans-serif;
+    font-size:11px; font-weight:600; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); }
+  /* a field note is not a guide, so it says what it is */
+  .gg-notes .cards > a .card-p::after,
+  .cards > a[href*="field-notes"] .card-p::after { content:"Read the notes \2192"; }
+
+  /* the whole card acknowledges the press, and the photo lifts with it */
+  .cards > a .card-img { transition:transform .18s ease; }
+  .cards > a:active .card-img { transform:scale(1.03); }
+  .cards > a:active .card-p::after { color:var(--ink); }
+
+  /* the closed drawer is fixed and translated off-canvas, but a transformed
+     fixed element still counted toward the document width in Chromium, which
+     made the itinerary page 24px wider than the screen. Hiding it outright
+     takes it out of that calculation and out of the tab order. */
+  .mobile-nav-drawer:not(.open) { visibility:hidden !important; }
+  .mobile-nav-drawer.open { visibility:visible !important; }
+
+  /* and the hamburger stays inside the gutter */
+  nav { overflow:visible; }
+  nav .nav-hamburger { margin-right:0 !important; }
+}
+
+@media (max-width:768px) {
+  /* .fr on the itinerary already sits in a full-width container, so the 24px
+     escape that the other bleed blocks need pushed it 24px past the screen on
+     each side -- the last horizontal overflow on the site. Its bleed is zero
+     because there is no gutter for it to escape. */
+  .fr { --bleed:0px; }
+}

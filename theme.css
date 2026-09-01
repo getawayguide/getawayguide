@@ -3,7 +3,7 @@
    Loaded after styles.css. Overrides only: no markup, content or behaviour
    changes. Delete this file and the site renders exactly as it does today.
    ========================================================================== */
-@import url("fonts.css");
+@import url("fonts.css?v=09652e8d");
 
 /* ----------------------------------------------------------------- tokens */
 :root {

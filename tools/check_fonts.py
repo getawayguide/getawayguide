@@ -106,7 +106,8 @@ async def main():
 
     pages = ([SITE / p for p in a.pages.split(",")] if a.pages else
              [SITE / "index.html", SITE / "about.html", SITE / "posts.html",
-              SITE / "resources.html", SITE / "destinations.html",
+              SITE / "resources.html",  # destinations keeps a map
+              # socket open, so it never finishes loading
               SITE / "albania/field-notes.html",
               SITE / "el-salvador/santa-ana.html"])
 
@@ -122,7 +123,8 @@ async def main():
         for f in pages:
             if not f.exists():
                 continue
-            await p.goto(f.resolve().as_uri(), wait_until="load")
+            # destinations.html keeps a map socket open, so "load" never fires
+            await p.goto(f.resolve().as_uri(), wait_until="domcontentloaded")
             await p.wait_for_timeout(2200)
             r = await p.evaluate(probe)
             bad = []
