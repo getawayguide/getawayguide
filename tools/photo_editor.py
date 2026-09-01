@@ -292,7 +292,10 @@ def article_pages():
             if ".tmp" in p.parts or p.parts[0] == ".tmp":
                 continue
             try:
-                if 'class="article-body"' in p.read_text(encoding="utf-8"):
+                # .artbody is the transplanted itinerary's wrapper; without it
+                # that page was missing from the editor's article list
+                _t = p.read_text(encoding="utf-8")
+                if 'class="article-body"' in _t or "artbody" in _t:
                     rel = p.relative_to(ROOT).as_posix()
                     label = ("[draft] " + p.parent.name if rel.startswith("Drafts/")
                              else rel.removesuffix(".html"))
@@ -375,7 +378,7 @@ def body_span(text):
     be read as tags."""
     m = re.search(r'<div\b[^>]*class="[^"]*\barticle-body\b[^"]*"[^>]*>', text)
     if not m:
-        abort(400, "no article-body in page")
+        abort(400, "no article-body or artbody in page")
     tag_re = re.compile(r"<(/?)([a-zA-Z][\w-]*)")
     depth, i = 1, m.end()
     while True:

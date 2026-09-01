@@ -1788,10 +1788,13 @@ main{overflow-y:auto;padding:1rem}
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(originalHTML, 'text/html');
-    const body = doc.querySelector('.article-body');
+    // .artbody is the transplanted itinerary's wrapper; every other page
+    // uses .article-body. Without the second selector that one page could
+    // not be opened in the editor at all.
+    const body = doc.querySelector('.article-body, .artbody');
 
     if (!body) {
-      alert('No .article-body found in this file. Only article pages can be edited here.');
+      alert('No .article-body or .artbody found in this file. Only article pages can be edited here.');
       return;
     }
 
@@ -2043,15 +2046,34 @@ main{overflow-y:auto;padding:1rem}
     el.querySelectorAll('[class=""]').forEach(n => n.removeAttribute('class'));
     el.querySelectorAll('[lang]').forEach(n => n.removeAttribute('lang'));
 
-    // 6. Remove empty inline elements and empty paragraphs/list items
+    // 6. Remove empty inline elements and empty paragraphs/list items.
+    //
+    // Two things this must NOT do:
+    //
+    // a) touch anything inside an <svg>. A city map's pins are SVG <a> elements
+    //    wrapping a <g>, with no text and no <img>, so the old selector saw 758
+    //    of them across 34 field notes as "empty inlines" and deleted every one
+    //    on a no-op save, taking their Google Maps links with them.
+    //
+    // b) treat a non-breaking space as empty. JS trim() strips U+00A0, so an
+    //    <i>&nbsp;</i> used as a word gap was removed and the words either side
+    //    were glued together ("swim inand rocks", "El Salvador.The beach").
+    const isEmpty = node =>
+      !node.textContent.replace(/[\s ]/g, '') &&
+      !node.querySelector('img,br') &&
+      !node.textContent.includes(' ');
     let removed = true;
     while (removed) {
       removed = false;
       el.querySelectorAll('b,i,u,s,span,a').forEach(node => {
-        if (!node.textContent.trim() && !node.querySelector('img,br')) { node.remove(); removed = true; }
+        if (node.closest('svg')) return;              // (a)
+        if (isEmpty(node)) { node.remove(); removed = true; }   // (b)
       });
       el.querySelectorAll('p,li').forEach(node => {
-        if (!node.textContent.trim() && !node.querySelector('img,br,picture')) { node.remove(); removed = true; }
+        if (node.closest('svg')) return;
+        if (!node.textContent.replace(/[\s ]/g, '') &&
+            !node.textContent.includes(' ') &&
+            !node.querySelector('img,br,picture')) { node.remove(); removed = true; }
       });
     }
     // Remove <p><br></p> spacers
@@ -2189,7 +2211,7 @@ main{overflow-y:auto;padding:1rem}
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(originalHTML, 'text/html');
-    const originalBody = doc.querySelector('.article-body');
+    const originalBody = doc.querySelector('.article-body, .artbody');
     if (!originalBody) return;
 
     // Clone editor content and prepare for saving
@@ -3077,7 +3099,12 @@ main{overflow-y:auto;padding:1rem}
   // disk, so the editor reloads from the file afterwards; without that the next
   // save would write the pre-pipeline DOM straight back over the <picture> tags.
   async function runPipelineNow(count) {
-    const rel = await articleRelPath();
+    const relFn = window.articleRelPath;
+    if (typeof relFn !== 'function') {
+      console.warn('runPipelineNow: articleRelPath not available yet');
+      return;
+    }
+    const rel = await relFn();
     if (!rel) return;
     const t = pipeToast();
     t.innerHTML = pipeHead('Compressing ' + count + ' new image' + (count > 1 ? 's' : '')) +
@@ -3972,6 +3999,10 @@ main{overflow-y:auto;padding:1rem}
     openCropForPhoto(JSON.parse(raw), drop);
   });
 
+  // Exported: runPipelineNow() lives in an earlier <script> block and cannot
+  // see a function declared inside this one. Without this the post-save
+  // compression pipeline threw "articleRelPath is not defined" and silently
+  // never ran -- the save badge still appeared, so nothing said so.
   async function articleRelPath() {
     // repo-relative path of the open article, via the connected folder handle
     if (!folderHandle || !fileHandle) return null;
@@ -3980,6 +4011,7 @@ main{overflow-y:auto;padding:1rem}
       return parts ? parts.join('/') : null;
     } catch (e) { return null; }
   }
+  window.articleRelPath = articleRelPath;
 
   /* ---------- insert executor (runs when Insert is clicked in the editor) ---------- */
   function stripStaleSources(img) {

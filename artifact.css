@@ -1549,8 +1549,12 @@ body.gg-home nav.pinned > ul > li > .nav-dropdown-trigger { color:var(--ink); }
   gap:26px !important; padding:20px 24px 24px !important; }
 .nav-dropdown-fn .mm-cols { gap:4px 22px !important; }
 .nav-dropdown-fn .mm-col a { padding:2px 0 !important; font-size:13px !important; }
+/* 600, not 700: fonts.css ships Hanken Grotesk at 300/400/500/600, so a 700
+   here is SYNTHESISED by the browser -- a smeared fake bold beside the real
+   faces everywhere else. Every weight the theme names has to be one that is
+   actually declared. */
 .nav-dropdown-fn .mm-h { margin:12px 0 5px !important; color:var(--ink) !important;
-  font-weight:700 !important; letter-spacing:.12em !important; }
+  font-weight:600 !important; letter-spacing:.12em !important; }
 .nav-dropdown-fn .mm-col .mm-h:first-child { margin-top:0 !important; }
 .nav-dropdown-fn .fl { width:15px; height:11px; }
 
@@ -2306,6 +2310,11 @@ svg, svg text, svg tspan, .itinerary-map, .itinerary-map text,
 .route-map text, .cmmap text, .cmkey, .cmkey text, .cmhead,
 .cmbase + svg text, .cm-ov, .cm-ov-title, .cm-ov-kick, .cm-ov-hint {
   font-family:'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif !important; }
+/* the map labels asked for 700, which this family does not ship; 600 is the
+   heaviest real face and the synthesised one looked smeared next to it */
+svg text[font-weight="700"], svg text[font-weight="bold"], .cmhead,
+.cmhead *, .cmkey *, svg .num, svg text tspan {
+  font-weight:600 !important; }
 /* the map TITLES take the display face, like every other title on the site */
 .cmhead .cm-title, .cm-ov-title, .itinerary-map .rm-title {
   font-family:'Newsreader',Georgia,serif !important; }

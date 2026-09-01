@@ -127,6 +127,11 @@ def do_promote(dry):
     n = 0
     for src in sorted(PREVIEW.rglob("*.html")):
         rel = src.relative_to(PREVIEW)
+        # never promote into archive/: that folder is the previous design, and
+        # a build that had copied it into preview/ would otherwise overwrite it
+        # with themed pages and destroy the only browsable copy of the old site
+        if rel.parts and rel.parts[0] == "archive":
+            continue
         html = src.read_text(encoding="utf-8")
         from_dir = src.parent
         to_dir = SITE / rel.parent
@@ -155,14 +160,25 @@ def do_promote(dry):
             dst.parent.mkdir(parents=True, exist_ok=True)
             dst.write_text(html, encoding="utf-8")
         n += 1
-    # the theme's own files come across too
-    for extra in ("theme.css", "artifact.css", "fonts.css"):
-        s = PREVIEW / extra
-        if s.exists() and not dry:
-            shutil.copyfile(s, SITE / extra)
-    a = PREVIEW / "assets"
-    if a.is_dir() and not dry:
-        shutil.copytree(a, SITE / "assets", dirs_exist_ok=True)
+    # EVERY non-HTML file in preview/ comes across, not a named list. The
+    # first version enumerated theme.css, artifact.css, fonts.css and assets/
+    # and therefore silently left preview/fonts/ behind -- ten woff2 files that
+    # fonts.css asks for by relative path. The pages still *requested* Newsreader
+    # and Hanken Grotesk, and getComputedStyle still reported them, so every
+    # check passed while the live site quietly fell back to system fonts.
+    assets = 0
+    for src in sorted(PREVIEW.rglob("*")):
+        if src.is_dir() or src.suffix.lower() == ".html":
+            continue
+        rel = src.relative_to(PREVIEW)
+        if rel.parts and rel.parts[0] == "archive":
+            continue
+        if not dry:
+            dst = SITE / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+        assets += 1
+    print(f"  {'would copy' if dry else 'copied'} {assets} non-HTML assets")
     return n
 
 
