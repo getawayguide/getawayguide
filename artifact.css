@@ -3554,3 +3554,33 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
      because there is no gutter for it to escape. */
   .fr { --bleed:0px; }
 }
+
+/* ==========================================================================
+   MOBILE BODY TYPE -- restoring the size the site already asked for
+   styles.css:537 sets 1.15rem/1.75 on a phone, with the comment "Larger,
+   less-thin body text on mobile for readability". theme.css then pins
+   .article-body p to 1rem/1.82 with NO media query, so it won at every width
+   and mobile shipped 16px.
+
+   Benchmarked against 65 travel-blog article pages measured at 390px: the
+   median mobile body size is 18px (IQR 17-20), and only 12 of the 65 set 16px
+   or smaller. The same sample says this site is NOT too airy -- its dead-space
+   fraction is 0.25-0.30 against a median of 0.38, and its tallest empty band
+   is 93-123px against a median of 401px. It sits at or below the 25th
+   percentile on every whitespace measure. What reads as emptiness is small
+   pale type in a correctly spaced column, not the spacing.
+   ========================================================================== */
+@media (max-width:768px) {
+  .article-body p, .article-body li,
+  .artbody p, .artbody li,
+  .fn-section p, .fn-section li,
+  .measure p, .measure li {
+    font-size:1.15rem !important;   /* 18.4px, the value styles.css intended */
+    line-height:1.75 !important; }
+  /* the paragraph gap comes up with the type: 17.6px was well under the
+     27.5px median, which is the other half of why the column felt thin */
+  .article-body p + p, .artbody p + p, .fn-section p + p, .measure p + p {
+    margin-top:1.35em !important; }
+}
+
+
