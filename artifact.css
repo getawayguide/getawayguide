@@ -3358,3 +3358,82 @@ footer { padding:2.6rem 96px !important; }
 @media (max-width:768px) {
   .artbody, .gg-ab2, .article-body { padding-bottom:40px !important; }
 }
+
+/* ==========================================================================
+   MOBILE PASS -- reported on the shipped site
+   ========================================================================== */
+@media (max-width:768px) {
+
+  /* "All dispatches" sat flush on top of the first photo with no gap and no
+     arrow, so it read as a caption printed on the picture rather than a link.
+     It becomes the same object as the bio's "More about me": a standalone
+     uppercase link with the arrow and room to breathe. */
+  .sec-head { display:block !important; }
+  .sec-head .more, .sec-head .section-link {
+    display:inline-flex !important; align-items:center; gap:.5rem;
+    margin-top:16px !important; margin-bottom:26px !important;
+    border-bottom:1px solid var(--line) !important; padding-bottom:5px !important;
+    color:var(--ink) !important; }
+  .sec-head .more::after, .sec-head .section-link::after {
+    content:"\2192"; font-size:1.05em; line-height:1;
+    transition:transform .18s ease; }
+  .sec-head .more:active::after, .sec-head .section-link:active::after {
+    transform:translateX(3px); }
+
+  /* A card on a phone gets no hover, so nothing said it was tappable. Give it
+     the affordance a touch screen can actually show: a visible press state,
+     and a small arrow on the title so it reads as a destination, not a block
+     of text that happens to sit under a photo. */
+  .cards > a, .country-article-card, .country-articles-grid > a,
+  .tiles .tile, .home-dest-card {
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease, opacity .12s ease; }
+  .cards > a:active, .country-article-card:active,
+  .country-articles-grid > a:active, .tiles .tile:active,
+  .home-dest-card:active { transform:scale(.985); opacity:.9; }
+  .cards > a .card-h::after {
+    content:"\00a0\2192"; color:var(--accent); font-size:.85em; }
+
+  /* The live map's tooltips render white-on-white on a phone: the desktop rule
+     that inks them is scoped to the hover state, which a touch screen never
+     enters, so the tap-to-open bubble kept the plugin's own colours. */
+  .dest-tooltip, .map-tooltip, .am5-tooltip, [class*="tooltip"] {
+    color:var(--ink) !important; }
+  .dest-tooltip *, .map-tooltip *, .am5-tooltip * { color:inherit !important; }
+  .dest-tooltip a, .map-tooltip a, .am5-tooltip a,
+  .dest-tooltip .more, .map-tooltip .more {
+    color:var(--accent) !important; }
+
+  /* The tip's accent rule sat flush against its first word on a phone: the
+     mobile gutter reset (.article-body > * { padding-left:0 }) also stripped
+     the 22px indent the bar needs, so the rule and the text touched. Desktop
+     keeps 2px 0 2px 22px; the phone gets the same shape, one step in. */
+  .article-tip, .article-callout {
+    padding:2px 0 2px 16px !important;
+    border-left-width:3px !important; }
+}
+
+/* ---- ONE font stack, stated once.
+       theme.css defines --display/--body with the full fallback list, but the
+       artifact's own `.frame { --display: ... }` sets a shorter one on <body>,
+       which beats :root by proximity. The four transplanted pages therefore
+       resolved to a stack without "Times New Roman"/Helvetica/Arial. The
+       rendered face is identical wherever the webfont loads and different
+       wherever it does not, which is exactly the case a fallback list is for. */
+.frame, body.frame, :root {
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --body:"Hanken Grotesk", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* the field notes carry a page-level paragraph rule with the short stack */
+.article-body p, .artbody p, .fn-section p, .measure p,
+.article-body li, .artbody li, .fn-section li, .measure li {
+  font-family:"Hanken Grotesk", -apple-system, "Segoe UI", Helvetica, Arial,
+    sans-serif !important; }
+
+/* the section's "view all" link answers the cursor as well as the thumb: the
+   mobile rule that inks it was overriding the shared hover with !important */
+.sec-head .more:hover, .sec-head .section-link:hover,
+.more:hover, .section-link:hover { color:var(--accent) !important; }
+.sec-head .more:hover::after, .sec-head .section-link:hover::after {
+  transform:translateX(3px); }
