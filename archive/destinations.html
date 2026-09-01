@@ -1,0 +1,1274 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Browse all travel guides by region.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Getawayguide">
+<meta property="og:title" content="Destinations — Getawayguide">
+<meta property="og:description" content="Browse all travel guides by region.">
+<meta property="og:url" content="https://getawayguide.io/destinations.html">
+<link rel="canonical" href="https://getawayguide.io/destinations.html">
+    <meta property="og:image" content="https://getawayguide.io/Images/web/og/destinations.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://getawayguide.io/Images/web/og/destinations.jpg">
+<title>All Destinations &mdash; getawayguide</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Jost:ital,wght@0,300..400;1,300..400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=17">
+<script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+<style>
+/* hide amCharts branding */
+a[href*="amcharts.com"]{display:none!important}
+/* header overrides */
+#page-destinations .page-header{border-bottom:none;grid-template-columns:1fr;padding-bottom:2rem}
+.dest-count-highlight{color:var(--ink);font-weight:700;font-style:normal}
+.dest-subhead{font-size:1.2rem;line-height:1.75;opacity:.65;margin-top:.75rem}
+/* map */
+.dest-map-wrap{padding:.75rem 6rem 3rem;max-width:100%}
+#world-map{position:relative;width:100%;height:640px;border-radius:6px;overflow:hidden;background:#f7f7f3;-webkit-tap-highlight-color:transparent}
+#world-map :focus,#world-map :focus-visible{outline:none!important}
+/* Custom name tab (mobile two-tap). Rendered by us so nothing re-anchors it. */
+#map-tab{position:absolute;z-index:5;display:none;pointer-events:none;transform:translateX(-50%);background:#1C2821;border-radius:6px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.28);white-space:nowrap}
+#map-tab .mt-row{display:flex;align-items:center;gap:8px}
+#map-tab img{width:16px;height:12px;border-radius:1px;display:block;flex:0 0 auto}
+#map-tab .mt-name{color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:400;line-height:1.3}
+#map-tab .mt-sub{color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+/* little pointer under the bubble (flips above when the tab sits below a country) */
+#map-tab::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1C2821}
+#map-tab.flip::after{bottom:auto;top:-6px;border-top:none;border-bottom:6px solid #1C2821}
+.map-mobile-hd,.map-close-btn{display:none}
+body.dest-map-open nav{display:none}
+.map-legend{display:flex;gap:2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:.45rem;font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#555}
+.legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;display:inline-block}
+/* article cards */
+.dest-articles-section{padding:2.5rem 6rem 7rem}
+.dest-articles-section .dest-section-heading{font-family:'Fraunces',Georgia,serif;font-size:1.75rem;font-weight:300;letter-spacing:-.01em;color:var(--ink);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--b-subtle)}
+.dest-articles-section .filter-bar-inline{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;padding-bottom:.5rem}
+.dest-articles-section .dest-bg{background-size:cover;background-position:center}
+.art-card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
+.art-card-name{font-family:'Montserrat',sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.art-card-btn{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
+.art-card-soon{}
+.art-card-badge{position:absolute;top:.7rem;left:.7rem;z-index:2;display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.6);color:#fff;font-family:'Montserrat',sans-serif;font-size:.52rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:.34rem .62rem;border-radius:999px}
+.art-card-badge-dot{width:5px;height:5px;border-radius:50%;background:#7FE0AE;flex:0 0 auto}
+.home-dest-soon{cursor:default}
+.home-dest-soon .art-card-btn{border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.8)}
+@media(max-width:1024px){
+  .dest-map-wrap{padding:.75rem 3rem 0}
+  .dest-articles-section{padding:2rem 3rem 5rem}
+}
+@media(max-width:768px){
+  .dest-subhead{font-size:.98rem;line-height:1.55;margin-top:.5rem}
+  /* Compact, tappable map on top */
+  .dest-map-wrap{display:block;padding:.5rem 1.25rem 1.4rem;position:relative}
+  .map-mobile-hd{display:flex;justify-content:space-between;align-items:center;padding:.1rem .1rem .7rem;cursor:pointer}
+  .map-mobile-hd .mmh-t{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:600}
+  .map-mobile-hd .mmh-x{font-family:'Montserrat',sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra)}
+  .map-legend{gap:1rem;margin-bottom:.7rem}
+  .map-legend .legend-item{font-size:.6rem}
+  #world-map{height:250px!important}
+  /* Full-screen expanded state */
+  .dest-map-wrap.map-fs{position:fixed;inset:0;z-index:4000;background:#fff;padding:0;margin:0;max-width:none;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  .dest-map-wrap.map-fs .map-mobile-hd{display:none}
+  .dest-map-wrap.map-fs .map-legend{margin:0;padding:1rem 3.2rem .65rem 1rem;background:#fff;border-bottom:1px solid rgba(28,40,33,.08);justify-content:center;flex:0 0 auto}
+  .dest-map-wrap.map-fs #world-map{flex:1 1 auto;min-height:0;height:auto!important;border-radius:0}
+  /* Touch ownership (mobile): at zoom 1 vertical swipes scroll the page over
+     the inline map; once zoomed (or full-screen) the map owns all touches.
+     !important beats amCharts' inline touch-action styles. */
+  #world-map, #world-map *{touch-action:pan-y!important}
+  .dest-map-wrap.map-zoomed #world-map, .dest-map-wrap.map-zoomed #world-map *,
+  .dest-map-wrap.map-fs #world-map, .dest-map-wrap.map-fs #world-map *{touch-action:none!important}
+  .dest-map-wrap.map-fs .map-close-btn{display:flex;align-items:center;justify-content:center;position:absolute;right:.9rem;top:.7rem;z-index:6;width:34px;height:34px;border-radius:50%;background:rgba(28,40,33,.85);color:#fff;border:none;font-size:1.05rem;cursor:pointer}
+  .dest-articles-section{padding:2rem 1.25rem 5rem}
+}
+@media(max-width:480px){
+  .dest-articles-section{padding:1.5rem 1rem 4rem}
+}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Destinations — Getawayguide",
+  "url": "https://getawayguide.io/destinations.html",
+  "description": "Browse all travel guides by region.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Getawayguide",
+    "url": "https://getawayguide.io/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://getawayguide.io/og-image.svg"
+    }
+  }
+}
+</script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Getawayguide</a>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html"  id="nav-home">Home</a></li>
+    <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
+      <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='destinations.html'">Destinations <span class="nav-caret">?</span></a>
+      <div class="nav-dropdown nav-dropdown-fn">
+        <div class="nav-dropdown-col">
+          <div class="nav-guides-head"><span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span><span class="nav-guides-legend"><span class="nav-fulldot"></span>In-Depth Guide</span></div>
+          <div class="nav-fn-groups">
+            <div class="nav-fn-sub">
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Europe</span>
+              <a href="albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
+              <a href="belgium/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/be.png" width="16" height="12" alt=""><span class="country-name">Belgium</span></a>
+              <a href="bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
+              <a href="croatia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/hr.png" width="16" height="12" alt=""><span class="country-name">Croatia</span></a>
+              <a href="denmark/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
+              <a href="estonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ee.png" width="16" height="12" alt=""><span class="country-name">Estonia</span></a>
+              <a href="finland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/fi.png" width="16" height="12" alt=""><span class="country-name">Finland</span></a>
+              <a href="georgia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
+              <a href="germany/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/de.png" width="16" height="12" alt=""><span class="country-name">Germany</span></a>
+              <a href="greece/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
+              <a href="hungary/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
+              <a href="kosovo/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
+              <a href="latvia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/lv.png" width="16" height="12" alt=""><span class="country-name">Latvia</span></a>
+              <a href="montenegro/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
+              <a href="netherlands/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/nl.png" width="16" height="12" alt=""><span class="country-name">Netherlands</span></a>
+              <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
+              <a href="serbia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
+              <a href="slovenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/si.png" width="16" height="12" alt=""><span class="country-name">Slovenia</span></a>
+              <a href="sweden/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/se.png" width="16" height="12" alt=""><span class="country-name">Sweden</span></a>
+              <a href="switzerland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
+            </div>
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Africa</span>
+              <a href="egypt/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/eg.png" width="16" height="12" alt=""><span class="country-name">Egypt</span></a>
+              <a href="tanzania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
+            </div>
+            </div>
+            <div class="nav-fn-sub">
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Asia</span>
+              <a href="armenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
+              <a href="india/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/in.png" width="16" height="12" alt=""><span class="country-name">India</span></a>
+              <a href="indonesia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/id.png" width="16" height="12" alt=""><span class="country-name">Indonesia</span></a>
+              <a href="philippines/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
+              <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/tr.png" width="16" height="12" alt=""><span class="country-name">Türkiye</span></a>
+            </div>
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Americas</span>
+              <a href="argentina/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/ar.png" width="16" height="12" alt=""><span class="country-name">Argentina</span></a>
+              <a href="brazil/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
+              <a href="chile/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/cl.png" width="16" height="12" alt=""><span class="country-name">Chile</span></a>
+              <a href="colombia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
+              <a href="el-salvador/index.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span><span class="nav-fulldot" title="Full guide available"></span></a>
+              <a href="mexico/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
+              <a href="peru/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
+            </div>
+            <div class="nav-fn-grp">
+              <span class="nav-fn-region">Oceania</span>
+              <a href="australia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="../Images/web/flags/au.png" width="16" height="12" alt=""><span class="country-name">Australia</span></a>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-dropdown-col nav-dropdown-map">
+          <a href="destinations.html#explore-map" class="nav-map-card">
+            <span class="nav-map-title">Explore the Interactive Map</span>
+            <img src="../Images/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" loading="lazy" decoding="async" alt="World map of the countries I have travelled to">
+          </a>
+          <span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Explore by Continent</span>
+          <a href="destinations.html#africa" class="nav-dropdown-continent"><img class="nav-cont-ico" src="../Images/web/continents/africa.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Africa</a>
+          <a href="destinations.html#americas" class="nav-dropdown-continent"><img class="nav-cont-ico" src="../Images/web/continents/americas.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Americas</a>
+          <a href="destinations.html#asia" class="nav-dropdown-continent"><img class="nav-cont-ico" src="../Images/web/continents/asia.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Asia</a>
+          <a href="destinations.html#europe" class="nav-dropdown-continent"><img class="nav-cont-ico" src="../Images/web/continents/europe.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Europe</a>
+          <a href="destinations.html#oceania" class="nav-dropdown-continent"><img class="nav-cont-ico" src="../Images/web/continents/oceania.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Oceania</a>
+          <a href="destinations.html" class="nav-dropdown-continent nav-all-dest">All Destinations</a>
+        </div>
+      </div>
+    </li>
+    <li><a href="resources.html"  id="nav-resources">Resources</a></li>
+    <li><a href="about.html"  id="nav-about">About Me</a></li>
+  </ul>
+</nav>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <ul class="mobile-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li>
+      <div class="mnav-row"><a href="destinations.html" class="mnav-parent">Destinations</a><button type="button" class="mnav-chev-btn open" aria-label="Toggle destinations menu" onclick="this.classList.toggle(&#39;open&#39;);this.closest(&#39;li&#39;).querySelector(&#39;.mobile-nav-continents&#39;).classList.toggle(&#39;open&#39;)"><span class="mnav-chev">&rsaquo;</span></button></div>
+      <div class="mobile-nav-continents open">
+        <a href="destinations.html#explore-map" class="mnc-map">Explore the Interactive Map</a>
+        <a href="destinations.html#europe"><img class="mnc-ico" src="../Images/web/continents/europe.svg" width="15" height="15" alt="" aria-hidden="true" loading="lazy">Europe</a>
+        <a href="destinations.html#americas"><img class="mnc-ico" src="../Images/web/continents/americas.svg" width="15" height="15" alt="" aria-hidden="true" loading="lazy">Americas</a>
+        <a href="destinations.html#asia"><img class="mnc-ico" src="../Images/web/continents/asia.svg" width="15" height="15" alt="" aria-hidden="true" loading="lazy">Asia</a>
+        <a href="destinations.html#africa"><img class="mnc-ico" src="../Images/web/continents/africa.svg" width="15" height="15" alt="" aria-hidden="true" loading="lazy">Africa</a>
+        <a href="destinations.html#oceania"><img class="mnc-ico" src="../Images/web/continents/oceania.svg" width="15" height="15" alt="" aria-hidden="true" loading="lazy">Oceania</a>
+        <a href="destinations.html">All Destinations</a>
+      </div>
+    </li>
+    <li><a href="resources.html">Resources</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+  <div class="mobile-drawer-footer">&copy; 2026 getawayguide</div>
+</div>
+
+<div class="page active fade-in" id="page-destinations">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">All <em>destinations</em></h1>
+      <p class="dest-subhead">Every country I've explored, from quick getaways to a year-long adventure across multiple continents.</p>
+    </div>
+  </header>
+
+  <!-- World Map -->
+  <section class="dest-map-wrap" id="explore-map">
+    <div class="map-mobile-hd" onclick="toggleMapFS()">
+      <span class="mmh-t">Explore the Map</span>
+      <span class="mmh-x">Tap to expand ⤢</span>
+    </div>
+    <button class="map-close-btn" onclick="toggleMapFS()" aria-label="Close map">✕</button>
+    <div class="map-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Articles Available</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c8ddd5"></span>Countries Visited</span>
+    </div>
+    <div id="world-map"></div>
+  </section>
+
+  <!-- Articles -->
+  <section class="dest-articles-section" id="articles-section">
+    <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
+      Available Articles
+      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Detailed guides & quick field notes from places I've been recently</span>
+    </h2>
+    <div class="filter-bar-inline">
+      <span class="filter-label">Filter by</span>
+      <button class="filter-btn active" onclick="filterArticles('all',this)">All</button>
+      <button class="filter-btn" onclick="filterArticles('europe',this)">Europe</button>
+      <button class="filter-btn" onclick="filterArticles('americas',this)">Americas</button>
+      <button class="filter-btn" onclick="filterArticles('asia',this)">Asia</button>
+      <button class="filter-btn" onclick="filterArticles('africa',this)">Africa</button>
+      <button class="filter-btn" onclick="filterArticles('oceania',this)">Oceania</button>
+    </div>
+    <div class="home-dest-grid" id="articles-grid">
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='albania/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/albania.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Albania</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='argentina/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/argentina.jpg');background-size:cover;background-position:50% 30%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Argentina</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='armenia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/armenia.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Armenia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="oceania" onclick="location.href='australia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/australia.jpg');background-size:cover;background-position:50% 72%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Australia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Belgium -->
+      <div class="home-dest-card" id="dest-belgium" data-continent="europe" onclick="location.href='belgium/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/belgium.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Belgium</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='bosnia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/bosnia.jpg');background-size:cover;background-position:50% 30%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Bosnia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='brazil/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/brazil.jpg');background-size:cover;background-position:50% 20%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Brazil</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='chile/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/chile.jpg');background-size:cover;background-position:50% 60%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Chile</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='colombia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/colombia.jpg');background-size:cover;background-position:50% 62%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Colombia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Croatia -->
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='croatia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/croatia.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Croatia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='denmark/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/denmark.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Denmark</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-egypt" data-continent="africa" onclick="location.href='egypt/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/egypt.jpg');background-size:cover;background-position:50% 10%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Egypt</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='el-salvador/index.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/el-salvador.jpg');background-size:cover;background-position:50% 78%"></div>
+        <div class="dest-overlay"></div>
+        <span class="art-card-badge"><span class="art-card-badge-dot"></span>In-Depth Guide</span>
+        <div class="art-card-info">
+          <p class="art-card-name">El Salvador</p>
+          <span class="art-card-btn">Explore</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-estonia" data-continent="europe" onclick="location.href='estonia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/estonia.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Estonia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-finland" data-continent="europe" onclick="location.href='finland/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/finland.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Finland</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-georgia" data-continent="europe" onclick="location.href='georgia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/georgia.jpg');background-size:cover;background-position:50% 45%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Georgia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Germany -->
+      <div class="home-dest-card" id="dest-germany" data-continent="europe" onclick="location.href='germany/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/germany.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Germany</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='greece/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/greece.jpg');background-size:cover;background-position:50% 32%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Greece</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='hungary/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/hungary.jpg?v=2');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Hungary</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='india/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/india.jpg');background-size:cover;background-position:50% 30%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">India</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='indonesia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/indonesia.jpg');background-size:cover;background-position:50% 10%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Indonesia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='kosovo/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/kosovo.jpg');background-size:cover;background-position:50% 58%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Kosovo</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-latvia" data-continent="europe" onclick="location.href='latvia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/latvia.jpg');background-size:cover;background-position:18% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Latvia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='mexico/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/mexico.jpg');background-size:cover;background-position:50% 52%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Mexico</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='montenegro/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/montenegro.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Montenegro</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card home-dest-soon" data-continent="oceania">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/new-zealand.jpg');background-size:cover;background-position:50% 60%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">New Zealand</p>
+          <span class="art-card-btn art-card-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <!-- Netherlands -->
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='netherlands/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/netherlands.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Netherlands</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='north-macedonia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/north-macedonia.jpg');background-size:cover;background-position:50% 45%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">North Macedonia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="americas" onclick="location.href='peru/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/peru.jpg');background-size:cover;background-position:50% 42%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Peru</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='philippines/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/philippines.jpg');background-size:cover;background-position:50% 78%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Philippines</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='serbia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/serbia.jpg');background-size:cover;background-position:50% 38%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Serbia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <!-- Slovenia -->
+      <div class="home-dest-card" id="dest-slovenia" data-continent="europe" onclick="location.href='slovenia/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/slovenia.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Slovenia</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" id="dest-sweden" data-continent="europe" onclick="location.href='sweden/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/sweden.jpg');background-size:cover;background-position:50% 28%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Sweden</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="europe" onclick="location.href='switzerland/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/switzerland.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Switzerland</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="africa" onclick="location.href='tanzania/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/tanzania.jpg');background-size:cover;background-position:50% 50%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Tanzania</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+      <div class="home-dest-card" data-continent="asia" onclick="location.href='turkiye/field-notes.html'" style="cursor:pointer">
+        <div class="dest-bg" style="background-image:url('../Images/web/dest-cards/turkiye.jpg');background-size:cover;background-position:50% 40%"></div>
+        <div class="dest-overlay"></div>
+        <div class="art-card-info">
+          <p class="art-card-name">Türkiye</p>
+          <span class="art-card-btn">Read Notes</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <footer>
+    <div><div class="footer-logo">getawayguide</div><div class="footer-tagline">Dispatches from the road</div></div>
+    <div class="footer-right"><ul class="footer-links"><li><a href="https://www.instagram.com/kphanthaman" target="_blank" rel="noopener noreferrer">Instagram</a></li><li><a href="contact.html">Contact</a></li><li><a href="privacy.html">Privacy</a></li></ul><div class="footer-copy">&copy; 2026 getawayguide</div></div>
+  
+</footer>
+</div>
+
+
+<script>
+function toggleMobileMenu(){
+  var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');
+  d.classList.toggle('open');b.classList.toggle('open');
+  document.body.style.overflow=d.classList.contains('open')?'hidden':'';
+}
+document.addEventListener('click',function(e){var a=e.target.closest('#mobile-nav-drawer a');if(!a)return;var d=document.getElementById('mobile-nav-drawer'),b=document.getElementById('nav-hamburger');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';});
+// Mobile: expand the compact map to full screen (and back)
+var _mapHome=null; // remembers the map's spot in the page while it's full-screen
+function toggleMapFS(){
+  var m=document.getElementById('explore-map');
+  var open=!m.classList.contains('map-fs');
+  if(open){
+    // Move the map to <body> so position:fixed is relative to the viewport
+    // regardless of scroll position or any transformed ancestor (the page
+    // fade-in). Otherwise expanding while scrolled down puts it off-screen.
+    _mapHome={parent:m.parentNode,next:m.nextSibling};
+    document.body.appendChild(m);
+    m.classList.add('map-fs');
+  }else{
+    m.classList.remove('map-fs');
+    if(_mapHome){ _mapHome.parent.insertBefore(m,_mapHome.next); _mapHome=null; }
+  }
+  document.body.classList.toggle('dest-map-open',open);
+  document.body.style.overflow=open?'hidden':'';
+  // re-evaluate single-finger pan policy for the new fs state (between gestures)
+  if(window.__syncMapPan) window.__syncMapPan();
+  // let the layout settle, then force amCharts to remeasure its container
+  setTimeout(function(){
+    window.dispatchEvent(new Event('resize'));
+    if(window.__destMap){ window.__destMap.svgContainer.measure(); window.__destMap.goHome(0); }
+  },90);
+}
+// Close full-screen map with Escape
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){var m=document.getElementById('explore-map');if(m&&m.classList.contains('map-fs'))toggleMapFS();}
+});
+function filterArticles(continent, btn) {
+  document.querySelectorAll('#articles-section .filter-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('#articles-grid .home-dest-card').forEach(function(card){
+    card.style.display = (continent === 'all' || card.dataset.continent === continent) ? '' : 'none';
+  });
+}
+(function(){
+  var p=window.location.pathname.split('/').pop()||'index.html';
+  var m={'index.html':'nav-home','':'nav-home','destinations.html':'nav-destinations','resources.html':'nav-resources','about.html':'nav-about'};
+  var id=m[p];
+  if(id){var el=document.getElementById(id);if(el)el.classList.add('active');}
+})();
+function applyHashFilter(){
+  var hash=(window.location.hash||'').replace('#','').toLowerCase();
+  var valid=['africa','americas','asia','europe','oceania'];
+  if(valid.indexOf(hash)===-1)return;
+  var btns=document.querySelectorAll('#articles-section .filter-btn');
+  for(var i=0;i<btns.length;i++){
+    if(btns[i].textContent.trim().toLowerCase()===hash){filterArticles(hash,btns[i]);break;}
+  }
+  setTimeout(function(){
+    var s=document.getElementById('articles-section');
+    if(s)s.scrollIntoView({behavior:'smooth',block:'start'});
+  },120);
+}
+applyHashFilter();
+window.addEventListener('hashchange',applyHashFilter);
+(function(){
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var el=e.target;
+        el.style.opacity='1';el.style.transform='translateY(0)';
+        obs.unobserve(el);
+        /* Hand the element back to the stylesheet once the reveal has played. The inline
+           transform this sets outranks .home-dest-card:hover, so leaving it in place kills
+           the hover lift for every card that has scrolled into view. */
+        setTimeout(function(){el.style.transform='';el.style.transition='';},560);
+      }
+    });
+  },{threshold:.05});
+  document.querySelectorAll('#articles-grid .home-dest-card').forEach(function(el){
+    Object.assign(el.style,{transition:'opacity .5s ease,transform .5s ease',opacity:'0',transform:'translateY(14px)'});
+    obs.observe(el);
+  });
+})();
+</script>
+
+<script>
+am4core.useTheme(am4themes_animated);
+
+var chart = am4core.create("world-map", am4maps.MapChart);
+window.__destMap = chart;
+// Fix Russia antimeridian: clone geodata and shift Chukotka coords to +360
+var fixedGeodata = JSON.parse(JSON.stringify(am4geodata_worldLow));
+(function() {
+  for (var fi = 0; fi < fixedGeodata.features.length; fi++) {
+    if (fixedGeodata.features[fi].id === "RU") {
+      var geom = fixedGeodata.features[fi].geometry;
+      var polys = geom.type === "MultiPolygon" ? geom.coordinates : [geom.coordinates];
+      polys.forEach(function(poly) {
+        poly.forEach(function(ring) {
+          ring.forEach(function(pt) {
+            if (pt[0] < -90) pt[0] += 360;
+          });
+        });
+      });
+      break;
+    }
+  }
+})();
+chart.geodata = fixedGeodata;
+chart.projection = new am4maps.projections.Miller();
+chart.panBehavior = "move";
+chart.deltaLongitude = -10; // right edge at ~195°E so Russia/Alaska render whole
+chart.homeGeoPoint = { latitude: 20, longitude: 15 };
+chart.homeZoomLevel = 1;
+chart.logo.disabled = true;
+
+// No ocean fill — use page background
+chart.background.fillOpacity = 0;
+
+// -- Layer 1: All countries (unvisited gray) ----------------------------------
+var allSeries = chart.series.push(new am4maps.MapPolygonSeries());
+allSeries.exclude = ["AQ"]; // exclude Antarctica
+allSeries.useGeodata = true;
+var allTpl = allSeries.mapPolygons.template;
+allTpl.fill = am4core.color("#e4e4e0");
+allTpl.stroke = am4core.color("#ffffff");
+allTpl.strokeWidth = 0.4;
+allTpl.focusable = false; // no blue a11y focus rectangle on tap
+allTpl.states.create("hover").properties.fill = am4core.color("#d0d0cc");
+allSeries.tooltip.background.fill = am4core.color("#1C2821");
+allSeries.tooltip.background.strokeWidth = 0;
+allSeries.tooltip.background.cornerRadius = 6;
+allSeries.tooltip.getFillFromObject = false;
+allSeries.tooltip.label.padding(8, 12, 8, 12);
+allTpl.tooltipHTML = "{name}";
+allTpl.adapter.add("tooltipHTML", function(html, target) {
+  if (!target.dataItem || !target.dataItem.dataContext) return html;
+  var id = target.dataItem.dataContext.id || "";
+  var name = target.dataItem.dataContext.name || "";
+  if (!id) return name;
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="../Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#fff;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+});
+
+// -- Layer 2: Visited countries (not featured) --------------------------------
+var visitedISO = [
+  // Europe
+  "AT","BE","BA","HR","CZ","DK","GB","EE","FI","FR","DE","HU","IT","XK","LV","MC","ME","NL","PT","SI","ES","SE","CH",
+  // Asia
+  "KH","CN","ID","JP","TH","VN","GE","IL","JO","IN",
+  // Africa
+  "EG","MA","TZ",
+  // Americas
+  "CU","JM","BS","GT","NI","CA","MX","US","AR","BR","CL","CO","PY",
+  // Oceania
+  "AU"
+];
+var visitedSeries = chart.series.push(new am4maps.MapPolygonSeries());
+visitedSeries.useGeodata = true;
+visitedSeries.include = visitedISO;
+var vTpl = visitedSeries.mapPolygons.template;
+vTpl.fill = am4core.color("#c8ddd5");
+vTpl.stroke = am4core.color("#ffffff");
+vTpl.strokeWidth = 0.4;
+vTpl.focusable = false; // no blue a11y focus rectangle on tap
+vTpl.states.create("hover").properties.fill = am4core.color("#aecec3");
+visitedSeries.tooltip.background.fill = am4core.color("#1C2821");
+visitedSeries.tooltip.background.strokeWidth = 0;
+visitedSeries.tooltip.background.cornerRadius = 6;
+visitedSeries.tooltip.getFillFromObject = false;
+visitedSeries.tooltip.label.padding(8, 12, 8, 12);
+vTpl.tooltipHTML = "{name}";
+vTpl.adapter.add("tooltipHTML", function(html, target) {
+  if (!target.dataItem || !target.dataItem.dataContext) return html;
+  var id = target.dataItem.dataContext.id || "";
+  var name = target.dataItem.dataContext.name || "";
+  if (!id) return name;
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="../Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#fff;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+});
+
+// -- Layer 3: Field Notes countries ------------------------------------------
+var fieldNotesMap = {
+  "AL": { name: "Albania",         url: "albania/field-notes.html" },
+  "AR": { name: "Argentina",      url: "argentina/field-notes.html" },
+  "AM": { name: "Armenia",         url: "armenia/field-notes.html" },
+  "AU": { name: "Australia",      url: "australia/field-notes.html" },
+  "BE": { name: "Belgium",        url: "belgium/field-notes.html" },
+  "BA": { name: "Bosnia",          url: "bosnia/field-notes.html" },
+  "BR": { name: "Brazil",          url: "brazil/field-notes.html" },
+  "CL": { name: "Chile",          url: "chile/field-notes.html" },
+  "CO": { name: "Colombia",        url: "colombia/field-notes.html" },
+  "HR": { name: "Croatia",        url: "croatia/field-notes.html" },
+  "DK": { name: "Denmark",        url: "denmark/field-notes.html" },
+  "EG": { name: "Egypt",          url: "egypt/field-notes.html" },
+  "EE": { name: "Estonia",        url: "estonia/field-notes.html" },
+  "FI": { name: "Finland",        url: "finland/field-notes.html" },
+  "GE": { name: "Georgia",         url: "georgia/field-notes.html" },
+  "DE": { name: "Germany",        url: "germany/field-notes.html" },
+  "GR": { name: "Greece",          url: "greece/field-notes.html" },
+  "HU": { name: "Hungary",         url: "hungary/field-notes.html" },
+  "IN": { name: "India",          url: "india/field-notes.html" },
+  "ID": { name: "Indonesia",      url: "indonesia/field-notes.html" },
+  "XK": { name: "Kosovo",          url: "kosovo/field-notes.html" },
+  "LV": { name: "Latvia",         url: "latvia/field-notes.html" },
+  "MX": { name: "Mexico",          url: "mexico/field-notes.html" },
+  "ME": { name: "Montenegro",      url: "montenegro/field-notes.html" },
+  "NL": { name: "Netherlands",    url: "netherlands/field-notes.html" },
+  "MK": { name: "North Macedonia", url: "north-macedonia/field-notes.html" },
+  "PE": { name: "Peru",            url: "peru/field-notes.html" },
+  "PH": { name: "Philippines",     url: "philippines/field-notes.html" },
+  "RS": { name: "Serbia",          url: "serbia/field-notes.html" },
+  "SI": { name: "Slovenia",       url: "slovenia/field-notes.html" },
+  "SE": { name: "Sweden",         url: "sweden/field-notes.html" },
+  "CH": { name: "Switzerland",     url: "switzerland/field-notes.html" },
+  "TZ": { name: "Tanzania",        url: "tanzania/field-notes.html" },
+  "TR": { name: "Türkiye",         url: "turkiye/field-notes.html" }
+};
+
+var fieldNotesSeries = chart.series.push(new am4maps.MapPolygonSeries());
+fieldNotesSeries.useGeodata = true;
+fieldNotesSeries.include = Object.keys(fieldNotesMap);
+fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
+  var c = fieldNotesMap[id];
+  var iso = id.toLowerCase();
+  var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
+    '<img loading="lazy" src="../Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
+    '<div>' +
+      '<div style="color:#fff;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + (c.url ? 'Field Notes' : 'Coming Soon') + '</div>' +
+    '</div>' +
+  '</div>';
+  return { id: id, tipHtml: tipHtml };
+});
+
+var fnTpl = fieldNotesSeries.mapPolygons.template;
+fnTpl.fill = am4core.color("#2D6B50");
+fnTpl.stroke = am4core.color("#ffffff");
+fnTpl.strokeWidth = 0.4;
+fnTpl.focusable = false; // no blue a11y focus rectangle on tap
+fieldNotesSeries.tooltip.background.fill = am4core.color("#1C2821");
+fieldNotesSeries.tooltip.background.strokeWidth = 0;
+fieldNotesSeries.tooltip.background.cornerRadius = 6;
+fieldNotesSeries.tooltip.getFillFromObject = false;
+fieldNotesSeries.tooltip.label.padding(10, 14, 10, 14);
+fnTpl.tooltipHTML = "{tipHtml}";
+fnTpl.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+fnTpl.states.create("hover").properties.fill = am4core.color("#3d8a66");
+fnTpl.events.on("hit", function(ev) {
+  var id = ev.target.dataItem && ev.target.dataItem.dataContext && ev.target.dataItem.dataContext.id;
+  if (!id || !fieldNotesMap[id] || !fieldNotesMap[id].url) return;
+  window.location.href = fieldNotesMap[id].url;
+});
+
+// -- Layer 4: Featured countries (article or coming soon) ---------------------
+var featuredMap = {
+  "SV": { name: "El Salvador",  url: "el-salvador/index.html" },
+  "NZ": { name: "New Zealand",  url: "" }
+};
+
+var featuredSeries = chart.series.push(new am4maps.MapPolygonSeries());
+featuredSeries.useGeodata = true;
+featuredSeries.include = Object.keys(featuredMap);
+featuredSeries.data = Object.keys(featuredMap).map(function(id) {
+  var c = featuredMap[id];
+  var iso = id.toLowerCase();
+  var statusLabel = c.url ? 'Read Guide' : 'Coming Soon';
+  var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
+    '<img loading="lazy" src="../Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
+    '<div>' +
+      '<div style="color:#fff;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + statusLabel + '</div>' +
+    '</div>' +
+  '</div>';
+  return { id: id, tipHtml: tipHtml };
+});
+
+var fTpl = featuredSeries.mapPolygons.template;
+fTpl.fill = am4core.color("#2D6B50");
+fTpl.stroke = am4core.color("#ffffff");
+fTpl.strokeWidth = 0.4;
+fTpl.focusable = false; // no blue a11y focus rectangle on tap
+featuredSeries.tooltip.background.fill = am4core.color("#1C2821");
+featuredSeries.tooltip.background.strokeWidth = 0;
+featuredSeries.tooltip.background.cornerRadius = 6;
+featuredSeries.tooltip.getFillFromObject = false;
+featuredSeries.tooltip.label.padding(10, 14, 10, 14);
+fTpl.tooltipHTML = "{tipHtml}";
+fTpl.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+
+var fHover = fTpl.states.create("hover");
+fHover.properties.fill = am4core.color("#3d8a66");
+
+fTpl.events.on("hit", function(ev) {
+  var id = ev.target.dataItem && ev.target.dataItem.dataContext && ev.target.dataItem.dataContext.id;
+  if (!id || !featuredMap[id]) return;
+  if (featuredMap[id].url) {
+    window.location.href = featuredMap[id].url;
+  } else {
+    document.getElementById("articles-section").scrollIntoView({ behavior: "smooth" });
+  }
+});
+
+// -- Controls ------------------------------------------------------------------
+var zoomControl = new am4maps.ZoomControl();
+chart.zoomControl = zoomControl;
+zoomControl.align = "right";
+zoomControl.valign = "bottom";
+zoomControl.marginBottom = 15;
+zoomControl.marginRight = 15;
+zoomControl.slider.height = 80;
+
+// -- Mobile touch handling ------------------------------------------------------
+// On mobile, amCharts handles NO touch gestures (panBehavior "none"): its
+// drag depends on what's under the finger (dead over ocean), its pinch is
+// broken, and its settings can't be flipped at runtime safely. Pan and pinch
+// are implemented below following how mature map libraries do it:
+//  - pinch pair = the two MOST RECENTLY placed fingers (Google Maps style),
+//    so a gripping thumb resting on a full-screen map never joins the pinch
+//    (that mispairing read as sudden zoom-out "resets")
+//  - touches landing within EDGE px of the map's sides/bottom are palm/grip
+//    territory and never count as gesture fingers
+//  - zoom is INCREMENTAL, re-baselined every move and on any finger change
+//    (Leaflet style), so lifting/replacing fingers to "ratchet" deeper zoom
+//    continues smoothly and no stale baseline can ever snap the zoom back
+//  - every step clamps the view to the map bounds — no blank-void stranding
+// amCharts still does taps (pointer events), zoom buttons and rendering.
+// Desktop (mouse) is untouched.
+chart.mouseWheelBehavior = "none"; // don't hijack page scroll over the map (desktop)
+chart.zoomDuration = 250;          // snappier zooms for the +/- buttons
+// Snap tooltips into place (no fade/slide). The animated theme otherwise leaves
+// the tab mid-transition, so its measured position lags where it's drawn — the
+// second tap then can't reliably hit-test it.
+chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; } });
+(function(){
+  var el = document.getElementById('world-map');
+  var wrap = document.getElementById('explore-map');
+  var mob = window.matchMedia('(max-width: 768px)');
+
+  function syncPanMode(){ chart.panBehavior = mob.matches ? "none" : "move"; }
+  syncPanMode();
+  window.addEventListener('resize', syncPanMode);
+  window.__syncMapPan = syncPanMode; // called by toggleMapFS on fs toggle
+
+  // On mobile we draw our OWN name tab (see below) and suppress amCharts' tooltip
+  // entirely — amCharts re-anchors its tooltip to the touch point on touchstart,
+  // which made the tab visibly jump on the confirming tap. Desktop keeps its
+  // native hover tooltips.
+  function syncTooltips(){ chart.series.each(function(s){ if (s.tooltip) s.tooltip.disabled = mob.matches; }); }
+  syncTooltips();
+  window.addEventListener('resize', syncTooltips);
+
+  chart.events.on("zoomlevelchanged", function(){
+    wrap.classList.toggle('map-zoomed', chart.zoomLevel > 1.05); // CSS touch ownership
+  });
+
+  // amCharts must not see touch input AT ALL on mobile — neither pointer
+  // events nor raw touch events (it listens to both): when it tracks multiple
+  // held touches (a gripping thumb + pinch fingers) its internal multi-pointer
+  // machinery arms and silently fights zoomToGeoPoint until the zoom freezes.
+  // The +/- zoom buttons are the one exception. Taps (country navigation +
+  // tooltips) are re-implemented below from touch events.
+  function allowAmchartsTarget(target){
+    var zc = chart.zoomControl;
+    return zc && zc.dom && target && zc.dom.contains(target);
+  }
+  function blockTouchPointer(e){
+    if (!mob.matches || e.pointerType !== 'touch') return;
+    if (allowAmchartsTarget(e.target)) return;
+    e.stopPropagation();
+  }
+  el.addEventListener('pointerdown', blockTouchPointer, true);
+  el.addEventListener('pointermove', blockTouchPointer, true);
+  el.addEventListener('touchend', function(e){
+    if (mob.matches && !allowAmchartsTarget(e.target)) e.stopPropagation();
+  }, true);
+
+  function interactive(){ return wrap.classList.contains('map-fs') || chart.zoomLevel > 1.05; }
+
+  // Keep the map content covering the viewport (per axis; center when the
+  // content is smaller). Runs after every manual pan/pinch step.
+  var MAP_NW = { latitude: 84,    longitude: -169.9 }; // world excl. Antarctica,
+  var MAP_SE = { latitude: -55.8, longitude: 189.9 };  // deltaLongitude -10
+  function clampView(){
+    var W = chart.pixelWidth, H = chart.pixelHeight;
+    var nw = chart.geoPointToSVG(MAP_NW);
+    var se = chart.geoPointToSVG(MAP_SE);
+    var dx = 0, dy = 0;
+    if (se.x - nw.x >= W){ if (nw.x > 0) dx = -nw.x; else if (se.x < W) dx = W - se.x; }
+    else dx = W / 2 - (nw.x + se.x) / 2;
+    if (se.y - nw.y >= H){ if (nw.y > 0) dy = -nw.y; else if (se.y < H) dy = H - se.y; }
+    else dy = H / 2 - (nw.y + se.y) / 2;
+    if (dx || dy){
+      chart.seriesContainer.x = chart.seriesContainer.pixelX + dx;
+      chart.seriesContainer.y = chart.seriesContainer.pixelY + dy;
+    }
+  }
+
+  // --- touch registry --------------------------------------------------------
+  var EDGE = 16;
+  var order = [];  // gesture-eligible map-touch ids, in landing order
+  var known = {};  // id -> {x, y, t} for every touch that began on the map
+  var hadPinch = false;   // true once any pinch happened in this touch group
+  var multiTouch = false; // true once >=2 fingers were down in this touch group
+  function eligible(t, r){
+    return t.clientX >= r.left + EDGE && t.clientX <= r.right - EDGE && t.clientY <= r.bottom - EDGE;
+  }
+  function pairTouches(e){ // the two most recently placed eligible fingers
+    if (order.length < 2) return null;
+    var idA = order[order.length - 2], idB = order[order.length - 1], a = null, b = null;
+    for (var i = 0; i < e.touches.length; i++){
+      var t = e.touches[i];
+      if (t.identifier === idA) a = t;
+      else if (t.identifier === idB) b = t;
+    }
+    return (a && b) ? [a, b] : null;
+  }
+  function soleTouch(e){
+    if (order.length !== 1) return null;
+    for (var i = 0; i < e.touches.length; i++){
+      if (e.touches[i].identifier === order[0]) return e.touches[i];
+    }
+    return null;
+  }
+  function dist(p){ var dx = p[0].clientX - p[1].clientX, dy = p[0].clientY - p[1].clientY; return Math.sqrt(dx * dx + dy * dy); }
+
+  // --- gesture state -----------------------------------------------------------
+  var pinching = false, lastDist = 0, pinchZoom = 1, anchor = null;
+  var panArmed = false, panMoved = false, panStartPt = null, contStart = null;
+
+  function baselinePinch(p, keepZoom){
+    lastDist = dist(p);
+    if (!keepZoom) pinchZoom = chart.zoomLevel; // our own tally during the gesture
+    var r = el.getBoundingClientRect();
+    anchor = chart.svgPointToGeo({
+      x: (p[0].clientX + p[1].clientX) / 2 - r.left,
+      y: (p[0].clientY + p[1].clientY) / 2 - r.top
+    });
+  }
+  function armPan(t){
+    panArmed = true; panMoved = false;
+    panStartPt = { x: t.clientX, y: t.clientY };
+    contStart = { x: chart.seriesContainer.pixelX, y: chart.seriesContainer.pixelY };
+  }
+
+  el.addEventListener('touchstart', function(e){
+    // self-heal: if every touch on screen is new, previous bookkeeping is stale
+    if (e.touches.length === e.changedTouches.length){ order = []; known = {}; pinching = false; panArmed = false; hadPinch = false; multiTouch = false; }
+    // Any moment two fingers are down, this is a pinch/zoom, never a tap — so no
+    // country tab should appear. Latches for the whole touch group (until every
+    // finger lifts and a fresh gesture resets it above).
+    if (e.touches.length >= 2){ multiTouch = true; disarmTap(); }
+    // NOTE: the armed country's name tab is intentionally NOT hidden here. The
+    // second tap of the two-tap gesture needs it alive so doTap can hit-test it;
+    // hiding on touchstart tore it down before touchend and made tab taps fall
+    // through to the country beneath (e.g. Bosnia's tab over Croatia). It's
+    // instead dismissed when a pan or pinch actually begins (see below).
+    var r = el.getBoundingClientRect();
+    for (var i = 0; i < e.changedTouches.length; i++){
+      var t = e.changedTouches[i];
+      known[t.identifier] = { x: t.clientX, y: t.clientY, t: Date.now(), maxd: 0 };
+      if (eligible(t, r)) order.push(t.identifier);
+    }
+    if (!mob.matches) return;
+    var p = pairTouches(e);
+    if (p){
+      panArmed = false;
+      disarmTap();                   // a two-finger gesture is not a tap
+      var wasPinching = pinching;
+      pinching = true;
+      hadPinch = true;
+      baselinePinch(p, wasPinching); // extra finger mid-pinch: keep the zoom tally
+      e.preventDefault();            // keep the browser from page-zooming
+    } else if (order.length === 1 && interactive()){
+      var t1 = soleTouch(e);
+      if (t1) armPan(t1);            // taps still click: pan engages after 6px travel
+    }
+    // amCharts stays touch-blind (see note above); zoom buttons excepted.
+    // stopPropagation does NOT stop browser defaults, so at rest (zoom 1,
+    // touch-action pan-y) vertical swipes still scroll the page.
+    if (!allowAmchartsTarget(e.target)) e.stopPropagation();
+  }, {capture:true, passive:false});
+
+  el.addEventListener('touchmove', function(e){
+    if (!mob.matches) return;
+    if (e.touches.length >= 2){ multiTouch = true; } // a second finger arrived mid-move
+    // Track how far each finger has strayed from where it landed. A drag that
+    // loops back near its start still has a large maxd, so it won't be mistaken
+    // for a tap on lift (this catches pans at zoom 1, where panMoved never arms).
+    for (var mi = 0; mi < e.changedTouches.length; mi++){
+      var mt = e.changedTouches[mi], mk = known[mt.identifier];
+      if (mk){ var ddx = mt.clientX - mk.x, ddy = mt.clientY - mk.y, d2 = ddx * ddx + ddy * ddy; if (d2 > mk.maxd) mk.maxd = d2; }
+    }
+    if (!allowAmchartsTarget(e.target)) e.stopPropagation();
+    if (pinching){
+      var p = pairTouches(e);
+      if (!p) return;
+      var d = dist(p);
+      if (d > 0 && lastDist > 0){
+        pinchZoom = Math.max(chart.minZoomLevel || 1, Math.min(chart.maxZoomLevel, pinchZoom * d / lastDist));
+        chart.zoomToGeoPoint(anchor, pinchZoom, false, 0); // anchor stays under your fingers
+        clampView();
+      }
+      lastDist = d; // incremental re-baseline every move
+      e.preventDefault();
+    } else if (panArmed){
+      var t = soleTouch(e);
+      if (!t) return;
+      var dx = t.clientX - panStartPt.x, dy = t.clientY - panStartPt.y;
+      if (!panMoved && (dx * dx + dy * dy) > 36){ panMoved = true; disarmTap(); } // pan started — drop the tab
+      if (panMoved){
+        chart.seriesContainer.x = contStart.x + dx;
+        chart.seriesContainer.y = contStart.y + dy;
+        clampView();
+        e.preventDefault();
+      }
+    }
+  }, {capture:true, passive:false});
+
+  // Taps are re-implemented here since amCharts never sees touch pointers.
+  // TWO-TAP TO OPEN: the first tap on a country reveals OUR OWN name tab (a
+  // plain div we position once — see #map-tab); a second tap on that tab, or on
+  // the same country, opens the article. Tapping empty ocean or a different
+  // country resets it, and the arm times out after a few seconds. This prevents
+  // an accidental tap from redirecting straight to a page, and — because the tab
+  // is our element, not amCharts' tooltip — nothing re-anchors it, so it never
+  // jumps on the confirming tap. (Desktop is unaffected: native hover + click.)
+  var tabEl = document.createElement('div');
+  tabEl.id = 'map-tab';
+  tabEl.innerHTML = '<div class="mt-row"><img loading="lazy" alt=""><div><div class="mt-name"></div><div class="mt-sub"></div></div></div>';
+  el.appendChild(tabEl);
+  var tabImg = tabEl.querySelector('img'),
+      tabName = tabEl.querySelector('.mt-name'),
+      tabSub  = tabEl.querySelector('.mt-sub');
+
+  var _armedPoly = null, _armedUrl = null, _armTimer = null, _armPt = null;
+  function hideTab(){ tabEl.style.display = 'none'; }
+  function disarmTap(){
+    _armedPoly = null; _armedUrl = null; _armPt = null;
+    if (_armTimer){ clearTimeout(_armTimer); _armTimer = null; }
+    hideTab();
+    window.__lastTipPoly = null;
+  }
+  // Which map polygon (if any) sits under this DOM node.
+  function polyAt(node){
+    var found = null;
+    chart.series.each(function(sr){
+      if (found || !sr.mapPolygons) return;
+      sr.mapPolygons.each(function(pl){
+        if (!found && pl.dom && (pl.dom === node || pl.dom.contains(node))) found = pl;
+      });
+    });
+    return found;
+  }
+  // Name + destination for a polygon (nice name/url for guides, plain name else).
+  function infoFor(poly){
+    var dc = poly.dataItem && poly.dataItem.dataContext;
+    var id = dc && dc.id; if (!id) return null;
+    var m = fieldNotesMap[id] || featuredMap[id];
+    if (m) return { id: id, name: m.name, url: m.url || null,
+                    sub: m.url ? (featuredMap[id] ? 'Read Guide' : 'Field Notes') : 'Coming Soon' };
+    return { id: id, name: (dc.name || ''), url: null, sub: '' };
+  }
+  // Show our tab centred just above the country (flipped below if no room).
+  function showTab(poly){
+    var info = infoFor(poly); if (!info || !info.name) return null;
+    tabImg.src = 'Images/web/flags/' + info.id.toLowerCase() + '.png';
+    tabName.textContent = info.name;
+    tabSub.textContent = info.sub; tabSub.style.display = info.sub ? '' : 'none';
+    tabEl.style.display = 'block';
+    var mapR = el.getBoundingClientRect(), pr = poly.dom.getBoundingClientRect();
+    var th = tabEl.offsetHeight, tw = tabEl.offsetWidth;
+    var cx = pr.left + pr.width / 2 - mapR.left;
+    cx = Math.max(tw / 2 + 4, Math.min(mapR.width - tw / 2 - 4, cx));
+    var flipped = false;
+    var top = pr.top - mapR.top - th - 8;                 // above the country
+    if (top < 4){ top = pr.bottom - mapR.top + 8; flipped = true; } // no room → below
+    top = Math.max(4, Math.min(mapR.height - th - 4, top));
+    tabEl.classList.toggle('flip', flipped);              // pointer points at the country
+    tabEl.style.left = cx + 'px';
+    tabEl.style.top  = top + 'px';
+    return info;
+  }
+  function doTap(x, y){
+    var node = document.elementFromPoint(x, y);
+    if (!node || !el.contains(node)){ disarmTap(); return; }
+    var zc = chart.zoomControl;
+    if (zc && zc.dom && zc.dom.contains(node)) return; // let the +/- buttons work
+    var found = polyAt(node);
+
+    // SECOND TAP: open when it lands on our tab (its own exact, stable rect) or
+    // on the armed country itself — or just beside them, as long as it isn't
+    // squarely on a DIFFERENT country (then re-arm that one instead).
+    if (_armedPoly){
+      var onArmed = (found === _armedPoly);
+      var onOther = (found && found !== _armedPoly);
+      var tr = tabEl.getBoundingClientRect();
+      var onTab = (x >= tr.left - 6 && x <= tr.right + 6 && y >= tr.top - 6 && y <= tr.bottom + 6);
+      var near  = _armPt && ((x - _armPt.x) * (x - _armPt.x) + (y - _armPt.y) * (y - _armPt.y)) <= 46 * 46;
+      if (onArmed || onTab || (!onOther && near)){
+        if (_armedUrl){ window.location.href = _armedUrl; } // navigate; tab stays put
+        else disarmTap();                                   // no article — just dismiss
+        return;
+      }
+    }
+
+    if (!found){ disarmTap(); return; } // tapped empty ocean — reset
+    // FIRST TAP on a (new) country: reveal our name tab and arm it.
+    disarmTap();
+    var info = showTab(found);
+    if (!info) return;                  // nothing worth showing
+    _armedPoly = found;
+    _armedUrl = info.url;
+    _armPt = { x: x, y: y };
+    window.__lastTipPoly = found;
+    _armTimer = setTimeout(disarmTap, 4000);
+  }
+
+  // Document-level cleanup: sees every lift, wherever the finger ends up.
+  function endTouch(e){
+    var lifted = {};
+    for (var i = 0; i < e.changedTouches.length; i++){
+      var ct = e.changedTouches[i];
+      var id = ct.identifier;
+      lifted[id] = true;
+      // tap = the sole gesture finger, barely moved, quick, no pinch involved
+      var rec = known[id];
+      if (rec && mob.matches && !hadPinch && !multiTouch && !panMoved &&
+          order.length === 1 && order[0] === id &&
+          (Date.now() - rec.t) < 500 && (rec.maxd || 0) < 144){
+        var mx = ct.clientX - rec.x, my = ct.clientY - rec.y;
+        if ((mx * mx + my * my) < 144) doTap(ct.clientX, ct.clientY);
+      }
+      delete known[id];
+    }
+    var keep = [];
+    for (var j = 0; j < order.length; j++) if (!lifted[order[j]]) keep.push(order[j]);
+    order = keep;
+    if (order.length >= 2){
+      if (pinching){
+        var p = pairTouches(e);
+        if (p) baselinePinch(p, true); // pair changed: re-baseline, keep zoom tally
+      }
+    } else if (order.length === 1){
+      pinching = false;
+      if (mob.matches && interactive()){
+        var t = soleTouch(e);          // pinch -> pan handoff to the survivor
+        if (t) armPan(t);
+      }
+    } else {
+      pinching = false; panArmed = false; panMoved = false; hadPinch = false;
+    }
+  }
+  document.addEventListener('touchend', endTouch, true);
+  document.addEventListener('touchcancel', endTouch, true);
+  // test/debug hook (harmless): inspect gesture state from the console
+  window.__mapGestureState = function(){
+    return { order: order.slice(), pinching: pinching, lastDist: lastDist,
+             pinchZoom: pinchZoom, panArmed: panArmed, panMoved: panMoved, hadPinch: hadPinch };
+  };
+})();
+</script>
+
+<script defer src="../search.js"></script>
+</body>
+</html>

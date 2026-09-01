@@ -555,9 +555,15 @@ async def main():
     a = ap.parse_args()
 
     root = SITE if a.live else SITE / "preview"
-    skip = {".tmp", "Drafts", "preview", "tools", "Images", "node_modules"}
+    # archive/ is the PREVIOUS design, kept browsable on purpose, so it
+    # legitimately uses the retired faces and the old measurements.
+    # editor.html is a local tool, not a page of the site.
+    skip = {".tmp", "Drafts", "preview", "tools", "Images", "node_modules",
+            "archive", "__pycache__"}
+    skip_files = {"editor.html"}
     pages = sorted(f for f in root.rglob("*.html")
-                   if not any(part in skip for part in f.relative_to(root).parts))
+                   if not any(part in skip for part in f.relative_to(root).parts)
+                   and f.name not in skip_files)
     groups = {g.strip() for g in a.only.split(",") if g.strip()}
     print(f"{len(pages)} pages, {a.width}px"
           + (f", groups: {', '.join(sorted(groups))}" if groups else ""))

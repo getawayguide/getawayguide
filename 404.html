@@ -40,8 +40,10 @@
   }
 }
 </script>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="artifact.css">
 </head>
-<body>
+<body class="gg-404">
 
 <nav>
   <a href="index.html" class="nav-logo">Getawayguide</a>
@@ -93,4 +95,28 @@ document.addEventListener('click',function(e){var a=e.target.closest('#mobile-na
 </script>
 
 <script defer src="search.js"></script>
+
+<script>
+/* The drawer covers the whole nav, so the page has to know it is open: the
+   burger's bars are white over the hero and would vanish on the drawer's white
+   ground, and there was no way back out except the burger itself. */
+(function () {
+  var d = document.querySelector('.mobile-nav-drawer');
+  if (!d) { return; }
+  if (!d.querySelector('.gg-drawer-close')) {
+    var b = document.createElement('button');
+    b.className = 'gg-drawer-close';
+    b.setAttribute('aria-label', 'Close menu');
+    b.textContent = 'Close';
+    b.onclick = function () {
+      d.classList.remove('open');
+      document.body.classList.remove('gg-drawer-open');
+    };
+    d.appendChild(b);
+  }
+  new MutationObserver(function () {
+    document.body.classList.toggle('gg-drawer-open', d.classList.contains('open'));
+  }).observe(d, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
 </body></html>

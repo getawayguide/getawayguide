@@ -40,7 +40,7 @@ a[href*="amcharts.com"]{display:none!important}
 #map-tab .mt-row{display:flex;align-items:center;gap:8px}
 #map-tab img{width:16px;height:12px;border-radius:1px;display:block;flex:0 0 auto}
 #map-tab .mt-name{color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:400;line-height:1.3}
-#map-tab .mt-sub{color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+#map-tab .mt-sub{color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 /* little pointer under the bubble (flips above when the tab sits below a country) */
 #map-tab::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1C2821}
 #map-tab.flip::after{bottom:auto;top:-6px;border-top:none;border-bottom:6px solid #1C2821}
@@ -112,6 +112,8 @@ body.dest-map-open nav{display:none}
   }
 }
 </script>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="artifact.css">
 </head>
 <body>
 
@@ -124,67 +126,7 @@ body.dest-map-open nav{display:none}
     <li><a href="index.html"  id="nav-home">Home</a></li>
     <li class="nav-dropdown-wrap" id="nav-destinations-wrap">
       <a href="#" class="nav-dropdown-trigger" id="nav-destinations" onclick="location.href='destinations.html'">Destinations <span class="nav-caret">?</span></a>
-      <div class="nav-dropdown nav-dropdown-fn">
-        <div class="nav-dropdown-col">
-          <div class="nav-guides-head"><span class="nav-dropdown-continent" style="pointer-events:none;cursor:default;white-space:nowrap;color:#1C2821">Available Guides</span><span class="nav-guides-legend"><span class="nav-fulldot"></span>In-Depth Guide</span></div>
-          <div class="nav-fn-groups">
-            <div class="nav-fn-sub">
-            <div class="nav-fn-grp">
-              <span class="nav-fn-region">Europe</span>
-              <a href="albania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/al.png" width="16" height="12" alt=""><span class="country-name">Albania</span></a>
-              <a href="belgium/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/be.png" width="16" height="12" alt=""><span class="country-name">Belgium</span></a>
-              <a href="bosnia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ba.png" width="16" height="12" alt=""><span class="country-name">Bosnia</span></a>
-              <a href="croatia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/hr.png" width="16" height="12" alt=""><span class="country-name">Croatia</span></a>
-              <a href="denmark/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/dk.png" width="16" height="12" alt=""><span class="country-name">Denmark</span></a>
-              <a href="estonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ee.png" width="16" height="12" alt=""><span class="country-name">Estonia</span></a>
-              <a href="finland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/fi.png" width="16" height="12" alt=""><span class="country-name">Finland</span></a>
-              <a href="georgia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ge.png" width="16" height="12" alt=""><span class="country-name">Georgia</span></a>
-              <a href="germany/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/de.png" width="16" height="12" alt=""><span class="country-name">Germany</span></a>
-              <a href="greece/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/gr.png" width="16" height="12" alt=""><span class="country-name">Greece</span></a>
-              <a href="hungary/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/hu.png" width="16" height="12" alt=""><span class="country-name">Hungary</span></a>
-              <a href="kosovo/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/xk.png" width="16" height="12" alt=""><span class="country-name">Kosovo</span></a>
-              <a href="latvia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/lv.png" width="16" height="12" alt=""><span class="country-name">Latvia</span></a>
-              <a href="montenegro/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/me.png" width="16" height="12" alt=""><span class="country-name">Montenegro</span></a>
-              <a href="netherlands/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/nl.png" width="16" height="12" alt=""><span class="country-name">Netherlands</span></a>
-              <a href="north-macedonia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/mk.png" width="16" height="12" alt=""><span class="country-name">North Macedonia</span></a>
-              <a href="serbia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/rs.png" width="16" height="12" alt=""><span class="country-name">Serbia</span></a>
-              <a href="slovenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/si.png" width="16" height="12" alt=""><span class="country-name">Slovenia</span></a>
-              <a href="sweden/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/se.png" width="16" height="12" alt=""><span class="country-name">Sweden</span></a>
-              <a href="switzerland/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ch.png" width="16" height="12" alt=""><span class="country-name">Switzerland</span></a>
-            </div>
-            <div class="nav-fn-grp">
-              <span class="nav-fn-region">Africa</span>
-              <a href="egypt/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/eg.png" width="16" height="12" alt=""><span class="country-name">Egypt</span></a>
-              <a href="tanzania/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/tz.png" width="16" height="12" alt=""><span class="country-name">Tanzania</span></a>
-            </div>
-            </div>
-            <div class="nav-fn-sub">
-            <div class="nav-fn-grp">
-              <span class="nav-fn-region">Asia</span>
-              <a href="armenia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/am.png" width="16" height="12" alt=""><span class="country-name">Armenia</span></a>
-              <a href="india/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/in.png" width="16" height="12" alt=""><span class="country-name">India</span></a>
-              <a href="indonesia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/id.png" width="16" height="12" alt=""><span class="country-name">Indonesia</span></a>
-              <a href="philippines/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ph.png" width="16" height="12" alt=""><span class="country-name">Philippines</span></a>
-              <a href="turkiye/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/tr.png" width="16" height="12" alt=""><span class="country-name">Türkiye</span></a>
-            </div>
-            <div class="nav-fn-grp">
-              <span class="nav-fn-region">Americas</span>
-              <a href="argentina/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/ar.png" width="16" height="12" alt=""><span class="country-name">Argentina</span></a>
-              <a href="brazil/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/br.png" width="16" height="12" alt=""><span class="country-name">Brazil</span></a>
-              <a href="chile/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/cl.png" width="16" height="12" alt=""><span class="country-name">Chile</span></a>
-              <a href="colombia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/co.png" width="16" height="12" alt=""><span class="country-name">Colombia</span></a>
-              <a href="el-salvador/index.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/sv.png" width="16" height="12" alt=""><span class="country-name">El Salvador</span><span class="nav-fulldot" title="Full guide available"></span></a>
-              <a href="mexico/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/mx.png" width="16" height="12" alt=""><span class="country-name">Mexico</span></a>
-              <a href="peru/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/pe.png" width="16" height="12" alt=""><span class="country-name">Peru</span></a>
-            </div>
-            <div class="nav-fn-grp">
-              <span class="nav-fn-region">Oceania</span>
-              <a href="australia/field-notes.html" class="nav-dropdown-item"><img loading="lazy" src="Images/web/flags/au.png" width="16" height="12" alt=""><span class="country-name">Australia</span></a>
-            </div>
-            </div>
-          </div>
-        </div>
-        <div class="nav-dropdown-col nav-dropdown-map">
+      <div class="nav-dropdown nav-dropdown-fn"><div class="megam"><div class="mm-guides"><div class="mm-head"><span class="mm-head-t">Available guides</span><span class="nav-guides-legend"><span class="nav-fulldot"></span>In-depth guide</span></div><div class="mm-cols"><div class="mm-col"><div class="mm-h">Europe</div><a href="albania/field-notes.html"><img class="fl" src="Images/web/flags/al.png" alt="" width="16" height="12"><span>Albania</span></a><a href="belgium/field-notes.html"><img class="fl" src="Images/web/flags/be.png" alt="" width="16" height="12"><span>Belgium</span></a><a href="bosnia/field-notes.html"><img class="fl" src="Images/web/flags/ba.png" alt="" width="16" height="12"><span>Bosnia</span></a><a href="croatia/field-notes.html"><img class="fl" src="Images/web/flags/hr.png" alt="" width="16" height="12"><span>Croatia</span></a><a href="denmark/field-notes.html"><img class="fl" src="Images/web/flags/dk.png" alt="" width="16" height="12"><span>Denmark</span></a><a href="estonia/field-notes.html"><img class="fl" src="Images/web/flags/ee.png" alt="" width="16" height="12"><span>Estonia</span></a><a href="finland/field-notes.html"><img class="fl" src="Images/web/flags/fi.png" alt="" width="16" height="12"><span>Finland</span></a><a href="georgia/field-notes.html"><img class="fl" src="Images/web/flags/ge.png" alt="" width="16" height="12"><span>Georgia</span></a><a href="germany/field-notes.html"><img class="fl" src="Images/web/flags/de.png" alt="" width="16" height="12"><span>Germany</span></a><a href="greece/field-notes.html"><img class="fl" src="Images/web/flags/gr.png" alt="" width="16" height="12"><span>Greece</span></a><a href="hungary/field-notes.html"><img class="fl" src="Images/web/flags/hu.png" alt="" width="16" height="12"><span>Hungary</span></a><a href="kosovo/field-notes.html"><img class="fl" src="Images/web/flags/xk.png" alt="" width="16" height="12"><span>Kosovo</span></a><a href="latvia/field-notes.html"><img class="fl" src="Images/web/flags/lv.png" alt="" width="16" height="12"><span>Latvia</span></a><a href="montenegro/field-notes.html"><img class="fl" src="Images/web/flags/me.png" alt="" width="16" height="12"><span>Montenegro</span></a><a href="netherlands/field-notes.html"><img class="fl" src="Images/web/flags/nl.png" alt="" width="16" height="12"><span>Netherlands</span></a><a href="north-macedonia/field-notes.html"><img class="fl" src="Images/web/flags/mk.png" alt="" width="16" height="12"><span>North Macedonia</span></a><a href="serbia/field-notes.html"><img class="fl" src="Images/web/flags/rs.png" alt="" width="16" height="12"><span>Serbia</span></a><a href="slovenia/field-notes.html"><img class="fl" src="Images/web/flags/si.png" alt="" width="16" height="12"><span>Slovenia</span></a><a href="sweden/field-notes.html"><img class="fl" src="Images/web/flags/se.png" alt="" width="16" height="12"><span>Sweden</span></a><a href="switzerland/field-notes.html"><img class="fl" src="Images/web/flags/ch.png" alt="" width="16" height="12"><span>Switzerland</span></a></div><div class="mm-col"><div class="mm-h">Africa</div><a href="egypt/field-notes.html"><img class="fl" src="Images/web/flags/eg.png" alt="" width="16" height="12"><span>Egypt</span></a><a href="tanzania/field-notes.html"><img class="fl" src="Images/web/flags/tz.png" alt="" width="16" height="12"><span>Tanzania</span></a><div class="mm-h">Asia</div><a href="armenia/field-notes.html"><img class="fl" src="Images/web/flags/am.png" alt="" width="16" height="12"><span>Armenia</span></a><a href="india/field-notes.html"><img class="fl" src="Images/web/flags/in.png" alt="" width="16" height="12"><span>India</span></a><a href="indonesia/field-notes.html"><img class="fl" src="Images/web/flags/id.png" alt="" width="16" height="12"><span>Indonesia</span></a><a href="philippines/field-notes.html"><img class="fl" src="Images/web/flags/ph.png" alt="" width="16" height="12"><span>Philippines</span></a><a href="turkiye/field-notes.html"><img class="fl" src="Images/web/flags/tr.png" alt="" width="16" height="12"><span>Türkiye</span></a><div class="mm-h">Americas</div><a href="argentina/field-notes.html"><img class="fl" src="Images/web/flags/ar.png" alt="" width="16" height="12"><span>Argentina</span></a><a href="brazil/field-notes.html"><img class="fl" src="Images/web/flags/br.png" alt="" width="16" height="12"><span>Brazil</span></a><a href="chile/field-notes.html"><img class="fl" src="Images/web/flags/cl.png" alt="" width="16" height="12"><span>Chile</span></a><a href="colombia/field-notes.html"><img class="fl" src="Images/web/flags/co.png" alt="" width="16" height="12"><span>Colombia</span></a><a href="el-salvador/index.html"><img class="fl" src="Images/web/flags/sv.png" alt="" width="16" height="12"><span>El Salvador</span><span class="nav-fulldot"></span></a><a href="mexico/field-notes.html"><img class="fl" src="Images/web/flags/mx.png" alt="" width="16" height="12"><span>Mexico</span></a><a href="peru/field-notes.html"><img class="fl" src="Images/web/flags/pe.png" alt="" width="16" height="12"><span>Peru</span></a><div class="mm-h">Oceania</div><a href="australia/field-notes.html"><img class="fl" src="Images/web/flags/au.png" alt="" width="16" height="12"><span>Australia</span></a></div></div></div><div class="mm-side-live">
           <a href="destinations.html#explore-map" class="nav-map-card">
             <span class="nav-map-title">Explore the Interactive Map</span>
             <img src="Images/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" loading="lazy" decoding="async" alt="World map of the countries I have travelled to">
@@ -196,8 +138,7 @@ body.dest-map-open nav{display:none}
           <a href="destinations.html#europe" class="nav-dropdown-continent"><img class="nav-cont-ico" src="Images/web/continents/europe.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Europe</a>
           <a href="destinations.html#oceania" class="nav-dropdown-continent"><img class="nav-cont-ico" src="Images/web/continents/oceania.svg" width="13" height="13" alt="" aria-hidden="true" loading="lazy">Oceania</a>
           <a href="destinations.html" class="nav-dropdown-continent nav-all-dest">All Destinations</a>
-        </div>
-      </div>
+        </div></div></div>
     </li>
     <li><a href="resources.html"  id="nav-resources">Resources</a></li>
     <li><a href="about.html"  id="nav-about">About Me</a></li>
@@ -245,15 +186,12 @@ body.dest-map-open nav{display:none}
       <span class="legend-item"><span class="legend-dot" style="background:#2D6B50"></span>Articles Available</span>
       <span class="legend-item"><span class="legend-dot" style="background:#c8ddd5"></span>Countries Visited</span>
     </div>
-    <div id="world-map"></div>
+    <div id="world-map"></div><div class="gg-mapstats"><div class="st"><div class="n">60</div><div class="l">Countries visited</div></div><div class="st"><div class="n">6</div><div class="l">Continents</div></div><div class="st"><div class="n">35</div><div class="l">Written up</div></div></div>
   </section>
 
   <!-- Articles -->
   <section class="dest-articles-section" id="articles-section">
-    <h2 class="dest-section-heading" style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap">
-      Available Articles
-      <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.95rem;font-weight:300;color:rgba(28,40,33,.4);letter-spacing:.01em">Detailed guides & quick field notes from places I've been recently</span>
-    </h2>
+    <div class="sec-head" style="margin-bottom:6px"><div><div class="kick" style="margin-bottom:9px">Available articles</div><div class="serif sec-h">Detailed guides and quick field notes</div></div></div>
     <div class="filter-bar-inline">
       <span class="filter-label">Filter by</span>
       <button class="filter-btn active" onclick="filterArticles('all',this)">All</button>
@@ -748,7 +686,7 @@ allTpl.adapter.add("tooltipHTML", function(html, target) {
   var id = target.dataItem.dataContext.id || "";
   var name = target.dataItem.dataContext.name || "";
   if (!id) return name;
-  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#fff;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
 });
 
 // -- Layer 2: Visited countries (not featured) --------------------------------
@@ -784,7 +722,7 @@ vTpl.adapter.add("tooltipHTML", function(html, target) {
   var id = target.dataItem.dataContext.id || "";
   var name = target.dataItem.dataContext.name || "";
   if (!id) return name;
-  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#fff;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
 });
 
 // -- Layer 3: Field Notes countries ------------------------------------------
@@ -834,8 +772,8 @@ fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
   var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
     '<img loading="lazy" src="Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
     '<div>' +
-      '<div style="color:#fff;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
-      '<div style="color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + (c.url ? 'Field Notes' : 'Coming Soon') + '</div>' +
+      '<div style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + (c.url ? 'Field Notes' : 'Coming Soon') + '</div>' +
     '</div>' +
   '</div>';
   return { id: id, tipHtml: tipHtml };
@@ -876,8 +814,8 @@ featuredSeries.data = Object.keys(featuredMap).map(function(id) {
   var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
     '<img loading="lazy" src="Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
     '<div>' +
-      '<div style="color:#fff;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
-      '<div style="color:rgba(255,255,255,.55);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + statusLabel + '</div>' +
+      '<div style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + statusLabel + '</div>' +
     '</div>' +
   '</div>';
   return { id: id, tipHtml: tipHtml };
@@ -1270,5 +1208,66 @@ chart.series.each(function(s){ if (s.tooltip){ s.tooltip.animationDuration = 0; 
 </script>
 
 <script defer src="search.js"></script>
+
+<script>
+/* artifact skin for the amCharts tooltips: white, square, ink outline */
+(function () {
+  var tries = 0;
+  var t = setInterval(function () {
+    tries += 1;
+    if (tries > 40) { clearInterval(t); return; }
+    if (!window.am4core || !am4core.registry.baseSprites.length) { return; }
+    clearInterval(t);
+    am4core.registry.baseSprites.forEach(function (ch) {
+      if (!ch.series) { return; }
+      ch.series.each(function (s) {
+        if (!s.tooltip) { return; }
+        s.tooltip.getFillFromObject = false;
+        s.tooltip.autoTextColor = false;
+        s.tooltip.background.fill = am4core.color('#FFFFFF');
+        s.tooltip.background.stroke = am4core.color('#1C2821');
+        s.tooltip.background.strokeWidth = 1;
+        s.tooltip.background.cornerRadius = 0;
+        s.tooltip.background.filters.clear();
+        s.tooltip.label.fill = am4core.color('#1C2821');
+      });
+      // amCharts draws its own grey +/- buttons; the map pans and zooms by
+      // gesture, so they are chrome the design never asked for
+      if (ch.zoomControl) { ch.zoomControl.disabled = true; ch.zoomControl.hide(); }
+      if (ch.chartContainer && ch.chartContainer.children) {
+        ch.chartContainer.children.each(function (k) {
+          if (k.className === 'ZoomControl') { k.disabled = true; k.hide(); }
+        });
+      }
+    });
+    // the page already prints its own counts under the header; a second,
+    // differently-worded tally floating over the Pacific contradicted them
+  }, 300);
+})();
+</script>
+
+<script>
+/* The drawer covers the whole nav, so the page has to know it is open: the
+   burger's bars are white over the hero and would vanish on the drawer's white
+   ground, and there was no way back out except the burger itself. */
+(function () {
+  var d = document.querySelector('.mobile-nav-drawer');
+  if (!d) { return; }
+  if (!d.querySelector('.gg-drawer-close')) {
+    var b = document.createElement('button');
+    b.className = 'gg-drawer-close';
+    b.setAttribute('aria-label', 'Close menu');
+    b.textContent = 'Close';
+    b.onclick = function () {
+      d.classList.remove('open');
+      document.body.classList.remove('gg-drawer-open');
+    };
+    d.appendChild(b);
+  }
+  new MutationObserver(function () {
+    document.body.classList.toggle('gg-drawer-open', d.classList.contains('open'));
+  }).observe(d, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
 </body>
 </html>
