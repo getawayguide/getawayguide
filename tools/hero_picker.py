@@ -71,13 +71,30 @@ TITLES = {
 app = Flask(__name__)
 
 
+def _posix(p):
+    """Photo paths are compared as strings against /photos output, which is
+    as_posix(). An older save wrote them with Windows separators, so a stored
+    pick never matched its own photo: the strip highlighted nothing and the
+    stage came up blank even though the country read "1 of 27 picked"."""
+    return p.replace("\\", "/") if isinstance(p, str) else p
+
+
 def read_picks():
-    return json.loads(PICKS.read_text(encoding="utf-8")) if PICKS.exists() else {}
+    if not PICKS.exists():
+        return {}
+    picks = json.loads(PICKS.read_text(encoding="utf-8"))
+    for v in picks.values():
+        if isinstance(v, dict) and "path" in v:
+            v["path"] = _posix(v["path"])
+    return picks
 
 
 def read_stars():
     """country -> [photo path], the shortlist you keep while you compare."""
-    return json.loads(STARS.read_text(encoding="utf-8")) if STARS.exists() else {}
+    if not STARS.exists():
+        return {}
+    stars = json.loads(STARS.read_text(encoding="utf-8"))
+    return {k: [_posix(p) for p in v] for k, v in stars.items()}
 
 
 def albums():
@@ -251,7 +268,9 @@ def img():
 @app.post("/save")
 def save():
     picks = read_picks()
-    picks[request.json["country"]] = request.json
+    body = dict(request.json)
+    body["path"] = _posix(body.get("path", ""))
+    picks[body["country"]] = body
     PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
     return jsonify(ok=True, saved=str(PICKS))
 
@@ -267,6 +286,7 @@ def star():
     body = request.json
     stars = read_stars()
     lst = stars.setdefault(body["country"], [])
+    body["path"] = _posix(body["path"])
     if body["path"] in lst:
         lst.remove(body["path"])
         on = False

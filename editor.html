@@ -2046,6 +2046,22 @@ main{overflow-y:auto;padding:1rem}
     el.querySelectorAll('[class=""]').forEach(n => n.removeAttribute('class'));
     el.querySelectorAll('[lang]').forEach(n => n.removeAttribute('lang'));
 
+    // 5b. Editor-only scaffolding must never reach the published file. The
+    // crop attributes are stripped further down, but only from images that
+    // carry data-crop; a paired photo that was merely imported kept
+    // data-original-src="http://127.0.0.1:5003/site/..." -- a dev-machine URL
+    // published inside an article.
+    el.querySelectorAll('[data-original-src],[data-crop-x],[data-crop-y],' +
+                        '[data-crop-zoom],[data-crop],[data-editor],[data-tmp]')
+      .forEach(n => {
+        ['data-original-src', 'data-crop-x', 'data-crop-y', 'data-crop-zoom',
+         'data-editor', 'data-tmp'].forEach(a => n.removeAttribute(a));
+      });
+    // and any src still pointing at the local photo server
+    el.querySelectorAll('img[src*="127.0.0.1"],source[srcset*="127.0.0.1"]')
+      .forEach(n => console.warn('editor: local photo-server URL left in',
+                                 n.getAttribute('src') || n.getAttribute('srcset')));
+
     // 6. Remove empty inline elements and empty paragraphs/list items.
     //
     // Two things this must NOT do:
