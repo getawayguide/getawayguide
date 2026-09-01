@@ -1,0 +1,51 @@
+{
+  "slug": "seville",
+  "kicker": "Spain",
+  "city": "Seville",
+  "osm": ".tmp/seville_osm.json",
+  "article": "Drafts/spain/field-notes.html",
+  "embed": {
+    "pre": ", so a place with a pool or serious air-conditioning is worth prioritising</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"ibiza\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Real Alcázar",
+      "cat": "see",
+      "match": "real alcázar",
+      "lat": 37.38321,
+      "lon": -5.990183
+    },
+    {
+      "name": "Plaza de España",
+      "cat": "see",
+      "match": "plaza de españa",
+      "lat": 37.376974,
+      "lon": -5.98694
+    },
+    {
+      "name": "La Brunilda",
+      "cat": "eat",
+      "match": "la brunilda",
+      "lat": 37.388325,
+      "lon": -5.999406
+    }
+  ],
+  "center": {
+    "lat": 37.382649,
+    "lon": -5.993173
+  }
+}

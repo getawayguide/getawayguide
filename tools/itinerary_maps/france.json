@@ -60,7 +60,48 @@
       "href": "#paris"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 44.0145,
+      "lon": 6.2116,
+      "name": "Provence"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 47.5532,
+      "lon": 1.0105,
+      "name": "Loire Valley"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 44.8416,
+      "lon": -0.5811,
+      "name": "Bordeaux"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 45.9237,
+      "lon": 6.8694,
+      "name": "Chamonix"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 49.3399,
+      "lon": -0.5986,
+      "name": "D-Day Beaches"
+    }
+  ],
   "airport": null,
   "legs": [
     {

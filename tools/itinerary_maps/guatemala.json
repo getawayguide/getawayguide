@@ -1,78 +1,100 @@
 {
-  "iso3": "GTM",
-  "slug": "guatemala",
+  "airport": null,
   "country_width": 520,
-  "margins": {
-    "l": 240,
-    "r": 240,
-    "t": 130,
-    "b": 130
-  },
-  "simplify": 3000,
-  "smooth": false,
-  "stops": [
+  "dots": [
     {
-      "n": 1,
-      "name": "Antigua",
-      "lat": 14.5586,
-      "lon": -90.7295,
-      "days": "3–5 days",
       "anchor": "start",
-      "dx": 14,
+      "dx": 8,
       "dy": 4,
-      "href": "#antigua"
+      "lat": 17.222,
+      "lon": -89.6237,
+      "name": "Tikal"
     },
     {
-      "n": 2,
-      "name": "Acatenango",
-      "lat": 14.5006,
-      "lon": -90.8763,
-      "days": "2 days",
       "anchor": "start",
-      "dx": 14,
+      "dx": 8,
       "dy": 4,
-      "href": "#acatenango"
+      "lat": 15.5338,
+      "lon": -89.959,
+      "name": "Semuc Champey"
     },
     {
-      "n": 3,
-      "name": "Lake Atitlán",
-      "lat": 14.7412,
-      "lon": -91.156,
-      "days": "3–5 days",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 4,
-      "href": "#atitlan"
-    },
-    {
-      "n": 4,
-      "name": "El Paredón",
-      "lat": 13.9297,
-      "lon": -90.9797,
-      "days": "2 days",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 4,
-      "href": "#paredon"
+      "anchor": "start",
+      "dx": -40.9,
+      "dy": 15.8,
+      "lat": 15.8269,
+      "lon": -88.753,
+      "name": "Río Dulce"
     }
   ],
-  "dots": [],
-  "airport": null,
+  "iso3": "GTM",
   "legs": [
     {
       "a": 0,
-      "b": 1,
-      "label": "Drive · 1 hr"
+      "b": 1
     },
     {
       "a": 1,
-      "b": 2,
-      "label": "Shuttle · 3 hr"
+      "b": 2
     },
     {
       "a": 2,
-      "b": 3,
-      "label": "Shuttle · 3.5 hr"
+      "b": 3
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "guatemala",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "3–5 days",
+      "dx": 14,
+      "dy": -31.8,
+      "href": "#antigua",
+      "lat": 14.5586,
+      "lon": -90.7295,
+      "n": 1,
+      "name": "Antigua"
+    },
+    {
+      "anchor": "start",
+      "days": "2 days",
+      "dx": 2.3,
+      "dy": 17.3,
+      "href": "#acatenango",
+      "lat": 14.5006,
+      "lon": -90.8763,
+      "n": 2,
+      "name": "Acatenango"
+    },
+    {
+      "anchor": "end",
+      "days": "3–5 days",
+      "dx": -19.8,
+      "dy": -17.7,
+      "href": "#atitlan",
+      "lat": 14.7412,
+      "lon": -91.156,
+      "n": 3,
+      "name": "Lake Atitlán"
+    },
+    {
+      "anchor": "end",
+      "days": "2 days",
+      "dx": -14,
+      "dy": 4,
+      "href": "#paredon",
+      "lat": 13.9297,
+      "lon": -90.9797,
+      "n": 4,
+      "name": "El Paredón"
     }
   ]
 }

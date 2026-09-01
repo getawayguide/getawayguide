@@ -1,0 +1,86 @@
+{
+  "slug": "saigon",
+  "kicker": "Vietnam",
+  "city": "Ho Chi Minh City (Saigon)",
+  "osm": ".tmp/saigon_osm.json",
+  "article": "Drafts/vietnam/field-notes.html",
+  "embed": {
+    "pre": "or a few blocks away for a quieter night's sleep with the same easy access</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"mui-ne\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "War Remnants Museum",
+      "cat": "see",
+      "match": "war remnants museum",
+      "lat": 10.779365,
+      "lon": 106.692281
+    },
+    {
+      "name": "Independence Palace",
+      "cat": "see",
+      "match": "independence palace",
+      "lat": 10.777035,
+      "lon": 106.695488
+    },
+    {
+      "name": "Ben Thanh Market",
+      "cat": "see",
+      "match": "ben thanh market",
+      "lat": 10.77253,
+      "lon": 106.698037
+    },
+    {
+      "name": "Bui Vien Walking Street",
+      "cat": "see",
+      "match": "bui vien walking stree",
+      "lat": 10.767646,
+      "lon": 106.693912
+    },
+    {
+      "name": "Pho Quyen",
+      "cat": "eat",
+      "match": "pho quyen",
+      "lat": 10.763226,
+      "lon": 106.677715
+    },
+    {
+      "name": "Highlands Coffee",
+      "cat": "eat",
+      "match": "highlands coffee",
+      "lat": 10.788133,
+      "lon": 106.69966
+    }
+  ],
+  "center": {
+    "lat": 10.775679,
+    "lon": 106.688688
+  },
+  "day_trips": [
+    {
+      "name": "Cu Chi Tunnels",
+      "match": "cu chi tunnels",
+      "time": "Half Day"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "BUI VIEN",
+      "lat": 10.766833,
+      "lon": 106.692668
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "slug": "granada",
+  "kicker": "Nicaragua",
+  "city": "Granada",
+  "osm": ".tmp/granada_osm.json",
+  "article": "Drafts/nicaragua/field-notes.html",
+  "embed": {
+    "pre": " the walking tour, Laguna de Apoyo and the Treehouse Party. Just stay here</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"sjds\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Oasis Hostel",
+      "cat": "see",
+      "match": "oasis hostel",
+      "lat": 11.928027,
+      "lon": -85.955743
+    },
+    {
+      "name": "Laguna de Apoyo",
+      "cat": "see",
+      "match": "laguna de apoyo",
+      "lat": 11.913322,
+      "lon": -86.035967
+    }
+  ],
+  "center": {
+    "lat": 11.920675,
+    "lon": -85.995855
+  }
+}

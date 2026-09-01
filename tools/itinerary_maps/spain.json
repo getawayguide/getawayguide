@@ -57,7 +57,40 @@
       "href": "#ibiza"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 37.1761,
+      "lon": -3.5881,
+      "name": "Granada"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 43.3182,
+      "lon": -1.9817,
+      "name": "San Sebastián"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 39.4738,
+      "lon": -0.3756,
+      "name": "Valencia"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 39.6953,
+      "lon": 3.0176,
+      "name": "Mallorca"
+    }
+  ],
   "airport": null,
   "legs": [
     {

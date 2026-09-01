@@ -1,0 +1,52 @@
+{
+  "slug": "coromandel",
+  "kicker": "New Zealand",
+  "city": "Coromandel & Hot Water Beach",
+  "osm": ".tmp/coromandel_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": ". It is in the middle of nowhere, so plan on eating at the park restaurant</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"waitomo\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cathedral Cove",
+      "cat": "see",
+      "match": "cathedral cove",
+      "lat": -36.832636,
+      "lon": 175.708656
+    },
+    {
+      "name": "Hot Water Beach",
+      "cat": "see",
+      "match": "hot water beach",
+      "lat": -36.88333,
+      "lon": 175.818695
+    },
+    {
+      "name": "Hot Water Beach TOP 10 Holiday Park",
+      "cat": "stay",
+      "match": "hot water beach top 10",
+      "lat": -36.890107,
+      "lon": 175.816845
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -36.861372,
+    "lon": 175.763675
+  }
+}

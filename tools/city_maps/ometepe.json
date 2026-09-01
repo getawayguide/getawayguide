@@ -1,0 +1,59 @@
+{
+  "slug": "ometepe",
+  "kicker": "Nicaragua",
+  "city": "Ometepe Island",
+  "osm": ".tmp/ometepe_osm.json",
+  "article": "Drafts/nicaragua/field-notes.html",
+  "embed": {
+    "pre": "en mic. A good change of pace if you want a night off from the party scene</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Rivas",
+      "cat": "see",
+      "match": "rivas",
+      "lat": 11.441674,
+      "lon": -85.75915
+    },
+    {
+      "name": "Playa Mango",
+      "cat": "see",
+      "match": "playa mango",
+      "lat": 11.467894,
+      "lon": -85.561492
+    },
+    {
+      "name": "Ojo de Agua",
+      "cat": "see",
+      "match": "ojo de agua",
+      "lat": 11.5191,
+      "lon": -85.566898
+    },
+    {
+      "name": "El Zopilote",
+      "cat": "stay",
+      "match": "el zopilote",
+      "lat": 11.486239,
+      "lon": -85.531979
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 11.480387,
+    "lon": -85.645565
+  }
+}

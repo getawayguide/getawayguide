@@ -1,0 +1,86 @@
+{
+  "slug": "rotorua",
+  "kicker": "New Zealand",
+  "city": "Rotorua",
+  "osm": ".tmp/rotorua_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": "irau Park. Since you will likely be here a few days, pick somewhere social</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"taupo\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Hobbiton",
+      "cat": "see",
+      "match": "hobbiton",
+      "lat": -38.137243,
+      "lon": 176.253485
+    },
+    {
+      "name": "Kuirau Park",
+      "cat": "see",
+      "match": "kuirau park",
+      "lat": -38.132981,
+      "lon": 176.243776
+    },
+    {
+      "name": "Te Puia",
+      "cat": "see",
+      "match": "te puia",
+      "lat": -38.164351,
+      "lon": 176.250171
+    },
+    {
+      "name": "Government Gardens",
+      "cat": "see",
+      "match": "government gardens",
+      "lat": -38.134732,
+      "lon": 176.257924
+    },
+    {
+      "name": "Gold Star Bakery",
+      "cat": "eat",
+      "match": "gold star bakery",
+      "lat": -38.136036,
+      "lon": 176.25319
+    },
+    {
+      "name": "VNam Kitchen",
+      "cat": "eat",
+      "match": "vnam kitchen",
+      "lat": -38.137025,
+      "lon": 176.25407
+    },
+    {
+      "name": "Capers Cafe",
+      "cat": "eat",
+      "match": "capers cafe",
+      "lat": -38.138673,
+      "lon": 176.250957
+    },
+    {
+      "name": "Sobar",
+      "cat": "eat",
+      "match": "sobar",
+      "lat": -38.133217,
+      "lon": 176.251729
+    }
+  ],
+  "center": {
+    "lat": -38.148666,
+    "lon": 176.25085
+  }
+}

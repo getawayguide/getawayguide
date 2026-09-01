@@ -1,0 +1,52 @@
+{
+  "slug": "ibiza",
+  "kicker": "Spain",
+  "city": "Ibiza",
+  "osm": ".tmp/ibiza_osm.json",
+  "article": "Drafts/spain/field-notes.html",
+  "embed": {
+    "pre": "'t expect quiet, and it's a taxi or bus from the big clubs near Ibiza Town</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Hï Ibiza",
+      "cat": "see",
+      "match": "hï ibiza",
+      "lat": 38.885987,
+      "lon": 1.403855
+    },
+    {
+      "name": "Ushuaïa",
+      "cat": "see",
+      "match": "ushuaïa",
+      "lat": 38.885142,
+      "lon": 1.405109
+    },
+    {
+      "name": "Amnesia",
+      "cat": "see",
+      "match": "amnesia",
+      "lat": 38.94766,
+      "lon": 1.408229
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 38.916401,
+    "lon": 1.406042
+  }
+}

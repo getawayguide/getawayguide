@@ -1,0 +1,86 @@
+{
+  "slug": "atitlan",
+  "kicker": "Guatemala",
+  "city": "Lake Atitlán",
+  "osm": ".tmp/atitlan_osm.json",
+  "article": "Drafts/guatemala/field-notes.html",
+  "embed": {
+    "pre": "rly night; San Pedro also has plenty of calmer guesthouses if you'd rather</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"paredon\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Indian Nose",
+      "cat": "see",
+      "match": "indian nose",
+      "lat": 14.703385,
+      "lon": -91.290149
+    },
+    {
+      "name": "San Marcos La Laguna",
+      "cat": "see",
+      "match": "san marcos la laguna",
+      "lat": 14.735498,
+      "lon": -91.25937
+    },
+    {
+      "name": "San Juan La Laguna",
+      "cat": "see",
+      "match": "san juan la laguna",
+      "lat": 14.670994,
+      "lon": -91.305139
+    },
+    {
+      "name": "Shanti Shanti",
+      "cat": "eat",
+      "match": "shanti shanti",
+      "lat": 14.694166,
+      "lon": -91.274044
+    },
+    {
+      "name": "No Hay Deer",
+      "cat": "eat",
+      "match": "no hay deer",
+      "lat": 14.69429,
+      "lon": -91.273836
+    },
+    {
+      "name": "Sublime",
+      "cat": "eat",
+      "match": "sublime",
+      "lat": 14.69436,
+      "lon": -91.273864
+    },
+    {
+      "name": "Mr Mullet's",
+      "cat": "stay",
+      "match": "mr mullet's",
+      "lat": 14.694709,
+      "lon": -91.273418
+    }
+  ],
+  "center": {
+    "lat": 14.703246,
+    "lon": -91.282254
+  },
+  "day_trips": [
+    {
+      "name": "Panajachel",
+      "match": "panajachel",
+      "time": "Half Day"
+    }
+  ]
+}

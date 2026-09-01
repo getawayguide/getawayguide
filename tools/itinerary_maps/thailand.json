@@ -68,7 +68,48 @@
       "href": "#phi-phi"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 14.3692,
+      "lon": 100.5877,
+      "name": "Ayutthaya"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 19.3589,
+      "lon": 98.439,
+      "name": "Pai"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 9.8618,
+      "lon": 99.842,
+      "name": "Gulf islands"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 14.0226,
+      "lon": 99.5324,
+      "name": "Kanchanaburi"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 17.0188,
+      "lon": 99.7065,
+      "name": "Sukhothai"
+    }
+  ],
   "airport": null,
   "legs": [
     {

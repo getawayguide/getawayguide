@@ -1,0 +1,59 @@
+{
+  "slug": "cinque-terre",
+  "kicker": "Italy",
+  "city": "Cinque Terre",
+  "osm": ".tmp/cinque-terre_osm.json",
+  "article": "Drafts/italy/field-notes.html",
+  "embed": {
+    "pre": " one. Book well ahead in summer, as beds are limited and prices climb fast</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"milan\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Riomaggiore",
+      "cat": "see",
+      "match": "riomaggiore",
+      "lat": 44.098975,
+      "lon": 9.73867
+    },
+    {
+      "name": "Manarola",
+      "cat": "see",
+      "match": "manarola",
+      "lat": 44.106326,
+      "lon": 9.727481
+    },
+    {
+      "name": "Vernazza",
+      "cat": "see",
+      "match": "vernazza",
+      "lat": 44.134941,
+      "lon": 9.682776
+    },
+    {
+      "name": "Corniglia",
+      "cat": "see",
+      "match": "corniglia",
+      "lat": 44.119961,
+      "lon": 9.708687
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 44.116958,
+    "lon": 9.710723
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "slug": "lagos",
+  "kicker": "Portugal",
+  "city": "Lagos",
+  "osm": ".tmp/lagos_osm.json",
+  "article": "Drafts/portugal/field-notes.html",
+  "embed": {
+    "pre": "ut a much quieter, more low-key option if the party scene isn't your thing</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"albufeira\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Ponta da Piedade",
+      "cat": "see",
+      "match": "ponta da piedade",
+      "lat": 37.079195,
+      "lon": -8.667784
+    },
+    {
+      "name": "Praia dos Estudantes",
+      "cat": "see",
+      "match": "praia dos estudantes",
+      "lat": 37.096494,
+      "lon": -8.667586
+    },
+    {
+      "name": "Arribalé",
+      "cat": "eat",
+      "match": "arribalé",
+      "lat": 37.102037,
+      "lon": -8.671922
+    },
+    {
+      "name": "Travia",
+      "cat": "eat",
+      "match": "travia",
+      "lat": 37.10161,
+      "lon": -8.67332
+    },
+    {
+      "name": "Mar",
+      "cat": "eat",
+      "match": "mar",
+      "lat": 37.096917,
+      "lon": -8.668299
+    },
+    {
+      "name": "Redeye Bar",
+      "cat": "eat",
+      "match": "redeye bar",
+      "lat": 37.101323,
+      "lon": -8.673205
+    },
+    {
+      "name": "Rising Cock Hostel",
+      "cat": "stay",
+      "match": "rising cock hostel",
+      "lat": 37.098823,
+      "lon": -8.672548
+    },
+    {
+      "name": "Sol A Sol",
+      "cat": "stay",
+      "match": "sol a sol",
+      "lat": 37.099736,
+      "lon": -8.672377
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.090616,
+    "lon": -8.670453
+  }
+}

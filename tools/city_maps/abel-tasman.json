@@ -1,0 +1,52 @@
+{
+  "slug": "abel-tasman",
+  "kicker": "New Zealand",
+  "city": "Abel Tasman",
+  "osm": ".tmp/abel-tasman_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": ">Marahau</a>, the official start of the Coastal Track, is the other option</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"franz-josef\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Abel Tasman Coastal Track",
+      "cat": "see",
+      "match": "abel tasman coastal tr",
+      "lat": -40.991,
+      "lon": 173.00818
+    },
+    {
+      "name": "Split Apple Rock",
+      "cat": "see",
+      "match": "split apple rock",
+      "lat": -41.018317,
+      "lon": 173.020222
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -41.004659,
+    "lon": 173.014201
+  },
+  "district_labels": [
+    {
+      "text": "KAITERITERI",
+      "lat": -41.041985,
+      "lon": 173.013479
+    }
+  ]
+}

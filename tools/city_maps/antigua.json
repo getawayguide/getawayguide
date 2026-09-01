@@ -1,0 +1,79 @@
+{
+  "slug": "antigua",
+  "kicker": "Guatemala",
+  "city": "Antigua",
+  "osm": ".tmp/antigua_osm.json",
+  "article": "Drafts/guatemala/field-notes.html",
+  "embed": {
+    "pre": "u can still walk over to Tropicana to book tours and join the social scene</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"acatenango\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cerro de la Cruz",
+      "cat": "see",
+      "match": "cerro de la cruz",
+      "lat": 14.566218,
+      "lon": -90.730974
+    },
+    {
+      "name": "Iglesia de La Merced",
+      "cat": "see",
+      "match": "iglesia de la merced",
+      "lat": 14.642677,
+      "lon": -90.507492
+    },
+    {
+      "name": "Café No Sé",
+      "cat": "see",
+      "match": "café no sé",
+      "lat": 14.55572,
+      "lon": -90.729601
+    },
+    {
+      "name": "El Portón",
+      "cat": "eat",
+      "match": "el portón",
+      "lat": 14.555388,
+      "lon": -90.732567
+    },
+    {
+      "name": "Café Sky",
+      "cat": "eat",
+      "match": "café sky",
+      "lat": 14.555392,
+      "lon": -90.729619
+    },
+    {
+      "name": "Dobladas San Carlos",
+      "cat": "eat",
+      "match": "dobladas san carlos",
+      "lat": 14.523937,
+      "lon": -90.535425
+    },
+    {
+      "name": "Tropicana Hostel",
+      "cat": "stay",
+      "match": "tropicana hostel",
+      "lat": 14.555412,
+      "lon": -90.733504
+    }
+  ],
+  "center": {
+    "lat": 14.583307,
+    "lon": -90.620498
+  }
+}

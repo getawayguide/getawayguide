@@ -1,0 +1,45 @@
+{
+  "slug": "phi-phi",
+  "kicker": "Thailand",
+  "city": "Koh Phi Phi",
+  "osm": ".tmp/phi-phi_osm.json",
+  "article": "Drafts/thailand/field-notes.html",
+  "embed": {
+    "pre": " or over at Long Beach for a calmer night and a short boat into the action</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Maya Bay",
+      "cat": "see",
+      "match": "maya bay",
+      "lat": 7.676625,
+      "lon": 98.766117
+    },
+    {
+      "name": "Stones Bar",
+      "cat": "eat",
+      "match": "stones bar",
+      "lat": 7.742712,
+      "lon": 98.77384
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 7.709668,
+    "lon": 98.769979
+  }
+}

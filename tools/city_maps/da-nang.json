@@ -1,0 +1,66 @@
+{
+  "slug": "da-nang",
+  "kicker": "Vietnam",
+  "city": "Da Nang",
+  "osm": ".tmp/da-nang_osm.json",
+  "article": "Drafts/vietnam/field-notes.html",
+  "embed": {
+    "pre": "nightlife strip and a short ride from both Hoi An and the Marble Mountains</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"saigon\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "My Khe Beach",
+      "cat": "see",
+      "match": "my khe beach",
+      "lat": 16.075638,
+      "lon": 108.246874
+    },
+    {
+      "name": "Marble Mountains",
+      "cat": "see",
+      "match": "marble mountains",
+      "lat": 16.00402,
+      "lon": 108.262775
+    },
+    {
+      "name": "Asia Park",
+      "cat": "see",
+      "match": "asia park",
+      "lat": 16.041222,
+      "lon": 108.226668
+    },
+    {
+      "name": "Da Nang Museum",
+      "cat": "see",
+      "match": "da nang museum",
+      "lat": 16.075013,
+      "lon": 108.223935
+    },
+    {
+      "name": "Banh Xeo Ba Duong",
+      "cat": "eat",
+      "match": "banh xeo ba duong",
+      "lat": 16.058803,
+      "lon": 108.216035
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 16.039829,
+    "lon": 108.239405
+  }
+}

@@ -45,7 +45,40 @@
       "href": "#varadero"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 21.796,
+      "lon": -79.9808,
+      "name": "Trinidad"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 22.6188,
+      "lon": -83.7066,
+      "name": "Viñales"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 22.4244,
+      "lon": -79.9417,
+      "name": "Santa Clara"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 20.0169,
+      "lon": -75.8302,
+      "name": "Santiago de Cuba"
+    }
+  ],
   "airport": null,
   "legs": [
     {

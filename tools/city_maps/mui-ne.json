@@ -1,0 +1,52 @@
+{
+  "slug": "mui-ne",
+  "kicker": "Vietnam",
+  "city": "Phan Thiet / Mui Ne",
+  "osm": ".tmp/mui-ne_osm.json",
+  "article": "Drafts/vietnam/field-notes.html",
+  "embed": {
+    "pre": "r to the Fairy Stream and dunes end cut down on transit time to the sights</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Fairy Stream",
+      "cat": "see",
+      "match": "fairy stream",
+      "lat": 10.952008,
+      "lon": 108.256701
+    },
+    {
+      "name": "Red Sand Dunes",
+      "cat": "see",
+      "match": "red sand dunes",
+      "lat": 10.949071,
+      "lon": 108.295364
+    },
+    {
+      "name": "Mui Ne Fishing Village",
+      "cat": "see",
+      "match": "mui ne fishing village",
+      "lat": 10.940984,
+      "lon": 108.279361
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 10.946496,
+    "lon": 108.276033
+  }
+}

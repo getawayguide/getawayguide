@@ -1,0 +1,87 @@
+{
+  "slug": "wellington",
+  "kicker": "New Zealand",
+  "city": "Wellington",
+  "osm": ".tmp/wellington_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": "ing (Te Papa, Cuba Street, the harbour) is walkable, so stay in the middle</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"abel-tasman\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Te Papa",
+      "cat": "see",
+      "match": "te papa",
+      "lat": -41.290333,
+      "lon": 174.781927
+    },
+    {
+      "name": "Cuba Street",
+      "cat": "see",
+      "match": "cuba street",
+      "lat": -41.295859,
+      "lon": 174.77428
+    },
+    {
+      "name": "Wellington Cable Car",
+      "cat": "see",
+      "match": "wellington cable car",
+      "lat": -41.284912,
+      "lon": 174.770542
+    },
+    {
+      "name": "Mount Victoria Lookout",
+      "cat": "see",
+      "match": "mount victoria lookout",
+      "lat": -41.296037,
+      "lon": 174.794325
+    },
+    {
+      "name": "Shelly Bay Baker",
+      "cat": "eat",
+      "match": "shelly bay baker",
+      "lat": -41.291802,
+      "lon": 174.787728
+    },
+    {
+      "name": "Crab Shack",
+      "cat": "eat",
+      "match": "crab shack",
+      "lat": -41.284601,
+      "lon": 174.779163
+    },
+    {
+      "name": "Duck Island",
+      "cat": "eat",
+      "match": "duck island",
+      "lat": -41.294331,
+      "lon": 174.774956
+    },
+    {
+      "name": "Blend",
+      "cat": "eat",
+      "match": "blend",
+      "lat": -41.289654,
+      "lon": 174.776846
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -41.290319,
+    "lon": 174.782433
+  }
+}

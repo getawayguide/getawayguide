@@ -1,0 +1,45 @@
+{
+  "slug": "hoi-an",
+  "kicker": "Vietnam",
+  "city": "Hoi An",
+  "osm": ".tmp/hoi-an_osm.json",
+  "article": "Drafts/vietnam/field-notes.html",
+  "embed": {
+    "pre": "he riverside guesthouses just outside the old town core are the sweet spot</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"da-nang\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Hoi An Ancient Town",
+      "cat": "see",
+      "match": "hoi an ancient town",
+      "lat": 15.877951,
+      "lon": 108.32399
+    },
+    {
+      "name": "An Bang Beach",
+      "cat": "see",
+      "match": "an bang beach",
+      "lat": 15.91172,
+      "lon": 108.341166
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 15.894835,
+    "lon": 108.332578
+  }
+}

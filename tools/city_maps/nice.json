@@ -1,0 +1,94 @@
+{
+  "slug": "nice",
+  "kicker": "France",
+  "city": "Nice",
+  "osm": ".tmp/nice_osm.json",
+  "article": "Drafts/france/field-notes.html",
+  "embed": {
+    "pre": "t, and much cheaper than staying in the glossy towns like Monaco or Cannes</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"rouen\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Promenade des Anglais",
+      "cat": "see",
+      "match": "promenade des anglais",
+      "lat": 43.685989,
+      "lon": 7.237476
+    },
+    {
+      "name": "Colline du Château",
+      "cat": "see",
+      "match": "colline du château",
+      "lat": 43.696342,
+      "lon": 7.280617
+    },
+    {
+      "name": "Vieux-Nice",
+      "cat": "see",
+      "match": "vieux-nice",
+      "lat": 43.696529,
+      "lon": 7.275138
+    },
+    {
+      "name": "Monaco",
+      "cat": "see",
+      "match": "monaco",
+      "lat": 43.745118,
+      "lon": 7.36704
+    },
+    {
+      "name": "Èze",
+      "cat": "see",
+      "match": "èze",
+      "lat": 43.728892,
+      "lon": 7.36207
+    },
+    {
+      "name": "Villefranche-sur-Mer",
+      "cat": "see",
+      "match": "villefranche-sur-mer",
+      "lat": 43.704232,
+      "lon": 7.309969
+    },
+    {
+      "name": "Lou Pilha Leva",
+      "cat": "eat",
+      "match": "lou pilha leva",
+      "lat": 43.698115,
+      "lon": 7.276718
+    },
+    {
+      "name": "Wayne's Bar",
+      "cat": "eat",
+      "match": "wayne's bar",
+      "lat": 43.696757,
+      "lon": 7.274607
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 43.715553,
+    "lon": 7.302258
+  },
+  "day_trips": [
+    {
+      "name": "Menton",
+      "match": "menton",
+      "time": "Half Day"
+    }
+  ]
+}

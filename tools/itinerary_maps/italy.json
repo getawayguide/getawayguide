@@ -1,46 +1,91 @@
 {
-  "iso3": "ITA",
-  "slug": "italy",
+  "airport": null,
   "country_width": 560,
-  "margins": {
-    "l": 240,
-    "r": 240,
-    "t": 130,
-    "b": 130
-  },
-  "simplify": 3000,
-  "smooth": false,
-  "stops": [
+  "dots": [
     {
-      "n": 1,
-      "name": "Cinque Terre",
-      "lat": 44.1281,
-      "lon": 9.7095,
-      "days": "2–3 days",
       "anchor": "start",
-      "dx": 14,
+      "dx": 8,
       "dy": 4,
-      "href": "#cinque-terre"
+      "lat": 41.8967,
+      "lon": 12.4822,
+      "name": "Rome"
     },
     {
-      "n": 2,
-      "name": "Milan",
-      "lat": 45.4642,
-      "lon": 9.19,
-      "days": "1–2 days",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 4,
-      "href": "#milan"
+      "anchor": "start",
+      "dx": 8,
+      "dy": 8.9,
+      "lat": 43.77,
+      "lon": 11.2577,
+      "name": "Florence"
+    },
+    {
+      "anchor": "start",
+      "dx": 8.7,
+      "dy": 11.5,
+      "lat": 45.4404,
+      "lon": 12.316,
+      "name": "Venice"
+    },
+    {
+      "anchor": "start",
+      "dx": -57.7,
+      "dy": 18,
+      "lat": 40.6333,
+      "lon": 14.6029,
+      "name": "Amalfi Coast"
+    },
+    {
+      "anchor": "start",
+      "dx": 10.5,
+      "dy": 7.2,
+      "lat": 46.016,
+      "lon": 9.2572,
+      "name": "Lake Como"
     }
   ],
-  "dots": [],
-  "airport": null,
+  "iso3": "ITA",
   "legs": [
     {
       "a": 0,
       "b": 1,
-      "label": "Train · 3 hr"
+      "label": "Train · 3 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 46.4,
+      "chip_dy": -12.7
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 3000,
+  "slug": "italy",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "1–2 days",
+      "dx": -15.5,
+      "dy": -20.4,
+      "href": "#milan",
+      "lat": 45.4642,
+      "lon": 9.19,
+      "n": 1,
+      "name": "Milan"
+    },
+    {
+      "anchor": "end",
+      "days": "2–3 days",
+      "dx": -5.8,
+      "dy": 16.6,
+      "href": "#cinque-terre",
+      "lat": 44.1281,
+      "lon": 9.7095,
+      "n": 2,
+      "name": "Cinque Terre"
     }
   ]
 }

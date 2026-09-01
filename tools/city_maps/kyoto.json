@@ -1,0 +1,107 @@
+{
+  "slug": "kyoto",
+  "kicker": "Japan",
+  "city": "Kyoto",
+  "osm": ".tmp/kyoto_osm.json",
+  "article": "Drafts/japan/field-notes.html",
+  "embed": {
+    "pre": "old-away smart bed you control from a bedside remote, and a free beer hour</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"nara\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Fushimi Inari Shrine",
+      "cat": "see",
+      "match": "fushimi inari shrine",
+      "lat": 34.967255,
+      "lon": 135.773773
+    },
+    {
+      "name": "Kiyomizu-dera",
+      "cat": "see",
+      "match": "kiyomizu-dera",
+      "lat": 34.994303,
+      "lon": 135.784439
+    },
+    {
+      "name": "Gion",
+      "cat": "see",
+      "match": "gion",
+      "lat": 35.00469,
+      "lon": 135.778403
+    },
+    {
+      "name": "Arashiyama Bamboo Grove",
+      "cat": "see",
+      "match": "arashiyama bamboo grov",
+      "lat": 35.016742,
+      "lon": 135.671148
+    },
+    {
+      "name": "Iwatayama Monkey Park",
+      "cat": "see",
+      "match": "iwatayama monkey park",
+      "lat": 35.009086,
+      "lon": 135.674967
+    },
+    {
+      "name": "Kinkaku-ji",
+      "cat": "see",
+      "match": "kinkaku-ji",
+      "lat": 35.039529,
+      "lon": 135.729537
+    },
+    {
+      "name": "Nishiki Market",
+      "cat": "see",
+      "match": "nishiki market",
+      "lat": 35.005024,
+      "lon": 135.76557
+    },
+    {
+      "name": "Nanzen-ji",
+      "cat": "see",
+      "match": "nanzen-ji",
+      "lat": 35.011525,
+      "lon": 135.792721
+    },
+    {
+      "name": "Sagano Romantic Train",
+      "cat": "see",
+      "match": "sagano romantic train",
+      "lat": 35.018549,
+      "lon": 135.680754
+    },
+    {
+      "name": "Pontocho",
+      "cat": "eat",
+      "match": "pontocho",
+      "lat": 35.004246,
+      "lon": 135.771213
+    },
+    {
+      "name": "Millennials Kyoto",
+      "cat": "stay",
+      "match": "millennials kyoto",
+      "lat": 35.007469,
+      "lon": 135.768912
+    }
+  ],
+  "center": {
+    "lat": 35.003392,
+    "lon": 135.731934
+  }
+}

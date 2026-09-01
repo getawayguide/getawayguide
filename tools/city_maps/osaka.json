@@ -1,0 +1,114 @@
+{
+  "slug": "osaka",
+  "kicker": "Japan",
+  "city": "Osaka",
+  "osm": ".tmp/osaka_osm.json",
+  "article": "Drafts/japan/field-notes.html",
+  "embed": {
+    "pre": "the neon and the food, and it's a short walk to Shinsekai and Den Den Town</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"hiroshima\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Dotonbori",
+      "cat": "see",
+      "match": "dotonbori",
+      "lat": 34.669031,
+      "lon": 135.501572
+    },
+    {
+      "name": "Shinsekai",
+      "cat": "see",
+      "match": "shinsekai",
+      "lat": 34.65209,
+      "lon": 135.506191
+    },
+    {
+      "name": "Osaka Castle",
+      "cat": "see",
+      "match": "osaka castle",
+      "lat": 34.687373,
+      "lon": 135.525856
+    },
+    {
+      "name": "Kuromon Ichiba Market",
+      "cat": "see",
+      "match": "kuromon ichiba market",
+      "lat": 34.664189,
+      "lon": 135.506951
+    },
+    {
+      "name": "Namba Yasaka Shrine",
+      "cat": "see",
+      "match": "namba yasaka shrine",
+      "lat": 34.661482,
+      "lon": 135.496733
+    },
+    {
+      "name": "Den Den Town",
+      "cat": "see",
+      "match": "den den town",
+      "lat": 34.659215,
+      "lon": 135.505824
+    },
+    {
+      "name": "Universal Studios Japan",
+      "cat": "see",
+      "match": "universal studios japa",
+      "lat": 34.665639,
+      "lon": 135.432453
+    },
+    {
+      "name": "Kobe",
+      "cat": "see",
+      "match": "kobe",
+      "lat": 34.713504,
+      "lon": 135.418984
+    },
+    {
+      "name": "Kura Sushi",
+      "cat": "eat",
+      "match": "kura sushi",
+      "lat": 34.54112,
+      "lon": 135.560221
+    },
+    {
+      "name": "Sukiya",
+      "cat": "eat",
+      "match": "sukiya",
+      "lat": 34.484507,
+      "lon": 135.515143
+    },
+    {
+      "name": "Shikaku",
+      "cat": "eat",
+      "match": "shikaku",
+      "lat": 34.664159,
+      "lon": 135.503315
+    },
+    {
+      "name": "Space Station bar",
+      "cat": "eat",
+      "match": "space station bar",
+      "lat": 34.670003,
+      "lon": 135.49796
+    }
+  ],
+  "center": {
+    "lat": 34.599006,
+    "lon": 135.489602
+  }
+}

@@ -78,7 +78,48 @@
       "href": "#mui-ne"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 22.3405,
+      "lon": 103.8564,
+      "name": "Sapa"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 16.4637,
+      "lon": 107.5909,
+      "name": "Hue"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 11.9502,
+      "lon": 108.4498,
+      "name": "Da Lat"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 10.2899,
+      "lon": 103.984,
+      "name": "Phu Quoc"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 10.0634,
+      "lon": 105.5943,
+      "name": "Mekong Delta"
+    }
+  ],
   "airport": null,
   "legs": [
     {

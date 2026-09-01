@@ -1,0 +1,58 @@
+{
+  "slug": "leon",
+  "kicker": "Nicaragua",
+  "city": "León",
+  "osm": ".tmp/leon_osm.json",
+  "article": "Drafts/nicaragua/field-notes.html",
+  "embed": {
+    "pre": "r Cerro Negro volcano boarding, so staying at one of them is the easy move</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"granada\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Cerro Negro",
+      "cat": "see",
+      "match": "cerro negro",
+      "lat": 12.507822,
+      "lon": -86.703288
+    },
+    {
+      "name": "Museo de la Revolución",
+      "cat": "see",
+      "match": "museo de la revolución",
+      "lat": 12.434695,
+      "lon": -86.87956
+    },
+    {
+      "name": "Iglesia El Calvario",
+      "cat": "see",
+      "match": "iglesia el calvario",
+      "lat": 12.888448,
+      "lon": -86.535555
+    },
+    {
+      "name": "Restaurante El Sesteo",
+      "cat": "eat",
+      "match": "restaurante el sesteo",
+      "lat": 12.435349,
+      "lon": -86.878697
+    }
+  ],
+  "center": {
+    "lat": 12.661572,
+    "lon": -86.707558
+  }
+}

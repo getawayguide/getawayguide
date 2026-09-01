@@ -1,0 +1,72 @@
+{
+  "slug": "marrakesh",
+  "kicker": "Morocco",
+  "city": "Marrakesh",
+  "osm": ".tmp/marrakesh_osm.json",
+  "article": "Drafts/morocco/field-notes.html",
+  "embed": {
+    "pre": "medina. Alcohol is limited to licensed spots; the local beer is Casablanca</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Jemaa el-Fnaa",
+      "cat": "see",
+      "match": "jemaa el-fnaa",
+      "lat": 31.625781,
+      "lon": -7.988904
+    },
+    {
+      "name": "Marrakesh souks",
+      "cat": "see",
+      "match": "marrakesh souks",
+      "lat": 31.627786,
+      "lon": -7.983394
+    },
+    {
+      "name": "Bahia Palace",
+      "cat": "see",
+      "match": "bahia palace",
+      "lat": 31.621633,
+      "lon": -7.981938
+    },
+    {
+      "name": "Saadian Tombs",
+      "cat": "see",
+      "match": "saadian tombs",
+      "lat": 31.617259,
+      "lon": -7.988555
+    },
+    {
+      "name": "Majorelle Garden",
+      "cat": "see",
+      "match": "majorelle garden",
+      "lat": 31.641475,
+      "lon": -8.002908
+    },
+    {
+      "name": "Equity Point Marrakech",
+      "cat": "see",
+      "match": "equity point marrakech",
+      "lat": 31.629431,
+      "lon": -7.988202
+    }
+  ],
+  "center": {
+    "lat": 31.629367,
+    "lon": -7.992423
+  }
+}

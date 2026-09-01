@@ -1,0 +1,66 @@
+{
+  "slug": "albufeira",
+  "kicker": "Portugal",
+  "city": "Albufeira",
+  "osm": ".tmp/albufeira_osm.json",
+  "article": "Drafts/portugal/field-notes.html",
+  "embed": {
+    "pre": "p terrace to pregame on, right next to the old town and close to the beach</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"faro\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Albufeira Marina",
+      "cat": "see",
+      "match": "albufeira marina",
+      "lat": 37.085501,
+      "lon": -8.265985
+    },
+    {
+      "name": "Praia dos Aveiros",
+      "cat": "see",
+      "match": "praia dos aveiros",
+      "lat": 37.083424,
+      "lon": -8.231454
+    },
+    {
+      "name": "Restaurante Evaristo",
+      "cat": "eat",
+      "match": "restaurante evaristo",
+      "lat": 37.074143,
+      "lon": -8.302387
+    },
+    {
+      "name": "Avenida Sá Carneiro",
+      "cat": "eat",
+      "match": "avenida sá carneiro",
+      "lat": 37.091736,
+      "lon": -8.227747
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.082939,
+    "lon": -8.265067
+  },
+  "day_trips": [
+    {
+      "name": "Benagil Cave",
+      "match": "benagil cave",
+      "time": "Half Day"
+    }
+  ]
+}

@@ -56,7 +56,48 @@
       "href": "#marrakesh"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 31.5085,
+      "lon": -9.7595,
+      "name": "Essaouira"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 33.5731,
+      "lon": -7.5898,
+      "name": "Casablanca"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 31.1358,
+      "lon": -7.9191,
+      "name": "High Atlas"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 34.0084,
+      "lon": -6.8539,
+      "name": "Rabat"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 31.522,
+      "lon": -5.5274,
+      "name": "Dades and Todra Gorges"
+    }
+  ],
   "airport": null,
   "legs": [
     {

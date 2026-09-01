@@ -1,0 +1,106 @@
+{
+  "slug": "barcelona",
+  "kicker": "Spain",
+  "city": "Barcelona",
+  "osm": ".tmp/barcelona_osm.json",
+  "article": "Drafts/spain/field-notes.html",
+  "embed": {
+    "pre": "celona is notorious for pickpockets, especially on La Rambla and the metro</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"madrid\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Sagrada Família",
+      "cat": "see",
+      "match": "sagrada família",
+      "lat": 41.403505,
+      "lon": 2.174428
+    },
+    {
+      "name": "Park Güell",
+      "cat": "see",
+      "match": "park güell",
+      "lat": 41.414235,
+      "lon": 2.152458
+    },
+    {
+      "name": "La Rambla",
+      "cat": "see",
+      "match": "la rambla",
+      "lat": 41.380669,
+      "lon": 2.1737
+    },
+    {
+      "name": "Gothic Quarter",
+      "cat": "see",
+      "match": "gothic quarter",
+      "lat": 41.38384,
+      "lon": 2.174512
+    },
+    {
+      "name": "Palau de la Música Catalana",
+      "cat": "see",
+      "match": "palau de la música cat",
+      "lat": 41.387584,
+      "lon": 2.175232
+    },
+    {
+      "name": "MOCO Museum",
+      "cat": "see",
+      "match": "moco museum",
+      "lat": 41.384727,
+      "lon": 2.181564
+    },
+    {
+      "name": "El Xampanyet",
+      "cat": "eat",
+      "match": "el xampanyet",
+      "lat": 41.384509,
+      "lon": 2.181675
+    },
+    {
+      "name": "El Nacional",
+      "cat": "eat",
+      "match": "el nacional",
+      "lat": 41.390693,
+      "lon": 2.168479
+    },
+    {
+      "name": "Dr. Stravinsky",
+      "cat": "eat",
+      "match": "dr. stravinsky",
+      "lat": 41.38418,
+      "lon": 2.180672
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 41.397452,
+    "lon": 2.167066
+  },
+  "day_trips": [
+    {
+      "name": "Cal Pep",
+      "match": "cal pep",
+      "time": "Full Day"
+    },
+    {
+      "name": "Montserrat",
+      "match": "montserrat",
+      "time": "Half Day"
+    }
+  ]
+}

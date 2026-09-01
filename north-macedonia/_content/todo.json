@@ -1,0 +1,551 @@
+{
+ "at": 1787633098336,
+ "items": [
+  {
+   "id": "47rpc13",
+   "type": "section",
+   "text": "Immediate Goals",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "rsjqdr7",
+   "type": "task",
+   "text": "Add photo thumbnails for countries",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "5ratbdv",
+   "type": "task",
+   "text": "Transfer All Existing Recommendations to Field Notes (7/16)",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "7i7azcj",
+   "type": "task",
+   "text": "Country Articles",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "lmpc0s4",
+   "type": "note",
+   "text": "1/2 Long Country / 1 Short Country Article Per Day",
+   "done": false,
+   "indent": 1
+  },
+  {
+   "id": "gc0bwve",
+   "type": "task",
+   "text": "North Macedonia - 6/20",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "wedkbug",
+   "type": "task",
+   "text": "Armenia - 6/22",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "3im8m06",
+   "type": "task",
+   "text": "Turkiye - 6/23 to 6/24",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "mhyifbu",
+   "type": "task",
+   "text": "Kosovo - 6/25",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "pgbfirq",
+   "type": "task",
+   "text": "Philippines - 6/26 to 6/27",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "mayq090",
+   "type": "task",
+   "text": "Peru - 6/27",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "7vjsbyj",
+   "type": "task",
+   "text": "Greece - 6/28 to 6/29",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "6zbkby7",
+   "type": "task",
+   "text": "Albania - 6/30 to 7/3",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "rk4j6cv",
+   "type": "task",
+   "text": "Brazil - 7/3 to 7/5",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "xmo53bx",
+   "type": "task",
+   "text": "Bosnia - 7/5",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "0omkwvj",
+   "type": "task",
+   "text": "Mexico 7/6",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "j4r947o",
+   "type": "task",
+   "text": "Georgia - 7/8 to 7/10",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "y028f2w",
+   "type": "task",
+   "text": "Montenegro - 7/10",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "yq63t9k",
+   "type": "task",
+   "text": "Hungary - 7/11",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "a3mzikm",
+   "type": "task",
+   "text": "Colombia - 7/11 - 7/12",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "voeyhpy",
+   "type": "task",
+   "text": "Switzerland - 7/13 - 7/14",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "pvuffno",
+   "type": "task",
+   "text": "Tanzania - 7/16",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "zbdhkxm",
+   "type": "task",
+   "text": "India - 7/17",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "0hkjuj4",
+   "type": "task",
+   "text": "Indonesia - 7/18 - 7/19",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "7op8dtb",
+   "type": "task",
+   "text": "Chile - 7/20",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "xyosrth",
+   "type": "task",
+   "text": "Argentina - 7/20 - 7/21",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "97bovo0",
+   "type": "task",
+   "text": "Egypt - 7/22 - 7/24",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "or6qwmb",
+   "type": "task",
+   "text": "Australia - 7/25 - 7/26",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "tb9qbd5",
+   "type": "task",
+   "text": "Latvia - 7/28",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "ju2ixww",
+   "type": "task",
+   "text": "Estonia - 7/29 to 7/30",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "6a5mbhl",
+   "type": "task",
+   "text": "Finland - 7/30 to 7/31",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "1wn9lxn",
+   "type": "task",
+   "text": "Sweden - 7/31",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "a9qv0tm",
+   "type": "task",
+   "text": "Denmark - 7/31",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "a087vjx",
+   "type": "task",
+   "text": "Croatia - 8/1 to 8/2",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "sdcena9",
+   "type": "task",
+   "text": "Slovenia - 8/2",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "cyioeyn",
+   "type": "task",
+   "text": "Netherlands - 8/3 to 8/4",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "lhvrov7",
+   "type": "task",
+   "text": "Belgium & Tomorrowland - 8/4 - 8/8",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "fbwvjsu",
+   "type": "task",
+   "text": "Germany - 8/9",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "zox4hbc",
+   "type": "task",
+   "text": "Itay - 8/10 -",
+   "done": false,
+   "indent": 1
+  },
+  {
+   "id": "dbbi9fo",
+   "type": "task",
+   "text": "Japan",
+   "done": false,
+   "indent": 1
+  },
+  {
+   "id": "9lm1495",
+   "type": "task",
+   "text": "Portugal",
+   "done": false,
+   "indent": 1
+  },
+  {
+   "id": "8rowdl0",
+   "type": "task",
+   "text": "New Zealand",
+   "done": false,
+   "indent": 1
+  },
+  {
+   "id": "3f7wuxx",
+   "type": "task",
+   "text": "Run spell check on all Articles - automated",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "yakea3n",
+   "type": "task",
+   "text": "Other pages",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "zsaxj7l",
+   "type": "task",
+   "text": "Bio Page - 7/18",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "g6qpo8n",
+   "type": "task",
+   "text": "Resources page - 7/18",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "ztj0vh9",
+   "type": "task",
+   "text": "Update NavBar to breakout countries - 7/19",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "ep5cl0e",
+   "type": "task",
+   "text": "Update Ticker Band - 7/27",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "hur2f2v",
+   "type": "section",
+   "text": "Medium Term",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "ogogxtv",
+   "type": "task",
+   "text": "Transform Journal Notes into Field notes",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "amu66re",
+   "type": "task",
+   "text": "Word Doc",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "3834m9n",
+   "type": "task",
+   "text": "Field Notes Pages",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "n28kkfw",
+   "type": "task",
+   "text": "Figure out photo compression settings",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "ldlttlu",
+   "type": "task",
+   "text": "Add Photos to Field Notes pages",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "a1lqglc",
+   "type": "task",
+   "text": "Create Map Maker / Design",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "fvegpz8",
+   "type": "task",
+   "text": "Country",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "1i0puvq",
+   "type": "task",
+   "text": "Add map to every exisitng country article - 7/27",
+   "done": true,
+   "indent": 2
+  },
+  {
+   "id": "adwlucu",
+   "type": "task",
+   "text": "Make names link to article sections - 7/27",
+   "done": true,
+   "indent": 2
+  },
+  {
+   "id": "x2nvuk4",
+   "type": "task",
+   "text": "Cities - Finland",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "lwm4oet",
+   "type": "task",
+   "text": "Draft cities - 8/1",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "9ct84m5",
+   "type": "task",
+   "text": "Fix Mobile maps",
+   "done": true,
+   "indent": 1
+  },
+  {
+   "id": "khedcg8",
+   "type": "task",
+   "text": "Make To-Do list draggable and remove stuff at bottom of the To-Do",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "djq9z4s",
+   "type": "task",
+   "text": "Search Bar - 7/27",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "uqxazbn",
+   "type": "task",
+   "text": "Carousel for mobile",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "5eclvaq",
+   "type": "task",
+   "text": "Forum Page",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "eh8ajv6",
+   "type": "task",
+   "text": "Mix Articles and Field Notes together 7/31",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "vxriaky",
+   "type": "task",
+   "text": "Preview Thumbnail for sharing article - 8/2",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "ohi9jxw",
+   "type": "section",
+   "text": "Longer Term Goals",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "kbzkgnj",
+   "type": "task",
+   "text": "Final Pass of El Salvador Photos",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "asqbn4y",
+   "type": "task",
+   "text": "Redesign site to be less vibe coded",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "dgf618t",
+   "type": "task",
+   "text": "Finish Field notes",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "1vn28se",
+   "type": "task",
+   "text": "Launch blog - when done with 6 Countries",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "7ms1azt",
+   "type": "task",
+   "text": "Finish New Zealand Articles",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "gm5ostw",
+   "type": "task",
+   "text": "Affiliate links",
+   "done": false,
+   "indent": 0
+  },
+  {
+   "id": "c9n4n2g",
+   "type": "task",
+   "text": "Create Mobile map",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "xe8r8oq",
+   "type": "task",
+   "text": "Fix Spell check",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "vy7l0xi",
+   "type": "task",
+   "text": "Fix Mobile Map Issues",
+   "done": true,
+   "indent": 0
+  },
+  {
+   "id": "j5jsbza",
+   "type": "task",
+   "text": "SEO Optimization",
+   "done": true,
+   "indent": 0
+  }
+ ]
+}

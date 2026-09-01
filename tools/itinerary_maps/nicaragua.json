@@ -56,7 +56,24 @@
       "href": "#ometepe"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 11.9853,
+      "lon": -86.1608,
+      "name": "Masaya Volcano"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 13.4625,
+      "lon": -86.6998,
+      "name": "Somoto Canyon"
+    }
+  ],
   "airport": null,
   "legs": [
     {

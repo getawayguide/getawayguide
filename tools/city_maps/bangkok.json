@@ -1,0 +1,65 @@
+{
+  "slug": "bangkok",
+  "kicker": "Thailand",
+  "city": "Bangkok",
+  "osm": ".tmp/bangkok_osm.json",
+  "article": "Drafts/thailand/field-notes.html",
+  "embed": {
+    "pre": "g Khao San hostels that promise a party vibe but deliver an empty building</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"chiang-mai\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Grand Palace",
+      "cat": "see",
+      "match": "grand palace",
+      "lat": 13.749351,
+      "lon": 100.491864
+    },
+    {
+      "name": "Khao San Road",
+      "cat": "see",
+      "match": "khao san road",
+      "lat": 13.758905,
+      "lon": 100.497275
+    },
+    {
+      "name": "Jim Thompson House",
+      "cat": "see",
+      "match": "jim thompson house",
+      "lat": 13.749227,
+      "lon": 100.528281
+    },
+    {
+      "name": "Chatuchak Weekend Market",
+      "cat": "see",
+      "match": "chatuchak weekend mark",
+      "lat": 13.800265,
+      "lon": 100.551123
+    },
+    {
+      "name": "Victory Monument",
+      "cat": "see",
+      "match": "victory monument",
+      "lat": 13.764931,
+      "lon": 100.538286
+    }
+  ],
+  "center": {
+    "lat": 13.774746,
+    "lon": 100.521494
+  }
+}

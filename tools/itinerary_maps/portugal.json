@@ -67,7 +67,24 @@
       "href": "#sintra"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 41.1579,
+      "lon": -8.6291,
+      "name": "Porto"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 41.1621,
+      "lon": -7.7891,
+      "name": "Douro Valley"
+    }
+  ],
   "airport": null,
   "legs": [
     {

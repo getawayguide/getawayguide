@@ -1,0 +1,44 @@
+{
+  "slug": "sahara",
+  "kicker": "Morocco",
+  "city": "Sahara Desert (Merzouga)",
+  "osm": ".tmp/sahara_osm.json",
+  "article": "Drafts/morocco/field-notes.html",
+  "embed": {
+    "pre": "p far better and still get the fire, the drumming and the staggering stars</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"marrakesh\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Erg Chebbi",
+      "cat": "see",
+      "match": "erg chebbi",
+      "lat": 31.138236,
+      "lon": -3.970775
+    }
+  ],
+  "center": {
+    "lat": 31.138236,
+    "lon": -3.970775
+  },
+  "district_labels": [
+    {
+      "text": "MERZOUGA",
+      "lat": 31.099917,
+      "lon": -4.014088
+    }
+  ]
+}

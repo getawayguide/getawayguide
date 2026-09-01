@@ -1,0 +1,58 @@
+{
+  "slug": "taupo",
+  "kicker": "New Zealand",
+  "city": "Taupo",
+  "osm": ".tmp/taupo_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": " Tongariro hike food the night before, since the shuttle leaves very early</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"wellington\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Tongariro Alpine Crossing",
+      "cat": "see",
+      "match": "tongariro alpine cross",
+      "lat": -39.090326,
+      "lon": 175.651154
+    },
+    {
+      "name": "Huka Falls",
+      "cat": "see",
+      "match": "huka falls",
+      "lat": -38.649725,
+      "lon": 176.089376
+    },
+    {
+      "name": "Hole in One Challenge",
+      "cat": "see",
+      "match": "hole in one challenge",
+      "lat": -38.692358,
+      "lon": 176.071535
+    },
+    {
+      "name": "Mulligans",
+      "cat": "eat",
+      "match": "mulligans",
+      "lat": -38.688966,
+      "lon": 176.069105
+    }
+  ],
+  "center": {
+    "lat": -38.870025,
+    "lon": 175.870265
+  }
+}

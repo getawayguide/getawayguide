@@ -13,3 +13,9 @@ __pycache__/
 .env
 credentials.json
 token.json
+
+# Unshipped country drafts (isolated until a country is published)
+Drafts/
+
+# The re-theme staging tree; the site itself lives at the repo root
+preview/

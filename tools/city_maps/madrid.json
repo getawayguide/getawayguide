@@ -1,0 +1,79 @@
+{
+  "slug": "madrid",
+  "kicker": "Spain",
+  "city": "Madrid",
+  "osm": ".tmp/madrid_osm.json",
+  "article": "Drafts/spain/field-notes.html",
+  "embed": {
+    "pre": "rid stays up famously late, so a central room means you can just walk home</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"seville\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Prado Museum",
+      "cat": "see",
+      "match": "prado museum",
+      "lat": 40.413792,
+      "lon": -3.692041
+    },
+    {
+      "name": "Parque del Retiro",
+      "cat": "see",
+      "match": "parque del retiro",
+      "lat": 40.414946,
+      "lon": -3.683285
+    },
+    {
+      "name": "Royal Palace of Madrid",
+      "cat": "see",
+      "match": "royal palace of madrid",
+      "lat": 40.41674,
+      "lon": -3.713622
+    },
+    {
+      "name": "Plaza Mayor",
+      "cat": "see",
+      "match": "plaza mayor",
+      "lat": 40.419455,
+      "lon": -3.704468
+    },
+    {
+      "name": "Plaza de Cibeles",
+      "cat": "see",
+      "match": "plaza de cibeles",
+      "lat": 40.41942,
+      "lon": -3.692538
+    },
+    {
+      "name": "Mercado de San Miguel",
+      "cat": "eat",
+      "match": "mercado de san miguel",
+      "lat": 40.415374,
+      "lon": -3.709015
+    },
+    {
+      "name": "Oink",
+      "cat": "eat",
+      "match": "oink",
+      "lat": 40.420653,
+      "lon": -3.699635
+    }
+  ],
+  "center": {
+    "lat": 40.417223,
+    "lon": -3.698454
+  }
+}

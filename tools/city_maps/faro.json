@@ -1,0 +1,52 @@
+{
+  "slug": "faro",
+  "kicker": "Portugal",
+  "city": "Faro",
+  "osm": ".tmp/faro_osm.json",
+  "article": "Drafts/portugal/field-notes.html",
+  "embed": {
+    "pre": "ion, so a night here is usually plenty before moving on to Lagos or Lisbon</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"lisbon\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Capela dos Ossos",
+      "cat": "see",
+      "match": "capela dos ossos",
+      "lat": 37.020423,
+      "lon": -7.934736
+    },
+    {
+      "name": "Ria Formosa",
+      "cat": "see",
+      "match": "ria formosa",
+      "lat": 37.068526,
+      "lon": -7.715513
+    },
+    {
+      "name": "Ria Formosa Natural Park",
+      "cat": "see",
+      "match": "ria formosa natural pa",
+      "lat": 37.068526,
+      "lon": -7.715513
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.044474,
+    "lon": -7.825124
+  }
+}

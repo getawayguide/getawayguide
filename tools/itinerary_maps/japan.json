@@ -67,7 +67,48 @@
       "href": "#hiroshima"
     }
   ],
-  "dots": [],
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 35.2338,
+      "lon": 139.1088,
+      "name": "Hakone"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 36.5597,
+      "lon": 136.652,
+      "name": "Kanazawa"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 36.7199,
+      "lon": 139.6982,
+      "name": "Nikko"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 33.5902,
+      "lon": 130.4017,
+      "name": "Fukuoka"
+    },
+    {
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4,
+      "lat": 43.0618,
+      "lon": 141.3545,
+      "name": "Hokkaido"
+    }
+  ],
   "airport": null,
   "legs": [
     {

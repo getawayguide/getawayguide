@@ -1,0 +1,51 @@
+{
+  "slug": "milan",
+  "kicker": "Italy",
+  "city": "Milan",
+  "osm": ".tmp/milan_osm.json",
+  "article": "Drafts/italy/field-notes.html",
+  "embed": {
+    "pre": " is a business city, so weekend hotel rates are often cheaper than midweek</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Duomo di Milano",
+      "cat": "see",
+      "match": "duomo di milano",
+      "lat": 45.464167,
+      "lon": 9.191612
+    },
+    {
+      "name": "Galleria Vittorio Emanuele II",
+      "cat": "see",
+      "match": "galleria vittorio eman",
+      "lat": 45.46568,
+      "lon": 9.190027
+    },
+    {
+      "name": "Brera",
+      "cat": "see",
+      "match": "brera",
+      "lat": 45.473547,
+      "lon": 9.188481
+    }
+  ],
+  "center": {
+    "lat": 45.468857,
+    "lon": 9.190046
+  }
+}

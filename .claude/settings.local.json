@@ -20,7 +20,18 @@
       "PowerShell(& 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' 'C:\\\\Users\\\\kevin\\\\AppData\\\\Local\\\\Temp\\\\find_sa_journal.py' 2>&1)",
       "PowerShell(git -C \"c:\\\\Users\\\\kevin\\\\OneDrive\\\\Documents\\\\Travel Blog\" status --short 2>&1)",
       "Bash(py tools/screenshot.py brazil/field-notes.html)",
-      "Bash(py tools/screenshot.py el-salvador/el-salvador-itinerary.html)"
+      "Bash(py tools/screenshot.py el-salvador/el-salvador-itinerary.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(PYTHONIOENCODING=utf-8 /c/Users/kevin/AppData/Local/Python/bin/python.exe .tmp/map_debug.py)",
+      "Bash(cd \"c:/Users/kevin/OneDrive/Documents/Travel Blog\" && echo \"=== all docx in repo + .tmp ===\"; find . -iname \"*.docx\" -not -path \"./.git/*\" 2>/dev/null; echo \"=== search wider \\(OneDrive Documents\\) ===\"; find \"/c/Users/kevin/OneDrive/Documents\" -maxdepth 2 -iname \"*RTW*\" 2>/dev/null | head; find \"/c/Users/kevin/OneDrive/Documents\" -maxdepth 2 -iname \"*Turkey*\" -o -iname \"*Croatia*\" 2>/dev/null | head)",
+      "Read(//c/Users/kevin/OneDrive/Documents/**)",
+      "Bash(PYTHONIOENCODING=utf-8 /c/Users/kevin/AppData/Local/Python/bin/python.exe .tmp/build_drafts.py)",
+      "Bash(PYTHONIOENCODING=utf-8 /c/Users/kevin/AppData/Local/Python/bin/python.exe tools/screenshot.py Drafts/guatemala/field-notes.html)",
+      "Bash(PYTHONIOENCODING=utf-8 /c/Users/kevin/AppData/Local/Python/bin/python.exe tools/screenshot.py Drafts/nicaragua/field-notes.html)",
+      "Bash(PYTHONIOENCODING=utf-8 \"/c/Users/kevin/AppData/Local/Python/bin/python.exe\" tools/publish_country.py egypt --name Egypt --iso2 eg --continent africa --dry-run)",
+      "Bash(PYTHONIOENCODING=utf-8 \"/c/Users/kevin/AppData/Local/Python/bin/python.exe\" tools/lint_site.py --quiet)"
     ]
   }
 }

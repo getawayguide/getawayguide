@@ -1,0 +1,94 @@
+{
+  "slug": "havana",
+  "kicker": "Cuba",
+  "city": "Havana",
+  "osm": ".tmp/havana_osm.json",
+  "article": "Drafts/cuba/field-notes.html",
+  "embed": {
+    "pre": "es (drivers, restaurant tips, currency questions) for the rest of the trip</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"cienfuegos\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Old Havana",
+      "cat": "see",
+      "match": "old havana",
+      "lat": 23.136075,
+      "lon": -82.350025
+    },
+    {
+      "name": "Malecón",
+      "cat": "see",
+      "match": "malecón",
+      "lat": 23.144075,
+      "lon": -82.378535
+    },
+    {
+      "name": "Capitolio",
+      "cat": "see",
+      "match": "capitolio",
+      "lat": 23.135272,
+      "lon": -82.359706
+    },
+    {
+      "name": "Iberostar Parque Central",
+      "cat": "see",
+      "match": "iberostar parque centr",
+      "lat": 23.138597,
+      "lon": -82.35846
+    },
+    {
+      "name": "Museo de la Revolución",
+      "cat": "see",
+      "match": "museo de la revolución",
+      "lat": 23.14156,
+      "lon": -82.356688
+    },
+    {
+      "name": "Somos",
+      "cat": "eat",
+      "match": "somos",
+      "lat": 23.138366,
+      "lon": -82.351099
+    },
+    {
+      "name": "O'Reilly 304",
+      "cat": "eat",
+      "match": "o'reilly 304",
+      "lat": 23.139339,
+      "lon": -82.353306
+    },
+    {
+      "name": "La Bodeguita del Medio",
+      "cat": "eat",
+      "match": "la bodeguita del medio",
+      "lat": 23.140839,
+      "lon": -82.352279
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 23.139674,
+    "lon": -82.36428
+  },
+  "day_trips": [
+    {
+      "name": "Viñales",
+      "match": "viñales",
+      "time": "Full Day"
+    }
+  ]
+}

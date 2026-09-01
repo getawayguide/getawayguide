@@ -1,0 +1,147 @@
+{
+  "slug": "tokyo",
+  "kicker": "Japan",
+  "city": "Tokyo",
+  "osm": ".tmp/tokyo_osm.json",
+  "article": "Drafts/japan/field-notes.html",
+  "embed": {
+    "pre": " basic (mine creaked all night), but the location and price make up for it</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"kyoto\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Shibuya Crossing",
+      "cat": "see",
+      "match": "shibuya crossing",
+      "lat": 35.659495,
+      "lon": 139.700498
+    },
+    {
+      "name": "TeamLab Planets",
+      "cat": "see",
+      "match": "teamlab planets",
+      "lat": 35.64938,
+      "lon": 139.789728
+    },
+    {
+      "name": "Senso-ji Temple",
+      "cat": "see",
+      "match": "senso-ji temple",
+      "lat": 35.713403,
+      "lon": 139.795526
+    },
+    {
+      "name": "Harajuku",
+      "cat": "see",
+      "match": "harajuku",
+      "lat": 35.668705,
+      "lon": 139.705336
+    },
+    {
+      "name": "Meiji Jingu Shrine",
+      "cat": "see",
+      "match": "meiji jingu shrine",
+      "lat": 35.674842,
+      "lon": 139.699627
+    },
+    {
+      "name": "Akihabara",
+      "cat": "see",
+      "match": "akihabara",
+      "lat": 35.701893,
+      "lon": 139.774368
+    },
+    {
+      "name": "Tokyo City View",
+      "cat": "see",
+      "match": "tokyo city view",
+      "lat": 35.66043,
+      "lon": 139.729055
+    },
+    {
+      "name": "Golden Gai",
+      "cat": "see",
+      "match": "golden gai",
+      "lat": 35.69399,
+      "lon": 139.7047
+    },
+    {
+      "name": "Imperial Palace",
+      "cat": "see",
+      "match": "imperial palace",
+      "lat": 35.683847,
+      "lon": 139.750686
+    },
+    {
+      "name": "Ichiran Ramen",
+      "cat": "eat",
+      "match": "ichiran ramen",
+      "lat": 35.667922,
+      "lon": 139.705209
+    },
+    {
+      "name": "Sushi Zanmai",
+      "cat": "eat",
+      "match": "sushi zanmai",
+      "lat": 35.698378,
+      "lon": 139.705239
+    },
+    {
+      "name": "Kura Sushi",
+      "cat": "eat",
+      "match": "kura sushi",
+      "lat": 35.659884,
+      "lon": 139.699597
+    },
+    {
+      "name": "Coco Ichibanya",
+      "cat": "eat",
+      "match": "coco ichibanya",
+      "lat": 35.694118,
+      "lon": 139.814931
+    },
+    {
+      "name": "Tsukiji Outer Market",
+      "cat": "eat",
+      "match": "tsukiji outer market",
+      "lat": 35.665388,
+      "lon": 139.770473
+    }
+  ],
+  "center": {
+    "lat": 35.681392,
+    "lon": 139.757264
+  },
+  "day_trips": [
+    {
+      "name": "Mount Takao",
+      "match": "mount takao",
+      "time": "Full Day"
+    },
+    {
+      "name": "Don Quijote",
+      "match": "don quijote",
+      "time": "Half Day"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "SHIBUYA",
+      "lat": 35.663711,
+      "lon": 139.697694
+    }
+  ]
+}

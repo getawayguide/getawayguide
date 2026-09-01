@@ -1,0 +1,73 @@
+{
+  "slug": "auckland",
+  "kicker": "New Zealand",
+  "city": "Auckland",
+  "osm": ".tmp/auckland_osm.json",
+  "article": "Drafts/new-zealand/field-notes.html",
+  "embed": {
+    "pre": "ight, this is a nice 4-star in the center; I got a great rate using points</li>\n    </ul>\n",
+    "post": "  </div>\n  <div class=\"fn-section\" id=\"coromandel\""
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Mount Eden",
+      "cat": "see",
+      "match": "mount eden",
+      "lat": -36.881647,
+      "lon": 174.761999
+    },
+    {
+      "name": "Ponsonby",
+      "cat": "see",
+      "match": "ponsonby",
+      "lat": -36.850192,
+      "lon": 174.742149
+    },
+    {
+      "name": "Remedy Coffee",
+      "cat": "eat",
+      "match": "remedy coffee",
+      "lat": -36.850627,
+      "lon": 174.764253
+    },
+    {
+      "name": "Mexican Cafe",
+      "cat": "eat",
+      "match": "mexican cafe",
+      "lat": -36.848245,
+      "lon": 174.763059
+    },
+    {
+      "name": "Grand Millennium Auckland",
+      "cat": "stay",
+      "match": "grand millennium auckl",
+      "lat": -36.852951,
+      "lon": 174.760775
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": -36.864946,
+    "lon": 174.753201
+  },
+  "day_trips": [
+    {
+      "name": "Waiheke Island",
+      "match": "waiheke island",
+      "time": "Half Day"
+    }
+  ]
+}
