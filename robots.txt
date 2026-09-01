@@ -1,4 +1,7 @@
 User-agent: *
 Disallow: /editor.html
+# the previous design, kept for comparison only. Every page in here is a
+# duplicate of a live one, so it must never be indexed.
+Disallow: /archive/
 
 Sitemap: https://getawayguide.io/sitemap.xml
