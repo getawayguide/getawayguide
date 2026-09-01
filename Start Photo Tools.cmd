@@ -1,7 +1,8 @@
 @echo off
 REM Starts the two background helpers the photo tools need, then gets out of
 REM the way. Safe to double-click any time - it skips whatever is already up.
-REM   * photo server    (port 5003): photos for editor.html (editor + library)
+REM   * photo server    (port 5003): photos for editor.html (editor + library)
+REM   * hero picker     (port 5004): choosing hero banners, opens from the editor
 REM   * backup watcher: pulls full-res originals for each new Shared Album
 cd /d "%~dp0"
 
@@ -18,6 +19,15 @@ if errorlevel 1 (
   start "" "%PYW%" -u "tools\photo_editor.py" 1>>"%USERPROFILE%\Backup\_meta\editor.log" 2>>"%USERPROFILE%\Backup\_meta\editor.err"
 ) else (
   echo Photo server already running.
+)
+
+netstat -an | find "127.0.0.1:5004" | find "LISTENING" >nul
+if errorlevel 1 (
+  echo Starting hero picker...
+  if not exist "%USERPROFILE%\Backup\_meta" mkdir "%USERPROFILE%\Backup\_meta"
+  start "" "%PYW%" -u "tools\hero_picker.py" 1>>"%USERPROFILE%\Backup\_meta\heroes.log" 2>>"%USERPROFILE%\Backup\_meta\heroes.err"
+) else (
+  echo Hero picker already running.
 )
 
 wmic process where "name='python.exe' or name='pythonw.exe'" get commandline 2>nul | find "photo_backup" >nul
@@ -40,6 +50,6 @@ REM handles slow hydrations itself (it waits them out instead of killing
 REM them) and does not need an external restarter.
 
 echo.
-echo Ready. Opening the editor (photo library lives inside it now)...
+echo Ready. Opening the editor (photo library and hero picker live inside it now)...
 timeout /t 3 /nobreak >nul
 start "" "%~dp0editor.html"
