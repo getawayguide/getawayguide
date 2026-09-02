@@ -3768,12 +3768,34 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
    it is evenly spaced either way. */
 .fn-city-hd {
   display:flex !important; flex-wrap:wrap !important;
-  align-items:baseline !important; gap:9px 14px !important;
+  align-items:flex-end !important; gap:12px 14px !important;
   /* an earlier rule zeroes this; the badge is a filled block whose box reaches
      the padding edge, so without it the badge sits 2px off the rule */
   padding-bottom:14px !important; }
 .fn-city-hd h2 { flex:0 1 auto !important; }
+/* the adjacent-sibling form is deliberate. A generic ".article-body h2 +
+   .fn-time" at line 2938 sets margin-top:18px !important and outranks a plain
+   ".fn-city-hd .fn-time" on specificity, so the pill kept an 18px margin the
+   flex gap then added to: the wrapped gap measured 33px against 16px below. */
+.fn-city-hd h2 + .fn-time,
 .fn-city-hd .fn-time { flex:0 1 auto !important; margin-top:0 !important; }
+
+/* Two things the row has to get right, and they pull in opposite directions.
+   Baseline alignment hung the title 8px clear of the pill's lower edge, and
+   when the pill wrapped it left 30px above the pill against 15px below it.
+
+   The type's own metrics are the cause: the h2's box runs ~9px past the
+   baseline (descender plus half-leading), so aligning boxes, baselines or
+   anything else in between never lands the title's VISIBLE bottom on the
+   pill's. Aligning the boxes at flex-end and then lifting the pill by exactly
+   that 9px does, and it costs no transform, so the rule below still sits where
+   layout puts it.
+
+   :has() picks out the rows that actually carry a pill, so the ~200 bare
+   headings keep their existing 14px to the rule. */
+.fn-city-hd:has(.fn-time) { padding-bottom:6px !important; }
+.fn-city-hd h2 + .fn-time,
+.fn-city-hd .fn-time { margin-bottom:9px !important; }
 
 /* ==========================================================================
    THE FACT CARDS -- option D, label and value
@@ -3788,13 +3810,13 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   background:transparent !important; padding:14px 0 !important;
   border:0 !important; border-bottom:1px solid var(--line-soft) !important; }
 .f-card:last-child { border-bottom:0 !important; }
-.f-t {
+.f-grid .f-t {
   font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif
     !important;
   font-size:10px !important; font-weight:700 !important;
   letter-spacing:.15em !important; text-transform:uppercase !important;
   color:var(--accent) !important; margin-bottom:5px !important; }
-.f-b {
+.f-grid .f-b {
   font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif
     !important;
   font-size:15px !important; line-height:1.6 !important;
@@ -3811,37 +3833,19 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 }
 
 /* ==========================================================================
-   THE FACT BLOCK -- option D, on the variant the page actually shows.
-   The itinerary carries seven fact variants (a-g) and <body data-facts="c">
-   selects the third, which is .f-icons > .f-ic. The first pass styled .f-grid
-   and .f-card, which belong to variant "a" and are display:none -- the reason
-   nothing changed. The .f-t / .f-b typography was landing all along, because
-   those class names are shared across the variants.
-   ========================================================================== */
-.f-icons {
-  display:grid !important; gap:0 !important;
-  background:transparent !important; border:0 !important; }
-.f-ic {
-  background:transparent !important; border:0 !important;
-  border-bottom:1px solid var(--line-soft) !important;
-  padding:15px 0 !important; margin:0 !important;
-  display:grid !important; grid-template-columns:auto 1fr !important;
-  column-gap:11px !important; align-items:start !important; }
-.f-ic:last-child { border-bottom:0 !important; }
-/* the icon keeps its place beside the label rather than above it */
-.f-ic .ig { grid-row:1; grid-column:1; color:var(--accent) !important;
-  opacity:.75; display:flex; align-items:center; height:15px; }
-.f-ic .f-t { grid-row:1; grid-column:2; margin:0 0 5px !important; }
-.f-ic .f-b { grid-row:2; grid-column:2; }
-@media (min-width:820px) {
-  .f-icons { grid-template-columns:1fr 1fr !important; column-gap:44px !important; }
-  .f-ic:nth-last-child(2):nth-child(odd) { border-bottom:0 !important; }
-}
+   THE FACT BLOCK -- variant d, the one with the call-outs.
+   The itinerary carries seven fact variants (a-g) and <body data-facts> picks
+   one. "D" names the VARIANT, not a treatment: d is .f-icons > .f-ic.f-lead,
+   which leads each cell with a big serif value ("Nov-Apr", "$30-$50") above
+   the label. An earlier pass restyled .f-icons to look like the badge sheet's
+   option D, which is a different sheet entirely -- that is now gone, and the
+   variant's own styling (lines 257 and 516) is what renders.
 
-@media (max-width:819px) {
-  /* the artifact's own rule keeps two columns down to 390, where each cell is
-     171px and a sentence breaks every two or three words */
-  .f-icons { grid-template-columns:1fr !important; }
+   The one thing kept: two columns at 390 leave each cell 171px, and a call-out
+   like "$30-$50" plus a sentence breaks every two or three words there.
+   ========================================================================== */
+@media (max-width:560px) {
+  .f-icons { grid-template-columns:1fr; }
 }
 
 /* ---- the hero's opening slide introduces the site rather than an article, so
