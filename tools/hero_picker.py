@@ -14,6 +14,7 @@ the strip fills quickly now.
 """
 import hashlib
 import json
+import re
 import statistics
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -35,6 +36,18 @@ PICKS = SITE / ".tmp" / "hero_picks.json"
 STARS = SITE / ".tmp" / "hero_stars.json"
 CACHE.mkdir(parents=True, exist_ok=True)
 EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif"}
+
+# The shared-album sync leaves orphaned video poster frames behind, named
+# <hash>.jpgthumb_00001.jpg -- 670 of them, all 480px, none with an original in
+# its album. They are .jpg, so an extension filter alone lets them through and
+# they show up as unusable tiles. Videos are already excluded by extension.
+THUMB_RE = re.compile(r"\.[A-Za-z0-9]+thumb_\d+\.[A-Za-z0-9]+$")
+
+
+def is_stray_thumb(name):
+    """True for a sync artifact that can never be used as a photo."""
+    return bool(THUMB_RE.search(str(name)))
+
 
 # The hero is a FIXED HEIGHT inside a viewport of whatever width, so its shape
 # is not a constant: 1440 gives 2.12:1 and a 1920 monitor gives 2.82:1 off the
@@ -252,7 +265,8 @@ def photos():
             warm(folder.name, saved["rows"])
             return jsonify(saved["rows"])
     files = [f for f in sorted(folder.rglob("*"))
-             if f.suffix.lower() in EXT and f.is_file()]
+             if f.suffix.lower() in EXT and f.is_file()
+             and not is_stray_thumb(f.name)]
     rows = [r for r in POOL.map(measure, files) if r]
     rows.sort(key=lambda r: r["name"])
     _PHOTO_CACHE[folder.name] = (stamp, rows)

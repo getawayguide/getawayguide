@@ -63,6 +63,18 @@ THUMBS.mkdir(parents=True, exist_ok=True)
 SRC_CFG = ROOT / "tools" / "photo_editor_sources.json"
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"}
+
+# The shared-album sync leaves orphaned video poster frames behind, named
+# <hash>.jpgthumb_00001.jpg -- 670 of them, all 480px, none with an original in
+# its album. They are .jpg, so an extension filter alone lets them through and
+# they show up as unusable tiles. Videos are already excluded by extension.
+THUMB_RE = re.compile(r"\.[A-Za-z0-9]+thumb_\d+\.[A-Za-z0-9]+$")
+
+
+def is_stray_thumb(name):
+    """True for a sync artifact that can never be used as a photo."""
+    return bool(THUMB_RE.search(str(name)))
+
 VOID_TAGS = {"img", "br", "hr", "meta", "link", "input", "source", "wbr", "area", "base", "col", "embed", "track"}
 # gen_mobile_jpg runs between the wrap and the webp step: add_picture_mobile
 # leaves the <img> fallback pointing at the full-size original, and
@@ -869,7 +881,8 @@ def api_browse():
                 if e.is_dir():
                     if e.name != "web" or Path(p) != IMAGES:
                         dirs.append(e.name)
-                elif os.path.splitext(e.name)[1].lower() in IMG_EXTS:
+                elif (os.path.splitext(e.name)[1].lower() in IMG_EXTS
+                      and not is_stray_thumb(e.name)):
                     try:
                         st = e.stat()
                         photos.append((st.st_mtime, e.name))
@@ -1343,7 +1356,8 @@ def api_backup_status():
         # and the watcher's completeness gate.
         files = [p for p in d.iterdir()
                  if p.is_file() and not p.name.startswith("_manifest")
-                 and p.suffix.lower() in IMG_EXTS] if d.is_dir() else []
+                 and p.suffix.lower() in IMG_EXTS
+                 and not is_stray_thumb(p.name)] if d.is_dir() else []
         a["name"] = n
         a["onDisk"] = len(files)
         a["mb"] = round(sum(p.stat().st_size for p in files) / 1e6, 1)
@@ -1364,7 +1378,8 @@ def api_backup_status():
                 if not sd.is_dir() or _base(sd.name) != n:
                     continue
                 for p in sd.iterdir():
-                    if p.is_file() and p.suffix.lower() in IMG_EXTS:
+                    if (p.is_file() and p.suffix.lower() in IMG_EXTS
+                            and not is_stray_thumb(p.name)):
                         stems.add(_re.sub(r"_\d+$", "", p.stem))
         a["inAlbum"] = len(stems)
         out.append(a)
@@ -1396,7 +1411,8 @@ def api_backup_browse():
     photos = []
     for p in sorted(d.iterdir(), key=lambda x: x.name.lower()):
         if (not p.is_file() or p.name.startswith("_manifest")
-                or p.suffix.lower() not in IMG_EXTS):
+                or p.suffix.lower() not in IMG_EXTS
+                or is_stray_thumb(p.name)):
             continue
         m = man.get(p.name, {})
         pick = picks.get(f"{album}/{p.name}")
