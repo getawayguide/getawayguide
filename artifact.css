@@ -3258,6 +3258,15 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
 .hero, .gg-hero-ready { background:#1B2620; }
 .hero .slide img { background:#1B2620; }
 
+/* The Nicaragua hero is framed differently on each tier: the desktop crop
+   holds the headland on the right, and on a phone the same crop pushed the
+   subject out of the visible strip. An inline object-position cannot carry a
+   media query, so this one lives here rather than on the tag like the others. */
+.hero .slide img.hp-nicaragua { object-position:85% 65%; }
+@media (max-width:768px) {
+  .hero .slide img.hp-nicaragua { object-position:43% 2%; }
+}
+
 /* ---- maps sit on the page, not in a box ---- */
 .itinerary-map, figure.itinerary-map, .citymap-fig, .route-map, .bm-map,
 .country-hero-map { border:0 !important; outline:0 !important; box-shadow:none !important; }
