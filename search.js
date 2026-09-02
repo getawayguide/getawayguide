@@ -109,8 +109,11 @@
     if (countries.length) {
       html += group("Countries", countries.length);
       countries.forEach(function (c) {
-        html += row(PREFIX + c.url, thumbImg(c) + flagImg(c.flag) +
-          '<span class="s-main">' + highlight(c.name, q) + "</span>" +
+        // the flag sits AFTER the name, inside the text block, so a country
+        // title starts at the same x as an article title below it. Leading with
+        // it pushed every country name in by the flag's width.
+        html += row(PREFIX + c.url, thumbImg(c) +
+          '<span class="s-main">' + highlight(c.name, q) + flagImg(c.flag) + "</span>" +
           '<span class="s-tag">' + (c.kind === "guide" ? "Full guide" : "Field notes") + "</span>");
       });
     }

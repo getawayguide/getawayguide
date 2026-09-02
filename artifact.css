@@ -3613,25 +3613,36 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 .s-row.s-mention { flex-wrap:wrap !important; }
 .s-row.s-mention .s-snip { flex:1 1 100% !important; }
 
-/* ---- the search field opens outward BELOW the bar, not across it.
-       Expanding it in place put a 240px input on top of DESTINATIONS and
-       ABOUT ME: the nav stayed visible, which is what was asked for, but the
-       typed text collided with the links. Dropping it a row keeps every link
-       readable and gives the field room to be a real field. ---- */
+/* ---- the search field is a LINE, not a box.
+       It opens outward from the glyph, the way it did before, but one row
+       below the bar rather than across it: expanded in place it put the typed
+       text on top of DESTINATIONS and ABOUT ME. Transparent, with a single
+       rule under it, so it reads as the same object it always was. ---- */
+nav .nav-search { position:relative; }
 nav .nav-search.active {
   position:absolute !important; top:100% !important; right:96px !important;
-  left:auto !important; margin-top:8px !important;
-  background:#fff !important; border:1px solid var(--line) !important;
-  box-shadow:0 14px 34px rgba(28,40,33,.12) !important;
-  padding:10px 14px !important; z-index:1002 !important;
-  display:flex !important; align-items:center !important; gap:.5rem !important; }
+  left:auto !important; margin-top:6px !important;
+  background:transparent !important; border:0 !important;
+  border-bottom:1px solid var(--ink) !important;
+  box-shadow:none !important; border-radius:0 !important;
+  padding:4px 2px 6px !important; z-index:1002 !important;
+  display:flex !important; align-items:center !important; gap:.55rem !important; }
 nav .nav-search.active .nav-search-q {
-  width:280px !important; opacity:1 !important; color:var(--ink) !important; }
-body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q {
-  color:var(--ink) !important; }
+  width:260px !important; opacity:1 !important; background:transparent !important;
+  border:0 !important; color:var(--ink) !important; }
+/* over the hero the line and the glyph go white, like the rest of that nav */
+body.gg-home nav:not(.pinned) .nav-search.active {
+  border-bottom-color:rgba(255,255,255,.85) !important; }
+body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q,
+body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
+  color:#fff !important; }
+/* the links stay put and stay readable */
+nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
+  opacity:1 !important; pointer-events:auto !important; }
 @media (max-width:768px) {
   nav .nav-search.active { right:24px !important; left:24px !important; }
   nav .nav-search.active .nav-search-q { width:100% !important; }
+}
 }
 
 /* the results panel starts below the field, not behind it. search.js puts
@@ -3639,3 +3650,73 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q {
    its own panel a row lower now, so the results clear it. */
 .s-modal { top:120px !important; }
 @media (max-width:768px) { .s-modal { top:118px !important; } }
+
+/* ==========================================================================
+   MOBILE PASS 3
+   ========================================================================== */
+
+/* theme.css lists .rrow-desc in a big `font-family: var(--display)!important`
+   block. A bare `.rrow-desc` here ties it and the winner comes down to source
+   order, which was not reliable. Two classes settles it: a description under a
+   name is body copy and takes the reading face, on every page and width. */
+.grp .rrow-desc, .grp-rows .rrow-desc, .rrow .rrow-desc {
+  font-family:"Hanken Grotesk", -apple-system, "Segoe UI", Helvetica, Arial,
+    sans-serif !important;
+  font-weight:400 !important; }
+
+@media (max-width:768px) {
+  /* THE HERO. The copy block sat at 244 of a 470px hero with 14px under the
+     kicker and 24px over the button, which read as loose in the middle and
+     high on the photograph. It drops toward the lower third and the three
+     lines pull together. Desktop is untouched. */
+  /* .hero-copy is absolutely positioned at bottom:62px, so padding INSIDE it
+     grows the block upward: adding 52px moved the title 34px HIGHER, the
+     opposite of what was wanted. The block sits lower by lowering its own
+     offset instead, and carries no internal padding. */
+  .hero .hero-copy { bottom:44px !important; padding-bottom:0 !important; }
+  .hero .hero-copy .kick { margin-bottom:9px !important; }
+  .hero .hero-h { font-size:28px !important; line-height:1.12 !important; }
+  .hero .cta { margin-top:16px !important; }
+
+  /* the drawer's rows were 39px, which is tight for a thumb and tighter still
+     for the eye; 12px of padding takes them to ~47 */
+  .mobile-nav-links > li > a, .mnav-parent {
+    padding-top:12px !important; padding-bottom:12px !important; }
+  .mobile-nav-continents a { padding-top:9px !important;
+    padding-bottom:9px !important; }
+  .mobile-nav-links > li { margin-bottom:2px; }
+
+  /* "How this started" opened on 58px of container padding, which is a
+     desktop measure carried straight down to a 390px screen */
+  .measure { padding-top:30px !important; }
+
+  /* "Read Notes" on a destination card was 74% white at 12px: on a photograph
+     that is barely there, and on a touch screen it is the only thing saying
+     the card is a link. Full white, at the size desktop uses. */
+  .art-card-btn {
+    color:#fff !important; border-color:rgba(255,255,255,.9) !important;
+    font-size:9.5px !important; padding:5px 11px !important; }
+}
+
+/* ---- the result row's flag.
+       32x24 is its natural size, so asking for 20x15 upscaled it on a 2x
+       screen and it went soft; 16x12 lets one source pixel cover two device
+       pixels exactly. The 1px box-shadow search.js gives it was the box
+       around it. It now sits after the name, so every title in the panel
+       starts at the same x whether or not its row has a flag. ---- */
+.s-row .s-flag {
+  width:16px !important; height:12px !important;
+  box-shadow:none !important; border-radius:0 !important;
+  margin-left:8px !important; vertical-align:-1px;
+  opacity:.9; }
+/* .s-main must stay normal text flow. Making it a flex container turned every
+   <mark> the highlighter injects into its own flex item, so a matched title
+   broke into fragments with gaps between them. The flag is an inline <img> and
+   sits after the last word on its own. */
+.s-row .s-main { display:block !important; text-align:left !important; }
+
+/* the results panel starts below the field. search.js puts .s-modal at
+   top:4.35rem, which sat under the old in-bar field; the field is a row lower
+   now, so the panel clears it. */
+.s-modal { top:112px !important; }
+@media (max-width:768px) { .s-modal { top:110px !important; } }

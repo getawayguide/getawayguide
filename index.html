@@ -194,6 +194,37 @@ document.querySelectorAll('.post-card,.home-dest-card,.about-strip,.newsletter')
   dots.forEach(function (d, n) { d.addEventListener('click', function () { show(n); play(); }); });
   document.addEventListener('visibilitychange', function () { document.hidden ? stop() : play(); });
   if (slides.length > 1) { play(); }
+
+  // Tap through the hero the way stories work: the right side advances, the
+  // left third goes back. Touch screens only, and never when the tap landed on
+  // the headline, the button or a dot -- those are links and must still follow.
+  // The auto-rotate restarts after a tap so the slide you chose gets a full
+  // turn instead of flipping a moment later.
+  var heroEl = document.getElementById('hero');
+  if (heroEl && slides.length > 1 &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+    heroEl.addEventListener('click', function (ev) {
+      if (ev.target.closest('a, button, .dots, .hero-copy')) { return; }
+      var box = heroEl.getBoundingClientRect();
+      show(ev.clientX - box.left < box.width * 0.33 ? i - 1 : i + 1);
+      play();
+    });
+    var x0 = null, y0 = null;
+    heroEl.addEventListener('touchstart', function (ev) {
+      var t = ev.changedTouches[0]; x0 = t.clientX; y0 = t.clientY;
+    }, { passive: true });
+    heroEl.addEventListener('touchend', function (ev) {
+      if (x0 === null) { return; }
+      var t = ev.changedTouches[0];
+      var dx = t.clientX - x0, dy = t.clientY - y0;
+      // mostly horizontal and a real distance, so a scroll is never mistaken for one
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+        show(dx < 0 ? i + 1 : i - 1);
+        play();
+      }
+      x0 = y0 = null;
+    }, { passive: true });
+  }
   var nav = document.querySelector('nav');
   function pin() { if (nav) { nav.classList.toggle('pinned', window.scrollY > 2); } }
   window.addEventListener('scroll', pin, { passive: true });
