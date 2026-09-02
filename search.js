@@ -96,11 +96,20 @@
 
     function group(t, c) { return '<div class="s-group-h">' + esc(t) + (c ? ' <span class="s-count">' + c + "</span>" : "") + "</div>"; }
     function row(href, inner, cls) { return '<a class="s-row ' + (cls || "") + '" href="' + href + '">' + inner + "</a>"; }
+    // The photo on a result row. build_search_thumbs.py writes `thumb` (and the
+    // background-position the card uses) onto every country and article in the
+    // index; a row without one simply gets no picture rather than a broken box.
+    function thumbImg(e) {
+      if (!e || !e.thumb) return "";
+      return '<span class="s-thumb"><img loading="lazy" decoding="async" ' +
+             'width="80" height="60" alt="" src="' + PREFIX + esc(e.thumb) + '"' +
+             (e.pos ? ' style="object-position:' + esc(e.pos) + '"' : "") + "></span>";
+    }
 
     if (countries.length) {
       html += group("Countries", countries.length);
       countries.forEach(function (c) {
-        html += row(PREFIX + c.url, flagImg(c.flag) +
+        html += row(PREFIX + c.url, thumbImg(c) + flagImg(c.flag) +
           '<span class="s-main">' + highlight(c.name, q) + "</span>" +
           '<span class="s-tag">' + (c.kind === "guide" ? "Full guide" : "Field notes") + "</span>");
       });
@@ -108,7 +117,7 @@
     if (articles.length) {
       html += group("Articles", articles.length);
       articles.forEach(function (a) {
-        html += row(PREFIX + a.url, '<span class="s-main">' + highlight(a.title, q) + "</span>" +
+        html += row(PREFIX + a.url, thumbImg(a) + '<span class="s-main">' + highlight(a.title, q) + "</span>" +
           (a.tag ? '<span class="s-tag">' + esc(a.tag) + "</span>" : ""));
       });
     }

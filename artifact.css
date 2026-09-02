@@ -3584,3 +3584,58 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 }
 
 
+
+/* ---- the photo on a search result row. search.js injects its own stylesheet
+       at runtime, so this needs !important to reach it (see the search block
+       above). The row becomes a two-column object: picture, then the text. ---- */
+.s-thumb { flex:none !important; display:block !important;
+  width:80px !important; height:60px !important; overflow:hidden !important;
+  background:var(--line-soft); }
+.s-thumb img { width:100% !important; height:100% !important;
+  object-fit:cover !important; display:block !important; }
+/* the flag sits with the name now that a photo leads the row */
+.s-row .s-flag { margin-left:2px !important; }
+/* a mention has no photo, so its text starts where the others' text does */
+.s-row.s-mention { padding-left:1.35rem !important; }
+@media (max-width:768px) {
+  .s-thumb { width:64px !important; height:48px !important; }
+}
+
+/* ---- a search result is one row, not three.
+       search.js sets .s-row{flex-wrap:wrap}, which was fine for flag + name
+       but wraps the moment an 80px photo leads the row: the title dropped to
+       a second line and the tag to a third. The photo is fixed, the text
+       block takes the rest, and only the text inside it wraps. ---- */
+.s-row { flex-wrap:nowrap !important; align-items:center !important;
+  gap:.7rem !important; }
+.s-row .s-main { min-width:0 !important; flex:1 1 auto !important; }
+.s-row .s-tag { flex:0 0 auto !important; }
+.s-row.s-mention { flex-wrap:wrap !important; }
+.s-row.s-mention .s-snip { flex:1 1 100% !important; }
+
+/* ---- the search field opens outward BELOW the bar, not across it.
+       Expanding it in place put a 240px input on top of DESTINATIONS and
+       ABOUT ME: the nav stayed visible, which is what was asked for, but the
+       typed text collided with the links. Dropping it a row keeps every link
+       readable and gives the field room to be a real field. ---- */
+nav .nav-search.active {
+  position:absolute !important; top:100% !important; right:96px !important;
+  left:auto !important; margin-top:8px !important;
+  background:#fff !important; border:1px solid var(--line) !important;
+  box-shadow:0 14px 34px rgba(28,40,33,.12) !important;
+  padding:10px 14px !important; z-index:1002 !important;
+  display:flex !important; align-items:center !important; gap:.5rem !important; }
+nav .nav-search.active .nav-search-q {
+  width:280px !important; opacity:1 !important; color:var(--ink) !important; }
+body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q {
+  color:var(--ink) !important; }
+@media (max-width:768px) {
+  nav .nav-search.active { right:24px !important; left:24px !important; }
+  nav .nav-search.active .nav-search-q { width:100% !important; }
+}
+
+/* the results panel starts below the field, not behind it. search.js puts
+   .s-modal at top:4.35rem, which was under the old inline field; the field is
+   its own panel a row lower now, so the results clear it. */
+.s-modal { top:120px !important; }
+@media (max-width:768px) { .s-modal { top:118px !important; } }
