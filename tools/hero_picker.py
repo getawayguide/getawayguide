@@ -36,10 +36,30 @@ STARS = SITE / ".tmp" / "hero_stars.json"
 CACHE.mkdir(parents=True, exist_ok=True)
 EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif"}
 
-# the shapes the site actually cuts, measured off the built preview at 1440
-SHAPES = {"home": 1440 / 680,       # the home page's rotating hero
-          "article": 1440 / 560,    # the article banner hero
-          "wide": 16 / 9}           # plain 16:9, for comparison
+# The hero is a FIXED HEIGHT inside a viewport of whatever width, so its shape
+# is not a constant: 1440 gives 2.12:1 and a 1920 monitor gives 2.82:1 off the
+# same 680px. Judging a crop at 1440 when the screen is 1920 shows a frame
+# noticeably taller than the one that will exist. Heights are read off the
+# live site; the ratio is computed per width.
+SHAPE_H = {"home": 680, "article": 560}
+SHAPE_H_PHONE = {"home": 470, "article": 470}
+DEFAULT_VW = 1440
+
+
+def shape_ratio(shape="home", vw=DEFAULT_VW):
+    """The aspect the site cuts for this hero at this viewport width."""
+    if shape == "wide":
+        return 16 / 9
+    try:
+        vw = max(320, min(3840, int(vw)))
+    except (TypeError, ValueError):
+        vw = DEFAULT_VW
+    h = (SHAPE_H_PHONE if vw <= 768 else SHAPE_H).get(shape, SHAPE_H["home"])
+    return vw / h
+
+
+SHAPES = {"home": shape_ratio("home"), "article": shape_ratio("article"),
+          "wide": 16 / 9}
 HERO_RATIO = SHAPES["home"]
 HERO_MIN = 2880          # native px across the crop for a sharp 1440 hero at 2x
 HERO_FAIR = 1920         # below this it is visibly soft even at 1x
@@ -259,7 +279,8 @@ def img():
     assert BACKUP in src.parents, "outside the backup"
     w = min(int(request.args.get("w", 480)), 2400)
     crop = request.args.get("crop") == "1"
-    ratio = SHAPES.get(request.args.get("shape", "home"), HERO_RATIO)
+    ratio = shape_ratio(request.args.get("shape", "home"),
+                        request.args.get("vw", DEFAULT_VW))
     r = send_file(build(src, w, crop, ratio), mimetype="image/jpeg")
     r.headers["Cache-Control"] = "public, max-age=604800"
     return r
@@ -414,6 +435,14 @@ PAGE = r"""<!doctype html>
     <option value="article">Article banner</option>
     <option value="wide">Plain 16:9</option>
   </select>
+  <select id="vw" title="The screen width to judge the crop at. The hero is a
+fixed height, so a wider screen is a longer, thinner strip off the same photo.">
+    <option value="390">Phone 390</option>
+    <option value="768">768</option>
+    <option value="1280">1280</option>
+    <option value="1440">Laptop 1440</option>
+    <option value="1920">1920</option>
+  </select>
   <span class="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
@@ -512,7 +541,7 @@ function render() {
          data-p="${r.path}" data-w="${r.heroW}" data-name="${r.name}" data-tier="${r.tier}">
       <button class="fav" title="Shortlist this photo">${STARS.includes(r.path) ? '★' : '☆'}</button>
       <img loading="lazy" decoding="async"
-           src="/img?crop=1&w=340&shape=${shape}&p=${encodeURIComponent(r.path)}">
+           src="/img?crop=1&w=340&shape=${shape}&vw=${$('vw').value}&p=${encodeURIComponent(r.path)}">
       ${r.tier === 'low' ? '<span class="flag low">LOW RES</span>'
         : r.tier === 'fair' ? '<span class="flag fair">' + r.w + 'px</span>' : ''}
       <span class="n">${r.name}</span>
@@ -534,12 +563,23 @@ function render() {
 
 $('filter').onchange = () => { render(); };
 
-/* the site cuts two different hero shapes; the picker shows whichever one this
-   photo is destined for, in the stage and in the strip alike */
-$('shape').onchange = () => {
-  document.documentElement.style.setProperty('--shape', SHAPES[$('shape').value]);
+/* The picker shows whichever hero this photo is destined for, at whichever
+   screen width it is being judged for, in the stage and the strip alike. The
+   hero is a fixed height, so width is half the shape: the same photo is a
+   2.12:1 strip on a laptop and a 2.82:1 one on a 1920 monitor. */
+function heroRatio() {
+  const shape = $('shape').value;
+  if (shape === 'wide') { return 16 / 9; }
+  const vw = +$('vw').value;
+  const h = vw <= 768 ? 470 : (shape === 'article' ? 560 : 680);
+  return vw / h;
+}
+function applyShape() {
+  document.documentElement.style.setProperty('--shape', heroRatio());
   render();
-};
+}
+$('shape').onchange = applyShape;
+$('vw').onchange = applyShape;
 
 /* the focus scores arrive as the pool finishes; label the soft frames when they do */
 function applyFocusFlags() {
@@ -694,7 +734,19 @@ function toast(t) {
   setTimeout(() => el.classList.remove('on'), 2600);
 }
 
-document.documentElement.style.setProperty('--shape', SHAPES.home);
+/* open at this monitor's width, less a scrollbar, rather than at a laptop's */
+(function () {
+  const mine = Math.max(320, (window.screen && screen.width ? screen.width : 1440) - 15);
+  const sel = $('vw');
+  if (![...sel.options].some(o => +o.value === mine)) {
+    const o = document.createElement('option');
+    o.value = mine;
+    o.textContent = 'My screen ' + mine;
+    sel.appendChild(o);
+  }
+  sel.value = String(mine);
+})();
+document.documentElement.style.setProperty('--shape', heroRatio());
 setScrim(100);
 loadAlbums();
 </script>
