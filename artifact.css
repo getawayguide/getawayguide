@@ -2392,7 +2392,9 @@ body.gg-home nav:not(.pinned) button:focus-visible,
        own spacing: 16px below the block and a 10.4px gap above its rule. The
        re-theme had 18/0, which closed the gap under the rule and opened the
        one under the block. ---- */
-.fn-city-hd { margin-bottom:16px !important; padding-bottom:10.4px !important; }
+/* 14px, not 10.4: the badge is a filled block, so its box reaches the padding
+   edge and 10.4 left it sitting 2px off the rule. */
+.fn-city-hd { margin-bottom:16px !important; padding-bottom:14px !important; }
 
 /* ---- THE SEARCH SURFACE.
        search.js builds its own stylesheet at runtime and injects it into the
@@ -3759,10 +3761,19 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   letter-spacing:.11em !important; text-transform:uppercase !important;
   padding:5px 12px !important; border:0 !important; border-radius:0 !important;
   margin-top:9px !important; white-space:normal !important; line-height:1.5; }
-/* it takes its own line under the place name instead of sharing the row */
-.fn-city-hd { flex-wrap:wrap !important; }
-.fn-city-hd .fn-time { flex:0 0 auto; }
-.fn-city-hd h2 { flex:1 1 100%; }
+/* It sits BESIDE the place name when it fits and wraps to its own row when it
+   does not, which is what the row did before. Forcing the h2 to 100% pushed
+   every badge onto a second line and left it stranded against the rule.
+   row-gap 9px is the space when it wraps, column-gap 14px when it does not, so
+   it is evenly spaced either way. */
+.fn-city-hd {
+  display:flex !important; flex-wrap:wrap !important;
+  align-items:baseline !important; gap:9px 14px !important;
+  /* an earlier rule zeroes this; the badge is a filled block whose box reaches
+     the padding edge, so without it the badge sits 2px off the rule */
+  padding-bottom:14px !important; }
+.fn-city-hd h2 { flex:0 1 auto !important; }
+.fn-city-hd .fn-time { flex:0 1 auto !important; margin-top:0 !important; }
 
 /* ==========================================================================
    THE FACT CARDS -- option D, label and value
@@ -3797,4 +3808,48 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 @media (max-width:768px) {
   .f-card { padding:12px 0 !important; }
   .f-b { font-size:15px !important; }
+}
+
+/* ==========================================================================
+   THE FACT BLOCK -- option D, on the variant the page actually shows.
+   The itinerary carries seven fact variants (a-g) and <body data-facts="c">
+   selects the third, which is .f-icons > .f-ic. The first pass styled .f-grid
+   and .f-card, which belong to variant "a" and are display:none -- the reason
+   nothing changed. The .f-t / .f-b typography was landing all along, because
+   those class names are shared across the variants.
+   ========================================================================== */
+.f-icons {
+  display:grid !important; gap:0 !important;
+  background:transparent !important; border:0 !important; }
+.f-ic {
+  background:transparent !important; border:0 !important;
+  border-bottom:1px solid var(--line-soft) !important;
+  padding:15px 0 !important; margin:0 !important;
+  display:grid !important; grid-template-columns:auto 1fr !important;
+  column-gap:11px !important; align-items:start !important; }
+.f-ic:last-child { border-bottom:0 !important; }
+/* the icon keeps its place beside the label rather than above it */
+.f-ic .ig { grid-row:1; grid-column:1; color:var(--accent) !important;
+  opacity:.75; display:flex; align-items:center; height:15px; }
+.f-ic .f-t { grid-row:1; grid-column:2; margin:0 0 5px !important; }
+.f-ic .f-b { grid-row:2; grid-column:2; }
+@media (min-width:820px) {
+  .f-icons { grid-template-columns:1fr 1fr !important; column-gap:44px !important; }
+  .f-ic:nth-last-child(2):nth-child(odd) { border-bottom:0 !important; }
+}
+
+@media (max-width:819px) {
+  /* the artifact's own rule keeps two columns down to 390, where each cell is
+     171px and a sentence breaks every two or three words */
+  .f-icons { grid-template-columns:1fr !important; }
+}
+
+/* ---- the hero's opening slide introduces the site rather than an article, so
+       it carries a standfirst under the headline and no kicker above it ---- */
+.hero-sub {
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:1.05rem; line-height:1.55; color:rgba(255,255,255,.90);
+  margin:14px 0 0; max-width:46ch; }
+@media (max-width:768px) {
+  .hero-sub { font-size:.95rem; margin-top:11px; max-width:34ch; }
 }

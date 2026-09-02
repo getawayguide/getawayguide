@@ -452,13 +452,24 @@ let STARS = [], scrim = 100;
 
 const $ = id => document.getElementById(id);
 
+// The ALBUM is what you are choosing between: the trips you took. The country
+// is only where the pick publishes to, which matters on save. Listing by
+// country hid "Patagonia (2024)" behind Chile, "Bali" behind Indonesia and
+// "Turkey 2.0" behind Türkiye, so those trips looked missing.
+function albumLabel(r) {
+  const album = r.folder || r.country || '';
+  const bare = album.replace(/\s*\(\d{4}\)\s*$/, '').trim().toLowerCase();
+  const same = bare === (r.country || '').toLowerCase();
+  return album + (same ? '' : '  → ' + r.country);
+}
+
 async function loadAlbums() {
   const rows = await (await fetch('/albums')).json();
   $('album').innerHTML = rows.map(r =>
     `<option value="${r.folder}" data-country="${r.country}"
              data-picked="${r.picked ? 1 : 0}" data-pick="${r.pickPath}"
              data-oy="${r.pickOy}" data-scrim="${r.pickScrim}"
-             data-stars="${(r.stars || []).join('|')}">${r.picked ? '✓ ' : '· '}${r.country}</option>`
+             data-stars="${(r.stars || []).join('|')}">${r.picked ? '✓ ' : '· '}${albumLabel(r)}</option>`
   ).join('');
   const done = rows.filter(r => r.picked).length;
   $('tally').innerHTML = `<b>${done}</b> of ${rows.length} picked`;
@@ -660,14 +671,16 @@ loadAlbums.reload = async keep => {
     o.dataset.oy = row.pickOy;
     o.dataset.scrim = row.pickScrim;
     o.dataset.stars = (row.stars || []).join('|');
-    // The album folder is the TRIP name, the country is the page it feeds, and
-    // the two often differ: "Patagonia (2024)" is filed under Chile, "Bali"
-    // under Indonesia, "Turkey 2.0" under Türkiye. Showing only the country
-    // made those albums look missing to anyone looking for the trip.
-    var trip = (row.folder || '').replace(/\s*\(\d{4}\)\s*$/, '').trim();
-    var same = trip.toLowerCase() === (row.country || '').toLowerCase();
-    o.textContent = (row.picked ? '✓ ' : '· ') + row.country +
-                    (same ? '' : '  (' + trip + ')');
+    // The ALBUM name is the label, because that is what you are choosing
+    // between: the trips you took. The country is where the pick publishes to,
+    // which matters on save, not while you are picking. Listing by country hid
+    // "Patagonia (2024)" behind Chile, "Bali" behind Indonesia and
+    // "Turkey 2.0" behind Türkiye.
+    var album = row.folder || row.country;
+    var same = album.replace(/\s*\(\d{4}\)\s*$/, '').trim().toLowerCase()
+               === (row.country || '').toLowerCase();
+    o.textContent = (row.picked ? '✓ ' : '· ') + album +
+                    (same ? '' : '  → ' + row.country);
   });
   $('album').value = keep;
   document.querySelectorAll('.strip .t.saved').forEach(t => t.classList.remove('saved'));
