@@ -1221,18 +1221,17 @@ main{overflow-y:auto;padding:1rem}
              Jost, Fraunces, Lora and Source Sans 3, all retired by the
              re-theme: picking one wrote a font into the article that the
              published page has no @font-face for, so it fell back silently. -->
-        <option value="'Hanken Grotesk', sans-serif">Body (Hanken Grotesk)</option>
+        <option value="__body__">Body (Hanken Grotesk)</option>
         <option value="__body-bold__">Body bold</option>
-        <option value="'Newsreader', Georgia, serif">Display (Newsreader)</option>
+        <option value="__display__">Display (Newsreader)</option>
         <option value="__display-italic__">Display italic</option>
-        <option value="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">Mono</option>
       </select>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
         <option value="">Size</option>
-        <option value="0.85rem">Small</option>
-        <option value="1rem">Body</option>
-        <option value="1.2rem">Large</option>
-        <option value="1.5rem">XLarge</option>
+        <option value="t-sm">Small</option>
+        <option value="__reset__">Body (reset)</option>
+        <option value="t-lg">Large</option>
+        <option value="t-xl">XLarge</option>
       </select>
       <div class="tool-divider"></div>
       <div class="color-picker-wrap" id="color-picker-wrap">
@@ -2523,46 +2522,69 @@ main{overflow-y:auto;padding:1rem}
     const map = { left: 'justifyLeft', center: 'justifyCenter', right: 'justifyRight' };
     document.execCommand(map[dir], false, null);
   }
-  function applyFontFamily(sel, family) {
-    if (!family) return;
-    restoreSelection();
-    // the display face in italic, which the site uses for captions and asides
-    if (family === '__display-italic__') {
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount && !sel.isCollapsed) {
-        const range = sel.getRangeAt(0);
-        const em = document.createElement('em');
-        em.style.fontFamily = "'Newsreader', Georgia, serif";
-        range.surroundContents(em);
-      }
-      dropdown.value = '';
-      return;
+  // Wrap the selection in a real element carrying a class. surroundContents()
+  // throws whenever the selection crosses an element boundary, which is most
+  // real selections, so extract-and-reinsert is used instead.
+  function wrapSelection(tagName, className) {
+    const s = window.getSelection();
+    if (!s || !s.rangeCount || s.isCollapsed) return null;
+    const range = s.getRangeAt(0);
+    const el = document.createElement(tagName);
+    if (className) el.className = className;
+    try {
+      el.appendChild(range.extractContents());
+      range.insertNode(el);
+    } catch (e) {
+      return null;
     }
-    if (family === '__body-bold__') {
+    const again = document.createRange();
+    again.selectNodeContents(el);
+    s.removeAllRanges();
+    s.addRange(again);
+    return el;
+  }
+
+  function applyFontFamily(sel, family) {
+    if (!family) { return; }
+    restoreSelection();
+    if (family === '__display-italic__') {
+      wrapSelection('em', 't-display');
+    } else if (family === '__body-bold__') {
+      wrapSelection('strong', 't-body');
+    } else if (family === '__display__') {
+      wrapSelection('span', 't-display');
+    } else if (family === '__body__') {
+      wrapSelection('span', 't-body');
+    }
+    sel.value = '';        // the parameter is called sel; "dropdown" was a
+                           // ReferenceError that killed the italic branch
+  }
+
+  const SIZE_CLASSES = ['t-sm', 't-lg', 't-xl'];
+
+  function applyFontSize(sel, size) {
+    if (!size) { return; }
+    restoreSelection();
+    if (size === '__reset__') {
+      // drop any size class the selection sits inside, and unwrap the span if
+      // that was the only thing it carried
       const s = window.getSelection();
-      if (s && s.rangeCount && !s.isCollapsed) {
-        const range = s.getRangeAt(0);
-        const strong = document.createElement('strong');
-        strong.style.color = 'var(--ink)';
-        range.surroundContents(strong);
-        s.removeAllRanges();
+      let node = s && s.anchorNode;
+      node = node && (node.nodeType === 3 ? node.parentElement : node);
+      while (node && node.id !== 'editor') {
+        if (node.classList && SIZE_CLASSES.some(c => node.classList.contains(c))) {
+          SIZE_CLASSES.forEach(c => node.classList.remove(c));
+          if (node.tagName === 'SPAN' && !node.className && !node.getAttribute('style')) {
+            const parent = node.parentNode;
+            while (node.firstChild) parent.insertBefore(node.firstChild, node);
+            parent.removeChild(node);
+          }
+          break;
+        }
+        node = node.parentElement;
       }
     } else {
-      document.execCommand('fontName', false, family);
-    }
-    sel.value = '';
-  }
-  function applyFontSize(sel, size) {
-    if (!size) return;
-    restoreSelection();
-    // execCommand fontSize only accepts 1-7; use a marker span approach
-    document.execCommand('fontSize', false, '7');
-    const s = window.getSelection();
-    if (s && s.anchorNode) {
-      document.getElementById('editor').querySelectorAll('font[size="7"]').forEach(el => {
-        el.removeAttribute('size');
-        el.style.fontSize = size;
-      });
+      wrapSelection('span', size);
     }
     sel.value = '';
   }

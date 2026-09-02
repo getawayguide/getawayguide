@@ -17,8 +17,6 @@
 <meta name="twitter:image" content="https://getawayguide.io/Images/web/og/destinations.jpg">
 <title>All Destinations &mdash; getawayguide</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='24' fill='%232D6B50'>g</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Jost:ital,wght@0,300..400;1,300..400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=17">
 <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
@@ -39,7 +37,7 @@ a[href*="amcharts.com"]{display:none!important}
 #map-tab{position:absolute;z-index:5;display:none;pointer-events:none;transform:translateX(-50%);background:#1C2821;border-radius:6px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,.28);white-space:nowrap}
 #map-tab .mt-row{display:flex;align-items:center;gap:8px}
 #map-tab img{width:16px;height:12px;border-radius:1px;display:block;flex:0 0 auto}
-#map-tab .mt-name{color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:400;line-height:1.3}
+#map-tab .mt-name{color:#fff;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.3}
 #map-tab .mt-sub{color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 /* little pointer under the bubble (flips above when the tab sits below a country) */
 #map-tab::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1C2821}
@@ -47,18 +45,18 @@ a[href*="amcharts.com"]{display:none!important}
 .map-mobile-hd,.map-close-btn{display:none}
 body.dest-map-open nav{display:none}
 .map-legend{display:flex;gap:2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
-.legend-item{display:flex;align-items:center;gap:.45rem;font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#555}
+.legend-item{display:flex;align-items:center;gap:.45rem;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#555}
 .legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;display:inline-block}
 /* article cards */
 .dest-articles-section{padding:2.5rem 6rem 7rem}
-.dest-articles-section .dest-section-heading{font-family:'Fraunces',Georgia,serif;font-size:1.75rem;font-weight:300;letter-spacing:-.01em;color:var(--ink);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--b-subtle)}
+.dest-articles-section .dest-section-heading{font-family:Newsreader,Georgia,serif;font-size:1.75rem;font-weight:300;letter-spacing:-.01em;color:var(--ink);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--b-subtle)}
 .dest-articles-section .filter-bar-inline{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;padding-bottom:.5rem}
 .dest-articles-section .dest-bg{background-size:cover;background-position:center}
 .art-card-info{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
-.art-card-name{font-family:'Montserrat',sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
-.art-card-btn{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
+.art-card-name{font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin-bottom:.75rem;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.art-card-btn{font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);padding:.32rem .9rem;color:rgba(255,255,255,.95)}
 .art-card-soon{}
-.art-card-badge{position:absolute;top:.7rem;left:.7rem;z-index:2;display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.6);color:#fff;font-family:'Montserrat',sans-serif;font-size:.52rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:.34rem .62rem;border-radius:999px}
+.art-card-badge{position:absolute;top:.7rem;left:.7rem;z-index:2;display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.6);color:#fff;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.52rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:.34rem .62rem;border-radius:999px}
 .art-card-badge-dot{width:5px;height:5px;border-radius:50%;background:#7FE0AE;flex:0 0 auto}
 .home-dest-soon{cursor:default}
 .home-dest-soon .art-card-btn{border-color:rgba(255,255,255,.5);color:rgba(255,255,255,.8)}
@@ -71,8 +69,8 @@ body.dest-map-open nav{display:none}
   /* Compact, tappable map on top */
   .dest-map-wrap{display:block;padding:.5rem 1.25rem 1.4rem;position:relative}
   .map-mobile-hd{display:flex;justify-content:space-between;align-items:center;padding:.1rem .1rem .7rem;cursor:pointer}
-  .map-mobile-hd .mmh-t{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:600}
-  .map-mobile-hd .mmh-x{font-family:'Montserrat',sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra)}
+  .map-mobile-hd .mmh-t{font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:600}
+  .map-mobile-hd .mmh-x{font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terra)}
   .map-legend{gap:1rem;margin-bottom:.7rem}
   .map-legend .legend-item{font-size:.6rem}
   #world-map{height:250px!important}
@@ -687,7 +685,7 @@ allTpl.adapter.add("tooltipHTML", function(html, target) {
   var id = target.dataItem.dataContext.id || "";
   var name = target.dataItem.dataContext.name || "";
   if (!id) return name;
-  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:13px">' + name + '</span></div>';
 });
 
 // -- Layer 2: Visited countries (not featured) --------------------------------
@@ -723,7 +721,7 @@ vTpl.adapter.add("tooltipHTML", function(html, target) {
   var id = target.dataItem.dataContext.id || "";
   var name = target.dataItem.dataContext.name || "";
   if (!id) return name;
-  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px">' + name + '</span></div>';
+  return '<div style="display:flex;align-items:center;gap:6px"><img loading="lazy" src="Images/web/flags/' + id.toLowerCase() + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px"><span style="color:#1C2821;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:13px">' + name + '</span></div>';
 });
 
 // -- Layer 3: Field Notes countries ------------------------------------------
@@ -773,7 +771,7 @@ fieldNotesSeries.data = Object.keys(fieldNotesMap).map(function(id) {
   var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
     '<img loading="lazy" src="Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
     '<div>' +
-      '<div style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:#1C2821;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
       '<div style="color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + (c.url ? 'Field Notes' : 'Coming Soon') + '</div>' +
     '</div>' +
   '</div>';
@@ -815,7 +813,7 @@ featuredSeries.data = Object.keys(featuredMap).map(function(id) {
   var tipHtml = '<div style="display:flex;align-items:center;gap:8px">' +
     '<img loading="lazy" src="Images/web/flags/' + iso + '.png" width="16" height="12" alt="" style="vertical-align:middle;border-radius:1px">' +
     '<div>' +
-      '<div style="color:#1C2821;font-family:Jost,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
+      '<div style="color:#1C2821;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.3">' + c.name + '</div>' +
       '<div style="color:rgba(28,40,33,.6);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">' + statusLabel + '</div>' +
     '</div>' +
   '</div>';

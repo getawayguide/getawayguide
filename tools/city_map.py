@@ -599,7 +599,7 @@ def build(cfg_path, embed=False, demo=None):
             # (so base + pins move together) — see the JS. This avoids the SVG <image>
             # paint bug that left the map blank / half-rendered at the edges.
             img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
-            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Montserrat,Arial,sans-serif" style="paint-order:stroke">']
+            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" style="paint-order:stroke">']
             for d in dls_adj:  # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA), nudged off water
                 lx, ly = d["x"], d["y"]
                 o.append(f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
@@ -616,8 +616,8 @@ def build(cfg_path, embed=False, demo=None):
                          f'<path d="{PIN}" fill="{fill}" stroke="#fff" stroke-width="1.1"/>{mk}'
                          f'</g></g></a>')
             if svg_title:   # desktop draws the title in the SVG; mobile uses a fixed HTML overlay instead
-                o.append(f'<text x="{title_px*0.68:.0f}" y="{title_px*0.58:.0f}" font-family="Montserrat,Arial" font-size="{title_px*0.27:.0f}" font-weight="600" letter-spacing="{title_px*0.12:.1f}" fill="{KICKER}" stroke="{LAND}" stroke-width="{title_px*0.08:.1f}" paint-order="stroke">{html.escape(kicker)}</text>')
-                o.append(f'<text x="{title_px*0.62:.0f}" y="{title_px*1.66:.0f}" font-family="Fraunces,Georgia,serif" font-size="{title_px}" font-weight="600" fill="{INK}" stroke="{LAND}" stroke-width="{title_px*0.13:.1f}" paint-order="stroke">{html.escape(city)}</text>')
+                o.append(f'<text x="{title_px*0.68:.0f}" y="{title_px*0.58:.0f}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" font-size="{title_px*0.27:.0f}" font-weight="600" letter-spacing="{title_px*0.12:.1f}" fill="{KICKER}" stroke="{LAND}" stroke-width="{title_px*0.08:.1f}" paint-order="stroke">{html.escape(kicker)}</text>')
+                o.append(f'<text x="{title_px*0.62:.0f}" y="{title_px*1.66:.0f}" font-family="Newsreader,Georgia,serif" font-size="{title_px}" font-weight="600" fill="{INK}" stroke="{LAND}" stroke-width="{title_px*0.13:.1f}" paint-order="stroke">{html.escape(city)}</text>')
             o.append(f'<text x="{W-6}" y="{H-6}" font-size="8" fill="#8B978F" text-anchor="end">© OpenStreetMap · getawayguide</text>')
             o.append('</svg>'); return img + "".join(o)
         print(f"  {pngname}: {W}x{H}, raster {len(png)//1024}KB")
@@ -665,9 +665,8 @@ def build(cfg_path, embed=False, demo=None):
 
     def page(demo=None, note=""):
         return ('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-                '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">'
                 f'<style>body{{margin:0;background:#e9e9e3;padding:22px 16px}}{CSS}'
-                f'.note{{max-width:760px;margin:0 auto 8px;font:600 13px Montserrat;color:#444}}</style>'
+                f'.note{{max-width:760px;margin:0 auto 8px;font:600 13px Hanken Grotesk,Helvetica,Arial,sans-serif;color:#444}}</style>'
                 f'<body>{f"<div class=note>{note}</div>" if note else ""}<figure class="citymap-fig">{maps_html(demo)}</figure>{JS}</body>')
     open(f"{PREV}/{slug}-city.html", "w", encoding="utf-8").write(page(note=f"{city} · desktop=landscape+key · mobile=portrait gesture map"))
     if demo:
@@ -707,7 +706,7 @@ def build(cfg_path, embed=False, demo=None):
 CSS = """
 *{box-sizing:border-box}
 .citymap-fig{margin:2.5rem auto 1.5rem;max-width:760px}
-.citymap{position:relative;margin:0 auto;font-family:Montserrat,Arial,sans-serif}
+.citymap{position:relative;margin:0 auto;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif}
 .citymap.desk{max-width:760px}.citymap.mob{max-width:540px;display:none}
 .cmmap{position:relative;border-radius:7px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.13)}
 .cmmap svg{display:block;width:100%;height:auto}
@@ -723,7 +722,7 @@ CSS = """
 .cmworld .cmpin{pointer-events:auto}
 .cmzoom{position:absolute;right:9px;bottom:9px;display:flex;flex-direction:column;gap:5px;z-index:5}
 .cmzoom button{width:33px;height:33px;padding:0;border:0;border-radius:8px;background:rgba(255,255,255,.93);
-  box-shadow:0 2px 6px rgba(0,0,0,.22);color:#1C2821;font:600 19px/1 Montserrat,Arial;cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,.22);color:#1C2821;font:600 19px/1 Hanken Grotesk,Helvetica,Arial,sans-serif;cursor:pointer;
   display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .cmzoom button:active{background:#fff}
 .cmzoom button[disabled]{opacity:.35}
@@ -739,13 +738,13 @@ CSS = """
 .num-dt{background:none;color:#8B978F;font-size:13px;font-weight:600;line-height:1}
 .dt-time{color:#8B978F;font-weight:500}
 .cmrow-dt .nm{color:#586159}
-.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Montserrat,Arial;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
+.cmbubble{position:absolute;display:none;z-index:6;background:#1C2821;color:#fff;font:600 13px/1.3 Hanken Grotesk,Helvetica,Arial,sans-serif;padding:8px 13px;border-radius:8px;max-width:170px;white-space:normal;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.28);pointer-events:auto}
 .cmbubble:after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1C2821;border-bottom:0}
 /* mobile fixed title/instructions overlay (map pans underneath) */
 .cm-ov{position:absolute;top:28px;left:18px;pointer-events:none}
-.cm-ov-kick{font:600 10px/1 Montserrat,Arial;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
-.cm-ov-title{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
-.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Montserrat,Arial;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-kick{font:600 10px/1 Hanken Grotesk,Helvetica,Arial,sans-serif;letter-spacing:3px;color:#245A43;margin-bottom:3px;text-shadow:-1.5px 0 0 #F4F2EC,1.5px 0 0 #F4F2EC,0 -1.5px 0 #F4F2EC,0 1.5px 0 #F4F2EC,-1px -1px 0 #F4F2EC,1px 1px 0 #F4F2EC,-1px 1px 0 #F4F2EC,1px -1px 0 #F4F2EC,0 0 4px #F4F2EC}
+.cm-ov-title{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:40px;color:#1C2821;line-height:1;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
+.cm-ov-hint{margin-top:4px;font:italic 500 11px/1.55 Hanken Grotesk,Helvetica,Arial,sans-serif;color:#586159;max-width:300px;text-shadow:0 0 5px #F4F2EC,0 0 5px #F4F2EC}
 @media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
 """
 JS = """<script>

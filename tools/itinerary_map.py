@@ -339,7 +339,7 @@ def build(cfg):
     vx, vy = BB[0] - pad, BB[1] - pad
     vw, vh = (BB[2] - BB[0]) + 2 * pad, (BB[3] - BB[1]) + 2 * pad
     head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}" '
-            f'xmlns="http://www.w3.org/2000/svg" font-family="Montserrat,sans-serif">')
+            f'xmlns="http://www.w3.org/2000/svg" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif">')
     bg = f'<rect x="{vx:.0f}" y="{vy:.0f}" width="{vw:.0f}" height="{vh:.0f}" fill="{P["bg"]}"/>'
     return "\n".join([head, bg] + B + ["</svg>"]), round(vw), round(vh)
 
@@ -384,9 +384,9 @@ def main():
     io.open(svg_path, "w", encoding="utf-8").write(svg)
     html = (f'<!doctype html><meta charset="utf-8">'
             f'<link rel="preconnect" href="https://fonts.googleapis.com">'
-            f'<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">'
+            f
             f'<style>body{{margin:0;background:#e9e4da;display:flex;justify-content:center;'
-            f'padding:24px;font-family:Montserrat,sans-serif}}'
+            f'padding:24px;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif}}'
             f'.wrap{{width:100%;max-width:1180px;box-shadow:0 8px 40px rgba(0,0,0,.1);'
             f'border-radius:6px;overflow:hidden}}svg{{width:100%;height:auto;display:block}}</style>'
             f'<div class="wrap">{svg}</div>')

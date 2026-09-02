@@ -3869,3 +3869,31 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 @media (max-width:768px) {
   .hero-sub { font-size:.95rem; margin-top:11px; max-width:34ch; }
 }
+
+/* ==========================================================================
+   THE EDITOR'S TYPE CLASSES
+   The font picker used to call execCommand, which emits <font> tags that
+   cleanArtifacts() unwraps on save -- so four of its five options silently did
+   nothing. It writes these classes instead, which survive the save and render
+   here exactly as they do in the editor. Only the two faces the site serves.
+   ========================================================================== */
+.article-body .t-display, .artbody .t-display, .fn-section .t-display {
+  font-family:"Newsreader",Georgia,"Times New Roman",serif; }
+.article-body .t-body, .artbody .t-body, .fn-section .t-body {
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif; }
+.article-body .t-sm, .artbody .t-sm, .fn-section .t-sm { font-size:.85em; }
+.article-body .t-lg, .artbody .t-lg, .fn-section .t-lg { font-size:1.2em; }
+.article-body .t-xl, .artbody .t-xl, .fn-section .t-xl { font-size:1.5em; }
+
+/* ---- photo captions. Kosovo is the only page that uses them and it carried
+       the whole treatment inline, against no rule at all, so nothing else
+       could ever match it. The colour is --faint rather than the .55 it had:
+       .55 measures 3.54 against the paper, below the 4.5 this size needs. ---- */
+.article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
+  display:block; width:79%; margin:-1rem auto 1.75rem; text-align:center;
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:.85rem; font-style:italic; line-height:1.55; color:var(--faint); }
+@media (max-width:768px) {
+  .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
+    width:100%; margin-top:-.6rem; }
+}
