@@ -1354,6 +1354,13 @@ main{overflow-y:auto;padding:1rem}
     document.getElementById('unsupported').style.display = 'block';
   }
 
+  // The photo server. This block calls it for ✎ Edit (resolve_original) and for
+  // the post-save compression pipeline, but the only two declarations sat inside
+  // IIFEs further down, so both calls threw ReferenceError. Their try/catch then
+  // reported it as "Photo server not running" -- with the server running -- and
+  // articles kept their full-resolution photos.
+  const API = 'http://127.0.0.1:5003';
+
   let fileHandle = null;
   let originalHTML = '';
   let isDirty = false;
@@ -2077,9 +2084,15 @@ main{overflow-y:auto;padding:1rem}
     // b) treat a non-breaking space as empty. JS trim() strips U+00A0, so an
     //    <i>&nbsp;</i> used as a word gap was removed and the words either side
     //    were glued together ("swim inand rocks", "El Salvador.The beach").
+    //
+    // c) treat an element whose only child is an <svg> as empty. (a) protects
+    //    what is INSIDE an svg; it does nothing for the <span class="ig"> or
+    //    the <a href> WRAPPING one, which has no text and no <img>. That deleted
+    //    42 of the itinerary's 43 icons on a no-op save, and takes an <a>'s href
+    //    with it -- the 758-pin bug reached through the other door.
     const isEmpty = node =>
       !node.textContent.replace(/[\s ]/g, '') &&
-      !node.querySelector('img,br') &&
+      !node.querySelector('img,br,svg,picture,iframe,video') &&
       !node.textContent.includes(' ');
     let removed = true;
     while (removed) {
@@ -2092,7 +2105,7 @@ main{overflow-y:auto;padding:1rem}
         if (node.closest('svg')) return;
         if (!node.textContent.replace(/[\s ]/g, '') &&
             !node.textContent.includes(' ') &&
-            !node.querySelector('img,br,picture')) { node.remove(); removed = true; }
+            !node.querySelector('img,br,picture,svg,iframe,video')) { node.remove(); removed = true; }
       });
     }
     // Remove <p><br></p> spacers
@@ -2107,7 +2120,13 @@ main{overflow-y:auto;padding:1rem}
   // ================= PRETTY PRINTER =================
   // Re-serializes the article body with hand-written-style indentation.
   const PP_BLOCK = new Set(['P','DIV','UL','OL','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','HR','TABLE','THEAD','TBODY','TR','FIGURE']);
-  const PP_ATOMIC = new Set(['PICTURE']);   // keep on one line exactly as-is
+  // SCRIPT and STYLE hold RAW CDATA: entities are not decoded there, so
+  // escaping their text turns "cw<=vw" into "cw&lt;=vw" and the block stops
+  // parsing. 34 of the 50 pages embed a city map this way, and each save
+  // escaped the previous save's escapes. Two drafts on disk are already
+  // broken by it. outerHTML round-trips them untouched, which is what the
+  // find/replace path already does via isProse().
+  const PP_ATOMIC = new Set(['PICTURE','SCRIPT','STYLE']);   // keep on one line exactly as-is
   const PP_VOID = new Set(['BR','HR','IMG','SOURCE']);
 
   function ppAttrs(node) {
