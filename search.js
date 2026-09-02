@@ -49,8 +49,13 @@
     return s;
   }
   function flagImg(code) {
-    return '<img class="s-flag" loading="lazy" width="20" height="15" alt="" ' +
-      'src="https://flagcdn.com/20x15/' + code + '.png">';
+    // Local, and at the source's own size. This was still pulling from
+    // flagcdn.com at 20x15: an external origin the site deliberately moved off
+    // (see CLAUDE.md), and a 20x15 source is upscaled on any 2x screen, which
+    // is why the flags looked soft. Images/web/flags/*.png are 32x24, so at a
+    // 16px box one source pixel covers two device pixels exactly.
+    return '<img class="s-flag" loading="lazy" width="16" height="12" alt="" ' +
+      'src="' + PREFIX + 'Images/web/flags/' + code + '.png">';
   }
 
   function ensureData() {

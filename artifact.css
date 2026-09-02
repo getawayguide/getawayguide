@@ -3596,7 +3596,12 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 /* the flag sits with the name now that a photo leads the row */
 .s-row .s-flag { margin-left:2px !important; }
 /* a mention has no photo, so its text starts where the others' text does */
-.s-row.s-mention { padding-left:1.35rem !important; }
+/* a mention carries no thumbnail, so it is indented by the thumb plus its gap
+   (80 + 11) and every title in the panel starts on the same line */
+.s-row.s-mention { padding-left:calc(1.35rem + 91px) !important; }
+@media (max-width:768px) {
+  .s-row.s-mention { padding-left:calc(1.35rem + 75px) !important; }
+}
 @media (max-width:768px) {
   .s-thumb { width:64px !important; height:48px !important; }
 }
@@ -3613,36 +3618,43 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 .s-row.s-mention { flex-wrap:wrap !important; }
 .s-row.s-mention .s-snip { flex:1 1 100% !important; }
 
-/* ---- the search field is a LINE, not a box.
-       It opens outward from the glyph, the way it did before, but one row
-       below the bar rather than across it: expanded in place it put the typed
-       text on top of DESTINATIONS and ABOUT ME. Transparent, with a single
-       rule under it, so it reads as the same object it always was. ---- */
+/* ---- the search field is a LINE, on the SAME ROW as the glyph.
+       It grows leftward out of the icon: transparent, one rule underneath, no
+       box and no focus ring, because the rule already shows where the cursor
+       is. It overlays the end of the nav while open, which is the trade for
+       keeping it on one line. ---- */
 nav .nav-search { position:relative; }
 nav .nav-search.active {
-  position:absolute !important; top:100% !important; right:96px !important;
-  left:auto !important; margin-top:6px !important;
+  position:absolute !important; right:96px !important; left:auto !important;
+  top:50% !important; transform:translateY(-50%) !important;
+  margin-top:0 !important;
   background:transparent !important; border:0 !important;
   border-bottom:1px solid var(--ink) !important;
   box-shadow:none !important; border-radius:0 !important;
-  padding:4px 2px 6px !important; z-index:1002 !important;
-  display:flex !important; align-items:center !important; gap:.55rem !important; }
+  padding:3px 2px 5px !important; z-index:1002 !important;
+  display:flex !important; align-items:center !important; gap:.5rem !important; }
 nav .nav-search.active .nav-search-q {
-  width:260px !important; opacity:1 !important; background:transparent !important;
+  width:230px !important; opacity:1 !important; background:transparent !important;
   border:0 !important; color:var(--ink) !important; }
-/* over the hero the line and the glyph go white, like the rest of that nav */
+/* no green ring on the field: the underline is the affordance, and the outline
+   the focus rules add read as a box around it */
+nav .nav-search-q:focus, nav .nav-search-q:focus-visible,
+nav .nav-search.active, nav .nav-search.active:focus-within {
+  outline:none !important; }
+/* the links behind it step back so the typed text stays readable, rather than
+   disappearing entirely */
+nav:has(.nav-search.active) > ul { opacity:.28 !important;
+  transition:opacity .18s ease; pointer-events:auto !important; }
+/* over the hero the rule and the text go white with the rest of that nav */
 body.gg-home nav:not(.pinned) .nav-search.active {
   border-bottom-color:rgba(255,255,255,.85) !important; }
 body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q,
 body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   color:#fff !important; }
-/* the links stay put and stay readable */
-nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
-  opacity:1 !important; pointer-events:auto !important; }
 @media (max-width:768px) {
-  nav .nav-search.active { right:24px !important; left:24px !important; }
+  nav .nav-search.active { right:24px !important; left:24px !important;
+    transform:translateY(-50%) !important; }
   nav .nav-search.active .nav-search-q { width:100% !important; }
-}
 }
 
 /* the results panel starts below the field, not behind it. search.js puts
@@ -3720,3 +3732,69 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
    now, so the panel clears it. */
 .s-modal { top:112px !important; }
 @media (max-width:768px) { .s-modal { top:110px !important; } }
+
+/* ---- a mention row is a stacked block, so it must align to its left edge.
+       .s-row's align-items:center (right for a one-line row) centred every
+       mention horizontally, because search.js makes .s-mention a column. ---- */
+.s-row.s-mention {
+  flex-direction:column !important; align-items:flex-start !important;
+  text-align:left !important; }
+.s-row.s-mention .s-main, .s-row.s-mention .s-snip {
+  text-align:left !important; width:100% !important; }
+
+/* the panel sits under the bar again now the field is back on the nav row */
+.s-modal { top:76px !important; }
+@media (max-width:768px) { .s-modal { top:74px !important; } }
+
+/* ---- BADGE 4: a 13% green wash with the text in the deeper accent, below the
+       heading rather than in its row. Applied to every "days recommended"
+       badge on the 34 field notes. ---- */
+.fn-time {
+  display:inline-block !important;
+  background:rgba(45,107,80,.13) !important;
+  color:#245840 !important;
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif
+    !important;
+  font-size:10.5px !important; font-weight:600 !important;
+  letter-spacing:.11em !important; text-transform:uppercase !important;
+  padding:5px 12px !important; border:0 !important; border-radius:0 !important;
+  margin-top:9px !important; white-space:normal !important; line-height:1.5; }
+/* it takes its own line under the place name instead of sharing the row */
+.fn-city-hd { flex-wrap:wrap !important; }
+.fn-city-hd .fn-time { flex:0 0 auto; }
+.fn-city-hd h2 { flex:1 1 100%; }
+
+/* ==========================================================================
+   THE FACT CARDS -- option D, label and value
+   They were white boxes on a white page, separated only by a 1px grid gap, so
+   the "card" did no work: it read as a table with invisible rules. D drops the
+   box entirely. Each fact becomes a fixed uppercase label with its value in
+   sentence case beneath, on a hairline, which is the same label/value pattern
+   the about page's quick facts already use.
+   ========================================================================== */
+.f-grid { gap:0 !important; background:transparent !important; }
+.f-card {
+  background:transparent !important; padding:14px 0 !important;
+  border:0 !important; border-bottom:1px solid var(--line-soft) !important; }
+.f-card:last-child { border-bottom:0 !important; }
+.f-t {
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif
+    !important;
+  font-size:10px !important; font-weight:700 !important;
+  letter-spacing:.15em !important; text-transform:uppercase !important;
+  color:var(--accent) !important; margin-bottom:5px !important; }
+.f-b {
+  font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif
+    !important;
+  font-size:15px !important; line-height:1.6 !important;
+  color:rgba(28,40,33,.86) !important; }
+.f-b strong, .f-b b { font-weight:600 !important; color:var(--ink) !important; }
+/* two columns where there is room; one on a phone */
+@media (min-width:700px) {
+  .f-grid { display:grid !important; grid-template-columns:1fr 1fr !important;
+    column-gap:40px !important; }
+}
+@media (max-width:768px) {
+  .f-card { padding:12px 0 !important; }
+  .f-b { font-size:15px !important; }
+}

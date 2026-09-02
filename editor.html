@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Article Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,300;0,400;1,300&family=Jost:wght@300..500&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -20,7 +20,7 @@
     }
 
     body {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       background: var(--cream);
       color: var(--ink);
       height: 100vh;
@@ -54,7 +54,7 @@
     }
 
     .logo {
-      font-family: 'Fraunces', serif;
+      font-family: 'Newsreader', serif;
       font-size: 1.1rem;
       font-weight: 300;
       letter-spacing: .02em;
@@ -62,7 +62,7 @@
     }
 
     .file-label {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .58rem;
       letter-spacing: .18em;
       text-transform: uppercase;
@@ -71,7 +71,7 @@
     }
 
     #file-name {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .62rem;
       letter-spacing: .1em;
       color: rgba(237,232,220,.7);
@@ -87,7 +87,7 @@
     }
 
     .btn {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .58rem;
       letter-spacing: .15em;
       text-transform: uppercase;
@@ -113,7 +113,7 @@
     .btn-save:disabled { background: rgba(255,255,255,.1); color: rgba(237,232,220,.3); cursor: default; }
 
     .save-status {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .55rem;
       letter-spacing: .12em;
       text-transform: uppercase;
@@ -147,7 +147,7 @@
     }
 
     .sidebar-label {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .52rem;
       letter-spacing: .2em;
       text-transform: uppercase;
@@ -181,7 +181,7 @@
     }
 
     .article-item-file {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .5rem;
       letter-spacing: .08em;
       color: rgba(28,40,33,.35);
@@ -197,10 +197,10 @@
     .todo-check { width:14px; height:14px; margin-top:.15rem; border:1.5px solid rgba(28,40,33,.35); border-radius:3px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; font-size:.62rem; line-height:1; color:#fff; }
     .todo-check.done { background:var(--terra); border-color:var(--terra); }
     .todo-check.done::after { content:'\2713'; }
-    .todo-text { font-family:'Jost',sans-serif; font-size:.82rem; font-weight:400; line-height:1.35; color:var(--ink); flex:1; outline:none; word-break:break-word; min-width:0; }
+    .todo-text { font-family:Hanken Grotesk,sans-serif; font-size:.82rem; font-weight:400; line-height:1.35; color:var(--ink); flex:1; outline:none; word-break:break-word; min-width:0; }
     .todo-text:focus { background:#fff; box-shadow:0 0 0 2px rgba(45,107,80,.3); border-radius:3px; }
     .todo-row.done .todo-text { text-decoration:line-through; color:rgba(28,40,33,.4); }
-    .todo-row.section .todo-text { font-family:'Montserrat',sans-serif; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--terra); font-weight:600; }
+    .todo-row.section .todo-text { font-family:Hanken Grotesk,sans-serif; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--terra); font-weight:600; }
     .todo-row.note .todo-text { font-style:italic; color:rgba(28,40,33,.5); font-size:.74rem; }
     .todo-controls { display:none; gap:.05rem; margin-left:auto; flex-shrink:0; align-items:center; }
     .todo-row:hover .todo-controls { display:flex; }
@@ -213,7 +213,7 @@
     .todo-row.drop-before { box-shadow:0 -2px 0 var(--terra); }
     .todo-row.drop-after { box-shadow:0 2px 0 var(--terra); }
     .todo-footer { display:flex; gap:.4rem; align-items:center; padding:.5rem .6rem; border-top:1px solid var(--b-subtle); }
-    .todo-footer button { font-family:'Montserrat',sans-serif; font-size:.5rem; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--b-medium); background:#fff; border-radius:3px; padding:.4rem .55rem; cursor:pointer; color:var(--ink); }
+    .todo-footer button { font-family:Hanken Grotesk,sans-serif; font-size:.5rem; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--b-medium); background:#fff; border-radius:3px; padding:.4rem .55rem; cursor:pointer; color:var(--ink); }
     .todo-footer button:hover { background:var(--mist); }
     .sidebar-foot { padding:.7rem .8rem; border-top:1px solid var(--b-subtle); }
 
@@ -229,7 +229,7 @@
     }
 
     .tool-btn {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .65rem;
       font-weight: 700;
       border: 1px solid var(--b-medium);
@@ -271,7 +271,7 @@
     .color-swatch:hover { background: var(--mist); }
 
     .color-swatch-letter {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .65rem;
       font-weight: 700;
       line-height: 1;
@@ -301,7 +301,7 @@
     .color-dropdown.open { display: block; }
 
     .color-dropdown-label {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .48rem;
       letter-spacing: .15em;
       text-transform: uppercase;
@@ -337,7 +337,7 @@
     }
 
     .color-custom-label {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .48rem;
       letter-spacing: .12em;
       text-transform: uppercase;
@@ -363,7 +363,7 @@
     }
 
     .tool-select {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .55rem;
       letter-spacing: .08em;
       border: 1px solid var(--b-medium);
@@ -403,19 +403,19 @@
     }
 
     /* Article typography in editor */
-    #editor h1, #editor h2 { font-family: 'Fraunces', serif; font-weight: 400; }
+    #editor h1, #editor h2 { font-family: 'Newsreader', serif; font-weight: 400; }
     #editor h2 { font-size: 1.7rem; margin: 2.5rem 0 1rem; letter-spacing: -.01em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
-    #editor h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: var(--terra); margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
-    #editor p { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 350; }
+    #editor h3 { font-family: 'Newsreader', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: var(--terra); margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
+    #editor p { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 350; }
     #editor a { color: var(--terra); }
     #editor strong { font-weight: 500; color: var(--ink); }
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
     #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
-    #editor li { font-family: 'Jost', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 350; }
-    #editor h3.fn-sub-hd { font-family: 'Montserrat', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
-    #editor div.fn-sub-hd { font-family: 'Montserrat', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; }
-    #editor p.fn-sub-label { font-family: 'Jost', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
+    #editor li { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 350; }
+    #editor h3.fn-sub-hd { font-family: 'Hanken Grotesk', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
+    #editor div.fn-sub-hd { font-family: 'Hanken Grotesk', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; }
+    #editor p.fn-sub-label { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
     #editor img { max-width: 100%; height: auto; cursor: pointer; }
     #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
     #editor img.img-cropped { cursor: grab; }
@@ -423,9 +423,9 @@
     #editor blockquote { border-left: 3px solid var(--terra); padding-left: 1.25rem; margin: 1.5rem 0; opacity: .75; }
     /* Render the site's image layouts faithfully while editing */
     #editor .img-caption { width: 79%; margin: -1rem auto 1.75rem; text-align: center;
-      font-family: 'Jost', sans-serif; font-size: .85rem; font-style: italic; color: rgba(28,40,33,.55); }
+      font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; font-style: italic; color: rgba(28,40,33,.55); }
         #pk-bar { padding:.35rem .5rem .1rem; }
-    #pk-toggle { width:100%; font-family:'Montserrat',sans-serif; font-size:.58rem;
+    #pk-toggle { width:100%; font-family:Hanken Grotesk,sans-serif; font-size:.58rem;
       letter-spacing:.07em; text-transform:uppercase; padding:5px 8px; cursor:pointer;
       border:1px solid var(--line,#D8E5DC); background:#fff; border-radius:12px; }
     #pk-toggle.on { background:#2D6B50; color:#fff; border-color:#2D6B50; }
@@ -451,7 +451,7 @@
     #editor .img-slot-empty:hover { border-color:var(--terra,#2D6B50); background:#e9f0eb; }
     #editor .img-slot-empty::after { content:'+ add photo'; position:absolute; inset:0;
       display:flex; align-items:center; justify-content:center; color:#7d9a8a;
-      font-family:'Montserrat',sans-serif; font-size:.62rem; letter-spacing:.08em;
+      font-family:Hanken Grotesk,sans-serif; font-size:.62rem; letter-spacing:.08em;
       text-transform:uppercase; pointer-events:none; }
     #editor .img-slot-empty.drag-over { border-color:var(--terra,#2D6B50); background:#dcebe1; }
     /* same cap as styles.css, so what you place is the size that publishes */
@@ -467,14 +467,14 @@
     body.photos-open #todo-list, body.photos-open .sidebar-head { display: none; }
     body.photos-open .workspace { grid-template-columns: 320px 1fr; }
     #pl-tabs { display: flex; gap: 4px; padding: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--b-subtle); }
-    #pl-tabs button { font-family: 'Montserrat', sans-serif; font-size: .55rem; letter-spacing: .05em;
+    #pl-tabs button { font-family: 'Hanken Grotesk', sans-serif; font-size: .55rem; letter-spacing: .05em;
       border: 1px solid var(--b-medium); background: #fff; border-radius: 10px; padding: 3px 9px; cursor: pointer; }
     #pl-tabs button.on { background: var(--terra); color: #fff; border-color: var(--terra); }
-    #pl-crumbs { padding: 6px 10px 4px; font-family: 'Montserrat', sans-serif; font-size: .6rem; color: rgba(28,40,33,.55); word-break: break-all; }
+    #pl-crumbs { padding: 6px 10px 4px; font-family: 'Hanken Grotesk', sans-serif; font-size: .6rem; color: rgba(28,40,33,.55); word-break: break-all; }
     #pl-crumbs a { color: var(--terra); cursor: pointer; text-decoration: none; }
     #pl-folders { padding: 0 8px 6px; display: flex; flex-wrap: wrap; gap: 4px; }
     #pl-folders div { background: #fff; border: 1px solid var(--b-subtle); border-radius: 4px;
-      padding: 2px 7px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: .58rem; }
+      padding: 2px 7px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; font-size: .58rem; }
     #pl-folders div:hover { border-color: var(--terra); }
     /* FIXED 92px cells: aspect-ratio / %-padding tricks do not contribute to
        grid ROW intrinsic sizing when the img inside is absolutely positioned,
@@ -486,11 +486,11 @@
     .pl-ph { position: relative; border-radius: 4px; overflow: hidden; cursor: grab; background: var(--b-subtle); }
     .pl-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
     .pl-ph .b { position: absolute; top: 3px; left: 3px; background: rgba(28,40,33,.75); color: #fff;
-      font-size: 9px; padding: 0 4px; border-radius: 3px; font-family: 'Montserrat', sans-serif; }
+      font-size: 9px; padding: 0 4px; border-radius: 3px; font-family: 'Hanken Grotesk', sans-serif; }
     .pl-ph:hover::after { content: attr(data-name); position: absolute; bottom: 0; left: 0; right: 0;
       background: rgba(28,40,33,.85); color: #fff; font-size: 9px; padding: 1px 4px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #pl-offline { padding: 1.2rem 1rem; font-family: 'Jost', sans-serif; font-size: .85rem; color: rgba(28,40,33,.6); display: none; }
+    #pl-offline { padding: 1.2rem 1rem; font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; color: rgba(28,40,33,.6); display: none; }
     #pl-offline code { background: var(--b-subtle); padding: 1px 5px; border-radius: 3px; font-size: .75rem; }
     .pl-drop-line { height: 3px; background: var(--terra); border-radius: 2px; margin: 4px 0; pointer-events: none; }
     #editor img.pl-pair-target { outline: 3px dashed var(--terra); outline-offset: 3px; }
@@ -505,11 +505,11 @@
     /* Lightroom-style dark develop panel */
     #crop-side { width: 320px; background: #242424; color: #c9c9c9; display: flex; flex-direction: column;
       gap: .5rem; padding: 1.1rem 1.2rem; overflow-y: auto;
-      font-family: 'Montserrat', sans-serif; font-size: .62rem;
+      font-family: 'Hanken Grotesk', sans-serif; font-size: .62rem;
       border-left: 1px solid #171717; }
-    #crop-side h3 { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 400; margin: 0 0 .2rem; color: #eee; }
+    #crop-side h3 { font-family: 'Newsreader', serif; font-size: 1.05rem; font-weight: 400; margin: 0 0 .2rem; color: #eee; }
     #crop-side .lbl { letter-spacing: .14em; text-transform: uppercase; color: #7b7b7b; margin-top: .55rem; }
-    #crop-side input[type=text] { font-family: 'Jost', sans-serif; font-size: .85rem; border: 1px solid #444;
+    #crop-side input[type=text] { font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; border: 1px solid #444;
       background: #1c1c1c; color: #ddd; border-radius: 3px; padding: .42rem .6rem; width: 100%;
       box-sizing: border-box; outline: none; }
     #crop-side input[type=text]:focus { border-color: var(--terra); }
@@ -570,7 +570,7 @@
       box-shadow: 0 3px 12px rgba(0,0,0,.3);
     }
     .img-tool-btn {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .55rem;
       background: transparent;
       color: rgba(237,232,220,.75);
@@ -586,7 +586,7 @@
     .img-tool-divider { width: 1px; height: 14px; background: rgba(255,255,255,.15); margin: 0 .1rem; flex-shrink: 0; }
     #img-width-input {
       width: 44px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .55rem;
       background: rgba(255,255,255,.1);
       border: 1px solid rgba(255,255,255,.18);
@@ -628,13 +628,13 @@
     }
 
     .empty-title {
-      font-family: 'Fraunces', serif;
+      font-family: 'Newsreader', serif;
       font-size: 1.4rem;
       font-weight: 300;
     }
 
     .empty-sub {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .55rem;
       letter-spacing: .15em;
       text-transform: uppercase;
@@ -647,7 +647,7 @@
       background: rgba(45,107,80,.08);
       border: 1px solid rgba(45,107,80,.2);
       color: var(--terra);
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .6rem;
       letter-spacing: .1em;
       padding: .6rem 2rem;
@@ -660,7 +660,7 @@
       background: rgba(200,50,30,.08);
       border: 1px solid rgba(200,50,30,.2);
       color: #c83218;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .6rem;
       letter-spacing: .1em;
       padding: .6rem 2rem;
@@ -685,7 +685,7 @@
       box-shadow: 0 8px 32px rgba(0,0,0,.18);
     }
     .img-modal-title {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .52rem;
       letter-spacing: .2em;
       text-transform: uppercase;
@@ -702,7 +702,7 @@
       display: none;
     }
     .img-modal-label {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .5rem;
       letter-spacing: .12em;
       text-transform: uppercase;
@@ -712,7 +712,7 @@
     }
     .img-modal-input {
       width: 100%;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Hanken Grotesk', sans-serif;
       font-size: .65rem;
       color: var(--ink);
       border: 1px solid var(--b-medium);
@@ -738,7 +738,7 @@
 #app-library {
   --ink:#1C2821;--terra:#2D6B50;--cream:#F7F7F3;--line:#D8E5DC;--panel:#242424;
   position:fixed; inset:0; z-index:80;
-  font-family:'Jost',sans-serif; color:var(--ink); background:var(--cream);
+  font-family:Hanken Grotesk,sans-serif; color:var(--ink); background:var(--cream);
   display:grid; grid-template-rows:52px 1fr; grid-template-columns:290px 1fr;
   overflow:hidden;
 
@@ -747,9 +747,9 @@
 
 header{grid-column:1/3;background:var(--ink);color:#fff;display:flex;align-items:center;
        gap:1rem;padding:0 1rem}
-header .logo{font-family:'Fraunces',serif;font-size:1.05rem}
+header .logo{font-family:'Newsreader',serif;font-size:1.05rem}
 header .spacer{flex:1}
-header .stat{font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.08em;
+header .stat{font-family:Hanken Grotesk,sans-serif;font-size:.6rem;letter-spacing:.08em;
              text-transform:uppercase;color:rgba(255,255,255,.65)}
 header .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
 aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
@@ -757,12 +757,12 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
 .alb:hover{background:#faf9f5}
 .alb.on{background:#eef4f0;border-left:3px solid var(--terra);padding-left:calc(.8rem - 3px)}
 .alb .nm{font-weight:500;font-size:.92rem;display:flex;justify-content:space-between;gap:.4rem}
-.alb .sub{font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:.06em;
+.alb .sub{font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.06em;
           text-transform:uppercase;color:#8a8a8a;margin-top:.2rem}
 /* The verdict line: backed-up files vs the count you read off your iPhone.
    It gets its own row on every card because it is the one number that decides
    whether the shared album can be deleted. */
-.chk{font-family:'Montserrat',sans-serif;font-size:.56rem;letter-spacing:.05em;
+.chk{font-family:Hanken Grotesk,sans-serif;font-size:.56rem;letter-spacing:.05em;
      margin-top:.3rem;padding:.22rem .4rem;border-radius:3px;line-height:1.45}
 .chk b{font-size:.72rem;letter-spacing:.02em}
 .chk.ok{background:#e8f1eb;color:#2D6B50}
@@ -772,16 +772,16 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
 /* "I deleted the shared album" — the last step, so it only appears once the
    backup is proven against your iPhone. */
 .del{display:flex;align-items:center;gap:.35rem;margin-top:.3rem;cursor:pointer;
-     font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:.05em;
+     font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.05em;
      text-transform:uppercase;color:#2D6B50}
 .del input{margin:0;cursor:pointer;accent-color:#2D6B50}
 .hold{margin-top:.35rem;width:100%;padding:.3rem;cursor:pointer;border:1px solid var(--terra);
-      background:#fff;color:var(--terra);border-radius:3px;font-family:'Montserrat',sans-serif;
+      background:#fff;color:var(--terra);border-radius:3px;font-family:Hanken Grotesk,sans-serif;
       font-size:.55rem;letter-spacing:.06em;text-transform:uppercase}
 .hold:hover{background:var(--terra);color:#fff}
 .hold:disabled{opacity:.5;cursor:default}
 .undo{background:none;border:0;padding:0;margin-top:.25rem;cursor:pointer;color:#9a9a9a;
-      font-family:'Montserrat',sans-serif;font-size:.52rem;letter-spacing:.05em;
+      font-family:Hanken Grotesk,sans-serif;font-size:.52rem;letter-spacing:.05em;
       text-transform:uppercase;text-decoration:underline}
 .bar{height:4px;background:#eceae3;border-radius:2px;margin-top:.35rem;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--terra);transition:width .4s}
@@ -790,7 +790,7 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
 .bar.short i{background:#c9694b}   /* still missing items - do not delete */
 main{overflow-y:auto;padding:1rem}
 #lib-toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;
-         font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase}
+         font-family:Hanken Grotesk,sans-serif;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase}
 #lib-toolbar button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:12px;
                 padding:4px 11px;cursor:pointer}
 #lib-toolbar button.on{background:var(--terra);color:#fff;border-color:var(--terra)}
@@ -800,10 +800,10 @@ main{overflow-y:auto;padding:1rem}
 .ph::before{content:'';display:block;padding-top:100%}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .ph .badge{position:absolute;top:6px;left:6px;background:rgba(28,40,33,.82);color:#fff;
-           font-family:'Montserrat',sans-serif;font-size:.58rem;font-weight:600;
+           font-family:Hanken Grotesk,sans-serif;font-size:.58rem;font-weight:600;
            width:19px;height:19px;border-radius:4px;display:flex;align-items:center;justify-content:center}
 .ph .res{position:absolute;top:6px;right:6px;background:rgba(28,40,33,.72);color:#fff;
-         font-family:'Montserrat',sans-serif;font-size:.5rem;padding:2px 5px;border-radius:3px}
+         font-family:Hanken Grotesk,sans-serif;font-size:.5rem;padding:2px 5px;border-radius:3px}
 .ph .stars{position:absolute;left:0;right:0;bottom:0;padding:5px 6px;display:flex;gap:2px;
            background:linear-gradient(transparent,rgba(0,0,0,.65));opacity:0;transition:opacity .15s}
 .ph:hover .stars,.ph.rated .stars{opacity:1}
@@ -813,7 +813,7 @@ main{overflow-y:auto;padding:1rem}
 
 /* Live Activity - a dedicated screen showing exactly what the backup is
    copying right now, since the album cards only show settled totals. */
-.act-btn{font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.08em;
+.act-btn{font-family:Hanken Grotesk,sans-serif;font-size:.6rem;letter-spacing:.08em;
          text-transform:uppercase;color:#fff;background:rgba(255,255,255,.12);
          border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:4px 12px;
          cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -827,28 +827,28 @@ main{overflow-y:auto;padding:1rem}
            box-shadow:-8px 0 30px rgba(0,0,0,.25);display:flex;flex-direction:column}
 #act-panel .hd{background:var(--ink);color:#fff;padding:1rem 1.2rem;display:flex;
                align-items:center;justify-content:space-between}
-#act-panel .hd h2{font-family:'Fraunces',serif;font-weight:400;font-size:1.15rem}
+#act-panel .hd h2{font-family:'Newsreader',serif;font-weight:400;font-size:1.15rem}
 #act-panel .hd button{background:none;border:0;color:#fff;font-size:1.3rem;cursor:pointer;
                       opacity:.7;line-height:1}
 #act-panel .hd button:hover{opacity:1}
 #act-body{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem}
 .act-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem}
-.act-card h3{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.08em;
+.act-card h3{font-family:Hanken Grotesk,sans-serif;font-size:.62rem;letter-spacing:.08em;
              text-transform:uppercase;color:#8a8a8a;margin-bottom:.5rem}
 .act-now{font-size:1.05rem;font-weight:500}
-.act-sub{font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.05em;
+.act-sub{font-family:Hanken Grotesk,sans-serif;font-size:.62rem;letter-spacing:.05em;
          color:#6a6a6a;margin-top:.25rem}
 .act-bar{height:6px;background:#eceae3;border-radius:3px;margin-top:.6rem;overflow:hidden}
 .act-bar i{display:block;height:100%;background:var(--terra);transition:width .4s}
-.act-stats{display:flex;gap:1rem;margin-top:.6rem;font-family:'Montserrat',sans-serif;
+.act-stats{display:flex;gap:1rem;margin-top:.6rem;font-family:Hanken Grotesk,sans-serif;
            font-size:.62rem;letter-spacing:.04em}
-.act-stats b{font-size:.95rem;display:block;font-family:'Jost',sans-serif;letter-spacing:0}
+.act-stats b{font-size:.95rem;display:block;font-family:Hanken Grotesk,sans-serif;letter-spacing:0}
 .act-file{display:flex;justify-content:space-between;align-items:center;gap:.6rem;
           padding:.45rem 0;border-bottom:1px solid #f0efe9;font-size:.78rem}
 .act-file:last-child{border-bottom:0}
 .act-file .fn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .act-file .fn .alb{color:#8a8a8a;font-size:.68rem;display:block}
-.act-file .meta{font-family:'Montserrat',sans-serif;font-size:.6rem;color:#8a8a8a;
+.act-file .meta{font-family:Hanken Grotesk,sans-serif;font-size:.6rem;color:#8a8a8a;
                 white-space:nowrap;text-align:right}
 .act-file .meta .stale{color:#b3453a;font-weight:600}
 #act-empty{color:#8a8a8a;font-size:.85rem;text-align:center;padding:2rem 1rem}
@@ -857,7 +857,7 @@ main{overflow-y:auto;padding:1rem}
        align-items:center;justify-content:center;flex-direction:column;gap:.8rem}
 #light.open{display:flex}
 #light img{max-width:92vw;max-height:72vh;object-fit:contain;box-shadow:0 10px 50px rgba(0,0,0,.5)}
-#light .meta{color:#cfcfcf;font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.08em}
+#light .meta{color:#cfcfcf;font-family:Hanken Grotesk,sans-serif;font-size:.62rem;letter-spacing:.08em}
 /* Arrows sit against the screen edges, vertically centred, so a review session
    is one hand on one key or one spot on screen - never hunting for a control. */
 .nav{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:82px;
@@ -871,13 +871,13 @@ main{overflow-y:auto;padding:1rem}
              font-size:1.7rem;line-height:1;cursor:pointer;opacity:.7}
 #light-close:hover{opacity:1}
 #light-count{position:fixed;top:18px;left:20px;color:rgba(255,255,255,.6);
-             font-family:'Montserrat',sans-serif;font-size:.62rem;letter-spacing:.08em}
+             font-family:Hanken Grotesk,sans-serif;font-size:.62rem;letter-spacing:.08em}
 /* The pick + note strip. Kept in the lightbox because the decision and the
    reason happen at the same moment - reviewing a photo and then hunting for
    somewhere to type about it loses the thought. */
 #light-tools{display:flex;align-items:flex-start;gap:.7rem;width:min(760px,92vw)}
 .pick-btn{flex:0 0 auto;display:flex;align-items:center;gap:.4rem;cursor:pointer;
-          font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.07em;
+          font-family:Hanken Grotesk,sans-serif;font-size:.6rem;letter-spacing:.07em;
           text-transform:uppercase;padding:.55rem .8rem;border-radius:4px;
           border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff}
 .pick-btn:hover{background:rgba(255,255,255,.18)}
@@ -906,7 +906,7 @@ main{overflow-y:auto;padding:1rem}
             box-shadow:-8px 0 30px rgba(0,0,0,.25);display:flex;flex-direction:column}
 #pick-panel .hd{background:var(--ink);color:#fff;padding:1rem 1.2rem;display:flex;
                 align-items:center;justify-content:space-between;position:sticky;top:0;z-index:2}
-#pick-panel .hd h2{font-family:'Fraunces',serif;font-weight:400;font-size:1.15rem}
+#pick-panel .hd h2{font-family:'Newsreader',serif;font-weight:400;font-size:1.15rem}
 #pick-panel .hd button{background:none;border:0;color:#fff;font-size:1.3rem;cursor:pointer;
                        opacity:.7;line-height:1}
 #pick-panel .hd button:hover{opacity:1}
@@ -916,7 +916,7 @@ main{overflow-y:auto;padding:1rem}
 .pk img{width:78px;height:78px;object-fit:cover;border-radius:5px;cursor:pointer;flex:0 0 auto;
         background:#e9e6df}
 .pk .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.35rem}
-.pk .who{font-family:'Montserrat',sans-serif;font-size:.56rem;letter-spacing:.06em;
+.pk .who{font-family:Hanken Grotesk,sans-serif;font-size:.56rem;letter-spacing:.06em;
          text-transform:uppercase;color:#8a8a8a;display:flex;justify-content:space-between;gap:.4rem}
 .pk .who b{color:var(--terra);font-weight:600}
 .pk .fn{font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -924,20 +924,20 @@ main{overflow-y:auto;padding:1rem}
              padding:.4rem .5rem;border:1px solid var(--line);border-radius:4px;background:#fdfdfb}
 .pk textarea:focus{outline:none;border-color:var(--terra)}
 .pk .drop{background:none;border:0;color:#b3453a;cursor:pointer;padding:0;
-          font-family:'Montserrat',sans-serif;font-size:.54rem;letter-spacing:.05em;
+          font-family:Hanken Grotesk,sans-serif;font-size:.54rem;letter-spacing:.05em;
           text-transform:uppercase;text-decoration:underline}
 /* specific enough to beat "#pick-panel .hd button", which sets a 1.3rem
    borderless style for the close X and otherwise swallows these pills */
-#pick-panel .hd button.scope{font-family:'Montserrat',sans-serif;font-size:.55rem;
+#pick-panel .hd button.scope{font-family:Hanken Grotesk,sans-serif;font-size:.55rem;
        letter-spacing:.06em;text-transform:uppercase;color:#fff;
        background:rgba(255,255,255,.12);cursor:pointer;opacity:1;
        border:1px solid rgba(255,255,255,.28);border-radius:11px;padding:3px 9px}
 #pick-panel .hd button.scope:hover{background:rgba(255,255,255,.24)}
 #pick-panel .hd button.scope.on{background:var(--terra);border-color:var(--terra)}
-.pk-group{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.08em;
+.pk-group{font-family:Hanken Grotesk,sans-serif;font-size:.58rem;letter-spacing:.08em;
           text-transform:uppercase;color:#8a8a8a;margin-top:.4rem}
 #pick-empty{color:#8a8a8a;font-size:.85rem;text-align:center;padding:2.5rem 1rem;line-height:1.6}
-.saved{color:#2D6B50;font-size:.54rem;font-family:'Montserrat',sans-serif;letter-spacing:.06em;
+.saved{color:#2D6B50;font-size:.54rem;font-family:Hanken Grotesk,sans-serif;letter-spacing:.06em;
        text-transform:uppercase;opacity:0;transition:opacity .2s}
 .saved.on{opacity:1}
 
@@ -946,7 +946,7 @@ main{overflow-y:auto;padding:1rem}
 
 /* ============== SUITE SWITCHER (the getsuite wordmark dropdown) ============ */
 .suite-logo{display:inline-flex;align-items:center;gap:.25rem;background:none;border:0;
-  padding:0;cursor:pointer;font-family:'Fraunces',serif;font-size:1.05rem;color:#fff}
+  padding:0;cursor:pointer;font-family:'Newsreader',serif;font-size:1.05rem;color:#fff}
 .suite-logo b{font-weight:400;color:#6EC99A}
 .suite-logo svg{opacity:.6}
 #applist{position:fixed;top:3.1rem;left:.75rem;z-index:600;width:min(20rem,calc(100vw - 1.5rem));
@@ -954,9 +954,9 @@ main{overflow-y:auto;padding:1rem}
   box-shadow:0 14px 40px rgba(11,13,16,.16)}
 #applist[hidden]{display:none}
 #applist a{display:flex;align-items:baseline;gap:.6rem;padding:.7rem .8rem;border-radius:10px;
-  text-decoration:none;color:#1C2821;font-family:'Fraunces',serif;font-size:1.15rem}
+  text-decoration:none;color:#1C2821;font-family:'Newsreader',serif;font-size:1.15rem}
 #applist a b{font-weight:400;color:#2D6B50}
-#applist a span{font-family:'Montserrat',sans-serif;font-size:.68rem;color:#8a8a8a}
+#applist a span{font-family:Hanken Grotesk,sans-serif;font-size:.68rem;color:#8a8a8a}
 #applist a:hover{background:#F7F7F3}
 #applist a.on{background:rgba(45,107,80,.08)}
 </style>
@@ -1014,7 +1014,7 @@ main{overflow-y:auto;padding:1rem}
     <span id="file-name">no file open</span>
   </div>
   <div class="header-actions">
-    <span id="word-count" style="font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.4)"></span>
+    <span id="word-count" style="font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.4)"></span>
     <span class="save-status" id="save-status"></span>
     <button class="btn btn-open" id="btn-photos" onclick="togglePhotoPanel()">Photos</button>
     <button class="btn btn-open" id="btn-open">Open Article</button>
@@ -1168,7 +1168,7 @@ main{overflow-y:auto;padding:1rem}
     <div class="sidebar-foot">
       <div class="sidebar-label" style="margin-bottom:.45rem">Site Folder · for images</div>
       <div id="folder-status">
-        <button id="btn-connect-folder" onclick="connectFolder()" style="width:100%;font-family:'Montserrat',sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">
+        <button id="btn-connect-folder" onclick="connectFolder()" style="width:100%;font-family:Hanken Grotesk,sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">
           ⚙ Connect Site Folder
         </button>
       </div>
@@ -1217,12 +1217,15 @@ main{overflow-y:auto;padding:1rem}
       <div class="tool-divider"></div>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
         <option value="">Font</option>
-        <option value="'Source Sans 3', sans-serif">Source Sans 3</option>
-        <option value="Jost, sans-serif">Jost</option>
-        <option value="__jost-bold__">Jost Bold</option>
-        <option value="Fraunces, serif">Fraunces</option>
-        <option value="Lora, serif">Lora</option>
-        <option value="'Space Mono', monospace">Mono</option>
+        <!-- Only the two faces the site actually serves. The old list offered
+             Jost, Fraunces, Lora and Source Sans 3, all retired by the
+             re-theme: picking one wrote a font into the article that the
+             published page has no @font-face for, so it fell back silently. -->
+        <option value="'Hanken Grotesk', sans-serif">Body (Hanken Grotesk)</option>
+        <option value="__body-bold__">Body bold</option>
+        <option value="'Newsreader', Georgia, serif">Display (Newsreader)</option>
+        <option value="__display-italic__">Display italic</option>
+        <option value="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">Mono</option>
       </select>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
         <option value="">Size</option>
@@ -1341,7 +1344,7 @@ main{overflow-y:auto;padding:1rem}
   <a href="#editor" data-view="editor">Article&nbsp;<b>Editor</b><span>write &amp; lay out articles</span></a>
   <a href="#library" data-view="library">Photo&nbsp;<b>Library</b><span>backups, ratings &amp; blog picks</span></a>
   <a href="http://127.0.0.1:5004/" data-view="heroes" target="_blank" rel="noopener">Hero&nbsp;<b>Picker</b><span>choose the banner for a page</span></a>
-  <div id="build-stamp" style="padding:.3rem .8rem .2rem;font-family:'Montserrat',sans-serif;
+  <div id="build-stamp" style="padding:.3rem .8rem .2rem;font-family:Hanken Grotesk,sans-serif;
     font-size:.55rem;letter-spacing:.06em;color:#b5b5b5">build 2026-08-26.1</div>
 </div>
 
@@ -1690,13 +1693,13 @@ main{overflow-y:auto;padding:1rem}
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;' +
       'display:flex;align-items:center;justify-content:center;gap:1rem;' +
       'padding:.55rem 1rem;background:#8a2f24;color:#fff;' +
-      "font-family:'Montserrat',sans-serif;font-size:.8rem";
+      "font-family:Hanken Grotesk,sans-serif;font-size:.8rem";
     b.innerHTML = '<span><b>Photos can’t load</b> — the photo server ' +
       'isn’t running. Double-click <b>Start Photo Tools.cmd</b> in your ' +
       'Travel Blog folder, then reload.</span>' +
       '<button style="background:none;border:1px solid rgba(255,255,255,.5);' +
       'color:#fff;border-radius:3px;padding:.2rem .7rem;cursor:pointer;' +
-      "font-family:'Montserrat',sans-serif;font-size:.7rem\">Reload</button>";
+      "font-family:Hanken Grotesk,sans-serif;font-size:.7rem\">Reload</button>";
     b.querySelector('button').onclick = () => location.reload();
     document.body.appendChild(b);
   }
@@ -1708,7 +1711,7 @@ main{overflow-y:auto;padding:1rem}
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;' +
       'display:flex;align-items:center;justify-content:center;gap:1rem;' +
       'padding:.55rem 1rem;background:#12514B;color:#fff;' +
-      "font-family:'Montserrat',sans-serif;font-size:.8rem";
+      "font-family:Hanken Grotesk,sans-serif;font-size:.8rem";
     b.innerHTML = '<span>Reconnect your Travel Blog folder so the to-do list ' +
       'keeps syncing to your phone.</span>' +
       '<button id="reconnect-btn" style="border:0;border-radius:4px;' +
@@ -1751,14 +1754,14 @@ main{overflow-y:auto;padding:1rem}
   function updateFolderUI() {
     const status = document.getElementById('folder-status');
     if (!folderHandle) {
-      status.innerHTML = `<button onclick="connectFolder()" style="width:100%;font-family:'Montserrat',sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">⚙ Connect Site Folder</button>`;
+      status.innerHTML = `<button onclick="connectFolder()" style="width:100%;font-family:Hanken Grotesk,sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">⚙ Connect Site Folder</button>`;
       return;
     }
     status.innerHTML = `
-      <div style="font-family:'Montserrat',sans-serif;font-size:.5rem;letter-spacing:.1em;color:rgba(28,40,33,.5);text-transform:uppercase;margin-bottom:.3rem">Connected</div>
+      <div style="font-family:Hanken Grotesk,sans-serif;font-size:.5rem;letter-spacing:.1em;color:rgba(28,40,33,.5);text-transform:uppercase;margin-bottom:.3rem">Connected</div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem">
-        <span style="font-family:'Montserrat',sans-serif;font-size:.55rem;color:var(--terra);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${folderHandle.name}">${folderHandle.name}</span>
-        <button onclick="connectFolder()" title="Change folder" style="font-family:'Montserrat',sans-serif;font-size:.5rem;background:none;border:1px solid var(--b-medium);border-radius:2px;padding:.15rem .35rem;cursor:pointer;color:rgba(28,40,33,.4);flex-shrink:0">↺</button>
+        <span style="font-family:Hanken Grotesk,sans-serif;font-size:.55rem;color:var(--terra);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${folderHandle.name}">${folderHandle.name}</span>
+        <button onclick="connectFolder()" title="Change folder" style="font-family:Hanken Grotesk,sans-serif;font-size:.5rem;background:none;border:1px solid var(--b-medium);border-radius:2px;padding:.15rem .35rem;cursor:pointer;color:rgba(28,40,33,.4);flex-shrink:0">↺</button>
       </div>`;
   }
 
@@ -2504,7 +2507,19 @@ main{overflow-y:auto;padding:1rem}
   function applyFontFamily(sel, family) {
     if (!family) return;
     restoreSelection();
-    if (family === '__jost-bold__') {
+    // the display face in italic, which the site uses for captions and asides
+    if (family === '__display-italic__') {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount && !sel.isCollapsed) {
+        const range = sel.getRangeAt(0);
+        const em = document.createElement('em');
+        em.style.fontFamily = "'Newsreader', Georgia, serif";
+        range.surroundContents(em);
+      }
+      dropdown.value = '';
+      return;
+    }
+    if (family === '__body-bold__') {
       const s = window.getSelection();
       if (s && s.rangeCount && !s.isCollapsed) {
         const range = s.getRangeAt(0);
@@ -2539,7 +2554,7 @@ main{overflow-y:auto;padding:1rem}
     const ul = document.createElement('ul');
     ul.style.cssText = 'list-style:none;padding:0;margin:1rem 0 1.5rem';
     const li = document.createElement('li');
-    li.style.cssText = "padding:.7rem 0;border-bottom:1px solid rgba(26,22,16,.1);font-family:'Jost',sans-serif;font-weight:300";
+    li.style.cssText = "padding:.7rem 0;border-bottom:1px solid rgba(26,22,16,.1);font-family:Hanken Grotesk,sans-serif;font-weight:300";
     li.innerHTML = '<strong style="color:var(--ink)">Term</strong> — Description';
     ul.appendChild(li);
     const sel = window.getSelection();
@@ -3155,20 +3170,20 @@ main{overflow-y:auto;padding:1rem}
       t.style.cssText = 'position:fixed;bottom:1.25rem;right:1.25rem;z-index:500;' +
         'background:#1C2821;color:#F7F7F3;padding:1rem 1.25rem;border-radius:6px;' +
         'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:380px;' +
-        "font-family:'Jost',sans-serif;font-size:.85rem;line-height:1.5";
+        "font-family:Hanken Grotesk,sans-serif;font-size:.85rem;line-height:1.5";
       document.body.appendChild(t);
     }
     return t;
   }
   function pipeHead(text, color) {
-    return '<div style="font-family:Montserrat,sans-serif;font-size:.6rem;' +
+    return '<div style="font-family:Hanken Grotesk,sans-serif;font-size:.6rem;' +
       'letter-spacing:.15em;text-transform:uppercase;color:' + (color || '#F2C124') +
       ';margin-bottom:.4rem">' + text + '</div>';
   }
   function pipeDismiss() {
     return '<button onclick="this.parentNode.remove()" style="background:none;' +
       'border:1px solid rgba(255,255,255,.25);color:#F7F7F3;border-radius:3px;' +
-      'padding:.3rem .8rem;cursor:pointer;font-family:Montserrat,sans-serif;' +
+      'padding:.3rem .8rem;cursor:pointer;font-family:Hanken Grotesk,sans-serif;' +
       'font-size:.55rem;letter-spacing:.12em;text-transform:uppercase">Dismiss</button>';
   }
 
@@ -3398,7 +3413,7 @@ main{overflow-y:auto;padding:1rem}
     bar.id = 'find-bar';
     bar.style.cssText = 'display:none;position:fixed;top:64px;right:18px;z-index:500;background:#fff;' +
       'border:1px solid rgba(28,40,33,.16);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.14);' +
-      'padding:.6rem;gap:.4rem;flex-direction:column;font-family:Montserrat,sans-serif;font-size:.7rem';
+      'padding:.6rem;gap:.4rem;flex-direction:column;font-family:Hanken Grotesk,sans-serif;font-size:.7rem';
     bar.innerHTML =
       '<div style="display:flex;gap:.4rem;align-items:center">' +
         '<input id="find-q" placeholder="Find" style="width:190px;padding:.35rem .5rem;border:1px solid rgba(28,40,33,.18);border-radius:4px;font-size:.75rem">' +
@@ -3786,7 +3801,7 @@ main{overflow-y:auto;padding:1rem}
       bar.id = 'pl-cloudbar';
       bar.style.cssText = 'padding:.35rem .5rem;margin:0 8px 4px;border-radius:3px;' +
         'background:#efe9dc;border:1px solid var(--b-medium);' +
-        "font-family:'Montserrat',sans-serif;font-size:.55rem;line-height:1.5";
+        "font-family:Hanken Grotesk,sans-serif;font-size:.55rem;line-height:1.5";
       $('#pl-folders').after(bar);
     }
     if (!PL.cloudTotal) { bar.style.display = 'none'; return; }
@@ -3896,7 +3911,7 @@ main{overflow-y:auto;padding:1rem}
         c.innerHTML = '☁<span>' + n.replace(/\.[^.]+$/, '').slice(-9) + '</span>';
         c.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;' +
           'align-items:center;justify-content:center;gap:2px;font-size:15px;color:#8a8a8a;' +
-          "background:#e9e6df;cursor:pointer;font-family:'Montserrat',sans-serif";
+          "background:#e9e6df;cursor:pointer;font-family:Hanken Grotesk,sans-serif";
         c.querySelector('span').style.cssText = 'font-size:7px;letter-spacing:.02em';
         c.title = n + ' — in iCloud only. Click to download just this photo.';
         c.onclick = () => {                       // deliberate single download
@@ -3923,7 +3938,7 @@ main{overflow-y:auto;padding:1rem}
       const btn = document.createElement('button');
       btn.className = 'pl-more';
       btn.textContent = `Load more (${remaining} left)`;
-      btn.style.cssText = 'grid-column:1/-1;font-family:Montserrat,sans-serif;font-size:.6rem;' +
+      btn.style.cssText = 'grid-column:1/-1;font-family:Hanken Grotesk,sans-serif;font-size:.6rem;' +
         'padding:.5rem;border:1px solid var(--b-medium);background:#fff;border-radius:4px;cursor:pointer';
       btn.onclick = () => (PL.rendered < PL.items.length ? plRenderMore() : plFetchMore());
       g.appendChild(btn);
@@ -5359,7 +5374,7 @@ void main(){
 
   /* ---- captions: a styled div right after the image block ---- */
   const CAPTION_STYLE = "width:79%;margin:-1rem auto 1.75rem;text-align:center;" +
-    "font-family:'Jost',sans-serif;font-size:.85rem;font-style:italic;color:rgba(28,40,33,.55)";
+    "font-family:Hanken Grotesk,sans-serif;font-size:.85rem;font-style:italic;color:rgba(28,40,33,.55)";
   function blockRootOf(img) {
     return img.closest('.img-pair, .img-landscape') ||
            (img.parentElement && img.parentElement.tagName === 'SPAN' &&
@@ -5861,7 +5876,7 @@ void main(){
       n.id = 'pl-flash';
       n.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);' +
         'background:rgba(28,40,33,.92);color:#fff;padding:.5rem 1.1rem;border-radius:18px;' +
-        "font-family:'Montserrat',sans-serif;font-size:.68rem;letter-spacing:.05em;" +
+        "font-family:Hanken Grotesk,sans-serif;font-size:.68rem;letter-spacing:.05em;" +
         'z-index:900;opacity:0;transition:opacity .25s;pointer-events:none';
       document.body.appendChild(n);
     }

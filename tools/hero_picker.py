@@ -660,7 +660,14 @@ loadAlbums.reload = async keep => {
     o.dataset.oy = row.pickOy;
     o.dataset.scrim = row.pickScrim;
     o.dataset.stars = (row.stars || []).join('|');
-    o.textContent = (row.picked ? '✓ ' : '· ') + row.country;
+    // The album folder is the TRIP name, the country is the page it feeds, and
+    // the two often differ: "Patagonia (2024)" is filed under Chile, "Bali"
+    // under Indonesia, "Turkey 2.0" under Türkiye. Showing only the country
+    // made those albums look missing to anyone looking for the trip.
+    var trip = (row.folder || '').replace(/\s*\(\d{4}\)\s*$/, '').trim();
+    var same = trip.toLowerCase() === (row.country || '').toLowerCase();
+    o.textContent = (row.picked ? '✓ ' : '· ') + row.country +
+                    (same ? '' : '  (' + trip + ')');
   });
   $('album').value = keep;
   document.querySelectorAll('.strip .t.saved').forEach(t => t.classList.remove('saved'));
