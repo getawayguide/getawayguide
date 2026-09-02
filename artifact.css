@@ -3764,11 +3764,14 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 /* It sits BESIDE the place name when it fits and wraps to its own row when it
    does not, which is what the row did before. Forcing the h2 to 100% pushed
    every badge onto a second line and left it stranded against the rule.
-   row-gap 9px is the space when it wraps, column-gap 14px when it does not, so
-   it is evenly spaced either way. */
+   Both gaps are measured from the title's BASELINE, the same reference the
+   same-row case aligns to. The h2's box runs 10px past that baseline, so a
+   5px row-gap is a 15px optical gap above the pill, matching the 15px below
+   it (9px pill margin + 6px padding). Measuring from the box instead reads
+   as 12 and 16 and looks wrong on the page, which is what it did. */
 .fn-city-hd {
   display:flex !important; flex-wrap:wrap !important;
-  align-items:flex-end !important; gap:12px 14px !important;
+  align-items:flex-end !important; gap:5px 14px !important;
   /* an earlier rule zeroes this; the badge is a filled block whose box reaches
      the padding edge, so without it the badge sits 2px off the rule */
   padding-bottom:14px !important; }
@@ -3828,8 +3831,8 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
     column-gap:40px !important; }
 }
 @media (max-width:768px) {
-  .f-card { padding:12px 0 !important; }
-  .f-b { font-size:15px !important; }
+  .f-grid .f-card { padding:12px 0 !important; }
+  .f-grid .f-b { font-size:15px !important; }
 }
 
 /* ==========================================================================
