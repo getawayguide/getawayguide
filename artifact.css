@@ -3897,3 +3897,11 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
     width:100%; margin-top:-.6rem; }
 }
+
+/* ---- a heavier veil for one slide. The base veil runs .5 / .1 / .78 down the
+       frame; this is those three multiplied by 1.5, the bottom stop reaching 1
+       on the way. Per-slide because how much scrim a photo needs depends on
+       the photo, and a bright glacier needs more than a sunset. ---- */
+.hero .slide .veil.veil-150 {
+  background:linear-gradient(180deg, rgba(var(--scrim),.75) 0%,
+    rgba(var(--scrim),.15) 36%, rgba(var(--scrim),1) 100%); }
