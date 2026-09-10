@@ -13,6 +13,7 @@ is opened, and JPEGs are decoded at reduced scale, which is most of the reason
 the strip fills quickly now.
 """
 import hashlib
+import os
 import json
 import re
 import statistics
@@ -20,7 +21,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, abort, jsonify, request, send_file
 from PIL import Image, ImageFilter, ImageOps, ImageStat
 
 try:
@@ -74,10 +75,45 @@ def shape_ratio(shape="home", vw=DEFAULT_VW):
 SHAPES = {"home": shape_ratio("home"), "article": shape_ratio("article"),
           "wide": 16 / 9}
 HERO_RATIO = SHAPES["home"]
+
+# The site cuts the hero at three widths and its own media queries are the
+# breakpoints, so judging at exactly these widths is what makes a saved crop
+# pasteable straight into artifact.css.
+BREAKPOINTS = [
+    {"key": "desktop", "label": "Monitor", "vw": 1905, "media": ""},
+    {"key": "laptop", "label": "Laptop", "vw": 1280, "media": "(max-width:1400px)"},
+    {"key": "phone", "label": "Phone", "vw": 402, "media": "(max-width:768px)"},
+]
+
+
+def free_axis(iw, ih, bw, bh):
+    """Which axis object-fit:cover leaves free, and how much of the photo shows.
+
+    cover scales the image until the box is filled, so whichever dimension
+    runs out first is pinned and the other one overflows and can slide. A
+    portrait in a wide hero is pinned by width and slides up and down; a
+    16:9 photo in the phone's nearly square box is pinned by HEIGHT and
+    slides SIDEWAYS. Setting the pinned axis does nothing at all, which is
+    why the picker used to look stuck on some photos.
+    """
+    if iw / ih > bw / bh:
+        return "x", bw / (bh * iw / ih)
+    return "y", bh / (bw * ih / iw)
+
+
+def pick_crops(pick):
+    """A crop per breakpoint, upgrading a pick saved under the old one-value
+    schema so nothing already chosen is lost."""
+    if pick and isinstance(pick.get("crops"), dict):
+        return {b["key"]: pick["crops"].get(b["key"], 50) for b in BREAKPOINTS}
+    legacy = pick.get("objectPositionY", 50) if pick else 50
+    # the old value was judged on a desktop shape, so it carries to the two
+    # wide breakpoints; the phone is a different shape and starts centred
+    return {"desktop": legacy, "laptop": legacy, "phone": 50}
 HERO_MIN = 2880          # native px across the crop for a sharp 1440 hero at 2x
 HERO_FAIR = 1920         # below this it is visibly soft even at 1x
 THUMB_W = 340            # strip thumbnail width
-POOL = ThreadPoolExecutor(max_workers=6)
+POOL = ThreadPoolExecutor(max_workers=min(8, (os.cpu_count() or 6)))
 
 # album folder stem -> country page it feeds
 ALBUM_COUNTRY = {
@@ -138,14 +174,17 @@ def albums():
         if not p.is_dir() or p.name.startswith("_"):
             continue
         stem = p.name.split("(")[0].strip().lower()
-        country = ALBUM_COUNTRY.get(stem, p.name)
+        # B8: an unmapped folder used its FULL name (year included) as the
+        # country, so picks saved under "Cuba (2025)" instead of "Cuba"
+        country = ALBUM_COUNTRY.get(stem, p.name.split("(")[0].strip())
         pick = picked.get(country)
         out.append({"folder": p.name, "country": country,
                     "picked": bool(pick),
                     "pickName": pick["name"] if pick else "",
                     "pickPath": pick["path"] if pick else "",
-                    "pickOy": pick.get("objectPositionY", 50) if pick else 50,
+                    "pickCrops": pick_crops(pick),
                     "pickScrim": pick.get("scrim", 100) if pick else 100,
+                    "pickTitle": pick.get("title", "") if pick else "",
                     "stars": starred.get(country, [])})
     return out
 
@@ -196,7 +235,7 @@ def focus_score(src):
     Measured on the strip thumbnail, which is already being built, so scoring
     the album costs nothing beyond the thumbnails themselves."""
     try:
-        g = Image.open(build(src, THUMB_W, True)).convert("L")
+        g = Image.open(build(src, THUMB_W, False)).convert("L")
         return round(ImageStat.Stat(g.filter(ImageFilter.FIND_EDGES)).stddev[0], 2)
     except Exception:
         return None
@@ -212,7 +251,8 @@ def warm(folder, rows):
     def one(r):
         src = BACKUP / r["path"]
         try:
-            build(src, THUMB_W, True)
+            # focus_score builds the ONE uncropped thumb the strip also serves;
+            # cutting a per-ratio crop here is what used to double the decodes
             s = focus_score(src)
         except Exception:
             s = None
@@ -250,7 +290,10 @@ def measure(f):
 
 @app.get("/photos")
 def photos():
-    folder = BACKUP / request.args["album"]
+    folder = (BACKUP / request.args["album"]).resolve()
+    # B10: /img asserts containment, /photos did not - ?album=.. walked out
+    if BACKUP.resolve() not in folder.parents or not folder.is_dir():
+        abort(404)
     stamp = folder.stat().st_mtime_ns
     hit = _PHOTO_CACHE.get(folder.name)
     if hit and hit[0] == stamp:
@@ -368,14 +411,21 @@ PAGE = r"""<!doctype html>
   .hero { position:relative; aspect-ratio:var(--shape,2.118);
     overflow:hidden; background:#eee; }
   .hero img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    object-position:50% var(--oy,50%); user-select:none; -webkit-user-drag:none;
-    cursor:grab; }
+    object-position:var(--ox,50%) var(--oy,50%); user-select:none;
+    -webkit-user-drag:none; cursor:grab; }
+  .hero[data-axis="x"] img { cursor:ew-resize; }
+  .hero[data-axis="y"] img { cursor:ns-resize; }
   .hero img.dragging { cursor:grabbing; }
   /* the scrim strength is live: not every photo needs the same weight */
   .veil { position:absolute; inset:0; pointer-events:none; opacity:var(--scrim,1);
     background:linear-gradient(180deg,
     rgba(18,26,21,.46) 0%, rgba(18,26,21,.16) 38%, rgba(18,26,21,.86) 100%); }
   .cpy { position:absolute; left:3rem; right:3rem; bottom:3.4rem; pointer-events:none; }
+  .cropcss { background:#12160f; color:#93a199; border:1px solid #27322b;
+    border-radius:7px; padding:11px 13px; font-size:11.5px; line-height:1.6;
+    overflow-x:auto; margin:.6rem 0 0; white-space:pre; }
+  .cropcss b { color:#7fd1a4; font-weight:400; }
+  .cropcss i { color:#65736b; font-style:normal; }
   .cpy .eb { font-size:.64rem; letter-spacing:.18em; text-transform:uppercase;
     color:rgba(255,255,255,.78); margin-bottom:.8rem; }
   .cpy h1 { font-family:Newsreader,Georgia,serif; font-weight:300; margin:0;
@@ -449,13 +499,9 @@ PAGE = r"""<!doctype html>
     <option value="article">Article banner</option>
     <option value="wide">Plain 16:9</option>
   </select>
-  <select id="vw" title="The screen width to judge the crop at. The hero is a
-fixed height, so a wider screen is a longer, thinner strip off the same photo.">
-    <option value="390">Phone 390</option>
-    <option value="768">768</option>
-    <option value="1280">1280</option>
-    <option value="1440">Laptop 1440</option>
-    <option value="1920">1920</option>
+  <select id="vw" title="Which of the site's three hero rules you are setting.
+Each keeps its own crop, because the hero is a fixed height and changes shape
+with the window.">
   </select>
   <span class="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
@@ -475,8 +521,8 @@ fixed height, so a wider screen is a longer, thinner strip off the same photo.">
       </div>
     </div>
     <div class="meta" id="meta"></div>
-    <p class="hint">Drag the photo up or down to set the crop. The crop point is saved as
-    the CSS object-position the site will use.</p>
+    <p class="hint" id="hint">Drag the photo to set the crop.</p>
+    <pre class="cropcss" id="cropcss"></pre>
     <p class="key">
       <span><i class="flag low" style="position:static">LOW RES</i> under 1920px, blurry at any width</span>
       <span><i class="flag fair" style="position:static">1080p-ish</i> fine at 1x, soft at 2x</span>
@@ -489,7 +535,10 @@ fixed height, so a wider screen is a longer, thinner strip off the same photo.">
 <script>
 const TITLES = %TITLES%;
 const SHAPES = %SHAPES%;
-let cur = null, oy = 50, country = '', album = '', qTimer = null;
+let cur = null, country = '', album = '', qTimer = null;
+const BP = %BREAKPOINTS%;
+let bpi = 0;                                   // which hero rule is being set
+let crops = { desktop: 50, laptop: 50, phone: 50 };
 let ALL = [], QUAL = { scores: {}, median: null, done: 0 };
 let STARS = [], scrim = 100;
 
@@ -511,7 +560,8 @@ async function loadAlbums() {
   $('album').innerHTML = rows.map(r =>
     `<option value="${r.folder}" data-country="${r.country}"
              data-picked="${r.picked ? 1 : 0}" data-pick="${r.pickPath}"
-             data-oy="${r.pickOy}" data-scrim="${r.pickScrim}"
+             data-crops='${JSON.stringify(r.pickCrops)}' data-scrim="${r.pickScrim}"
+             data-pick-title="${(r.pickTitle || '').replace(/"/g, '&quot;')}"
              data-stars="${(r.stars || []).join('|')}">${r.picked ? '✓ ' : '· '}${albumLabel(r)}</option>`
   ).join('');
   const done = rows.filter(r => r.picked).length;
@@ -525,18 +575,20 @@ async function loadStrip() {
   album = sel.value;
   country = sel.dataset.country;
   $('eb').textContent = country + ' · Field notes';
-  $('title').value = TITLES[country] || (country + ' Travel Guide');
+  // B9: a title edited at save time comes back next visit instead of the default
+  $('title').value = sel.dataset.pickTitle || TITLES[country] || (country + ' Travel Guide');
   $('h1').textContent = $('title').value;
   $('strip').textContent = 'Loading…';
   STARS = (sel.dataset.stars || '').split('|').filter(Boolean);
   ALL = await (await fetch('/photos?album=' + encodeURIComponent(album))).json();
-  render();
+  render(true);          // a fresh album restores whatever was saved for it
   pollQuality();
 }
 
 /* the strip is for choosing, so by default it hides what could never be a hero */
-function render() {
+function render(restore) {
   const sel = $('album').selectedOptions[0];
+  const keep = cur;              // the innerHTML rebuild below drops .on
   const mode = $('filter').value;
   const shape = $('shape').value;
   const saved0 = sel.dataset.pick;
@@ -555,7 +607,7 @@ function render() {
          data-p="${r.path}" data-w="${r.heroW}" data-name="${r.name}" data-tier="${r.tier}">
       <button class="fav" title="Shortlist this photo">${STARS.includes(r.path) ? '★' : '☆'}</button>
       <img loading="lazy" decoding="async"
-           src="/img?crop=1&w=340&shape=${shape}&vw=${$('vw').value}&p=${encodeURIComponent(r.path)}">
+           src="/img?w=340&p=${encodeURIComponent(r.path)}">
       ${r.tier === 'low' ? '<span class="flag low">LOW RES</span>'
         : r.tier === 'fair' ? '<span class="flag fair">' + r.w + 'px</span>' : ''}
       <span class="n">${r.name}</span>
@@ -566,34 +618,63 @@ function render() {
     toggleStar(f.closest('.t'));
   });
   $('count').textContent += STARS.length ? ` · ${STARS.length} starred` : '';
-  if (saved) {
+  if (restore && saved) {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
-    if (t) { pick(t); oy = +sel.dataset.oy || 50; setOy();
+    if (t) { pick(t); crops = readCrops(sel); applyCrop();
              setScrim(+sel.dataset.scrim || 100);
              t.scrollIntoView({block:'center'}); }
+  } else if (keep) {
+    // keep the selection visible without touching the crop in progress
+    const t = document.querySelector(`.strip .t[data-p="${CSS.escape(keep.path)}"]`);
+    if (t) { t.classList.add('on'); }
   }
   applyFocusFlags();
 }
 
-$('filter').onchange = () => { render(); };
+$('filter').onchange = () => { render(); };   // keeps the crop in progress
 
 /* The picker shows whichever hero this photo is destined for, at whichever
    screen width it is being judged for, in the stage and the strip alike. The
    hero is a fixed height, so width is half the shape: the same photo is a
    2.12:1 strip on a laptop and a 2.82:1 one on a 1920 monitor. */
-function heroRatio() {
+function boxOf(i) {
   const shape = $('shape').value;
-  if (shape === 'wide') { return 16 / 9; }
-  const vw = +$('vw').value;
-  const h = vw <= 768 ? 470 : (shape === 'article' ? 560 : 680);
-  return vw / h;
+  const vw = BP[i].vw;
+  if (shape === 'wide') { return { w: vw, h: vw / (16 / 9) }; }
+  return { w: vw, h: vw <= 768 ? 470 : (shape === 'article' ? 560 : 680) };
 }
+function heroRatio() { const b = boxOf(bpi); return b.w / b.h; }
+
+/* cover pins whichever dimension runs out first; the other is the one you can
+   actually drag. For a 16:9 photo that is sideways on the phone and vertical
+   on the two desktop shapes, so the picker has to ask per photo per shape. */
+function geomFor(i) {
+  const img = $('pic');
+  if (!img.naturalWidth) { return { axis: 'y', travel: 0, shown: 1 }; }
+  const b = boxOf(i);
+  const src = img.naturalWidth / img.naturalHeight;
+  if (src > b.w / b.h) {
+    const sw = b.h * src;
+    return { axis: 'x', travel: sw - b.w, shown: b.w / sw };
+  }
+  const sh = b.w / src;
+  return { axis: 'y', travel: sh - b.h, shown: b.h / sh };
+}
+
+function readCrops(sel) {
+  try {
+    const c = JSON.parse(sel.dataset.crops || '{}');
+    return { desktop: +c.desktop || 50, laptop: +c.laptop || 50, phone: +c.phone || 50 };
+  } catch (e) { return { desktop: 50, laptop: 50, phone: 50 }; }
+}
+
 function applyShape() {
   document.documentElement.style.setProperty('--shape', heroRatio());
+  applyCrop();
   render();
 }
 $('shape').onchange = applyShape;
-$('vw').onchange = applyShape;
+$('vw').onchange = () => { bpi = +$('vw').value; applyShape(); };
 
 /* the focus scores arrive as the pool finishes; label the soft frames when they do */
 function applyFocusFlags() {
@@ -632,9 +713,10 @@ function pick(t) {
   t.classList.add('on');
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
           tier: t.dataset.tier };
-  oy = 50;
-  $('pic').style.setProperty('--oy', '50%');
+  crops = { desktop: 50, laptop: 50, phone: 50 };
+  $('pic').onload = applyCrop;      // the axis is not known until the photo is
   $('pic').src = '/img?w=1600&p=' + encodeURIComponent(cur.path);
+  applyCrop();
   const q = cur.tier === 'good'
     ? '<span class="good">sharp at 2× on a 1440 hero</span>'
     : cur.tier === 'fair'
@@ -671,29 +753,76 @@ function setScrim(v) {
 $('scrim').addEventListener('input', e => setScrim(+e.target.value));
 
 $('title').addEventListener('input', () => { $('h1').textContent = $('title').value; });
-$('reset').onclick = () => { oy = 50; setOy(); };
+$('reset').onclick = () => { crops[BP[bpi].key] = 50; applyCrop(); };
 
-function setOy() {
-  oy = Math.max(0, Math.min(100, oy));
-  $('pic').style.setProperty('--oy', oy + '%');
-  const v = document.getElementById('oyv');
-  if (v) { v.textContent = 'crop ' + Math.round(oy) + '%'; }
+function slug(x) {
+  return (x || 'hero').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+/* the value goes in whichever slot moves; the pinned one stays at 50% because
+   putting anything else there would be a number that does nothing */
+function posFor(i) {
+  const v = Math.round(crops[BP[i].key] * 10) / 10;
+  return geomFor(i).axis === 'x' ? v + '% 50%' : '50% ' + v + '%';
+}
+
+function applyCrop() {
+  const g = geomFor(bpi);
+  const key = BP[bpi].key;
+  crops[key] = Math.max(0, Math.min(100, crops[key]));
+  const v = crops[key];
+  $('pic').style.setProperty('--ox', g.axis === 'x' ? v + '%' : '50%');
+  $('pic').style.setProperty('--oy', g.axis === 'y' ? v + '%' : '50%');
+  $('hero').dataset.axis = g.axis;
+
+  const read = document.getElementById('oyv');
+  if (read) { read.textContent = 'crop ' + Math.round(v) + '%'; }
+  $('hint').innerHTML = cur
+    ? 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
+      + '</b> to set the ' + BP[bpi].label.toLowerCase() + ' crop. This photo is '
+      + $('pic').naturalWidth + '\u00d7' + $('pic').naturalHeight
+      + ', so in this frame it is pinned by ' + (g.axis === 'x' ? 'height' : 'width')
+      + ' and only that one axis moves. It keeps ' + Math.round(g.shown * 100)
+      + '% of the photo.'
+    : 'Drag the photo to set the crop.';
+
+  const cls = '.hero .slide img.hp-' + slug(country);
+  const line = i => cls + ' { object-position:' + posFor(i).replace(
+    /([\d.]+%)(?!\s*})/, m => m) + '; }';
+  const mark = i => {
+    const g2 = geomFor(i), v2 = Math.round(crops[BP[i].key] * 10) / 10;
+    const val = g2.axis === 'x'
+      ? '<b>' + v2 + '%</b> <i>50%</i>' : '<i>50%</i> <b>' + v2 + '%</b>';
+    return cls + ' { object-position:' + val + '; }';
+  };
+  $('cropcss').innerHTML =
+    mark(0) + '\n\n@media ' + BP[1].media + ' {\n  ' + mark(1) + '\n}\n\n'
+    + '@media ' + BP[2].media + ' {\n  ' + mark(2) + '\n}';
 }
 
 let drag = null;
 $('hero').addEventListener('pointerdown', e => {
   if (!cur) { return; }
-  drag = { y: e.clientY, oy };
+  const g = geomFor(bpi);
+  drag = { at: g.axis === 'x' ? e.clientX : e.clientY,
+           from: crops[BP[bpi].key], axis: g.axis };
   $('pic').classList.add('dragging');
   $('hero').setPointerCapture(e.pointerId);
 });
 $('hero').addEventListener('pointermove', e => {
   if (!drag) { return; }
   const img = $('pic'), box = $('hero').getBoundingClientRect();
-  const imgH = img.naturalHeight * (box.width / img.naturalWidth);
-  const spare = Math.max(1, imgH - box.height);
-  oy = drag.oy - (e.clientY - drag.y) / spare * 100;
-  setOy();
+  const src = img.naturalWidth / img.naturalHeight;
+  // travel measured on the RENDERED frame, on whichever axis is free. The old
+  // version always used height and clamped the spare to 1, so a photo wider
+  // than its box swung the full range on a single pixel of movement.
+  const spare = drag.axis === 'x'
+    ? box.height * src - box.width
+    : box.width / src - box.height;
+  if (spare <= 0.5) { return; }
+  const now = drag.axis === 'x' ? e.clientX : e.clientY;
+  crops[BP[bpi].key] = drag.from - (now - drag.at) / spare * 100;
+  applyCrop();
 });
 ['pointerup', 'pointercancel'].forEach(ev => $('hero').addEventListener(ev, () => {
   drag = null; $('pic').classList.remove('dragging');
@@ -701,8 +830,15 @@ $('hero').addEventListener('pointermove', e => {
 
 $('save').onclick = async () => {
   if (!cur) { return toast('Pick a photo first'); }
+  const rounded = {};
+  BP.forEach(b => { rounded[b.key] = Math.round(crops[b.key] * 10) / 10; });
+  // objectPositionY is kept so anything reading the old schema still works; it
+  // is the desktop value, and only when the desktop axis is the vertical one
+  const legacy = geomFor(0).axis === 'y' ? rounded.desktop : 50;
   const body = { country, path: cur.path, name: cur.name,
-                 objectPositionY: Math.round(oy * 10) / 10,
+                 crops: rounded,
+                 objectPosition: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) },
+                 objectPositionY: legacy,
                  scrim: scrim,
                  title: $('title').value };
   const r = await (await fetch('/save', { method: 'POST',
@@ -722,7 +858,8 @@ loadAlbums.reload = async keep => {
     if (!row) { return; }
     o.dataset.picked = row.picked ? 1 : 0;
     o.dataset.pick = row.pickPath;
-    o.dataset.oy = row.pickOy;
+    o.dataset.crops = JSON.stringify(row.pickCrops);
+    o.dataset.pickTitle = row.pickTitle || '';
     o.dataset.scrim = row.pickScrim;
     o.dataset.stars = (row.stars || []).join('|');
     // The ALBUM name is the label, because that is what you are choosing
@@ -748,17 +885,15 @@ function toast(t) {
   setTimeout(() => el.classList.remove('on'), 2600);
 }
 
-/* open at this monitor's width, less a scrollbar, rather than at a laptop's */
+/* the three rules the site actually has, and the widest one judged at this
+   monitor's width rather than a nominal one: any screen over 1400 uses it */
 (function () {
-  const mine = Math.max(320, (window.screen && screen.width ? screen.width : 1440) - 15);
-  const sel = $('vw');
-  if (![...sel.options].some(o => +o.value === mine)) {
-    const o = document.createElement('option');
-    o.value = mine;
-    o.textContent = 'My screen ' + mine;
-    sel.appendChild(o);
-  }
-  sel.value = String(mine);
+  const mine = Math.max(320, (window.screen && screen.width ? screen.width : 1905) - 15);
+  if (mine > 1400) { BP[0].vw = mine; }
+  $('vw').innerHTML = BP.map((b, i) =>
+    `<option value="${i}">${b.label} ${b.vw}${b.media ? '  ' + b.media : ''}</option>`
+  ).join('');
+  $('vw').value = '0';
 })();
 document.documentElement.style.setProperty('--shape', heroRatio());
 setScrim(100);
@@ -766,8 +901,34 @@ loadAlbums();
 </script>
 </body></html>
 """.replace("%TITLES%", json.dumps(TITLES, ensure_ascii=False)
-          ).replace("%SHAPES%", json.dumps(SHAPES))
+          ).replace("%SHAPES%", json.dumps(SHAPES)
+          ).replace("%BREAKPOINTS%", json.dumps(BREAKPOINTS))
+
+
+def warm_all():
+    """Pre-bake every album's thumbnails and focus scores, then exit. Run it
+    once (or after adding photos) and the picker never decodes interactively:
+        python tools/hero_picker.py --warm-all
+    """
+    import sys as _s
+    dirs = [p for p in sorted(BACKUP.iterdir())
+            if p.is_dir() and not p.name.startswith("_")]
+    done = 0
+    for d in dirs:
+        files = [f for f in sorted(d.rglob("*"))
+                 if f.suffix.lower() in EXT and f.is_file()
+                 and not is_stray_thumb(f.name)]
+        fresh = [f for f in files if not cache_path(f, THUMB_W, False, 1).exists()]
+        print(f"  {d.name:34s} {len(files):4d} photos, {len(fresh):4d} to build",
+              flush=True)
+        for _ in POOL.map(lambda f: (focus_score(f), None)[1], files):
+            done += 1
+    print(f"  warmed {done} photos across {len(dirs)} albums")
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5004, debug=False, threaded=True)
+    import sys as _sys
+    if "--warm-all" in _sys.argv:
+        warm_all()
+    else:
+        app.run(host="127.0.0.1", port=5004, debug=False, threaded=True)

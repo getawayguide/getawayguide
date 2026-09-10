@@ -39,6 +39,7 @@ import sqlite3
 import subprocess
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import time
 import unicodedata
 from html.parser import HTMLParser
@@ -1423,6 +1424,7 @@ def api_backup_browse():
                        "rating": rat.get(f"{album}/{p.name}", 0),
                        "picked": pick is not None,
                        "note": (pick or {}).get("note", "")})
+    warm_library(album, [BACKUP / album / x["n"] for x in photos])
     return jsonify({"album": album, "photos": photos})
 
 
@@ -1647,6 +1649,50 @@ def bthumb_path(p, size):
     return THUMBS / (re.sub(r"\W", "_", key)[-120:] + ".jpg")
 
 
+def _build_bthumb(p, size):
+    """Build (or find) the cached thumb for a backed-up photo. Raises on an
+    undecodable file so the endpoint can 415 and the warmer can skip."""
+    cache = bthumb_path(p, size)
+    if cache.exists():
+        return cache
+    with _thumb_gate:
+        if cache.exists():
+            return cache
+        im = ImageOps.exif_transpose(Image.open(p))
+        icc = im.info.get("icc_profile")
+        im.thumbnail((size, size))
+        kw = {"quality": 82}
+        if icc:
+            kw["icc_profile"] = icc
+        im.convert("RGB").save(cache, "JPEG", **kw)
+    return cache
+
+
+# the library grid asks for s=400; build the missing ones the moment an album
+# is opened, on a pool of two so a big album never starves the live requests
+_lib_warm_pool = ThreadPoolExecutor(max_workers=2)
+_lib_warmed = set()
+_lib_warm_lock = threading.Lock()
+
+
+def _warm_library_album(album, paths):
+    for p in paths:
+        try:
+            _build_bthumb(p, 400)
+        except Exception:
+            pass
+
+
+def warm_library(album, paths):
+    with _lib_warm_lock:
+        if album in _lib_warmed:
+            return
+        _lib_warmed.add(album)
+    missing = [p for p in paths if not bthumb_path(p, 400).exists()]
+    if missing:
+        _lib_warm_pool.submit(_warm_library_album, album, missing)
+
+
 @app.route("/bthumb")
 def bthumb():
     """Thumbnail for a backed-up photo (same disk cache as /thumb)."""
@@ -1656,20 +1702,10 @@ def bthumb():
     if BACKUP.resolve() not in p.parents or not p.is_file():
         abort(404)
     size = int(request.args.get("s", 320))
-    cache = bthumb_path(p, size)
-    if not cache.exists():
-        with _thumb_gate:
-            if not cache.exists():
-                try:
-                    im = ImageOps.exif_transpose(Image.open(p))
-                except Exception:
-                    abort(415)
-                icc = im.info.get("icc_profile")
-                im.thumbnail((size, size))
-                kw = {"quality": 82}
-                if icc:
-                    kw["icc_profile"] = icc
-                im.convert("RGB").save(cache, "JPEG", **kw)
+    try:
+        cache = _build_bthumb(p, size)
+    except Exception:
+        abort(415)
     return send_file(cache, mimetype="image/jpeg")
 
 

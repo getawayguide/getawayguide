@@ -468,41 +468,12 @@ p.essentials-header {
 .section-link:hover { color: var(--terra); border-bottom-color: var(--terra); }
 
 /* -------------------------------------------------------- country cards */
-/* the tile goes to 3:4 with the name over a gradient that only touches the foot */
-.home-dest-card { aspect-ratio: 3/4; }
-.dest-overlay {
-  background: linear-gradient(180deg, rgba(18, 26, 21, 0) 44%, rgba(18, 26, 21, .78) 100%);
-}
-.art-card-info {
-  inset: auto 0 0 0 !important;
-  top: auto !important;
-  display: block !important;
-  padding: 0 1.05rem 1.05rem !important;
-  text-align: left !important;
-}
-.art-card-name {
-  font-family: var(--body) !important;
-  font-size: 1.02rem !important;
-  font-weight: 500;
-  letter-spacing: .01em;
-  text-transform: none;
-  color: #fff;
-  margin: 0 0 .3rem;
-}
-.art-card-btn {
-  display: inline-block;
-  border: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  font-size: .56rem;
-  letter-spacing: .15em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .74);
-}
-@media (max-width: 768px) {
-  .home-dest-card { aspect-ratio: 1.9/1; }
-  .art-card-info { padding: 0 1.25rem 1rem !important; }
-}
+/* The destination cards take the HOME PAGE card treatment, which lives in
+   artifact.css (.art-card-info / -name / -btn, and .dest-overlay). The block
+   that used to sit here restyled them into a different design: 3:4, a scrim
+   only at the foot, and the country name bottom-left in sentence case at
+   1.02rem. Because this file is linked AFTER artifact.css it won, so the two
+   pages drifted apart. One treatment, defined once, in artifact.css. */
 
 /* ------------------------------------------------------------ post cards */
 .post-card {

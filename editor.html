@@ -2254,6 +2254,9 @@ main{overflow-y:auto;padding:1rem}
     // Clone editor content and prepare for saving
     const saveEl = document.createElement('div');
     saveEl.innerHTML = editor.innerHTML;
+    // artifacts Chromium injects while EDITING (not just pasting) die here,
+    // so they can never reach a saved page again
+    stripPasteArtifacts(saveEl);
     // Swap blob URLs back to real relative paths
     saveEl.querySelectorAll('img[data-path]').forEach(img => {
       img.setAttribute('src', img.getAttribute('data-path'));
@@ -3066,6 +3069,30 @@ main{overflow-y:auto;padding:1rem}
     return tmp.innerHTML;
   }
 
+  // sanitizePasted cleans the CLIPBOARD, but execCommand('insertHTML') is what
+  // then wraps the insertion in <span style="font-size: 1rem"> and
+  // color: rgb(28, 40, 33) spans to keep inherited formatting - Chromium's
+  // editing engine does it, not the paste. The same spans appear when typing
+  // at the boundary of styled text. This strips exactly those two artifacts,
+  // right after a paste and again at save, so .tmp/fix_paste_styles.py stops
+  // being a recurring manual cleanup.
+  function stripPasteArtifacts(root) {
+    root.querySelectorAll('[style]').forEach(el => {
+      const st = el.style;
+      const fs = (st.fontSize || '').replace(/ /g, '');
+      if (fs === '1rem' || fs === '16px') st.removeProperty('font-size');
+      const c = (st.color || '').replace(/ /g, '');
+      if (c === 'rgb(28,40,33)') st.removeProperty('color');
+      if (!st.length) el.removeAttribute('style');
+    });
+    root.querySelectorAll('span').forEach(sp => {
+      if (sp.attributes.length === 0) {
+        while (sp.firstChild) sp.parentNode.insertBefore(sp.firstChild, sp);
+        sp.remove();
+      }
+    });
+  }
+
   document.getElementById('editor').addEventListener('paste', function(e) {
     const html = e.clipboardData.getData('text/html');
     const text = e.clipboardData.getData('text/plain');
@@ -3073,6 +3100,7 @@ main{overflow-y:auto;padding:1rem}
     e.preventDefault();
     if (html) {
       document.execCommand('insertHTML', false, sanitizePasted(html));
+      stripPasteArtifacts(document.getElementById('editor'));
     } else {
       // plain text: preserve paragraph breaks
       const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -4253,6 +4281,11 @@ main{overflow-y:auto;padding:1rem}
       if (idx <= 0) { list.parentElement.insertBefore(node, list); return; }
       if (idx >= items.length) { list.parentElement.insertBefore(node, list.nextSibling); return; }
       const rest = document.createElement(list.tagName.toLowerCase());
+      if (list.className) rest.className = list.className;
+      // B7: the second half of a split <ol> restarted at 1
+      if (list.tagName === 'OL') {
+        rest.start = (parseInt(list.getAttribute('start') || '1', 10)) + idx;
+      }
       while (items[idx]) { rest.appendChild(items[idx]); items.splice(idx, 1); }
       list.parentElement.insertBefore(rest, list.nextSibling);
       list.parentElement.insertBefore(node, rest);
@@ -4445,6 +4478,24 @@ main{overflow-y:auto;padding:1rem}
     full.onerror = () => alert('Could not load the full image for cropping.');
     full.src = src;
   }
+
+  // B6: openStage sizes the stage from the window ONCE; resizing with the
+  // modal open left the canvas and crop rectangle at the stale size and the
+  // buttons off screen. Re-run the opener for the current mode instead.
+  let _stageRefit;
+  window.addEventListener('resize', () => {
+    if (!document.querySelector('#crop-backdrop.open') || !CM) return;
+    clearTimeout(_stageRefit);
+    _stageRefit = setTimeout(() => {
+      if (!document.querySelector('#crop-backdrop.open') || !CM) return;
+      if (CM.pending) {
+        loadPendingStage(CM.pending.photo, CM.pending.drop, CM.pending.meta,
+                         CM.rot || 0, CM.flip || null);
+      } else if (window.openCropModal) {
+        window.openCropModal();
+      }
+    }, 250);
+  });
 
   // Edit an image that is already in the article (✂ Crop / double-click)
   window.openCropModal = function () {
@@ -5493,7 +5544,10 @@ void main(){
   }
 
   function loadPendingStage(photo, drop, meta, rot, flip) {
-    const keep = CM && CM.pending;                       // survive a re-rotate
+    // survive a re-rotate of the SAME photo only: carrying alt, caption,
+    // erases and masks onto a DIFFERENT photo was QA finding B5
+    const keep = CM && CM.pending && CM.pending.photo
+               && CM.pending.photo.path === photo.path;
     const prevDev = keep && CM.dev ? { ...CM.dev } : null;   // BEFORE CM is replaced
     const prevToken = keep ? CM.eraseToken : null;
     const prevAngle = keep ? CM.angleDeg || 0 : 0;

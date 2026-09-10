@@ -710,7 +710,8 @@
 .frame[data-cards="b"] .tile .veil {
   background:linear-gradient(180deg, rgba(var(--scrim),.15) 0%, rgba(var(--scrim),.62) 100%); }
 .frame[data-cards="b"] .tile .lab { left:0; right:0; bottom:0; top:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; text-align:center; }
 .frame[data-cards="b"] .tile .nm { font-family:var(--body); font-size:21px; font-weight:400;
   letter-spacing:.01em; text-align:center; }
 .frame[data-cards="b"] .tile .sub { display:none; }
@@ -1370,8 +1371,8 @@ body.gg-home { padding-top:0; }
   flex-direction:column; align-items:center; justify-content:center; gap:14px;
   text-align:center !important; padding:0 1rem !important; }
 .art-card-name { font-family:var(--body) !important; font-size:15px !important;
-  font-weight:400 !important; letter-spacing:.15em !important; text-transform:uppercase;
-  color:#fff; margin:0 !important; }
+  font-weight:500 !important; letter-spacing:.15em !important; text-transform:uppercase;
+  color:#fff; margin:0 !important; text-shadow:none !important; }
 .art-card-btn { display:inline-block !important; font-family:var(--body) !important;
   font-size:10.5px !important; letter-spacing:.14em !important; text-transform:uppercase;
   color:#fff !important; border:1px solid rgba(255,255,255,.7) !important;
@@ -3217,7 +3218,7 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
    brightest tiles the label was 3.22:1 (Türkiye) and 3.60:1 (Georgia), and the
    map tile's green EXPLORE was 2.83:1. Deepening the middle stop clears 4.5:1
    on all of them without flattening the photograph at the edges. */
-.tile .veil { background:linear-gradient(180deg, rgba(16,24,19,.28) 0%,
+.tile .veil, .dest-overlay { background:linear-gradient(180deg, rgba(16,24,19,.28) 0%,
   rgba(16,24,19,.56) 46%, rgba(16,24,19,.66) 72%,
   rgba(16,24,19,.72) 100%) !important; }
 /* the map tile's call to action was the worst of them: it is green on photo,
@@ -3865,9 +3866,21 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 .hero-sub {
   font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size:1.05rem; line-height:1.55; color:rgba(255,255,255,.90);
-  margin:14px 0 0; max-width:46ch; }
+  /* 46ch broke the standfirst into three lines with a 107px orphan on the
+     third. 58ch is 545px inside a 700px copy block, a comfortable measure,
+     and holds two lines.
+
+     pretty, not balance: balance equalises the lines and was pinning them at
+     403/446, so the SECOND line came out longer whatever the max-width. pretty
+     fills the first line greedily, which tapers 544/306, and still refuses to
+     leave a single word alone on the last line if the copy changes. */
+  margin:14px 0 0; max-width:58ch; text-wrap:pretty; }
 @media (max-width:768px) {
   .hero-sub { font-size:.95rem; margin-top:11px; max-width:34ch; }
+  /* the standfirst carries a hard break so the desktop line ends on "travel
+     guides"; at 34ch there is no room for it to help, so it is dropped and the
+     phone wraps on its own */
+  .hero-sub br { display:none; }
 }
 
 /* ==========================================================================
@@ -3896,4 +3909,91 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 @media (max-width:768px) {
   .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
     width:100%; margin-top:-.6rem; }
+}
+
+/* ---- The hero veil, all five slides together. The base .veil runs
+       .5 / .1 / .78, mean alpha .390; this is those three at 115%, mean alpha
+       .448. Proportional rather than a heavier middle: the glacier briefly had
+       .47 / .41 / .78 (mean .539) and at that weight it kept only 62% of its
+       brightness through the light band at 36%, where the other four keep 88%,
+       and it read as murky. Scaling all three stops evenly darkens the frame
+       without flattening the band that lets the photograph show.
+
+       Scoped to .hero so it cannot reach anything else; .slide exists only on
+       the home page today, but the base rule is not the place to say this. ---- */
+.hero .slide .veil {
+  background:linear-gradient(180deg, rgba(var(--scrim),.575) 0%,
+    rgba(var(--scrim),.115) 36%, rgba(var(--scrim),.897) 100%); }
+
+/* ---- Patagonia staging, linked to the Argentina article. Values chosen on
+       the shortlist bench. 5350 is 1.33:1, so on a phone it is pinned by
+       height and its crop slides SIDEWAYS; the portraits stay vertical. ---- */
+.hero .slide img.hp-pat-5350 { object-position:50% 43%; }
+
+/* New Zealand teaser: no article behind it yet, so the slide carries no CTA and
+   the parenthetical is italic. <em> inherits the site accent elsewhere, which on
+   a dark photo reads as unreadable teal, so it takes the headline's own colour. */
+.hero .slide img.hp-nz-raft { object-position:50% 12%; }
+.hero .hero-h em { font-style:italic; color:inherit; opacity:.8; }
+.hero .slide img.hp-pat-5348 { object-position:50% 25.5%; }
+.hero .slide img.hp-pat-6204 { object-position:50% 66.5%; }
+.hero .slide img.hp-pat-6420 { object-position:50% 49.5%; }
+.hero .slide img.hp-pat-5245 { object-position:50% 32%; }
+@media (max-width:1400px) {
+  /* 15%, not a taste call: the lake edge is a ~10px band and the laptop box
+     leaves only 280px of travel, so this is the one window where it passes
+     between the headline and the CTA instead of through the second line */
+  .hero .slide img.hp-pat-5350 { object-position:50% 15%; }
+  .hero .slide img.hp-pat-6420 { object-position:50% 53.5%; }
+  .hero .slide img.hp-pat-5245 { object-position:50% 36.5%; }
+}
+@media (max-width:768px) {
+  .hero .slide img.hp-pat-5350 { object-position:39% 50%; }
+  .hero .slide img.hp-pat-6204 { object-position:50% 100%; }
+  .hero .slide img.hp-pat-6420 { object-position:50% 100%; }
+}
+
+/* ---- Philippines staging: these photos drown under the full veil, so they
+       carry it at HALF strength (.575/.115/.897 halved). gp9 is 1.14:1 and
+       goes sideways only on a phone, where its 50% default holds. ---- */
+.hero .slide:has(img.hp-ph) .veil {
+  background:linear-gradient(180deg, rgba(var(--scrim),.29) 0%,
+    rgba(var(--scrim),.06) 36%, rgba(var(--scrim),.45) 100%); }
+/* 0619 alone wants more shade than its group: 85% of the full veil, not 50% */
+.hero .slide:has(img.hp-ph-0619) .veil {
+  background:linear-gradient(180deg, rgba(var(--scrim),.49) 0%,
+    rgba(var(--scrim),.10) 36%, rgba(var(--scrim),.76) 100%); }
+/* 0393 came out brighter once it was regraded, so it takes the FULL veil, the
+   same weight the glacier lead carries: the group's half strength washed out */
+.hero .slide:has(img.hp-ph-0393) .veil {
+  background:linear-gradient(180deg, rgba(var(--scrim),.575) 0%,
+    rgba(var(--scrim),.115) 36%, rgba(var(--scrim),.897) 100%); }
+.hero .slide img.hp-ph-0313 { object-position:50% 60.5%; }
+.hero .slide img.hp-ph-0393 { object-position:50% 58.5%; }
+@media (max-width:1400px) {
+  .hero .slide img.hp-ph-gp9  { object-position:50% 22%; }
+  .hero .slide img.hp-ph-0313 { object-position:50% 57%; }
+  .hero .slide img.hp-ph-0393 { object-position:50% 72.5%; }
+}
+
+/* ---- Hero crops, per photo per shape. The hero is a fixed height, so its
+       aspect changes with the window: 2.80:1 on the monitor, 1.88:1 on a
+       150%-scaled laptop, 0.86:1 on a phone. One object-position cannot serve
+       all three, and which axis even responds depends on the photograph.
+       Chosen on the crop bench against the live page. ---- */
+.hero .slide img.hp-glacier { object-position:50% 62%; }
+.hero .slide img.hp-albania { object-position:50% 43%; }
+.hero .slide img.hp-peru    { object-position:50% 74%; }
+@media (max-width:1400px) {
+  .hero .slide img.hp-glacier { object-position:50% 53%; }
+  .hero .slide img.hp-albania { object-position:50% 0%; }
+  .hero .slide img.hp-peru    { object-position:50% 100%; }
+}
+/* On the phone the two landscape frames flip axis: 1.78:1 in a nearly square
+   box is pinned by HEIGHT, so the vertical value does nothing and the crop is
+   chosen left to right. The glacier, being a portrait, stays vertical. */
+@media (max-width:768px) {
+  .hero .slide img.hp-glacier { object-position:50% 2.5%; }
+  .hero .slide img.hp-albania { object-position:45.5% 50%; }
+  .hero .slide img.hp-peru    { object-position:43% 50%; }
 }
