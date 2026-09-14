@@ -31,6 +31,7 @@ The HTML file is edited by splicing at exact source offsets (html.parser with
 a line-offset table), so everything outside the touched block stays
 byte-identical.
 """
+import functools
 import json
 import os
 import re
@@ -972,6 +973,35 @@ def api_photo_meta():
     return jsonify(out)
 
 
+@app.route("/api/geo")
+def api_geo():
+    """Where the photos in one folder were taken, in the site's place names.
+
+    ?album=<Backup album>  or  ?root=<source idx>&path=<subfolder>. Returns the
+    per-photo place plus grouped counts for a filter menu; `pending` > 0 means
+    EXIF is still being read in the background and the client should poll.
+    See tools/photo_geo.py.
+    """
+    import photo_geo
+    if request.args.get("album") is not None:
+        d = BACKUP / clean_dirname(request.args["album"])
+    else:
+        d = source_path(request.args.get("root", 0), request.args.get("path", ""))
+    if not d.is_dir():
+        return jsonify({"photos": {}, "groups": [], "noGps": 0, "pending": 0, "located": 0, "total": 0})
+    files = []
+    try:
+        with os.scandir(d) as it:
+            for e in it:
+                if (e.is_file() and not e.name.startswith((".", "_"))
+                        and os.path.splitext(e.name)[1].lower() in IMG_EXTS
+                        and not is_stray_thumb(e.name)):
+                    files.append(Path(e.path))
+    except OSError:
+        pass
+    return jsonify(photo_geo.folder_geo(files))
+
+
 _thumb_gate = threading.Semaphore(4)   # decode a few at a time; a burst of iCloud
                                        # HEICs must not starve browse/import calls
 
@@ -1066,10 +1096,67 @@ PICKS = BACKUP / "_meta" / "picks.json"
 
 
 def load_json(p, default):
-    try:
-        return json.loads(p.read_text(encoding="utf-8-sig"))
-    except Exception:
+    """Read a JSON file. A file that is being replaced under a reader (Windows
+    refuses the rename for an instant) or is mid-write reads as broken for a
+    moment, so retry briefly before giving up."""
+    for i in range(4):
+        try:
+            return json.loads(p.read_text(encoding="utf-8-sig"))
+        except FileNotFoundError:
+            return default
+        except Exception:
+            time.sleep(0.05 * (i + 1))
+    return default
+
+
+_meta_lock = threading.RLock()
+
+
+def load_json_for_write(p, default):
+    """Like load_json, but a file that EXISTS and cannot be parsed raises
+    instead of reading as empty. Every writer does write(load() + change), so
+    one unreadable read used to persist `{}` - a 34-pick shortlist and the
+    ratings file both went that way under two concurrent saves."""
+    if not p.exists() or p.stat().st_size == 0:
         return default
+    last = None
+    for i in range(6):
+        try:
+            return json.loads(p.read_text(encoding="utf-8-sig"))
+        except Exception as e:
+            last = e
+            time.sleep(0.05 * (i + 1))
+    raise RuntimeError(f"{p.name} is unreadable, refusing to overwrite it: {last}")
+
+
+def save_json(p, obj, indent=1):
+    """Atomic write: temp file + os.replace, retried while a concurrent reader
+    holds the target open (Windows refuses the rename for that instant)."""
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_name(f"{p.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    tmp.write_text(json.dumps(obj, indent=indent), encoding="utf-8")
+    for _ in range(40):
+        try:
+            os.replace(tmp, p)
+            return
+        except PermissionError:
+            time.sleep(0.05)
+    os.replace(tmp, p)
+
+
+def _serialized(fn):
+    """Meta-file writers (ratings, picks, counts, hold, archived) run one at
+    a time and never write over a file they could not read. The server is
+    threaded, and two rating clicks landing together lost one of them - or,
+    when one read caught the other's rename, wiped the file."""
+    @functools.wraps(fn)
+    def w(*a, **k):
+        with _meta_lock:
+            try:
+                return fn(*a, **k)
+            except RuntimeError as e:
+                return jsonify({"ok": False, "error": str(e)}), 500
+    return w
 
 
 _MS_CACHE = {"key": None, "data": {}}
@@ -1315,8 +1402,7 @@ def api_backup_activity():
     })
 
 
-@app.route("/api/backup_status")
-def api_backup_status():
+def _compute_backup_status():
     st = load_json(BACKUP / "_meta" / "status.json", {"albums": {}})
     shared = Path.home() / "iCloudPhotos" / "Shared"
     out = []
@@ -1395,8 +1481,67 @@ def api_backup_status():
         s = srv.get(a["name"]) or {}
         a["onServer"] = s.get("onServer")         # what Apple actually holds
         a["pending"] = s.get("pending")           # queued for download to this PC
-    return jsonify({"albums": out, "running": st.get("running", False),
-                    "updated": st.get("updated", 0)})
+    # "running" is the watcher's own flag; a watcher that died mid-pass leaves
+    # it true forever (it read "backup running" off a 15-day-old file), so it
+    # only counts while the heartbeat is fresh - the same test the activity
+    # panel applies.
+    now = time.time()
+    running = bool(st.get("running", False)) and (now - st.get("updated", 0)) < 200
+    return {"albums": out, "running": running, "updated": st.get("updated", 0)}
+
+
+# The compute above stats ~13k backup files and walks ~56k iCloud placeholders:
+# 3-4 s idle, a minute under load. The library polls it every 6 s, and computed
+# per request ten calls piled up in one tab and starved every other route. So:
+# computed once up front, then refreshed on a background thread at most every
+# BS_TTL seconds, and every request is answered from the last result at once.
+_bs = {"v": None, "t": 0.0, "busy": False, "lock": threading.Lock()}
+BS_TTL = 6
+
+
+def _refresh_backup_status():
+    try:
+        v = _compute_backup_status()
+        _bs["v"], _bs["t"] = v, time.time()
+    except Exception as e:
+        print("backup_status compute failed:", e)
+    finally:
+        _bs["busy"] = False
+
+
+def _bs_patch(album, **fields):
+    """A count/hold/tick-off just changed: fix the cached card straight away
+    rather than showing the old value until the next refresh."""
+    with _bs["lock"]:
+        v = _bs["v"]
+        if v:
+            for a in v["albums"]:
+                if a["name"] == album:
+                    a.update(fields)
+        _bs["t"] = 0.0                      # and recompute on the next poll
+
+
+@app.route("/api/backup_status")
+def api_backup_status():
+    with _bs["lock"]:
+        if _bs["v"] is None and not _bs["busy"]:
+            _bs["busy"] = True
+            mode = "compute"
+        elif _bs["v"] is None:
+            mode = "wait"
+        else:
+            mode = "serve"
+            if time.time() - _bs["t"] > BS_TTL and not _bs["busy"]:
+                _bs["busy"] = True
+                threading.Thread(target=_refresh_backup_status, daemon=True).start()
+    if mode == "compute":
+        _refresh_backup_status()
+    elif mode == "wait":
+        for _ in range(900):
+            if _bs["v"] is not None:
+                break
+            time.sleep(0.1)
+    return jsonify(_bs["v"] or {"albums": [], "running": False, "updated": 0})
 
 
 @app.route("/api/backup_browse")
@@ -1432,6 +1577,7 @@ EXPECTED = BACKUP / "_meta" / "expected.json"
 
 
 @app.route("/api/expected", methods=["POST", "OPTIONS"])
+@_serialized
 def api_expected():
     """The item count YOU see on your iPhone for an album. It is the only
     trustworthy definition of 'complete' — iCloud pauses an album mid-upload
@@ -1439,21 +1585,89 @@ def api_expected():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True)
-    exp = load_json(EXPECTED, {})
+    exp = load_json_for_write(EXPECTED, {})
     n = str(d.get("count", "")).strip()
-    if n.isdigit() and int(n) > 0:
-        exp[d["album"]] = int(n)
-    else:
+    # an empty box clears the count; anything else must be a plain whole
+    # number (0, -5 and 1e3 used to silently delete the stored count)
+    if n == "":
         exp.pop(d["album"], None)
-    EXPECTED.parent.mkdir(parents=True, exist_ok=True)
-    EXPECTED.write_text(json.dumps(exp, indent=1), encoding="utf-8")
+        val = None
+    elif n.isdigit() and 0 < int(n) <= 10_000_000:
+        val = exp[d["album"]] = int(n)
+    else:
+        return jsonify({"ok": False, "error": "Enter a whole number of items, like 119."}), 400
+    save_json(EXPECTED, exp)
+    _bs_patch(d["album"], expected=val)
     return jsonify({"ok": True, "expected": exp})
 
 
 HOLD = BACKUP / "_meta" / "hold.json"
 
 
+# ---- the suite's own controls: pause/resume the watcher, fix iCloud sync ----
+# The editor's Live Activity panel drives these so there is one launcher file
+# (Editor Suite.cmd) instead of three. The work lives in tools/photo_suite.py;
+# long actions run on a thread and the panel polls the job log.
+import photo_suite
+_suite_job = {"name": None, "log": [], "done": True, "code": None, "started": 0}
+_suite_lock = threading.Lock()
+_suite_cache = {"t": 0, "v": None}
+
+
+def _suite_status():
+    # the watcher check shells out to PowerShell (~0.5 s); cache it briefly
+    now = time.time()
+    if _suite_cache["v"] is None or now - _suite_cache["t"] > 3:
+        _suite_cache["v"] = photo_suite.status()
+        _suite_cache["t"] = now
+    return _suite_cache["v"]
+
+
+def _suite_run(action):
+    log = _suite_job["log"]
+    try:
+        if action == "pause":
+            pids = photo_suite.pause()
+            log.append(f"Backup paused (stopped {len(pids)} process(es)). "
+                       "Nothing is lost; resume picks up where it left off.")
+            code = 0
+        elif action == "resume":
+            log.append("Backup watcher started." if photo_suite.resume()
+                       else "Backup watcher was already running.")
+            code = 0
+        elif action == "fix":
+            code = photo_suite.fix_icloud(log.append)
+        else:
+            log.append(f"unknown action {action!r}")
+            code = 2
+    except Exception as e:                      # the panel must always hear back
+        log.append(f"failed: {e}")
+        code = 1
+    _suite_cache["v"] = None
+    _suite_job["code"] = code
+    _suite_job["done"] = True
+
+
+@app.route("/api/suite", methods=["GET", "POST", "OPTIONS"])
+def api_suite():
+    if request.method == "OPTIONS":
+        return "", 204
+    if request.method == "POST":
+        action = (request.get_json(force=True) or {}).get("action")
+        if action not in ("pause", "resume", "fix"):
+            abort(400)
+        with _suite_lock:
+            if not _suite_job["done"]:
+                return jsonify({"ok": False, "busy": _suite_job["name"]}), 409
+            _suite_job.update({"name": action, "log": [], "done": False,
+                               "code": None, "started": time.time()})
+            threading.Thread(target=_suite_run, args=(action,), daemon=True).start()
+        return jsonify({"ok": True, "job": _suite_job})
+    return jsonify({"status": _suite_status(), "job": _suite_job})
+
+
 @app.route("/api/hold", methods=["POST", "OPTIONS"])
+@_serialized
 def api_hold():
     """Turn an album's backup on or off. Albums arrive on hold because a batch
     of them can appear at once (reviving Apple's shared-album agent surfaced
@@ -1462,13 +1676,13 @@ def api_hold():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True)
-    hold = set(load_json(HOLD, []))
+    hold = set(load_json_for_write(HOLD, []))
     if d.get("hold"):
         hold.add(d["album"])
     else:
         hold.discard(d["album"])
-    HOLD.parent.mkdir(parents=True, exist_ok=True)
-    HOLD.write_text(json.dumps(sorted(hold), indent=1), encoding="utf-8")
+    save_json(HOLD, sorted(hold))
+    _bs_patch(d["album"], held=d["album"] in hold)
     return jsonify({"ok": True, "held": sorted(hold)})
 
 
@@ -1476,6 +1690,7 @@ ARCHIVED = BACKUP / "_meta" / "archived.json"
 
 
 @app.route("/api/archived", methods=["POST", "OPTIONS"])
+@_serialized
 def api_archived():
     """You ticking 'I deleted the shared album' — the end of the line for this
     country. The backup is proven, the phone is clear, and the card has nothing
@@ -1483,41 +1698,39 @@ def api_archived():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True)
-    arch = load_json(ARCHIVED, {})
+    arch = load_json_for_write(ARCHIVED, {})
     if d.get("done"):
         arch[d["album"]] = time.strftime("%Y-%m-%d")
     else:
         arch.pop(d["album"], None)
-    ARCHIVED.parent.mkdir(parents=True, exist_ok=True)
-    ARCHIVED.write_text(json.dumps(arch, indent=1), encoding="utf-8")
+    save_json(ARCHIVED, arch)
+    _bs_patch(d["album"], archived=arch.get(d["album"]))
     return jsonify({"ok": True, "archived": arch})
 
 
 @app.route("/api/rate", methods=["POST", "OPTIONS"])
+@_serialized
 def api_rate():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True)
     key = f"{clean_dirname(d['album'])}/{d['name']}"
-    rat = load_json(RATINGS, {})
+    rat = load_json_for_write(RATINGS, {})
     r = int(d.get("rating", 0))
     if r:
         rat[key] = r
     else:
         rat.pop(key, None)
-    RATINGS.parent.mkdir(parents=True, exist_ok=True)
-    RATINGS.write_text(json.dumps(rat, indent=0), encoding="utf-8")
+    save_json(RATINGS, rat, indent=0)
     return jsonify({"ok": True, "rating": r})
 
 
 def _save_picks(picks):
-    PICKS.parent.mkdir(parents=True, exist_ok=True)
-    tmp = PICKS.with_suffix(f".{os.getpid()}.tmp")
-    tmp.write_text(json.dumps(picks, indent=0), encoding="utf-8")
-    tmp.replace(PICKS)                   # atomic: never a half-written shortlist
+    save_json(PICKS, picks, indent=0)    # atomic: never a half-written shortlist
 
 
 @app.route("/api/pick", methods=["POST", "OPTIONS"])
+@_serialized
 def api_pick():
     """Shortlist a photo for the blog, and/or write the note that goes with it.
 
@@ -1530,7 +1743,7 @@ def api_pick():
         return "", 204
     d = request.get_json(force=True)
     key = f"{clean_dirname(d['album'])}/{d['name']}"
-    picks = load_json(PICKS, {})
+    picks = load_json_for_write(PICKS, {})
     rec = picks.get(key)
 
     if "picked" in d and not d["picked"]:

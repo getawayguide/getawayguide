@@ -5,7 +5,7 @@ Both services fail in ways that look like "slow" but are actually "stopped",
 and both recover instantly from a restart:
 
   * ApplePhotoStreams (shared albums) loses a startup race and runs as a COM
-    stub that never syncs - see "Fix Shared Albums.cmd" for the full story.
+    stub that never syncs - see tools/icloud_fix.ps1 for the full story.
   * iCloudPhotos (main library) hangs individual cloud hydrations. Each hung
     file blocks one backup worker, and with 3 workers, 3 hangs is a total
     standstill that can last 20 minutes before Windows gives up with

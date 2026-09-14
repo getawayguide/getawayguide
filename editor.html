@@ -4,9 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Article Editor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+  <title>getawayguide Editor</title>
+  <!-- the same file the desktop shortcut uses. The tab icon is 16px, and the
+       .ico carries a real 16/20/24/32 frame, so nothing is rescaled; a lone
+       192px PNG was being squeezed down to 16 and came out ragged. -->
+  <link rel="icon" href="Images/web/icons/getawayguide-editor.ico" sizes="16x16 20x20 24x24 32x32 48x48">
+  <link rel="icon" type="image/png" sizes="192x192" href="Images/web/icons/editor-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="Images/web/icons/editor-512.png">
+  <link rel="apple-touch-icon" href="Images/web/icons/editor-192.png">
+  <!-- the SAME self-hosted faces the published pages use. Google serves the
+       variable cut, the site ships static 300/400/500/600, and at the body
+       weight of 350 those render at different thicknesses. -->
+  <link rel="stylesheet" href="fonts.css?v=09652e8d">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -231,7 +240,7 @@
     .tool-btn {
       font-family: 'Hanken Grotesk', sans-serif;
       font-size: .65rem;
-      font-weight: 700;
+      font-weight: 600;
       border: 1px solid var(--b-medium);
       background: #fff;
       color: var(--ink);
@@ -273,7 +282,7 @@
     .color-swatch-letter {
       font-family: 'Hanken Grotesk', sans-serif;
       font-size: .65rem;
-      font-weight: 700;
+      font-weight: 600;
       line-height: 1;
       color: var(--ink);
     }
@@ -403,19 +412,24 @@
     }
 
     /* Article typography in editor */
-    #editor h1, #editor h2 { font-family: 'Newsreader', serif; font-weight: 400; }
-    #editor h2 { font-size: 1.7rem; margin: 2.5rem 0 1rem; letter-spacing: -.01em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
-    #editor h3 { font-family: 'Newsreader', serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: var(--terra); margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
-    #editor p { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: 1.1rem; font-weight: 350; }
-    #editor a { color: var(--terra); }
-    #editor strong { font-weight: 500; color: var(--ink); }
+    #editor h1, #editor h2 { font-family: 'Newsreader', serif; font-weight: 300; }
+    #editor h2 { font-size: 1.72rem; line-height: 1.2; margin: 2.5rem 0 1rem; letter-spacing: -.012em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
+    #editor h3 { font-family: 'Newsreader', serif; font-size: 1.5rem; font-weight: 400; font-style: normal; color: var(--ink); line-height: 1.28; letter-spacing: -.01em; margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
+    #editor p { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.82; color: rgba(28,40,33,.78); margin-bottom: 1.1rem; font-weight: 400; }
+    #editor a { color: #2D6B50; font-weight: 600; }
+    #editor strong { font-weight: 600; color: var(--ink); }
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
     #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
-    #editor li { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.85; color: rgba(28,40,33,.75); margin-bottom: .4rem; font-weight: 350; }
-    #editor h3.fn-sub-hd { font-family: 'Hanken Grotesk', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; font-weight: normal; }
-    #editor div.fn-sub-hd { font-family: 'Hanken Grotesk', sans-serif; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(28,40,33,.4); margin: 1.75rem 0 .6rem; }
-    #editor p.fn-sub-label { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; color: var(--ink); margin: 1.5rem 0 .25rem; }
+    #editor li { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.82; color: rgba(28,40,33,.78); margin-bottom: .4rem; font-weight: 400; }
+    /* .fn-sub-hd is what artifact.css publishes: Newsreader 24px with the accent
+       bar down the left edge (the same treatment as h3). It used to preview here
+       as a tiny grey eyebrow, which is not what the page shows. */
+    #editor .fn-sub-hd { font-family: 'Newsreader', serif; font-size: 24px; font-weight: 400; font-style: normal; text-transform: none; letter-spacing: -.01em; line-height: 1.28; color: var(--ink); margin: 38px 0 16px; padding-left: 14px; border-left: 3px solid var(--terra); text-align: left; }
+    #editor .fn-sub-hd + * { margin-top: 16px; }
+    /* .eyebrow is theme.css's small uppercase label, for a quieter marker */
+    #editor .eyebrow { font-family: 'Hanken Grotesk', sans-serif; font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: rgba(28,40,33,.64); margin: 32px 0 8px; font-weight: 500; }
+    #editor p.fn-sub-label { font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; color: var(--ink); margin: 1.5rem 0 .25rem; }
     #editor img { max-width: 100%; height: auto; cursor: pointer; }
     #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
     #editor img.img-cropped { cursor: grab; }
@@ -472,7 +486,14 @@
     #pl-tabs button.on { background: var(--terra); color: #fff; border-color: var(--terra); }
     #pl-crumbs { padding: 6px 10px 4px; font-family: 'Hanken Grotesk', sans-serif; font-size: .6rem; color: rgba(28,40,33,.55); word-break: break-all; }
     #pl-crumbs a { color: var(--terra); cursor: pointer; text-decoration: none; }
-    #pl-folders { padding: 0 8px 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+    /* The folder chips scroll in their own strip: a source like Shared Albums
+       has 80+ folders, which used to grow the panel past the sidebar and over
+       the to-do footer. The photo panel itself clips, and the to-do footer
+       (+ Task / + Section) goes away with the rest of the to-do UI. */
+    #photo-panel { overflow: hidden; }
+    body.photos-open .todo-footer { display: none; }
+    #pl-folders { padding: 0 8px 6px; display: flex; flex-wrap: wrap; gap: 4px; flex: 0 0 auto;
+      max-height: 30vh; overflow-y: auto; align-content: flex-start; }
     #pl-folders div { background: #fff; border: 1px solid var(--b-subtle); border-radius: 4px;
       padding: 2px 7px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; font-size: .58rem; }
     #pl-folders div:hover { border-color: var(--terra); }
@@ -1144,6 +1165,7 @@ main{overflow-y:auto;padding:1rem}
       </div>
       <div id="pk-panel" style="display:none">
         <select id="pk-album" onchange="pkLoad()"></select>
+        <select id="pk-place" onchange="pkPlaceChanged()" onmousedown="window.PLpicking&&window.PLpicking(true)" onblur="window.PLpicking&&window.PLpicking(false)" style="display:none"></select>
         <div id="pk-grid"></div>
         <div id="pk-empty"></div>
       </div>
@@ -1213,7 +1235,8 @@ main{overflow-y:auto;padding:1rem}
       <button class="tool-btn" onclick="fmt('indent')" title="Indent / sub-bullet (Tab)">⇥ In</button>
       <button class="tool-btn" onclick="fmt('outdent')" title="Outdent (Shift+Tab)">⇤ Out</button>
       <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
-      <button class="tool-btn" onclick="insertFnSubHd()" title="Field notes sub-heading">Sub Hd</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
       <div class="tool-divider"></div>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
         <option value="">Font</option>
@@ -1287,6 +1310,7 @@ main{overflow-y:auto;padding:1rem}
       <h2>Live Activity</h2>
       <button onclick="closeActivity()">&times;</button>
     </div>
+    <div id="act-ctl"></div>
     <div id="act-body"></div>
   </div>
 </div>
@@ -1300,6 +1324,7 @@ main{overflow-y:auto;padding:1rem}
     <button id="f-all" class="on">All</button>
     <button id="f-edited">Edited only</button>
     <button id="f-rated">Rated ★3+</button>
+    <select id="f-place" title="Only photos taken at this place" style="display:none;margin-left:.5rem;max-width:16rem"></select>
   </div>
   <div id="grid"></div>
   <div id="empty"></div>
@@ -1332,7 +1357,7 @@ main{overflow-y:auto;padding:1rem}
     <button class="pick-btn" id="light-pick" onclick="togglePick()">
       <span id="light-pick-icon">+</span> <span id="light-pick-text">Add to blog</span>
     </button>
-    <textarea id="light-note" rows="2"
+    <textarea id="light-note" rows="2" maxlength="2000"
               placeholder="Notes — where might this go? (saves as you type)"></textarea>
   </div>
 </div>
@@ -1701,7 +1726,7 @@ main{overflow-y:auto;padding:1rem}
       'padding:.55rem 1rem;background:#8a2f24;color:#fff;' +
       "font-family:Hanken Grotesk,sans-serif;font-size:.8rem";
     b.innerHTML = '<span><b>Photos can’t load</b> — the photo server ' +
-      'isn’t running. Double-click <b>Start Photo Tools.cmd</b> in your ' +
+      'isn’t running. Double-click <b>Editor Suite.cmd</b> in your ' +
       'Travel Blog folder, then reload.</span>' +
       '<button style="background:none;border:1px solid rgba(255,255,255,.5);' +
       'color:#fff;border-radius:3px;padding:.2rem .7rem;cursor:pointer;' +
@@ -1949,6 +1974,48 @@ main{overflow-y:auto;padding:1rem}
     }
   });
 
+  // Enter inside a sub-heading, eyebrow or heading. Chromium's default clones
+  // the block WITH its attributes, so Enter at the end of a .fn-sub-hd made a
+  // second .fn-sub-hd carrying the same id, and Enter at the start of an h2
+  // left an empty <h2 id="..."> above it. Here: at the end you get a fresh
+  // paragraph; at the start an empty paragraph goes above and the heading is
+  // untouched; in the middle the tail moves to a new block (same kind for a
+  // heading, a paragraph for a label) that never inherits the id.
+  document.getElementById('editor').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+    const ed = document.getElementById('editor');
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const r = sel.getRangeAt(0);
+    const n = r.startContainer.nodeType === 3 ? r.startContainer.parentElement : r.startContainer;
+    const blk = n && n.closest && n.closest('.fn-sub-hd, .eyebrow, h2, h3');
+    if (!blk || blk === ed || !ed.contains(blk) || blk.closest('li')) return;
+    e.preventDefault();
+    if (window.__History) window.__History.checkpoint();
+    if (!r.collapsed) r.deleteContents();
+    const pre = document.createRange(); pre.selectNodeContents(blk); pre.setEnd(r.startContainer, r.startOffset);
+    const post = document.createRange(); post.selectNodeContents(blk); post.setStart(r.startContainer, r.startOffset);
+    const atStart = !pre.toString().length, atEnd = !post.toString().length;
+    let nu;
+    if (atStart && !atEnd) {
+      nu = document.createElement('p'); nu.innerHTML = '<br>';
+      blk.before(nu);
+      // caret stays in the heading; nothing else to do
+    } else {
+      const isHeading = blk.tagName === 'H2' || blk.tagName === 'H3';
+      nu = document.createElement(isHeading && !atEnd ? blk.tagName.toLowerCase() : 'p');
+      if (isHeading && !atEnd && blk.className) nu.className = blk.className;
+      if (atEnd) nu.innerHTML = '<br>';
+      else nu.appendChild(post.extractContents());
+      blk.after(nu);
+      const nr = document.createRange(); nr.setStart(nu, 0); nr.collapse(true);
+      sel.removeAllRanges(); sel.addRange(nr);
+      nu.scrollIntoView({ block: 'nearest' });
+    }
+    setDirty(true);
+    if (window.__History) window.__History.touch();
+  });
+
   // List keyboard behavior: Tab=indent, Shift+Tab=outdent, Enter on empty item=exit list
   document.getElementById('editor').addEventListener('keydown', function(e) {
     const sel = window.getSelection();
@@ -2100,7 +2167,7 @@ main{overflow-y:auto;padding:1rem}
         if (node.closest('svg')) return;              // (a)
         if (isEmpty(node)) { node.remove(); removed = true; }   // (b)
       });
-      el.querySelectorAll('p,li').forEach(node => {
+      el.querySelectorAll('p,li,h2,h3,.fn-sub-hd,.eyebrow').forEach(node => {
         if (node.closest('svg')) return;
         if (!node.textContent.replace(/[\s ]/g, '') &&
             !node.textContent.includes(' ') &&
@@ -2224,23 +2291,69 @@ main{overflow-y:auto;padding:1rem}
     })(el);
   }
 
-  function insertFnSubHd() {
+  // The two sub-section markers. Both are a single block carrying a class the
+  // site styles: .fn-sub-hd (Newsreader + accent bar, the field notes' "What
+  // to Do" level) and .eyebrow (small uppercase label). One function so the
+  // buttons also CONVERT: press Eyebrow on a Sub Hd and it swaps class.
+  // The block a new top-level element should go AFTER: the paragraph or list
+  // item the caret is in, climbed out to the outermost list and out of any
+  // blockquote, so nothing ever lands inside an <li> or a quote.
+  function hostBlockFor(node, editor) {
+    const host = node && node.closest && node.closest('p, li, h2, h3, blockquote, figure, table, .fn-sub-hd, .eyebrow, div');
+    if (!host || host === editor || !editor.contains(host)) return null;
+    // climb out of list nesting (li > ul > li ...) and out of a list Chromium
+    // wrapped in a <p>, so the block lands at the top level of that run
+    let t = host, up;
+    while ((up = t.parentElement) && up !== editor && editor.contains(up) && /^(P|LI|UL|OL)$/.test(up.tagName)) t = up;
+    const bq = t && t.closest('blockquote');
+    if (bq && bq !== editor && editor.contains(bq)) t = bq;
+    return { host, target: t };
+  }
+  function editorReady() {
+    const ed = document.getElementById('editor');
+    return !!(ed && ed.contentEditable === 'true' && ed.style.display !== 'none' && fileHandle);
+  }
+  function insertLabelBlock(cls, placeholder) {
+    if (!editorReady()) return;     // nothing open: the button must not type into the empty-state panel
     const editor = document.getElementById('editor');
     editor.focus();
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    const div = document.createElement('div');
-    div.className = 'fn-sub-hd';
-    div.textContent = 'Sub Heading';
-    range.deleteContents();
-    range.insertNode(div);
+    const n = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+    const cur = n && n.closest && n.closest('.fn-sub-hd, .eyebrow, h3');
+    let div;
+    if (cur && editor.contains(cur) && cur !== editor) {
+      // convert in place, keeping the text (and any id an anchor points at)
+      div = document.createElement('div');
+      div.className = cls;
+      if (cur.id) div.id = cur.id;
+      div.innerHTML = cur.innerHTML;
+      cur.replaceWith(div);
+    } else {
+      // a fresh block. Never nest it inside a paragraph or list item: put it
+      // after the block the caret is in, unless the caret sits in an empty
+      // paragraph, which it simply replaces.
+      div = document.createElement('div');
+      div.className = cls;
+      div.textContent = placeholder;
+      const hb = hostBlockFor(n, editor);
+      if (hb) {
+        if (hb.host.tagName === 'P' && hb.host.textContent.trim() === '') hb.host.replaceWith(div);
+        else hb.target.after(div);
+      } else {
+        range.deleteContents();
+        range.insertNode(div);
+      }
+    }
     const newRange = document.createRange();
     newRange.selectNodeContents(div);
     sel.removeAllRanges();
     sel.addRange(newRange);
     setDirty(true);
   }
+  function insertFnSubHd() { insertLabelBlock('fn-sub-hd', 'Sub Heading'); }
+  function insertEyebrow() { insertLabelBlock('eyebrow', 'Eyebrow'); }
 
   async function saveFile(opts) {
     const manual = !(opts && opts.auto);
@@ -2400,8 +2513,12 @@ main{overflow-y:auto;padding:1rem}
   }
 
   function insertLink() {
-    const url = prompt('Enter URL:');
-    if (url) fmt('createLink', url);
+    let url = prompt('Enter URL:');
+    if (!url) return;
+    url = url.trim();
+    if (/^(javascript|data|vbscript):/i.test(url)) { alert('That is not a link the site can publish.'); return; }
+    if (!/^(https?:|mailto:|tel:|#|\/|\.\.?\/)/i.test(url)) url = 'https://' + url;   // "example.com" typed bare
+    fmt('createLink', url);
   }
 
   let _imgSavedRange = null;
@@ -2496,7 +2613,8 @@ main{overflow-y:auto;padding:1rem}
 
   function closeImgModal() {
     // Only called on cancel — safe to revoke blob URL
-    document.getElementById('img-modal-backdrop').classList.remove('open');
+    const bd = document.getElementById('img-modal-backdrop');
+    bd.classList.remove('open'); bd.style.display = '';
     if (_imgBlobUrl) { URL.revokeObjectURL(_imgBlobUrl); _imgBlobUrl = null; }
     document.getElementById('img-modal-preview').style.display = 'none';
   }
@@ -2505,10 +2623,24 @@ main{overflow-y:auto;padding:1rem}
   document.getElementById('img-modal-backdrop').addEventListener('click', function(e) {
     if (e.target === this) closeImgModal();
   });
+  // Escape cancels; Tab cycles inside the modal instead of walking off behind it
+  document.addEventListener('keydown', function (e) {
+    const bd = document.getElementById('img-modal-backdrop');
+    if (!bd.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeImgModal(); return; }
+    if (e.key === 'Tab') {
+      const f = [...bd.querySelectorAll('input,button,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.offsetParent !== null);
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement);
+      if (e.shiftKey && (i <= 0)) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); }
+    }
+  }, true);
 
 
   // ---- Heading + text alignment ----
   function insertHeading(tag) {
+    if (!editorReady()) return;
     document.getElementById('editor').focus();
     document.execCommand('formatBlock', false, tag);
     if (tag === 'h2' || tag === 'h3') {
@@ -2593,6 +2725,7 @@ main{overflow-y:auto;padding:1rem}
   }
 
   function insertTermList() {
+    if (!editorReady()) return;
     const editor = document.getElementById('editor');
     editor.focus();
     const ul = document.createElement('ul');
@@ -2604,8 +2737,17 @@ main{overflow-y:auto;padding:1rem}
     const sel = window.getSelection();
     if (sel && sel.rangeCount) {
       const range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(ul);
+      // Dropping the list into the middle of a paragraph left the paragraph's
+      // tail as bare text after the list; put it after the block instead.
+      const n0 = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+      const hb = hostBlockFor(n0, editor);
+      if (hb) {
+        if (hb.host.tagName === 'P' && hb.host.textContent.trim() === '') hb.host.replaceWith(ul);
+        else hb.target.after(ul);
+      } else {
+        range.deleteContents();
+        range.insertNode(ul);
+      }
       // place cursor inside the li
       const newRange = document.createRange();
       newRange.selectNodeContents(li);
@@ -3033,7 +3175,9 @@ main{overflow-y:auto;padding:1rem}
                        H1:'h2', H2:'h2', H3:'h3', H4:'h3', BLOCKQUOTE:'blockquote' };
 
   function sanitizePasted(html) {
-    const tmp = document.createElement('div');
+    // An inert document: nothing pasted can load or run (an <img onerror> in a
+    // detached div still fired) before the sanitizer strips it.
+    const tmp = document.implementation.createHTMLDocument('').body;
     tmp.innerHTML = html
       .replace(/<!--[\s\S]*?-->/g, '')          // comments (incl. Word conditionals)
       .replace(/<(meta|link|style|script|title|xml|o:p)[^>]*>[\s\S]*?<\/\1>/gi, '')
@@ -3045,7 +3189,25 @@ main{overflow-y:auto;padding:1rem}
         if (child.nodeType !== 1) return;
         clean(child);                            // depth-first
         const tag = child.tagName;
-        const keep = PASTE_KEEP[tag];
+        let keep = PASTE_KEEP[tag];
+        // Google Docs wraps the whole clipboard in <b style="font-weight:normal"
+        // id="docs-internal-guid-..."> and carries the real bold/italic on
+        // spans with inline weight/style. Unwrap the fake <b>; turn the spans
+        // into b / i / u.
+        if (tag === 'B' && (/^docs-internal-guid/i.test(child.id || '') || /^(normal|400)$/.test(child.style.fontWeight || ''))) keep = null;
+        if (tag === 'SPAN') {
+          const wraps = [];
+          if (/^(bold|bolder|[6-9]00)$/.test(child.style.fontWeight || '')) wraps.push('b');
+          if (child.style.fontStyle === 'italic') wraps.push('i');
+          if (/underline/.test(child.style.textDecoration || child.style.textDecorationLine || '')) wraps.push('u');
+          if (wraps.length) {
+            let outer = null, cur = null;
+            wraps.forEach(t => { const w = document.createElement(t); if (!outer) outer = w; else cur.appendChild(w); cur = w; });
+            while (child.firstChild) cur.appendChild(child.firstChild);
+            node.replaceChild(outer, child);
+            return;
+          }
+        }
         if (!keep) {
           // unwrap: promote children, drop the element (DIV, SPAN, FONT, TABLE...)
           while (child.firstChild) node.insertBefore(child.firstChild, child);
@@ -3106,6 +3268,7 @@ main{overflow-y:auto;padding:1rem}
       const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const parts = safe.split(/\n{2,}/).map(p => p.replace(/\n/g,'<br>'));
       document.execCommand('insertHTML', false, parts.length > 1 ? '<p>' + parts.join('</p><p>') + '</p>' : parts[0]);
+      stripPasteArtifacts(document.getElementById('editor'));   // insertHTML wraps plain text in the same spans
     }
     setDirty(true);
   });
@@ -3156,6 +3319,14 @@ main{overflow-y:auto;padding:1rem}
     const sel = window.getSelection();
     const token = ++_spellWalkToken;   // cancels any earlier walk still running
     editor.focus();
+    // The walk moves the caret every 30 ms for blocks x 30 ms (3.4 s on a long
+    // field note). Anything the user did in that window was sprayed across
+    // whatever block the walk was on, and the final step then threw the caret
+    // to the top. The first key, click, wheel or touch now ends the walk where
+    // it is; squiggles simply stop at that block.
+    const cancel = () => { if (token === _spellWalkToken) _spellWalkToken++; };
+    ['keydown', 'mousedown', 'pointerdown', 'touchstart', 'wheel'].forEach(ev =>
+      document.addEventListener(ev, cancel, { capture: true, once: true, passive: true }));
 
     const pin = () => { if (scroller) scroller.scrollTop = savedScroll; };
     let i = 0;
@@ -3343,7 +3514,7 @@ main{overflow-y:auto;padding:1rem}
   // ---------- single undo/redo history (typing coalesced into bursts) ----------
   const History = (function () {
     const MAX = 150, COALESCE = 450;
-    let stack = [], idx = -1, timer = null, applying = false;
+    let stack = [], idx = -1, timer = null, applying = false, burstStart = 0;
     const ed = () => document.getElementById('editor');
     function state() { const e = ed(); return { html: e.innerHTML, sel: captureSel(e) }; }
     function commit() {
@@ -3361,7 +3532,15 @@ main{overflow-y:auto;padding:1rem}
       // call BEFORE a direct-DOM edit so the pre-edit state is on the stack
       checkpoint() { commit(); },
       // call AFTER any edit (input events use this; it coalesces a typing burst)
-      touch() { clearTimeout(timer); timer = setTimeout(commit, COALESCE); },
+      touch() {
+        clearTimeout(timer);
+        const now = Date.now();
+        if (!burstStart) burstStart = now;
+        // a burst that has been going 1.5 s gets committed mid-flow, so a long
+        // typing run undoes in sentence-sized pieces instead of all at once
+        if (now - burstStart > 1500) { burstStart = 0; commit(); return; }
+        timer = setTimeout(() => { burstStart = 0; commit(); }, COALESCE);
+      },
       apply(dir) {
         clearTimeout(timer); timer = null;
         if (!applying) {                                // fold an in-flight burst in first
@@ -3395,11 +3574,13 @@ main{overflow-y:auto;padding:1rem}
     }, true);
     // Any direct-DOM toolbar action records its pre-state first
     ['imgAlign','imgSetWidth','imgCrop','imgDelete','imgPan','insertTermList',
-     'insertFnSubHd','insertHeading','applyHilite','applyFontFamily','applyFontSize',
+     'insertFnSubHd','insertEyebrow','insertHeading','applyHilite','applyFontFamily','applyFontSize',
      'textAlign','confirmInsertImage','insertLink'].forEach(function (fn) {
       const orig = window[fn];
       if (typeof orig !== 'function') return;
-      window[fn] = function () { History.checkpoint(); const r = orig.apply(this, arguments); History.touch(); return r; };
+      // pre-state before, post-state right after: the action is one undo step
+      // and the typing that follows it is the next one
+      window[fn] = function () { History.checkpoint(); const r = orig.apply(this, arguments); History.checkpoint(); return r; };
     });
   })();
 
@@ -3422,14 +3603,16 @@ main{overflow-y:auto;padding:1rem}
     let block = '';
     if (inside) {
       const n = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
-      const bl = n && n.closest && n.closest('h2,h3,p,li');
-      block = bl ? bl.tagName.toLowerCase() : '';
+      const bl = n && n.closest && n.closest('h2,h3,p,li,.fn-sub-hd,.eyebrow');
+      block = !bl ? '' : bl.classList.contains('fn-sub-hd') ? 'subhd' : bl.classList.contains('eyebrow') ? 'eyebrow' : bl.tagName.toLowerCase();
     }
     document.querySelectorAll('.toolbar .tool-btn').forEach(function (b) {
       const t = b.textContent.trim();
       if (t === 'H2') b.classList.toggle('tool-active', block === 'h2');
       if (t === 'H3') b.classList.toggle('tool-active', block === 'h3');
       if (t === '¶')  b.classList.toggle('tool-active', block === 'p');
+      if (t === '▎Sub Hd') b.classList.toggle('tool-active', block === 'subhd');
+      if (t === 'EYEBROW') b.classList.toggle('tool-active', block === 'eyebrow');
     });
   }
   document.addEventListener('selectionchange', syncToolbar);
@@ -3664,6 +3847,9 @@ main{overflow-y:auto;padding:1rem}
   // Explicit open/close, because fillSlot auto-opens the panel: a blind
   // toggle there meant a later deliberate "Blog Picks" press CLOSED it.
   function pkShow() {
+    // the picks panel lives inside the photo sidebar: opening it with the
+    // sidebar closed showed nothing at all
+    if (!document.body.classList.contains('photos-open')) togglePhotoPanel();
     $('#pk-panel').style.display = 'block';
     $('#pk-toggle').classList.add('on');
     pkBoot();
@@ -3723,13 +3909,66 @@ main{overflow-y:auto;padding:1rem}
     } catch (e) { $('#pk-empty').textContent = 'Photo server not running.'; return; }
     PK.items = d.picks || [];
     if (!PK.items.length) { $('#pk-empty').textContent = 'Nothing shortlisted in this album.'; return; }
+    pkLoadGeo();
+    pkRender();
+  };
+
+  // The picks are photos in the Backup album, so the same /api/geo answers
+  // where each was taken; the menu only lists places that have a pick.
+  PK.geo = null; PK.place = '';
+  async function pkLoadGeo() {
+    const album = PK.album;
+    PK.geo = null; PK.place = '';
+    const sel = $('#pk-place'); sel.style.display = 'none';
+    const d = await geoFetch(API + '/api/geo?album=' + encodeURIComponent(album));
+    if (album !== PK.album || !d) return;
+    if (d.pending) { setTimeout(pkLoadGeo, 2500); return; }
+    // counts over the PICKS, not the whole album
+    const counts = {}; let nogps = 0;
+    PK.items.forEach(p => { const g = d.photos[p.n]; if (!g || !g.place) { nogps++; return; }
+      counts[g.city + '\u0001' + g.place] = (counts[g.city + '\u0001' + g.place] || 0) + 1; });
+    const groups = {};
+    Object.keys(counts).forEach(k => { const [c, p] = k.split('\u0001'); (groups[c] = groups[c] || []).push({ name: p, n: counts[k] }); });
+    PK.geo = { photos: d.photos, aliases: d.aliases, total: PK.items.length, noGps: nogps,
+               groups: Object.keys(groups).map(c => ({ city: c, n: groups[c].reduce((a, b) => a + b.n, 0),
+                 places: groups[c].sort((a, b) => b.n - a.n) })).sort((a, b) => b.n - a.n) };
+    if (!PK.geo.groups.length) return;
+    placeOptions(sel, PK.geo, PK.place, 'All places (' + PK.items.length + ')');
+    sel.style.display = '';
+    pkFollowSection();
+  }
+  window.pkPlaceChanged = function () {
+    PL.picking = false;
+    PK.place = $('#pk-place').value; PK.follow = false;
+    if ($('#pl-follow')) { $('#pl-follow').checked = false; PL.follow = false; localStorage.setItem('plFollow', '0'); }
+    pkRender();
+  };
+  window.pkFollowSection = function () {
+    if (!PL.follow || !PK.geo || PL.picking || $('#pk-panel').style.display === 'none') return;
+    const ae = document.activeElement;
+    if (ae && (ae.id === 'pl-place' || ae.id === 'pk-place')) return;
+    const f = plFollowPlaces(PK.geo);
+    if (f === null) return;
+    const m = f.places;
+    const next = m.length ? m[0] : '';
+    if (next === PK.place) return;
+    PK.place = next; $('#pk-place').value = next; pkRender();
+  };
+  function pkRender() {
+    const g = $('#pk-grid');
+    g.innerHTML = '';
     const used = pkUsedNames();
-    PK.items.forEach(pick => {
+    const items = PK.place && PK.geo
+      ? PK.items.filter(p => placeHit(PK.geo.photos[p.n], PK.place))
+      : PK.items;
+    $('#pk-empty').textContent = items.length ? '' : 'No picks at this place.';
+    items.forEach(pick => {
       const rel = pick.album + '/' + pick.n;
       const div = document.createElement('div');
       div.className = 'pk-ph';
       div.draggable = true;
-      div.title = (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.';
+      { const gp = PK.geo && PK.geo.photos[pick.n]; const where = gp && gp.place ? '📍 ' + gp.place + '\n' : ''; 
+        div.title = where + (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.'; }
       const im = document.createElement('img');
       im.loading = 'lazy';
       im.src = API + '/thumb?root=' + PK.root + '&path=' + encodeURIComponent(rel);
@@ -3759,7 +3998,7 @@ main{overflow-y:auto;padding:1rem}
       };
       g.appendChild(div);
     });
-  };
+  }
 
   function pkStem(n) { return n.replace(/\.[^.]+$/, '').toLowerCase(); }
 
@@ -3818,14 +4057,15 @@ main{overflow-y:auto;padding:1rem}
     tabs.appendChild(add);
   }
 
-  async function plBrowse(retry = true) {
+  async function plBrowse(retry = 2) {
     let d;
     try {
       d = await (await fetch(`${API}/api/browse?root=${PL.root}&path=${encodeURIComponent(PL.path)}`)).json();
     } catch (e) {
-      // a mid-body connection reset happens under heavy iCloud sync load —
-      // retry once, then say so instead of silently showing nothing
-      if (retry) return plBrowse(false);
+      // a mid-body connection reset happens under load (thumbnail bursts, an
+      // iCloud sync) — back off and retry, then say so instead of silently
+      // showing nothing
+      if (retry > 0) { await new Promise(r => setTimeout(r, 400 * (3 - retry))); return plBrowse(retry - 1); }
       $('#pl-crumbs').textContent = 'Could not list this folder — click its tab to retry.';
       return;
     }
@@ -3856,9 +4096,280 @@ main{overflow-y:auto;padding:1rem}
     PL.cloud = new Set(d.cloud || []);
     PL.cloudTotal = d.cloudTotal || 0;
     PL.rendered = 0;
+    PL.pageItems = d.photos;
+    PL.pageTotal = d.total;
     renderCloudBar();
     plRenderMore();
+    plLoadGeo();
   }
+
+  // ------------------------------------------------------------- places
+  // /api/geo reads the GPS EXIF of every photo in the folder (cached after
+  // the first pass) and names each one after the nearest place the site
+  // already knows: a city-map POI, an itinerary stop, or any Google Maps
+  // link in the articles. The menu lists those places with counts.
+  PL.geo = null; PL.place = ''; PL.follow = localStorage.getItem('plFollow') !== '0';
+  // The dev server drops the odd connection under load (a burst of thumbnail
+  // requests, an iCloud sync). A single failed fetch used to leave the place
+  // bar silently missing; try three times before giving up.
+  window.geoFetch = async function (url) {
+    for (let i = 0; i < 3; i++) {
+      try { const r = await fetch(url); if (r.ok) return await r.json(); }
+      catch (e) { /* retry */ }
+      await new Promise(res => setTimeout(res, 400 * (i + 1)));
+    }
+    return null;
+  };
+  window.PLpicking = v => { PL.picking = v; };          // the picks menu shares the guard
+  // test hook: feed a fake geo result straight to the place bar
+  window.plSetGeoForTest = g => { PL.geo = g; renderPlaceBar(); };
+  window.plDebug = () => ({ root: PL.root, path: PL.path, place: PL.place, geoKey: PL.geoKey,
+    geo: PL.geo && { total: PL.geo.total, pending: PL.geo.pending, groups: PL.geo.groups.length },
+    follow: PL.follow, picking: PL.picking, items: PL.items && PL.items.length, rendered: PL.rendered });
+  let geoPoll = null;
+  async function plLoadGeo() {
+    const root = PL.root, path = PL.path;
+    clearTimeout(geoPoll);
+    // a new folder starts from "All places"; a poll for the same folder (EXIF
+    // still being read) must NOT throw away the place the user just chose
+    const key = root + '' + path;
+    if (PL.geoKey !== key) { PL.geoKey = key; PL.geo = null; PL.place = ''; renderPlaceBar(); }
+    const d = await geoFetch(`${API}/api/geo?root=${root}&path=${encodeURIComponent(path)}`);
+    if (root !== PL.root || path !== PL.path) return;      // user moved on
+    if (!d) { $('#pl-geo-state').textContent = ''; return; }
+    PL.geo = d;
+    renderPlaceBar();
+    if (PL.place) plApplyPlace();                          // keep the chosen place across polls
+    if (d.pending) geoPoll = setTimeout(plLoadGeo, 2500);  // EXIF still being read
+    else plFollowSection();
+  }
+  function placeOptions(sel, geo, current, blank) {
+    sel.innerHTML = '';
+    const mk = (v, t, parent) => {
+      const o = document.createElement('option'); o.value = v; o.textContent = t;
+      (parent || sel).appendChild(o); return o;
+    };
+    mk('', blank);
+    (geo.groups || []).forEach(g => {
+      const og = document.createElement('optgroup'); og.label = g.city + ' (' + g.n + ')';
+      if (g.city !== 'Other' && g.places.length > 1) mk('city:' + g.city, 'All of ' + g.city + ' (' + g.n + ')', og);
+      g.places.forEach(p => mk(p.name, p.name + ' (' + p.n + ')', og));
+      sel.appendChild(og);
+    });
+    if (geo.noGps) mk(' nogps', 'No location data (' + geo.noGps + ')');
+    sel.value = current || '';
+    if (sel.value !== (current || '')) sel.value = '';
+  }
+  function renderPlaceBar() {
+    let bar = $('#pl-placebar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'pl-placebar';
+      bar.style.cssText = 'display:flex;gap:.35rem;align-items:center;padding:.3rem .5rem;margin:0 8px 4px;' +
+        'border-radius:3px;background:#e8efe9;border:1px solid var(--b-medium);' +
+        "font-family:Hanken Grotesk,sans-serif;font-size:.55rem;line-height:1.4";
+      bar.innerHTML = '<span title="Filter by where the photo was taken">📍</span>' +
+        '<select id="pl-place" style="flex:1;min-width:0;font-size:.6rem"></select>' +
+        '<label style="cursor:pointer;white-space:nowrap" title="Follow the section the cursor is in">' +
+        '<input type="checkbox" id="pl-follow"> follow</label>' +
+        '<span id="pl-geo-state" style="color:#666"></span>';
+      ($('#pl-cloudbar') || $('#pl-folders')).after(bar);
+      // While the menu is open, follow-section must keep its hands off: the
+      // click that opens it moves the document selection, and a follow pass
+      // that reset the menu mid-pick threw the user's choice away.
+      $('#pl-place').onmousedown = () => { PL.picking = true; };
+      $('#pl-place').onblur = () => { PL.picking = false; };
+      $('#pl-place').onchange = function () {
+        PL.picking = false;
+        PL.place = this.value; PL.follow = false;
+        $('#pl-follow').checked = false; localStorage.setItem('plFollow', '0');
+        plApplyPlace();
+      };
+      $('#pl-follow').onchange = function () {
+        PL.follow = this.checked; localStorage.setItem('plFollow', this.checked ? '1' : '0');
+        if (this.checked) plFollowSection();
+      };
+    }
+    $('#pl-follow').checked = !!PL.follow;
+    const g = PL.geo;
+    if (!g) { bar.style.display = 'none'; $('#pl-place').innerHTML = ''; return; }   // never show the last folder's places
+    // no located photos and nothing still locating: a menu of "All places /
+    // No location data" filters nothing, so show nothing
+    if (!g.total || (!g.groups.length && !g.pending)) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    placeOptions($('#pl-place'), g, PL.place, 'All places (' + g.total + ')');
+    $('#pl-geo-state').textContent = g.pending ? 'locating ' + g.pending + '…' : '';
+  }
+  // With a place chosen the grid shows exactly those photos, newest first,
+  // from the whole folder (not just the first browse page). Clearing it puts
+  // the paged listing back.
+  function plApplyPlace() {
+    const g = $('#pl-grid');
+    if (!PL.place || !PL.geo) {
+      PL.items = PL.pageItems || PL.items; PL.total = PL.pageTotal || PL.items.length;
+    } else {
+      const want = PL.place, ph = PL.geo.photos;
+      const names = Object.keys(ph).filter(n => placeHit(ph[n], want));
+      names.sort((a, b) => String(ph[b].dto || '').localeCompare(String(ph[a].dto || '')));
+      PL.items = names; PL.total = names.length;
+    }
+    g.innerHTML = ''; PL.rendered = 0;
+    plRenderMore();
+  }
+  // Which places does the section under the caret talk about? A heading
+  // matches a place when every word of the place's name is in it, or when
+  // the place's first distinctive word (4+ letters, unique in this folder)
+  // is: "Kond & the Blue Mosque" -> Kond Neighborhood + Blue Mosque.
+  const STOP = new Set(['the','a','an','of','and','in','at','to','on','de','la','el','los','las','day','days',
+                        'trip','trips','city','itself','walk','walking','tour','visit','climb','see','eat',
+                        'where','what','how','get','getting','there','stay','to','from','with','for','below',
+                        'above','around','free','best','top','morning','afternoon','evening','night']);
+  const normTok = t => t.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(w => w && !STOP.has(w));
+  // What is the caret in? Three levels, most specific first:
+  //   lead    - the bold lead of the bullet or paragraph the caret is in
+  //             (field notes: <li><b>GUM Market</b> — ...), the unit Kevin
+  //             actually writes in, so "the section about the Cascade" is
+  //             usually a bullet, not a heading
+  //   heading - the nearest h3/h4/day title above the caret
+  //   h2      - the nearest h2 above it (in field notes, the city)
+  window.plSectionContext = function () {
+    const ed = document.getElementById('editor');
+    const sel = window.getSelection();
+    let node = sel && sel.anchorNode;
+    // only a caret INSIDE the article says which section is being edited;
+    // clicks in the sidebar (the place menu, a tile) must not re-trigger a follow
+    if (!node || !ed || !ed.contains(node)) return null;
+    const el = node.nodeType === 1 ? node : node.parentElement;
+    const txt = e => e.textContent.replace(/\s+/g, ' ').trim();
+    let lead = null;
+    const block = el && el.closest('li, p, .d-t, .d-t2, .r');
+    if (block && block !== ed) {
+      const b = block.querySelector('b, strong');
+      if (b && txt(block).startsWith(txt(b))) lead = txt(b);
+    }
+    let heading = null, h2 = null;
+    for (const h of ed.querySelectorAll('h1,h2,h3,h4,.d-t,.d-t2,.h-a,.h-b .t,.day-head')) {
+      const pos = h.compareDocumentPosition(node);
+      if (!(pos & Node.DOCUMENT_POSITION_FOLLOWING) && !h.contains(node)) continue;
+      if (h.tagName === 'H2' || h.tagName === 'H1') { h2 = txt(h); heading = null; }   // a new h2 resets the h3 chain
+      else heading = txt(h);
+    }
+    return { lead, heading, h2 };
+  };
+  window.plSectionHeading = function () {          // kept for the older callers/tests
+    const c = plSectionContext();
+    return c ? (c.heading || c.h2) : null;
+  };
+  // The places a section is about, and where the answer came from.
+  window.plFollowPlaces = function (geo) {
+    const c = plSectionContext();
+    if (!c) return null;
+    // A bullet with its own named lead is about THAT thing. If there are no
+    // photos of it, say so rather than guessing from the heading above: the
+    // "Nagorno-Karabakh" bullet under the Gyumri day is not about Gyumri.
+    if (c.lead) {
+      const m = plMatchPlaces(geo, c.lead);
+      return { places: m, level: m.length ? 'lead' : null, text: c.lead };
+    }
+    for (const [level, text] of [['heading', c.heading], ['h2', c.h2]]) {
+      if (!text) continue;
+      const m = plMatchPlaces(geo, text);
+      if (m.length) return { places: m, level, text };
+    }
+    // nothing in the body says where we are (a day-trip article's "Overview"
+    // / "The Day"): the article itself does - gyumri.html, orgov-observatory.html
+    // fileHandle is a top-level `let` in the editor script (global lexical
+    // scope, not a window property), so read it bare
+    const fh = typeof fileHandle !== 'undefined' ? fileHandle : null;
+    const name = (fh && fh.name || '').replace(/\.html?$/i, '').replace(/-/g, ' ');
+    if (name) {
+      const m = plMatchPlaces(geo, name);
+      if (m.length) return { places: m, level: 'article', text: name };
+    }
+    return { places: [], level: null, text: c.heading || c.h2 || '' };
+  };
+  // One filter value is either a place name, 'city:<City>' (every place in
+  // that group), or ' nogps'. Shared by the sidebar, the picks and the library.
+  window.placeHit = function (gp, want) {
+    if (!want) return true;
+    if (want === ' nogps') return !(gp && gp.place);
+    if (want.startsWith('city:')) return !!(gp && gp.city === want.slice(5));
+    return !!(gp && gp.place === want);
+  };
+  window.plMatchPlaces = function (geo, heading) {
+    if (!geo || !heading) return [];
+    const ht = new Set(normTok(heading));
+    if (!ht.size) return [];
+    const names = [], cities = [];
+    (geo.groups || []).forEach(g => {
+      if (g.city !== 'Other') cities.push(g.city);
+      g.places.forEach(p => { if (!/^(Elsewhere|Near |Unplaced)/.test(p.name)) names.push(p.name); });
+    });
+    const cityTok = new Set(cities.flatMap(c => normTok(c)));
+    const firstTok = {};
+    names.forEach(n => { const t = normTok(n)[0]; if (t) firstTok[t] = (firstTok[t] || 0) + 1; });
+    const out = [];
+    names.forEach(n => {
+      const toks = normTok(n);
+      const al = (geo.aliases && geo.aliases[n]) || [];
+      // a name or alias made only of city words ("antigua") is the city, not
+      // this place - the city fallback below handles those
+      const cityOnly = ts => ts.length && ts.every(t => cityTok.has(t));
+      const full = toks.length && !cityOnly(toks) && toks.every(t => ht.has(t));
+      // the looser rules only make sense for a NAME-sized text (a bullet lead
+      // or heading); a bold opening sentence like "In general, Armenian food
+      // is..." must not become the Genocide Museum via its first word
+      const short = ht.size <= 6;
+      const alias = short && al.some(a => { const at = normTok(a); return at.length && !cityOnly(at) && at.every(t => ht.has(t)); });
+      // a city's name is not a place's first word: "Gyumri, the Black City"
+      // means the whole city, not Gyumri Market
+      const first = short && toks[0] && toks[0].length >= 4 && firstTok[toks[0]] === 1 && ht.has(toks[0]) && !cityTok.has(toks[0]);
+      // rank: the place's own name in the text beats an alias (a neighbour on
+      // the same pin, e.g. "Shanti Shanti" filed under Sublime) beats a
+      // first-word guess; the best one becomes the filter
+      if (full || alias || first) out.push({ n, rank: full ? 0 : alias ? 1 : 2 });
+    });
+    out.sort((a, b) => a.rank - b.rank);
+    out.forEach((o, i) => { out[i] = o.n; });
+    // a heading that names a city, and no specific place in it, filters to
+    // the whole city group
+    if (!out.length) {
+      cities.forEach(c => { const ct = normTok(c); if (ct.length && ct.every(t => ht.has(t))) out.push('city:' + c); });
+    }
+    return out;
+  };
+  function plFollowSection() {
+    if (!PL.follow || !PL.geo || PL.geo.pending || PL.picking) return;
+    const ae = document.activeElement;
+    if (ae && (ae.id === 'pl-place' || ae.id === 'pk-place')) return;
+    const f = plFollowPlaces(PL.geo);
+    if (f === null) return;                               // caret is not in the article
+    const m = f.places;
+    const next = m.length ? m[0] : '';
+    // say what follow did, so a wrong guess is obvious rather than mysterious
+    const st = $('#pl-geo-state');
+    if (!m.length) st.textContent = f.text ? 'no photos of “' + f.text.slice(0, 28) + '”' : '';
+    else {
+      // when the section names a neighbour filed under this place, say so
+      const same = f.text && normTok(f.text).join(' ') !== normTok(m[0]).join(' ') && !m[0].startsWith('city:')
+        && !normTok(m[0]).every(t => normTok(f.text).includes(t));
+      st.textContent = (m.length > 1 ? '+' + (m.length - 1) + ' more · ' : '') + 'from ' + f.level +
+        (same ? ' · “' + f.text.slice(0, 22) + '” is at this spot' : '');
+    }
+    if (next === PL.place) return;
+    PL.place = next;
+    if ($('#pl-place')) $('#pl-place').value = next;
+    plApplyPlace();
+  }
+  let followTimer = null;
+  document.addEventListener('selectionchange', () => {
+    clearTimeout(followTimer);
+    followTimer = setTimeout(() => {
+      if (document.body.classList.contains('photos-open')) plFollowSection();
+      if (window.pkFollowSection) window.pkFollowSection();
+    }, 350);
+  });
 
   // iCloud/OneDrive on-demand files download in full the moment anything reads
   // them — including thumbnailing. With a 20k-photo library that is >100GB, so
@@ -3972,6 +4483,7 @@ main{overflow-y:auto;padding:1rem}
       div.dataset.name = n;
       div.dataset.rel = rel;
       div.dataset.root = PL.root;
+      { const gp = PL.geo && PL.geo.photos[n]; if (gp) div.title = gp.place || 'No location data'; }
       div.appendChild(document.createElement('img'));
       if (PL.cloud && PL.cloud.has(n) && !PL.autoCloud) {
         div.dataset.cloud = '1';
@@ -6116,23 +6628,47 @@ void main(){
 
 const API = 'http://127.0.0.1:5003';
 const $ = q => document.querySelector(q);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// one quiet line at the bottom for "that did not save" - a lit star that the
+// next refresh silently un-lit was the only feedback before
+function libToast(msg) {
+  let t = $('#lib-toast');
+  if (!t) {
+    t = document.createElement('div'); t.id = 'lib-toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#8a2f24;color:#fff;' +
+      'padding:.5rem .9rem;border-radius:4px;font:500 .72rem Hanken Grotesk,sans-serif;z-index:9999;' +
+      'opacity:0;transition:opacity .2s;pointer-events:none;max-width:70vw';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._t); t._t = setTimeout(() => { t.style.opacity = '0'; }, 3200);
+}
 let CUR = null, PHOTOS = [], FILTER = 'all';
+let GEO = null, PLACE = '';          // /api/geo for CUR, and the chosen place
 // VIEW is the filtered list on screen - what the arrows walk. IDX is where
 // the viewer is in it. PICKS is the shortlist across every album.
 let VIEW = [], IDX = -1, PICKS = [];
 
+let _albumsBusy = false, _albumsEver = false;
 async function loadAlbums() {
+  // The 6 s tick must not queue a second call behind a slow server: ten of
+  // these piled up in one tab and starved every other route.
+  if (_albumsBusy) return;
+  _albumsBusy = true;
   let d;
   try { d = await (await fetch(API + '/api/backup_status')).json(); }
   catch (e) {
+    _albumsBusy = false;
+    if (_albumsEver) return;          // one dropped poll: keep the cards, try again next tick
     $('#albums').innerHTML =
       '<div class="alb" style="cursor:default;line-height:1.6">' +
       '<b>Photo server isn\'t running.</b><br>' +
-      'Double-click <b>Start Photo Tools.cmd</b> in your Travel Blog folder, ' +
+      'Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, ' +
       'then reload this page.</div>';
     $('#hdr-state').innerHTML = '<span class="dot" style="background:#c9694b"></span>server offline';
     return;
   }
+  _albumsBusy = false; _albumsEver = true;
   const box = $('#albums');
   box.innerHTML = '';
   let totMb = 0, totN = 0, nVerified = 0, nCounted = 0;
@@ -6253,7 +6789,7 @@ async function loadAlbums() {
       ? `<button class="hold on">Back up this album</button>`
       : ticked
       ? `<button class="undo">undo — I still have the album</button>`
-      : `<div style="margin-top:.3rem"><input class="exp" type="number" ` +
+      : `<div style="margin-top:.3rem"><input class="exp" type="number" min="1" step="1" ` +
         `placeholder="iPhone count" value="${a.expected || ''}" ` +
         `style="width:100%;font:inherit;font-size:.6rem;padding:2px 5px;` +
         `border:1px solid var(--line);border-radius:3px"></div>` +
@@ -6261,7 +6797,7 @@ async function loadAlbums() {
           ? `<label class="del"><input type="checkbox"> I deleted the shared album</label>`
           : '');
 
-    el.innerHTML = `<div class="nm"><span>${a.name}</span><span style="color:#8a8a8a">${files}</span></div>` +
+    el.innerHTML = `<div class="nm"><span>${esc(a.name)}</span><span style="color:#8a8a8a">${files}</span></div>` +
       `<div class="sub">${sub}</div>` +
       `<div class="bar${barCls}"><i style="width:${syncing ? 100 : pct}%"></i></div>` +
       chk + tail;
@@ -6294,9 +6830,20 @@ async function loadAlbums() {
     if (inp) {
       inp.onclick = e => e.stopPropagation();
       inp.onchange = async () => {
-        await fetch(API + '/api/expected', { method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ album: a.name, count: inp.value }) });
+        const v = inp.value.trim();
+        // a whole number or nothing; 0, -5 and 1e3 used to silently delete the count
+        if (v !== '' && !/^\d{1,8}$/.test(v)) {
+          libToast('Enter a whole number of items, like 119.');
+          inp.value = a.expected || '';
+          return;
+        }
+        let r = null;
+        try {
+          r = await fetch(API + '/api/expected', { method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ album: a.name, count: v }) });
+        } catch (e) {}
+        if (!r || !r.ok) { libToast("Can't save the count: the photo server didn't answer."); inp.value = a.expected || ''; return; }
         loadAlbums();
       };
     }
@@ -6323,13 +6870,69 @@ async function loadAlbums() {
     (live ? 'backup running' : 'backup idle');
 }
 
+let _photosGen = 0, _photosSig = '', _photosAlbum = null;
 async function loadPhotos() {
   if (!CUR) return;
+  const album = CUR, gen = ++_photosGen;
   $('#tb-title').textContent = CUR;
-  const d = await (await fetch(`${API}/api/backup_browse?album=${encodeURIComponent(CUR)}`)).json();
-  PHOTOS = d.photos;
+  let d;
+  try {
+    const r = await fetch(`${API}/api/backup_browse?album=${encodeURIComponent(album)}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    d = await r.json();
+  } catch (e) {
+    if (gen !== _photosGen || album !== CUR) return;
+    if (_photosAlbum !== album) { PHOTOS = []; VIEW = []; _photosSig = ''; $('#grid').innerHTML = ''; }
+    $('#empty').textContent = 'Could not load this album from the photo server (' + e.message + '). Retrying in a few seconds…';
+    return;
+  }
+  // you clicked another album while this one was still loading: its tiles
+  // must not land under the new title (1082 Armenia tiles labelled Kosovo)
+  if (gen !== _photosGen || album !== CUR) return;
+  const photos = Array.isArray(d.photos) ? d.photos : [];
+  const sig = photos.map(p => [p.n, p.rating | 0, p.picked ? 1 : 0, p.note || '', p.edited ? 1 : 0,
+                               p.full ? 1 : 0, p.w, p.h].join('\u0001')).join('\n');
+  if (sig !== _photosSig || _photosAlbum !== album) {
+    // the 6 s tick on an idle album used to rebuild all 1082 tiles for
+    // nothing: 400 ms main-thread stalls, and scrolling stuttered on every one
+    _photosSig = sig; _photosAlbum = album;
+    PHOTOS = photos;
+    render();
+  }
+  loadGeo();
+}
+
+// Where each photo in the album was taken (see tools/photo_geo.py). The
+// first pass over a new album reads EXIF in the background; poll until done.
+async function loadGeo() {
+  const album = CUR;
+  const sel = $('#f-place');
+  // The 6 s live-status refresh calls loadPhotos -> loadGeo. Only a CHANGE of
+  // album resets the filter; a refresh of the same album keeps the place you
+  // picked and leaves the menu alone unless the geo data actually moved.
+  const same = !!(GEO && GEO.album === album);
+  if (!same) { GEO = null; PLACE = ''; sel.style.display = 'none'; }
+  const d = await window.geoFetch(`${API}/api/geo?album=${encodeURIComponent(album)}`);
+  if (album !== CUR || !d) return;
+  d.album = album;
+  const unchanged = same && !GEO.pending && !d.pending && GEO.total === d.total && GEO.located === d.located && GEO.noGps === d.noGps;
+  GEO = d;
+  if (unchanged) return;
+  if (d.pending) { setTimeout(loadGeo, 2500); }
+  if (!d.groups.length && !d.noGps) return;
+  sel.innerHTML = '';
+  const mk = (v, t, parent) => { const o = document.createElement('option'); o.value = v; o.textContent = t; (parent || sel).appendChild(o); };
+  mk('', d.pending ? `📍 All places · locating ${d.pending}…` : `📍 All places (${d.total})`);
+  d.groups.forEach(g => { const og = document.createElement('optgroup'); og.label = `${g.city} (${g.n})`;
+    if (g.city !== 'Other' && g.places.length > 1) mk('city:' + g.city, `All of ${g.city} (${g.n})`, og);
+    g.places.forEach(p => mk(p.name, `${p.name} (${p.n})`, og)); sel.appendChild(og); });
+  if (d.noGps) mk(' nogps', `No location data (${d.noGps})`);
+  sel.value = PLACE;
+  if (sel.value !== PLACE) { PLACE = ''; sel.value = ''; }   // the chosen place no longer exists
+  sel.style.display = '';
   render();
 }
+$('#f-place').onchange = function () { PLACE = this.value; render(); };
 
 // Thumbnails go through a 4-in-flight pump instead of all at once. A 461-photo
 // album fired ~150 requests together, and the lightbox's s=2000 image plus the
@@ -6379,6 +6982,7 @@ function render() {
   let list = PHOTOS;
   if (FILTER === 'edited') list = list.filter(p => p.edited);
   if (FILTER === 'rated') list = list.filter(p => (p.rating || 0) >= 3);
+  if (PLACE && GEO) list = list.filter(p => window.placeHit(GEO.photos[p.n], PLACE));
   $('#empty').textContent = list.length ? '' :
     (PHOTOS.length ? 'No photos match this filter.'
                    : 'No photos downloaded in this album yet — pick another album on the left, ' +
@@ -6389,6 +6993,7 @@ function render() {
   list.forEach((p, i) => {
     const el = document.createElement('div');
     el.className = 'ph' + (p.rating ? ' rated' : '') + (p.picked ? ' picked' : '');
+    { const g = GEO && GEO.photos[p.n]; if (g) el.title = g.place || 'No location data'; }
     const im = document.createElement('img');
     im.loading = 'lazy';
     libThumb(im, `${API}/bthumb?album=${encodeURIComponent(CUR)}&name=${encodeURIComponent(p.n)}&s=400`);
@@ -6433,11 +7038,20 @@ function render() {
 }
 
 // --- Photo viewer: arrows, picking, and the note ---------------------------
+let _lightT = null, _lightLast = 0;
 function openLight(i) {
   if (i < 0 || i >= VIEW.length) return;
   IDX = i;
   const p = VIEW[i];
-  $('#light-img').src = `${API}/bthumb?album=${encodeURIComponent(CUR)}&name=${encodeURIComponent(p.n)}&s=2000`;
+  // Holding an arrow key fired a 2000px build for every photo passed over,
+  // and the one you stopped on came last (22 s after 109 presses). A press
+  // that follows another within 250 ms only loads once the arrowing stops.
+  const url = `${API}/bthumb?album=${encodeURIComponent(CUR)}&name=${encodeURIComponent(p.n)}&s=2000`;
+  const now = Date.now();
+  clearTimeout(_lightT);
+  if (now - _lightLast > 250) $('#light-img').src = url;
+  else _lightT = setTimeout(() => { if (IDX === i && $('#light').classList.contains('open')) $('#light-img').src = url; }, 200);
+  _lightLast = now;
   $('#light-meta').textContent = `${p.n} · ${p.w||'?'}×${p.h||'?'} · ${p.mb} MB` +
     (p.edited ? ' · edited' : '') + (p.full ? '' : ' · 2048px copy (no original found)');
   $('#light-count').textContent = `${i + 1} / ${VIEW.length} · ${CUR}`;
@@ -6482,10 +7096,21 @@ async function setPick(p, on) {
   paintTile(p);
   if (IDX >= 0 && VIEW[IDX] && VIEW[IDX].n === p.n) paintPick(p);
   bumpCount(on ? 1 : -1);              // instant badge, no round trip
+  const prevNote = p.note;
+  let ok = false;
   try {
-    await fetch(API + '/api/pick', { method: 'POST', headers: {'Content-Type': 'application/json'},
+    const res = await fetch(API + '/api/pick', { method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ album: CUR, name: p.n, picked: on }) });
+    ok = res.ok;
   } catch (e) {}
+  if (!ok) {
+    p.picked = !on; if (!on) p.note = prevNote;
+    paintTile(p);
+    if (IDX >= 0 && VIEW[IDX] && VIEW[IDX].n === p.n) paintPick(p);
+    bumpCount(on ? -1 : 1);
+    libToast("Can't save the pick: the photo server didn't answer.");
+    return;
+  }
   if ($('#picks').classList.contains('open')) renderPicks();
 }
 
@@ -6529,10 +7154,13 @@ async function saveNote(p) {
   // Writing a note picks the photo — the note IS the decision.
   const wasPicked = p.picked;
   p.picked = true;
+  let ok = false;
   try {
-    await fetch(API + '/api/pick', { method: 'POST', headers: {'Content-Type': 'application/json'},
+    const res = await fetch(API + '/api/pick', { method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ album: CUR, name: p.n, note: p.note }) });
-  } catch (e) { return; }
+    ok = res.ok;
+  } catch (e) {}
+  if (!ok) { p.picked = wasPicked; libToast("Can't save the note: the photo server didn't answer."); return; }
   if (!wasPicked) { paintTile(p); paintPick(p); bumpCount(1); }
   else paintTile(p);
   if ($('#picks').classList.contains('open')) renderPicks();
@@ -6555,6 +7183,7 @@ $('#light-note').addEventListener('keydown', e => {
 });
 
 document.addEventListener('keydown', e => {
+  if ($('#activity').classList.contains('open') && e.key === 'Escape') { closeActivity(); return; }
   if ($('#picks').classList.contains('open') && e.key === 'Escape') { closePicks(); return; }
   if (!$('#light').classList.contains('open')) return;
   if (e.key === 'ArrowLeft')  { e.preventDefault(); step(-1); }
@@ -6655,6 +7284,7 @@ async function renderPicks() {
     const ta = document.createElement('textarea');
     ta.value = pk.note || '';
     ta.placeholder = 'Where might this go?';
+    ta.maxLength = 2000;
     let t = null;
     ta.oninput = () => {
       clearTimeout(t);
@@ -6698,6 +7328,7 @@ async function jumpTo(album, name) {
     document.querySelectorAll('.alb').forEach(a =>
       a.classList.toggle('on', a.dataset.album === album));
     FILTER = 'all';                // a filter could hide the photo we're opening
+    PLACE = ''; if ($('#f-place')) $('#f-place').value = '';
     ['all','edited','rated'].forEach(x => $('#f-' + x).classList.toggle('on', x === 'all'));
     await loadPhotos();
   }
@@ -6705,13 +7336,28 @@ async function jumpTo(album, name) {
   if (i >= 0) openLight(i);
 }
 
+function paintRating(p) {
+  const el = p._el;
+  if (!el) return;
+  el.classList.toggle('rated', !!p.rating);
+  el.querySelectorAll('.stars span').forEach((s, i) => s.classList.toggle('on', i < (p.rating || 0)));
+}
 async function rate(p, r) {
+  const prev = p.rating || 0;
   p.rating = r;
-  render();
+  paintRating(p);                       // one tile, not a rebuild of the whole grid
+  if (FILTER === 'rated') render();     // it may have just left (or joined) the filtered view
+  let ok = false;
   try {
-    await fetch(API + '/api/rate', { method: 'POST', headers: {'Content-Type': 'application/json'},
+    const res = await fetch(API + '/api/rate', { method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ album: CUR, name: p.n, rating: r }) });
+    ok = res.ok;
   } catch (e) {}
+  if (!ok) {
+    p.rating = prev; paintRating(p);
+    if (FILTER === 'rated') render();
+    libToast("Can't save the rating: the photo server didn't answer.");
+  }
 }
 
 ['all', 'edited', 'rated'].forEach(f => {
@@ -6722,7 +7368,9 @@ async function rate(p, r) {
   };
 });
 
-loadAlbums();
+// showView('library') refreshes on entry; on an editor-only page load this
+// used to fire the heaviest route on the server for a view nobody was looking at
+if (!document.getElementById('app-library').hidden) loadAlbums();
 refreshPickCount();
 setInterval(() => {
   if (document.getElementById('app-library').hidden) return;   // view not showing
@@ -6747,20 +7395,73 @@ function openActivity() {
   // idempotent: opening twice used to stack a second interval that close()
   // could never clear, leaving an orphan poll behind
   if (actTimer) clearInterval(actTimer);
+  if (!$('#act-body').children.length) $('#act-body').innerHTML = '<div id="act-empty">Loading…</div>';
   renderActivity();
+  renderSuite();
   actTimer = setInterval(renderActivity, 2000);
 }
 function closeActivity() {
   $('#activity').classList.remove('open');
   if (actTimer) clearInterval(actTimer);
   actTimer = null;
+  if (suiteTimer) clearTimeout(suiteTimer);
+  suiteTimer = null;
+}
+
+// --- Suite controls: what used to be three separate .cmd files ------------
+// Pause/resume the backup watcher and restart Apple's iCloud photo services
+// from here. Long actions run on the server; while one is going this polls
+// its log every 2 s and shows it under the buttons.
+let suiteTimer = null;
+async function renderSuite() {
+  const box = $('#act-ctl');
+  let d;
+  try { d = await (await fetch(API + '/api/suite')).json(); }
+  catch (e) { box.innerHTML = ''; return; }
+  const st = d.status || {}, job = d.job || {};
+  const busy = job.name && !job.done;
+  const dot = ok => `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;background:${ok ? '#6EC99A' : '#c9694b'}"></span>`;
+  box.innerHTML = `<div class="act-card" style="margin-bottom:.6rem">
+    <h3>Suite</h3>
+    <div class="act-sub" style="display:flex;gap:1rem;flex-wrap:wrap">
+      <span>${dot(true)} photo server</span>
+      <span>${dot(st.heroes)} hero picker${st.heroes ? '' : ' (off)'}</span>
+      <span>${dot(st.watcher)} backup watcher ${st.watcher ? 'running' : 'paused'}</span>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.6rem">
+      <button class="hold" id="ctl-backup" ${busy ? 'disabled' : ''}
+        title="${st.watcher ? 'Stop the backup so the machine is entirely yours. Nothing is lost.' : 'Start the backup watcher again; it picks up where it left off.'}">
+        ${st.watcher ? 'Pause backup' : 'Resume backup'}</button>
+      <button class="hold" id="ctl-fix" ${busy ? 'disabled' : ''}
+        title="Restart Apple's iCloud photo services. Use it when shared albums stop syncing or the backup drops to zero. Takes about a minute.">
+        Fix iCloud sync</button>
+    </div>
+    ${(job.log && job.log.length) || busy ? `<pre id="ctl-log" class="act-sub" style="white-space:pre-wrap;margin:.6rem 0 0;max-height:180px;overflow:auto;letter-spacing:0">${esc((job.log || []).join('\n') || 'working…')}${busy ? '\n…' : ''}</pre>` : ''}
+  </div>`;
+  $('#ctl-backup').onclick = () => suiteAction(st.watcher ? 'pause' : 'resume');
+  $('#ctl-fix').onclick = () => suiteAction('fix');
+  if (suiteTimer) clearTimeout(suiteTimer);
+  if (busy && $('#activity').classList.contains('open')) suiteTimer = setTimeout(renderSuite, 2000);
+  else if (job.name && job.done && Date.now() / 1000 - (job.started || 0) < 8) {
+    // an action just finished: refresh the cards so "backup running" and the
+    // header dot catch up without waiting for the 6 s tick
+    loadAlbums();
+  }
+}
+async function suiteAction(action) {
+  if (action === 'fix' && !confirm('Restart Apple\'s iCloud photo services now? Any photo mid-copy is retried on the next pass. Takes about a minute.')) return;
+  try {
+    await fetch(API + '/api/suite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }) });
+  } catch (e) {}
+  renderSuite();
 }
 
 async function renderActivity() {
   let d;
   try { d = await (await fetch(API + '/api/backup_activity')).json(); }
   catch (e) {
-    $('#act-body').innerHTML = '<div id="act-empty">Cannot reach the photo server - retrying every 2s.<br>If this persists, double-click <b>Start Photo Tools.cmd</b>.</div>';
+    $('#act-body').innerHTML = '<div id="act-empty">Cannot reach the photo server - retrying every 2s.<br>If this persists, double-click <b>Editor Suite.cmd</b>.</div>';
     return;
   }
 
