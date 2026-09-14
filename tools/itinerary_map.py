@@ -383,8 +383,6 @@ def main():
     html_path = os.path.join(outdir, f"{slug}-map.html")
     io.open(svg_path, "w", encoding="utf-8").write(svg)
     html = (f'<!doctype html><meta charset="utf-8">'
-            f'<link rel="preconnect" href="https://fonts.googleapis.com">'
-            f
             f'<style>body{{margin:0;background:#e9e4da;display:flex;justify-content:center;'
             f'padding:24px;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif}}'
             f'.wrap{{width:100%;max-width:1180px;box-shadow:0 8px 40px rgba(0,0,0,.1);'

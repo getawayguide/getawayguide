@@ -323,6 +323,16 @@ def build(cfg_path, embed=False, demo=None):
     # POIs in the order they're written about (earlier = lower number = drawn on top)
     POIS = [(p["name"], p["lat"], p["lon"], gkey(p), p.get("match", p["name"].lower())) for p in cfg["pois"]]
 
+    # ORIENTATION MAP MODE ("legend": false + "labels": true). A numbered pin plus a
+    # key answers "where is the place I just read about"; an orientation map answers
+    # "how do these places sit relative to each other", so the name belongs ON the
+    # map next to its pin and the key disappears entirely. Each POI carries `lab`
+    # (n/s/e/w) saying which side of its pin the name sits on, so labels can be kept
+    # off each other and off the water by hand. Lake Atitlán is the template.
+    LABELS = bool(cfg.get("labels"))
+    SHOW_KEY = cfg.get("legend", True) is not False
+    LABPOS = {p["name"]: p.get("lab", "s") for p in cfg["pois"]}
+
     # resolve each pin's Google-Maps link: explicit href > a matching link in the
     # article > a generic maps search for "<name> <city>"
     art = open(f"{ROOT}/{cfg['article']}", encoding="utf-8").read() if cfg.get("article") else ""
@@ -400,6 +410,9 @@ def build(cfg_path, embed=False, demo=None):
         Lw = 226 + 34                 # key width + right margin + a little slack
         Lh = 15 + 24 + heads * 17 + rows * 16 + 6
         Lx0 = W - Lw
+        if not SHOW_KEY:              # orientation map: no key, so nothing to steer pins around
+            Lw = Lh = 0
+            Lx0 = W + 1
         # title block: kicker + city drawn at x≈title_px*0.62, baseline title_px*1.66.
         # Mobile has no SVG title but an HTML overlay in the same corner carrying the city
         # name AND the two hint lines, so it reserves a taller, wider box.
@@ -600,6 +613,30 @@ def build(cfg_path, embed=False, demo=None):
             # paint bug that left the map blank / half-rendered at the edges.
             img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
             o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" style="paint-order:stroke">']
+            # a ROUTE drawn under the pins: an ordered list of [lat,lon] following the
+            # real road, so a driving route reads as the road it is rather than as
+            # straight hops between town centers. Under the pins, over the base map.
+            rt = cfg.get("route")
+            if rt and rt.get("points"):
+                pts = [px(a, b) for a, b in rt["points"]]
+                d = "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in pts)
+                dash = f' stroke-dasharray="{5.5 * ps:.1f} {4.5 * ps:.1f}"' if rt.get("dash") else ""
+                o.append(f'<path d="{d}" fill="none" stroke="#fff" stroke-width="{7.6 * ps:.1f}" '
+                         f'stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>')
+                o.append(f'<path d="{d}" fill="none" stroke="{rt.get("color", KICKER)}" '
+                         f'stroke-width="{3.8 * ps:.1f}" stroke-linecap="round" '
+                         f'stroke-linejoin="round"{dash}/>')
+            # water labels: the name of the lake/bay/sea itself, sitting ON the water
+            # the way Google Maps does it. These are the one label type that is NOT
+            # nudged off water, so they are drawn from their own list and placed at
+            # exactly the coordinate given. Blue rather than grey, and no halo: a halo
+            # would ring the letters in land colour in the middle of a lake.
+            for wl in cfg.get("water_labels", []):
+                wx, wy = px(wl["lat"], wl["lon"])
+                o.append(f'<text x="{wx:.0f}" y="{wy:.0f}" font-size="{wl.get("size", 13) * ps:.0f}" '
+                         f'letter-spacing="{1.8 * ps:.1f}" font-style="italic" font-weight="500" '
+                         f'fill="{wl.get("fill", "#5E93A3")}" text-anchor="middle" '
+                         f'opacity="0.95">{html.escape(wl["text"])}</text>')
             for d in dls_adj:  # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA), nudged off water
                 lx, ly = d["x"], d["y"]
                 o.append(f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
@@ -608,13 +645,28 @@ def build(cfg_path, embed=False, demo=None):
                 name, la, lo, cat, key = POIS[i - 1]
                 x, y = px(la, lo); fill = GRP[cat][1]; nt = GRP[cat][3]
                 cls = "cmpin active" if active == i else "cmpin"
+                # a labelled pin carries its own name, so the number would only be
+                # a key reference to a key that is not there
                 mk = (f'<circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="{nt}">{i}</text>'
-                      if show_num else '<circle cx="0" cy="-17.7" r="3.1" fill="#fff"/>')
+                      if show_num and not LABELS else '<circle cx="0" cy="-17.7" r="3.1" fill="#fff"/>')
+                lab = ""
+                if LABELS:
+                    # the name rides beside its own pin instead of in a key. The halo is a
+                    # LAND-coloured stroke under the glyphs (paint-order:stroke on the svg),
+                    # so a label stays readable where it crosses water or a road.
+                    side = LABPOS.get(name, "s")
+                    dx, dy, anc = {"n": (0, -27.5 * ps, "middle"),
+                                   "s": (0, 13.5 * ps, "middle"),
+                                   "e": (10.5 * ps, -14 * ps, "start"),
+                                   "w": (-10.5 * ps, -14 * ps, "end")}[side]
+                    lab = (f'<text x="{x + dx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" '
+                           f'font-size="{10.5 * ps:.1f}" font-weight="600" fill="{INK}" '
+                           f'stroke="{LAND}" stroke-width="{3.2 * ps:.1f}">{html.escape(name)}</text>')
                 o.append(f'<a href="{html.escape(HREF[name])}" target="_blank" rel="noopener"><g class="{cls}" data-i="{i}" data-name="{html.escape(name)}">'
                          f'<g transform="translate({x:.1f} {y:.1f}) scale({ps})">'
                          f'<path d="{PIN}" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/>'
                          f'<path d="{PIN}" fill="{fill}" stroke="#fff" stroke-width="1.1"/>{mk}'
-                         f'</g></g></a>')
+                         f'</g>{lab}</g></a>')
             if svg_title:   # desktop draws the title in the SVG; mobile uses a fixed HTML overlay instead
                 o.append(f'<text x="{title_px*0.68:.0f}" y="{title_px*0.58:.0f}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" font-size="{title_px*0.27:.0f}" font-weight="600" letter-spacing="{title_px*0.12:.1f}" fill="{KICKER}" stroke="{LAND}" stroke-width="{title_px*0.08:.1f}" paint-order="stroke">{html.escape(kicker)}</text>')
                 o.append(f'<text x="{title_px*0.62:.0f}" y="{title_px*1.66:.0f}" font-family="Newsreader,Georgia,serif" font-size="{title_px}" font-weight="600" fill="{INK}" stroke="{LAND}" stroke-width="{title_px*0.13:.1f}" paint-order="stroke">{html.escape(city)}</text>')
@@ -655,7 +707,8 @@ def build(cfg_path, embed=False, demo=None):
 
     def maps_html(demo=None, external=False):
         dd = f' data-demo="{demo}"' if demo else ""
-        return (f'<div class="citymap desk"><div class="cmmap">{render_desk(external=external)}</div>{legend_html()}</div>'
+        key = legend_html() if SHOW_KEY else ""
+        return (f'<div class="citymap desk"><div class="cmmap">{render_desk(external=external)}</div>{key}</div>'
                 f'<div class="citymap mob"{da}{dd}><div class="cmmap"><div class="cmworld">{render_mob(external=external)}</div></div>'
                 f'<div class="cm-ov"><div class="cm-ov-kick">{html.escape(kicker)}</div><div class="cm-ov-title">{html.escape(city)}</div>'
                 f'<div class="cm-ov-hint">{hint}</div></div></div>')

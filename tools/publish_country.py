@@ -38,7 +38,9 @@ def write(p, s):
 def live_pages():
     for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
         r = rel(p)
-        if r.startswith(("Drafts/", ".tmp/", ".git/")): continue
+        # archive/ is the frozen, noindexed pre-redesign site (commit 8a00fbe). Regenerating its
+        # nav added links to countries it has no page for (41 broken links on Guatemala).
+        if r.startswith(("Drafts/", ".tmp/", ".git/", "archive/")): continue
         yield p, r
 
 def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
@@ -114,52 +116,59 @@ def parse_countries(dest_html):
         by_cont[c].sort(key=lambda t: t[0].lower())
     return by_cont
 
+MEGA_COLS = [["europe"], ["africa", "asia", "americas", "oceania"]]   # left / right
+
+
 def build_nav(pfx, by_cont):
-    # Merge the FULL_GUIDES (multi-page guide countries) into their continent groups so the
-    # dropdown is ONE unified, continent-grouped list under "Available Guides" (no separate
-    # "Field Notes" section). Full-guide countries get a green dot and link to their guide index.
+    """The Destinations mega-menu, exactly as the redesign ships it (.megam/.mm-cols).
+
+    Until 2026-09-13 this still emitted the pre-redesign .nav-dropdown-col/.nav-fn-groups
+    markup, whose CSS the 2026-09-01 re-theme removed. Publishing Guatemala therefore
+    replaced the mega-menu on every page with a single 1,144px column that scrolled.
+    This version was verified byte-for-byte against the committed menu on a root page
+    and two subpages before it replaced the old one.
+    """
     merged = {c: [(n, iso, "%s/field-notes.html" % sl, False) for (n, iso, sl) in lst]
               for c, lst in by_cont.items()}
     for name, iso, cont, href in FULL_GUIDES:
         merged.setdefault(cont, []).append((name, iso, href, True))
     for c in merged:
         merged[c].sort(key=lambda t: t[0].lower())
-    L = ['<div class="nav-dropdown nav-dropdown-fn">',
-         '        <div class="nav-dropdown-col">',
-         '          <div class="nav-guides-head"><span class="nav-dropdown-continent" %s>Available Guides</span>'
-         '<span class="nav-guides-legend"><span class="nav-fulldot"></span>In-Depth Guide</span></div>' % _DARK,
-         '          <div class="nav-fn-groups">']
-    for col in NAV_SUBCOLS:
-        cols = [c for c in col if merged.get(c)]
-        if not cols:
-            continue
-        L.append('            <div class="nav-fn-sub">')
-        for c in cols:
-            L.append('            <div class="nav-fn-grp">')
-            L.append('              <span class="nav-fn-region">%s</span>' % CONT_LABEL[c])
-            L += ['              ' + _nav_a(pfx, n, iso, target, full) for n, iso, target, full in merged[c]]
-            L.append('            </div>')
-        L.append('            </div>')
-    # right-hand column: a visual entry to the interactive map, then the continent jumps.
-    # The thumbnail is a still (tools/gen_nav_map_preview.py) rather than a live chart, so
-    # opening the menu costs nothing and doesn't wait on the amCharts CDN.
-    L += ['          </div>', '        </div>',
-          '        <div class="nav-dropdown-col nav-dropdown-map">',
-          '          <a href="%sdestinations.html#explore-map" class="nav-map-card">' % pfx,
-          '            <span class="nav-map-title">Explore the Interactive Map</span>',
-          '            <img src="%sImages/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" '
-          'loading="lazy" decoding="async" alt="World map of the countries I have travelled to">' % pfx,
-          '          </a>',
-          '          <span class="nav-dropdown-continent" %s>Explore by Continent</span>' % _DARK]
-    L += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s%s</a>'
-          % (pfx, c, _cont_ico(pfx, c), CONT_LABEL[c])
-          for c in ("africa", "americas", "asia", "europe", "oceania")]
-    # no icon on All Destinations - it isn't a continent, and a globe next to five
-    # landmasses read as a sixth entry rather than the catch-all
-    L += ['          <a href="%sdestinations.html" class="nav-dropdown-continent nav-all-dest">'
-          'All Destinations</a>' % pfx,
-          '        </div>', '      </div>']
-    return "\n".join(L)
+
+    def a(n, iso, href, full):
+        dot = '<span class="nav-fulldot"></span>' if full else ''
+        return ('<a href="%s%s"><img class="fl" src="%sImages/web/flags/%s.png" alt="" width="16" '
+                'height="12"><span>%s</span>%s</a>') % (pfx, href, pfx, iso, n, dot)
+
+    cols = []
+    for col in MEGA_COLS:
+        parts = []
+        for c in col:
+            if merged.get(c):
+                parts.append('<div class="mm-h">%s</div>' % CONT_LABEL[c])
+                parts += [a(*t) for t in merged[c]]
+        if parts:
+            cols.append('<div class="mm-col">%s</div>' % "".join(parts))
+    head = ('<div class="nav-dropdown nav-dropdown-fn"><div class="megam"><div class="mm-guides">'
+            '<div class="mm-head"><span class="mm-head-t">Available guides</span>'
+            '<span class="nav-guides-legend"><span class="nav-fulldot"></span>In-depth guide</span></div>'
+            '<div class="mm-cols">%s</div></div><div class="mm-side-live">' % "".join(cols))
+    # right-hand side: a still of the interactive map (tools/gen_nav_map_preview.py), so
+    # opening the menu costs nothing, then the continent jumps
+    side = ['          <a href="%sdestinations.html#explore-map" class="nav-map-card">' % pfx,
+            '            <span class="nav-map-title">Explore the Interactive Map</span>',
+            '            <img src="%sImages/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" '
+            'loading="lazy" decoding="async" alt="World map of the countries I have travelled to">' % pfx,
+            '          </a>',
+            '          <span class="nav-dropdown-continent" %s>Explore by Continent</span>' % _DARK]
+    side += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s%s</a>'
+             % (pfx, c, _cont_ico(pfx, c), CONT_LABEL[c])
+             for c in ("africa", "americas", "asia", "europe", "oceania")]
+    # no icon on All Destinations - it isn't a continent
+    side += ['          <a href="%sdestinations.html" class="nav-dropdown-continent nav-all-dest">'
+             'All Destinations</a>' % pfx,
+             '        </div></div></div>']
+    return head + "\n" + "\n".join(side)
 
 def main():
     ap = argparse.ArgumentParser()

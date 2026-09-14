@@ -206,6 +206,9 @@ for path, r in pages():
         add("nested-bold", r, lineno(html, m.start()), "nested <b> (whole-line bold bug?)")
 
 # 6 (cont). nav drift: compare each page's set to the most common set
+# archive/ is the frozen pre-redesign site: its nav is a snapshot of what existed on
+# 2026-09-01 and must NOT follow new publishes (doing so broke 41 links for Guatemala)
+nav_lists = {f: v for f, v in nav_lists.items() if not f.startswith("archive/")}
 if nav_lists:
     norm = Counter(frozenset(v) for v in nav_lists.values()).most_common(1)[0][0]
     for f, v in nav_lists.items():

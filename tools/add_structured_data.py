@@ -69,7 +69,7 @@ def blocks_for(r, html):
 changed = 0
 for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
     r = rel(p)
-    if r.startswith(("Drafts/", ".tmp/", ".git/")) or os.path.basename(r) in EXCLUDE: continue
+    if r.startswith(("Drafts/", ".tmp/", ".git/", "archive/")) or os.path.basename(r) in EXCLUDE: continue
     html = open(p, encoding="utf-8").read()
     if "application/ld+json" in html:
         if not FORCE:

@@ -31,7 +31,7 @@ DATES = os.path.join(ROOT, ".tmp", "seo_dates.json")
 def pages():
     out = subprocess.run(["git", "ls-files", "*.html"], capture_output=True, text=True,
                          cwd=ROOT).stdout.split()
-    return [f for f in out if not f.startswith(("Drafts/", ".tmp/"))
+    return [f for f in out if not f.startswith(("Drafts/", ".tmp/", "archive/"))
             and os.path.basename(f) not in ("editor.html", "404.html")]
 
 
