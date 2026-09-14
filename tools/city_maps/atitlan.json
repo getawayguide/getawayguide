@@ -1,9 +1,9 @@
 {
   "slug": "atitlan",
   "kicker": "Guatemala",
-  "city": "Lake Atitlán",
-  "osm": ".tmp/atitlan_osm.json",
-  "article": "Drafts/guatemala/field-notes.html",
+  "city": "San Pedro La Laguna",
+  "osm": ".tmp/atitlan_lake_osm.json",
+  "article": "guatemala/field-notes.html",
   "embed": {
     "pre": "rly night; San Pedro also has plenty of calmer guesthouses if you'd rather</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"paredon\""
@@ -13,7 +13,7 @@
     "Double-tap to open in Google Maps"
   ],
   "desktop": {
-    "pad": 1.3
+    "pad": 1.18
   },
   "mobile": {
     "pad": 1.2,
@@ -26,61 +26,82 @@
       "name": "Indian Nose",
       "cat": "see",
       "match": "indian nose",
-      "lat": 14.703385,
-      "lon": -91.290149
-    },
-    {
-      "name": "San Marcos La Laguna",
-      "cat": "see",
-      "match": "san marcos la laguna",
-      "lat": 14.735498,
-      "lon": -91.25937
+      "lat": 14.7123547,
+      "lon": -91.3030359
     },
     {
       "name": "San Juan La Laguna",
       "cat": "see",
       "match": "san juan la laguna",
-      "lat": 14.670994,
-      "lon": -91.305139
+      "lat": 14.6945888,
+      "lon": -91.2878998
+    },
+    {
+      "name": "Mirador Kaqasiiwaan",
+      "cat": "see",
+      "match": "mirador kaqasiiwaan",
+      "lat": 14.7003367,
+      "lon": -91.2893118
+    },
+    {
+      "name": "San Marcos La Laguna",
+      "cat": "see",
+      "match": "san marcos la laguna",
+      "lat": 14.7239015,
+      "lon": -91.2590198
+    },
+    {
+      "name": "Dive Platform",
+      "cat": "see",
+      "match": "dive platform",
+      "lat": 14.7203647,
+      "lon": -91.2607982
+    },
+    {
+      "name": "Pupusas Salvadores",
+      "cat": "eat",
+      "match": "pupusas salvadores",
+      "lat": 14.6951626,
+      "lon": -91.2731036
     },
     {
       "name": "Shanti Shanti",
       "cat": "eat",
       "match": "shanti shanti",
-      "lat": 14.694166,
-      "lon": -91.274044
+      "lat": 14.6942923,
+      "lon": -91.273837
     },
     {
       "name": "No Hay Deer",
       "cat": "eat",
       "match": "no hay deer",
-      "lat": 14.69429,
-      "lon": -91.273836
+      "lat": 14.6942009,
+      "lon": -91.2739182
     },
     {
       "name": "Sublime",
       "cat": "eat",
       "match": "sublime",
-      "lat": 14.69436,
-      "lon": -91.273864
+      "lat": 14.6943983,
+      "lon": -91.2739233
     },
     {
       "name": "Mr Mullet's",
       "cat": "stay",
       "match": "mr mullet's",
-      "lat": 14.694709,
-      "lon": -91.273418
+      "lat": 14.6946692,
+      "lon": -91.273399
     }
   ],
-  "center": {
-    "lat": 14.703246,
-    "lon": -91.282254
-  },
   "day_trips": [
     {
       "name": "Panajachel",
       "match": "panajachel",
       "time": "Half Day"
     }
-  ]
+  ],
+  "center": {
+    "lat": 14.7085,
+    "lon": -91.279
+  }
 }

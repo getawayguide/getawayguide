@@ -484,6 +484,9 @@ footer{background:var(--void);color:var(--void-text);padding:3rem 6rem;display:f
   /* Rozenhoedkaai is skyline over water; a centred band lands mostly on the canal, so
      pull the crop up to keep the towers and the waterline in the same frame */
   #dest-belgium .dest-bg{background-position:50% 38% !important}
+  /* Fuego: the portrait card sits at 58% so the lightning shows; on the wide phone band
+     that left the volcano as a sliver along the bottom, so drop the band to the summit */
+  #dest-guatemala .dest-bg{background-position:50% 70% !important}
   /* Dedicated landscape crops (fixed images, decoupled from the portrait card so they never
      drift when a dest-card or its background-position changes) */
   /* Germany's band is the ceiling arc, chandeliers and crowd (what 50% 72% used to frame),

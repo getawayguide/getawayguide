@@ -3997,3 +3997,11 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   .hero .slide img.hp-albania { object-position:45.5% 50%; }
   .hero .slide img.hp-peru    { object-position:43% 50%; }
 }
+
+/* ---- the eyebrow as a sub-section marker inside an article. theme.css sets
+       its face (small uppercase, muted); here it only gets the rhythm the bar
+       sub-heading has, so the two markers can be swapped for each other. ---- */
+.article-body .eyebrow, .fn-section .eyebrow, .artbody .eyebrow {
+  display:block; margin-top:32px !important; margin-bottom:8px !important; }
+.article-body .eyebrow + *, .fn-section .eyebrow + *, .artbody .eyebrow + * {
+  margin-top:8px !important; }

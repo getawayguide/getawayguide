@@ -3,7 +3,7 @@
   "kicker": "Guatemala",
   "city": "Antigua",
   "osm": ".tmp/antigua_osm.json",
-  "article": "Drafts/guatemala/field-notes.html",
+  "article": "guatemala/field-notes.html",
   "embed": {
     "pre": "u can still walk over to Tropicana to book tours and join the social scene</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"acatenango\""
@@ -13,7 +13,7 @@
     "Double-tap to open in Google Maps"
   ],
   "desktop": {
-    "pad": 1.3
+    "pad": 1.25
   },
   "mobile": {
     "pad": 1.2,
@@ -23,57 +23,154 @@
   },
   "pois": [
     {
+      "name": "Arch of Santa Catalina",
+      "cat": "see",
+      "match": "arch of santa catalina",
+      "lat": 14.5596256,
+      "lon": -90.7342772
+    },
+    {
+      "name": "Parque Central",
+      "cat": "see",
+      "match": "parque central",
+      "lat": 14.556889,
+      "lon": -90.733684,
+      "href": "https://www.google.com/maps/place/Parque+Central+de+Antigua+Guatemala/@14.5568894,-90.7336838,17z/data=!3m1!4b1!4m6!3m5!1s0x85890e7339c5c44b:0xd1573b1d5bbc6bc0!8m2!3d14.5568894!4d-90.7336838!16s%2Fg%2F1tkc6_v6?hl=en&entry=ttu&g_ep=EgoyMDI2MDkwOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
       "name": "Cerro de la Cruz",
       "cat": "see",
       "match": "cerro de la cruz",
-      "lat": 14.566218,
-      "lon": -90.730974
+      "lat": 14.5643144,
+      "lon": -90.7317686
+    },
+    {
+      "name": "San José Cathedral",
+      "cat": "see",
+      "match": "san josé cathedral",
+      "lat": 14.5565474,
+      "lon": -90.7330108
+    },
+    {
+      "name": "Convento Santa Clara",
+      "cat": "see",
+      "match": "convento santa clara",
+      "lat": 14.5547673,
+      "lon": -90.7310089
     },
     {
       "name": "Iglesia de La Merced",
       "cat": "see",
       "match": "iglesia de la merced",
-      "lat": 14.642677,
-      "lon": -90.507492
+      "lat": 14.5612835,
+      "lon": -90.7341287
     },
     {
-      "name": "Café No Sé",
+      "name": "San Francisco the Great Sanctuary",
       "cat": "see",
-      "match": "café no sé",
-      "lat": 14.55572,
-      "lon": -90.729601
+      "match": "san francisco the great sanctuary",
+      "lat": 14.5539257,
+      "lon": -90.7293626
+    },
+    {
+      "name": "Tanque La Unión",
+      "cat": "see",
+      "match": "tanque la unión",
+      "lat": 14.5552353,
+      "lon": -90.7312278
+    },
+    {
+      "name": "El Mercado Central",
+      "cat": "see",
+      "match": "el mercado central",
+      "lat": 14.5583509,
+      "lon": -90.739074
     },
     {
       "name": "El Portón",
       "cat": "eat",
       "match": "el portón",
-      "lat": 14.555388,
-      "lon": -90.732567
+      "lat": 14.5557181,
+      "lon": -90.7322524
+    },
+    {
+      "name": "Rincóncito Antigüeño",
+      "cat": "eat",
+      "match": "rincóncito",
+      "lat": 14.5556467,
+      "lon": -90.7321214
     },
     {
       "name": "Café Sky",
       "cat": "eat",
       "match": "café sky",
-      "lat": 14.555392,
-      "lon": -90.729619
+      "lat": 14.5553922,
+      "lon": -90.7296229
+    },
+    {
+      "name": "Casa de Sopa",
+      "cat": "eat",
+      "match": "casa de sopa",
+      "lat": 14.5587835,
+      "lon": -90.7362203
     },
     {
       "name": "Dobladas San Carlos",
       "cat": "eat",
       "match": "dobladas san carlos",
-      "lat": 14.523937,
-      "lon": -90.535425
+      "lat": 14.5553034,
+      "lon": -90.7351284
+    },
+    {
+      "name": "Café No Sé",
+      "cat": "eat",
+      "match": "café no sé",
+      "lat": 14.5556581,
+      "lon": -90.7295763
+    },
+    {
+      "name": "Antigua Brewing Company",
+      "cat": "eat",
+      "match": "antigua brewing",
+      "lat": 14.5583609,
+      "lon": -90.7347046
     },
     {
       "name": "Tropicana Hostel",
       "cat": "stay",
-      "match": "tropicana hostel",
-      "lat": 14.555412,
-      "lon": -90.733504
+      "match": "tropicana",
+      "lat": 14.5555292,
+      "lon": -90.7334899
+    },
+    {
+      "name": "Flore Hostel",
+      "cat": "stay",
+      "match": "flore hostel",
+      "lat": 14.5546022,
+      "lon": -90.7297171
+    },
+    {
+      "name": "Hotel Las Piletas",
+      "cat": "stay",
+      "match": "hotel las piletas",
+      "lat": 14.5544933,
+      "lon": -90.7317447
     }
   ],
   "center": {
-    "lat": 14.583307,
-    "lon": -90.620498
-  }
+    "lat": 14.5588,
+    "lon": -90.7268
+  },
+  "day_trips": [
+    {
+      "name": "Chichicastenango",
+      "match": "chichicastenango",
+      "time": "Full Day"
+    },
+    {
+      "name": "Sumpango Kite Festival",
+      "match": "sumpango",
+      "time": "Half Day"
+    }
+  ]
 }

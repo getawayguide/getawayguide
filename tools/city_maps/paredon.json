@@ -3,7 +3,7 @@
   "kicker": "Guatemala",
   "city": "El Paredón",
   "osm": ".tmp/paredon_osm.json",
-  "article": "Drafts/guatemala/field-notes.html",
+  "article": "guatemala/field-notes.html",
   "embed": {
     "pre": ", so location matters less than atmosphere. Bring cash, as ATMs are scarce</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

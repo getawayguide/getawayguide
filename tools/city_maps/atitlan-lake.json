@@ -1,0 +1,119 @@
+{
+  "slug": "atitlan-lake",
+  "kicker": "Guatemala",
+  "city": "Lake Atitlán",
+  "osm": ".tmp/atitlan_lake_osm.json",
+  "article": "guatemala/field-notes.html",
+  "legend": false,
+  "labels": true,
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.02
+  },
+  "mobile": {
+    "pad": 1.3,
+    "init_w": 1.0,
+    "init_x": 0.5,
+    "init_y": 0.62
+  },
+  "pois": [
+    {
+      "name": "Panajachel",
+      "cat": "see",
+      "match": "panajachel",
+      "lat": 14.7423,
+      "lon": -91.1578,
+      "lab": "e"
+    },
+    {
+      "name": "Santa Cruz La Laguna",
+      "cat": "see",
+      "match": "santa cruz",
+      "lat": 14.7389,
+      "lon": -91.1869,
+      "lab": "s"
+    },
+    {
+      "name": "San Marcos La Laguna",
+      "cat": "see",
+      "match": "san marcos la laguna",
+      "lat": 14.7239,
+      "lon": -91.25902,
+      "lab": "s"
+    },
+    {
+      "name": "San Juan La Laguna",
+      "cat": "see",
+      "match": "san juan la laguna",
+      "lat": 14.6961,
+      "lon": -91.2869,
+      "lab": "w"
+    },
+    {
+      "name": "San Pedro La Laguna",
+      "cat": "see",
+      "match": "san pedro la laguna",
+      "lat": 14.690483,
+      "lon": -91.267955,
+      "lab": "s"
+    },
+    {
+      "name": "Santiago Atitlán",
+      "cat": "see",
+      "match": "santiago",
+      "lat": 14.6386,
+      "lon": -91.2292,
+      "lab": "s",
+      "href": "https://www.google.com/maps/place/Santiago+Atitl%C3%A1n/@14.6386,-91.2292,14z"
+    },
+    {
+      "name": "Indian Nose",
+      "cat": "see",
+      "match": "indian nose",
+      "lat": 14.703385,
+      "lon": -91.290149,
+      "lab": "w"
+    },
+    {
+      "name": "Volcán San Pedro",
+      "cat": "see",
+      "match": "volc",
+      "lat": 14.6542,
+      "lon": -91.2694,
+      "lab": "w",
+      "href": "https://www.google.com/maps/place/Volc%C3%A1n+San+Pedro/@14.6542,-91.2694,14z"
+    },
+    {
+      "name": "Volcán Tolimán",
+      "cat": "see",
+      "match": "tolim",
+      "lat": 14.6122,
+      "lon": -91.1892,
+      "lab": "e"
+    },
+    {
+      "name": "Volcán Atitlán",
+      "cat": "see",
+      "match": "atitl",
+      "lat": 14.5831,
+      "lon": -91.1861,
+      "lab": "e",
+      "href": "https://www.google.com/maps/place/Volc%C3%A1n+Atitl%C3%A1n/@14.5831,-91.1861,14z"
+    }
+  ],
+  "embed": {
+    "pre": "rel=\"noopener noreferrer\">San Pedro La Laguna</a>.</p>\n",
+    "post": "    <div class=\"fn-sub-hd\">Logistics</div>"
+  },
+  "water_labels": [
+    {
+      "text": "Lake Atitlán",
+      "lat": 14.693,
+      "lon": -91.205,
+      "size": 14
+    }
+  ]
+}

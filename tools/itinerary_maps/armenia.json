@@ -1,4 +1,12 @@
 {
+  "airport": {
+    "anchor": "end",
+    "dx": -14,
+    "dy": -14,
+    "lat": 40.1473,
+    "lon": 44.3959,
+    "name": "EVN Airport"
+  },
   "country_width": 460,
   "dots": [
     {
@@ -31,11 +39,11 @@
     {
       "a": 0,
       "b": 1,
+      "chip_dx": -20.2,
       "chip_dy": -10.4,
-      "label": "Marshrutka · 2.5 hr",
       "chip_off": 0,
       "chip_side": 0,
-      "chip_dx": -20.2
+      "label": "Marshrutka · 2.5 hr"
     }
   ],
   "margins": {
@@ -50,25 +58,25 @@
   "stops": [
     {
       "anchor": "end",
-      "days": "2–3 days",
+      "days": "Days 1–5",
       "dx": -14,
       "dy": 4,
+      "href": "#yerevan",
       "lat": 40.1792,
       "lon": 44.4991,
       "n": 1,
-      "name": "Yerevan",
-      "href": "#yerevan"
+      "name": "Yerevan"
     },
     {
       "anchor": "start",
-      "days": "1–2 days",
+      "days": "Days 6–7",
       "dx": 14,
       "dy": -14,
+      "href": "#gyumri",
       "lat": 40.7929,
       "lon": 43.8465,
       "n": 2,
-      "name": "Gyumri",
-      "href": "#gyumri"
+      "name": "Gyumri"
     }
   ]
 }

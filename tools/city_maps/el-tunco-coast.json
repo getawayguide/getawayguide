@@ -1,0 +1,77 @@
+{
+  "slug": "el-tunco-coast",
+  "kicker": "El Salvador",
+  "city": "The Surf Coast",
+  "osm": ".tmp/eltunco_coast_osm.json",
+  "article": "el-salvador/el-tunco.html",
+  "legend": false,
+  "labels": true,
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.1
+  },
+  "mobile": {
+    "pad": 1.35,
+    "init_w": 1.0,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Playa Shalpa",
+      "cat": "see",
+      "match": "shalpa",
+      "lat": 13.49877,
+      "lon": -89.48626,
+      "lab": "e"
+    },
+    {
+      "name": "El Zonte",
+      "cat": "see",
+      "match": "el zonte",
+      "lat": 13.49753,
+      "lon": -89.44171,
+      "lab": "s"
+    },
+    {
+      "name": "El Sunzal",
+      "cat": "see",
+      "match": "sunzal",
+      "lat": 13.49524,
+      "lon": -89.39024,
+      "lab": "n"
+    },
+    {
+      "name": "El Tunco",
+      "cat": "see",
+      "match": "el tunco",
+      "lat": 13.49451,
+      "lon": -89.38373,
+      "lab": "s"
+    },
+    {
+      "name": "La Libertad",
+      "cat": "see",
+      "match": "la libertad",
+      "lat": 13.48806,
+      "lon": -89.3207,
+      "lab": "n"
+    }
+  ],
+  "sea_bg": true,
+  "water_labels": [
+    {
+      "text": "Pacific Ocean",
+      "lat": 13.45,
+      "lon": -89.4,
+      "size": 14
+    }
+  ],
+  "embed": {
+    "pre": "</iframe></div>",
+    "post": "\n\n    <h2 class=\"article-h2\" id=\"getting-there\""
+  }
+}
