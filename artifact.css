@@ -3268,6 +3268,16 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
   .hero .slide img.hp-nicaragua { object-position:43% 2%; }
 }
 
+/* Armenia itinerary hero (IMG_0557, the Orgov control room). Crops set in the
+   hero picker per tier; the article banner takes the same values as a slide. */
+.hero .slide img.hp-armenia, .ah-banner .band img.hp-armenia { object-position:50% 52.3%; }
+@media (max-width:1400px) {
+  .hero .slide img.hp-armenia, .ah-banner .band img.hp-armenia { object-position:50% 51.9%; }
+}
+@media (max-width:768px) {
+  .hero .slide img.hp-armenia, .ah-banner .band img.hp-armenia { object-position:50% 50%; }
+}
+
 /* ---- maps sit on the page, not in a box ---- */
 .itinerary-map, figure.itinerary-map, .citymap-fig, .route-map, .bm-map,
 .country-hero-map { border:0 !important; outline:0 !important; box-shadow:none !important; }

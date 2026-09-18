@@ -444,6 +444,22 @@
       border:1px solid var(--line,#D8E5DC); background:#fff; border-radius:12px; }
     #pk-toggle.on { background:#2D6B50; color:#fff; border-color:#2D6B50; }
     #pk-panel { padding:.4rem .5rem .6rem; border-bottom:1px solid #eceae3; }
+    /* The photo panel clips (overflow:hidden) and every part of it is a flex
+       child, so nothing could scroll: an album's picks grew #pk-panel to its
+       full height and pushed the library off the bottom of the sidebar. Picks
+       and the library grid now share the height and each scrolls on its own;
+       min-height:0 is what lets a flex child shrink below its content. */
+    #pk-panel { flex: 1 1 0; min-height: 140px; overflow-y: auto; }
+    #pl-grid { min-height: 0; }
+    /* Blog Picks is a mode, not a second list: while it is open the library
+       (tabs, crumbs, folders, grid) is hidden and the picks take the whole
+       sidebar. Two stacked scrollers with a blank gap under an empty grid was
+       the alternative, and it read as broken. Toggle Blog Picks off to browse. */
+    #photo-panel:has(#pk-panel[style*="block"]) > :not(#pk-bar):not(#pk-panel) { display: none !important; }
+    /* at a folder level with no photos (the root: only folders), the grid is
+       empty; let the folder list take that space instead of leaving a hole */
+    #pl-grid:empty { display: none; }
+    #photo-panel:has(#pl-grid:empty) #pl-folders { max-height: none; flex: 1 1 auto; }
     #pk-album { width:100%; font:inherit; font-size:.76rem; padding:3px 4px; margin-bottom:.4rem; }
     #pk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
     .pk-ph { position:relative; cursor:pointer; border-radius:3px; overflow:hidden;
@@ -468,6 +484,23 @@
       font-family:Hanken Grotesk,sans-serif; font-size:.62rem; letter-spacing:.08em;
       text-transform:uppercase; pointer-events:none; }
     #editor .img-slot-empty.drag-over { border-color:var(--terra,#2D6B50); background:#dcebe1; }
+    /* Remove an empty slot. A slot is contentEditable=false and swallows its own
+       click to open the photo panel, so there was previously no way to get rid of
+       one: a placeholder you did not want was permanent. This is the way out.
+       It sits above the ::after label, which is pointer-events:none. */
+    #editor .img-slot-empty > .slot-x { position:absolute; top:4px; right:4px; z-index:2;
+      width:20px; height:20px; padding:0; line-height:18px; text-align:center;
+      border:1px solid #c7b3b3; border-radius:50%; background:#fff; color:#a34b3c;
+      font:600 12px/18px Hanken Grotesk,Helvetica,Arial,sans-serif; cursor:pointer;
+      opacity:0; transition:opacity .12s; }
+    #editor .img-slot-empty:hover > .slot-x { opacity:1; }
+    #editor .img-slot-empty > .slot-x:hover { background:#a34b3c; color:#fff; border-color:#a34b3c; }
+    /* A placeholder that came with a draft sits INSIDE the page's own frame
+       (a 2:3 pair cell, a 3:2 .ls / .img-landscape, a cropped .fr, a portrait
+       span). The frame sets the shape; the slot just fills it. */
+    #editor [style*="aspect-ratio"] > .img-slot-empty, #editor .img-landscape > .img-slot-empty,
+    #editor .ls > .img-slot-empty, #editor .fr > .img-slot-empty, #editor .pair > div > .img-slot-empty {
+      aspect-ratio:auto; height:100%; }
     /* same cap as styles.css, so what you place is the size that publishes */
     #editor .img-pair { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: 1.5rem auto; width: 79%; max-width: 576px; }
     #editor .img-pair > span, #editor .img-pair > div { min-width: 0; }
@@ -515,6 +548,7 @@
     #pl-offline code { background: var(--b-subtle); padding: 1px 5px; border-radius: 3px; font-size: .75rem; }
     .pl-drop-line { height: 3px; background: var(--terra); border-radius: 2px; margin: 4px 0; pointer-events: none; }
     #editor img.pl-pair-target { outline: 3px dashed var(--terra); outline-offset: 3px; }
+    #editor .pl-swap-target, #editor img.pl-swap-target { outline: 3px dashed var(--terra); outline-offset: 3px; }
 
     /* ---------- Full-window photo editor ---------- */
     #crop-backdrop { position: fixed; inset: 0; background: rgba(20,28,23,.95); z-index: 500;
@@ -980,6 +1014,27 @@ main{overflow-y:auto;padding:1rem}
 #applist a span{font-family:Hanken Grotesk,sans-serif;font-size:.68rem;color:#8a8a8a}
 #applist a:hover{background:#F7F7F3}
 #applist a.on{background:rgba(45,107,80,.08)}
+
+/* ============== HERO PICKER VIEW ==============
+   The picker is its own server (tools/hero_picker.py, :5004) because it decodes
+   and crops photos. It runs here in a frame with ?embed=1, under the same dark
+   bar and switcher as the other two apps, instead of a separate tab. */
+#app-heroes{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:52px 1fr;
+  background:#F7F7F3;font-family:Hanken Grotesk,sans-serif;color:#1C2821}
+#app-heroes[hidden]{display:none!important}
+#app-heroes header{background:#1C2821;color:#fff;display:flex;align-items:center;gap:1rem;padding:0 1rem}
+#app-heroes header .spacer{flex:1}
+#app-heroes header .stat{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.65)}
+#app-heroes header .stat b{color:#6EC99A;font-weight:600}
+#heroes-frame{width:100%;height:100%;border:0;display:block;background:#F7F7F3}
+#heroes-offline{align-self:start;justify-self:center;margin-top:4rem;max-width:30rem;
+  background:#fff;border:1px solid #D8E5DC;border-radius:6px;padding:1.2rem 1.4rem;
+  font-size:.85rem;line-height:1.6;color:#1C2821}
+#heroes-offline[hidden]{display:none}
+#heroes-offline button{margin-top:.8rem;font-family:Hanken Grotesk,sans-serif;font-size:.6rem;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.45rem .8rem;border-radius:3px;
+  border:1px solid rgba(28,40,33,.14);background:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1017,6 +1072,7 @@ main{overflow-y:auto;padding:1rem}
   <input id="img-width-input" type="text" placeholder="width" title="e.g. 300px or 50%">
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgPan()" title="Pan/reposition without changing shape">↔ Pan</button>
+  <button class="img-tool-btn" onclick="imgSwap()" title="Swap in a different photo from the library. It takes this photo's frame: same shape, same spot, same caption" style="font-weight:600">⇄ Swap</button>
   <button class="img-tool-btn" onclick="imgEditOriginal()" title="Reopen the full editing window (crop, develop, straighten, erase) on this photo's archive original" style="font-weight:600">✎ Edit</button>
   <button class="img-tool-btn" onclick="openCropModal()" title="Precise crop: zoom, drag, exact rectangle" style="font-weight:600">✂ Crop</button>
   <button class="img-tool-btn" onclick="imgCrop('2/3')" title="Portrait 2:3">⬜ 2:3</button>
@@ -1228,6 +1284,8 @@ main{overflow-y:auto;padding:1rem}
       <button class="tool-btn" onclick="insertLink()" title="Insert Link (Ctrl+K)">Link</button>
       <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
       <button class="tool-btn" onclick="fmt('insertHorizontalRule')" title="Horizontal rule">―</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
@@ -1364,10 +1422,25 @@ main{overflow-y:auto;padding:1rem}
 
 </div>
 
+<div id="app-heroes" hidden>
+  <header>
+    <button class="suite-logo" data-switcher aria-haspopup="true">Hero&nbsp;<b>Picker</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <span class="stat" id="heroes-tally"></span>
+    <span class="stat" id="heroes-count"></span>
+    <span class="spacer"></span>
+  </header>
+  <iframe id="heroes-frame" title="Hero picker"></iframe>
+  <div id="heroes-offline" hidden>
+    <b>The hero picker isn't running.</b><br>
+    Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
+    <br><button type="button" id="heroes-retry">Try again</button>
+  </div>
+</div>
+
 <div id="applist" hidden>
   <a href="#editor" data-view="editor">Article&nbsp;<b>Editor</b><span>write &amp; lay out articles</span></a>
   <a href="#library" data-view="library">Photo&nbsp;<b>Library</b><span>backups, ratings &amp; blog picks</span></a>
-  <a href="http://127.0.0.1:5004/" data-view="heroes" target="_blank" rel="noopener">Hero&nbsp;<b>Picker</b><span>choose the banner for a page</span></a>
+  <a href="#heroes" data-view="heroes">Hero&nbsp;<b>Picker</b><span>choose the banner for a page</span></a>
   <div id="build-stamp" style="padding:.3rem .8rem .2rem;font-family:Hanken Grotesk,sans-serif;
     font-size:.55rem;letter-spacing:.06em;color:#b5b5b5">build 2026-08-26.1</div>
 </div>
@@ -1811,8 +1884,93 @@ main{overflow-y:auto;padding:1rem}
     }
   };
 
+  // ---- the site's stylesheets, scoped to the canvas, for guide pages ----
+  const siteCss = (() => {
+    const SHEETS = ['styles.css', 'theme.css', 'artifact.css'];
+    let cache = null;              // the scoped CSSStyleSheet, built once
+    let applied = [];              // body classes / data-* copied onto #editor
+
+    // A selector written for the published page, rewritten to hit the canvas:
+    //   body.frame[data-list="a"] .v-list  ->  #editor[data-list="a"] .v-list
+    //   .artbody h3                        ->  #editor h3
+    //   .pair                              ->  #editor .pair
+    // The page's <body class="frame …" data-…> becomes #editor itself, and
+    // .artbody is #editor too (the editor holds .artbody's children), so both
+    // fold into the id. :root variables land on #editor as well.
+    function scope(sel) {
+      let t = sel.trim();
+      if (/^(html|body)$/.test(t)) return null;                  // page resets
+      t = t.replace(/^:root\b/, '#editor')
+           .replace(/(^|[\s>+~(])body\.frame\b/g, '$1#editor')
+           .replace(/(^|[\s>+~(])\.frame\b/g, '$1#editor')
+           .replace(/(^|[\s>+~(])(?:body|html)\b/g, '$1#editor');
+      if (!t.includes('#editor')) t = '#editor ' + t;
+      t = t.replace(/#editor(\s*>\s*|\s+)\.artbody\b/g, '#editor')
+           .replace(/#editor\.artbody\b/g, '#editor');
+      return t;
+    }
+    function rewrite(rules) {
+      for (const r of rules) {
+        if (r.cssRules && !(r instanceof CSSStyleRule)) { rewrite(r.cssRules); continue; }
+        if (!(r instanceof CSSStyleRule)) continue;
+        const out = r.selectorText.split(',').map(scope).filter(Boolean);
+        try { r.selectorText = out.length ? out.join(', ') : '#editor.never-matches'; }
+        catch (e) { /* a selector the engine will not take back: leave it */ }
+        // .frame itself is the design mock-up's page box (1440px, drop shadow,
+        // clipped). The canvas keeps its palette and ground, not that chrome.
+        if (r.selectorText === '#editor')
+          for (const prop of ['width', 'max-width', 'box-shadow', 'overflow']) r.style.removeProperty(prop);
+      }
+    }
+    async function build() {
+      const texts = await Promise.all(SHEETS.map(async n => {
+        const r = await fetch(API + '/site/' + n, { cache: 'no-store' });
+        if (!r.ok) throw new Error(n + ' ' + r.status);
+        return await r.text();
+      }));
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(texts.join('\n'));
+      rewrite(sheet.cssRules);
+      return sheet;
+    }
+    function clear() {
+      const ed = document.getElementById('editor');
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => x !== cache);
+      for (const a of applied) a.startsWith('data-') ? ed.removeAttribute(a) : ed.classList.remove(a);
+      applied = [];
+      document.querySelector('.editor-scroll').style.background = '';
+    }
+    async function apply(doc, body) {
+      clear();
+      if (!body.classList.contains('artbody')) return;        // field notes keep the hand-tuned look
+      const ed = document.getElementById('editor');
+      const pageBody = doc.body;
+      for (const c of pageBody.classList) if (c !== 'frame') { ed.classList.add(c); applied.push(c); }
+      for (const a of pageBody.attributes) if (a.name.startsWith('data-')) { ed.setAttribute(a.name, a.value); applied.push(a.name); }
+      try {
+        cache = cache || await build();
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, cache];
+        // the published page is one ground edge to edge (white for data-pal
+        // "white", cream for "cream"); the canvas should not sit as a lit
+        // column on the editor's own cream
+        const ground = getComputedStyle(ed).getPropertyValue('--ground').trim();
+        if (ground) document.querySelector('.editor-scroll').style.background = ground;
+      } catch (e) {
+        // the photo server is the only place the sheets can be read from at
+        // file://; without it the page still opens, just unstyled as before
+        console.warn('site css not loaded:', e.message);
+      }
+    }
+    return { apply, clear };
+  })();
+
   async function loadFile(fh) {
     fileHandle = fh;
+    // whatever was queued for the previous article (a clicked slot, an armed
+    // Swap, an open crop modal) belongs to that document, not this one
+    if (window.cancelPendingSwap) cancelPendingSwap();
+    if (window.takePendingSlot) takePendingSlot();
+    if (window.closeCropModal && document.querySelector('#crop-backdrop.open')) closeCropModal();
     lastFileHandle = fh; // remember for directory picker startIn
     const file = await fh.getFile();
     originalHTML = await file.text();
@@ -1833,6 +1991,13 @@ main{overflow-y:auto;padding:1rem}
     }
 
     const editor = document.getElementById('editor');
+    // A guide page (the itinerary template, wrapped in .artbody) is laid out by
+    // artifact.css: variant blocks, day cards, the fact grid, photo pairs. The
+    // editor only ever carried hand-written styles for field-notes markup, so
+    // a guide opened here showed all three responsive variants at once and its
+    // placeholders lost their frames. Pull the site's own sheets in, scoped to
+    // the canvas, for exactly those pages.
+    await siteCss.apply(doc, body);
     // Match the canvas to THIS page's published content box. Article pages set
     // max-width:825px inline; field notes used to fall back to styles.css's
     // 950px default, but the re-theme puts every article template on one
@@ -1841,8 +2006,16 @@ main{overflow-y:auto;padding:1rem}
     // photos ~125px wider than the editor showed them.
     const bodyStyle = body.getAttribute('style') || '';
     const mw = /max-width:\s*(\d+)px/.exec(bodyStyle);
-    editor.style.maxWidth = ((mw ? +mw[1] : 825) - 96) + 'px';   // minus 2 x 3rem
+    // A guide page (.artbody) measures its own text with .measure wrappers
+    // (729px) and caps its photo blocks at 576px, so its canvas runs the full
+    // width of the editing area, the way .artbody fills the published page.
+    editor.style.maxWidth = body.classList.contains('artbody') ? 'none'
+                          : ((mw ? +mw[1] : 825) - 96) + 'px';   // minus 2 x 3rem
     editor.innerHTML = body.innerHTML;
+    // A draft's [PHOTO] markers become the same click-or-drop slots the Pair
+    // button makes, so a photo goes straight into the frame the draft left
+    // for it. They come back as markers on save until they are filled.
+    window.adoptPlaceholders(editor);
 
     // Convert all existing image src paths to blob URLs so they display reliably in the editor.
     // Images are always stored under Travel Blog/Images/ — use folderHandle to get file blobs.
@@ -2069,6 +2242,10 @@ main{overflow-y:auto;padding:1rem}
   function normalizeForSave(el) {
     // 0. Leftover find-marks (defensive)
     el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
+    // the ✕ on an empty slot is editor chrome. stripEmptySlots() already drops it
+    // with the slot it lives in, but a photo dropped straight into a draft frame
+    // can leave the slot element standing, so sweep for it here too.
+    el.querySelectorAll('.slot-x').forEach(x => x.remove());
 
     // 1. strong→b, em→i (site convention)
     const retag = (from, to) => {
@@ -2396,6 +2573,9 @@ main{overflow-y:auto;padding:1rem}
     stripEmptySlots(saveEl);
     // Strip editor-only classes
     saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
+    // a ⇄ Swap that was started and never finished leaves its marker behind
+    saveEl.querySelectorAll('[data-swap-ref]').forEach(el => el.removeAttribute('data-swap-ref'));
+    saveEl.querySelectorAll('.pl-swap-target').forEach(el => el.classList.remove('pl-swap-target'));
     saveEl.querySelectorAll('.img-cropped').forEach(el => el.classList.remove('img-cropped'));
     saveEl.querySelectorAll('.img-panning').forEach(el => el.classList.remove('img-panning'));
     // For canvas-cropped images: wrap in a positioned container.
@@ -2428,7 +2608,8 @@ main{overflow-y:auto;padding:1rem}
         ? img.parentElement : null;
       const host = (picEl || img).parentElement;
       const isFrame = host && /^(SPAN|DIV)$/.test(host.tagName) &&
-        (host.style.aspectRatio || host.classList.contains('img-landscape'));
+        (host.style.aspectRatio || host.classList.contains('img-landscape') ||
+         host.classList.contains('ls') || host.classList.contains('fr'));
       if (isFrame) {
         const inPair = !!host.closest('.img-pair');
         if (!inPair) {                     // pair slots keep the grid's 2:3
@@ -2765,8 +2946,10 @@ main{overflow-y:auto;padding:1rem}
   document.getElementById('editor').addEventListener('click', function(e) {
     if (e.target.tagName === 'IMG') {
       e.preventDefault();
+      if (window.cancelPendingSwap) cancelPendingSwap(e.target);
       selectImg(e.target);
     } else {
+      if (window.cancelPendingSwap) cancelPendingSwap();
       deselectImg();
     }
   }, true);
@@ -3436,7 +3619,7 @@ main{overflow-y:auto;padding:1rem}
     // A pair mid-build means the on-disk copy is MISSING the placeholders
     // (they never publish). Swapping the DOM for it would delete them under
     // the user; the editor keeps its DOM and catches up on the next open.
-    if (document.querySelector('#editor .img-slot-empty')) return;
+    if (document.querySelector('#editor .img-slot-empty:not([data-ph])')) return;
     const pane = document.querySelector('.editor-pane');
     const y = pane ? pane.scrollTop : document.scrollingElement.scrollTop;
     await loadFile(fileHandle);
@@ -3516,7 +3699,14 @@ main{overflow-y:auto;padding:1rem}
     const MAX = 150, COALESCE = 450;
     let stack = [], idx = -1, timer = null, applying = false, burstStart = 0;
     const ed = () => document.getElementById('editor');
-    function state() { const e = ed(); return { html: e.innerHTML, sel: captureSel(e) }; }
+    // selection/drop/swap highlights are editor chrome, not content: with them
+    // in the snapshot a highlight change looked like an edit and ate the redo
+    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|pl-swap-target|pl-pair-target)\b/g;
+    function state() {
+      const e = ed();
+      const html = e.innerHTML.replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
+      return { html, sel: captureSel(e) };
+    }
     function commit() {
       clearTimeout(timer); timer = null;
       if (applying) return;
@@ -3553,6 +3743,8 @@ main{overflow-y:auto;padding:1rem}
         const e = ed();
         e.innerHTML = stack[idx].html;
         restoreSel(e, stack[idx].sel);
+        // the ✕ on each empty slot is a real node, so this innerHTML swap drops it
+        if (window.restoreSlotButtons) window.restoreSlotButtons(e);
         applying = false;
         setDirty(true); updateWordCount(); syncToolbar();
         return true;
@@ -3826,6 +4018,7 @@ main{overflow-y:auto;padding:1rem}
       $('#pl-offline').style.display = 'none';
       renderTabs(st.sources);
       plBrowse();
+      if ($('#pk-panel').style.display !== 'none') pkBoot();   // picks opened while offline
     } catch (e) {
       PL.online = false;
       ['#pl-tabs', '#pl-crumbs', '#pl-folders', '#pl-grid'].forEach(q => { $(q).innerHTML = ''; });
@@ -3880,7 +4073,7 @@ main{overflow-y:auto;padding:1rem}
       // derivation the crop modal uses to prefill the country field, so
       // "Drafts/albania/field-notes.html" -> "Albania" -> "Albania (2025)".
       const rel = await articleRelPath();
-      const slug = rel ? (rel.startsWith('Drafts/') ? rel.split('/')[1] : rel.split('/')[0]) : '';
+      const slug = articleSlug(rel);
       const guess = slug.replace(/-/g, ' ');
       PK.albums.forEach(a => {
         const o = document.createElement('option');
@@ -3943,6 +4136,17 @@ main{overflow-y:auto;padding:1rem}
     if ($('#pl-follow')) { $('#pl-follow').checked = false; PL.follow = false; localStorage.setItem('plFollow', '0'); }
     pkRender();
   };
+  // The value a place <select> can actually show for what follow wants: an
+  // unoffered "city:X" becomes X's only place, anything else unknown is "".
+  function offeredPlace(sel, want) {
+    if (!sel || !want) return want || '';
+    // look, don't set: probing by assignment blanked the menu on every
+    // caret move once the follow value was already applied
+    if ([...sel.options].some(o => o.value === want)) return want;
+    const og = want.startsWith('city:') &&
+      [...sel.querySelectorAll('optgroup')].find(o => o.label.startsWith(want.slice(5) + ' ('));
+    return og && og.children.length === 1 ? og.children[0].value : '';
+  }
   window.pkFollowSection = function () {
     if (!PL.follow || !PK.geo || PL.picking || $('#pk-panel').style.display === 'none') return;
     const ae = document.activeElement;
@@ -3950,7 +4154,7 @@ main{overflow-y:auto;padding:1rem}
     const f = plFollowPlaces(PK.geo);
     if (f === null) return;
     const m = f.places;
-    const next = m.length ? m[0] : '';
+    const next = offeredPlace($('#pk-place'), m.length ? m[0] : '');
     if (next === PK.place) return;
     PK.place = next; $('#pk-place').value = next; pkRender();
   };
@@ -3993,7 +4197,9 @@ main{overflow-y:auto;padding:1rem}
         // by data-slot-id and falls back to any open placeholder, which is
         // exactly the recovery the drop path already gets.
         const slot = takePendingSlot();
-        const target = slot ? { el: slot, where: 'slot' } : { el: null, where: 'end' };
+        const target = !slot ? { el: null, where: 'end' }
+          : slot.tagName === 'IMG' ? { el: slot, where: 'image', swap: true }   // ⇄ Swap
+          : { el: slot, where: 'slot' };
         openCropForPhoto({ root: PK.root, path: rel, name: pick.n }, target);
       };
       g.appendChild(div);
@@ -4059,9 +4265,14 @@ main{overflow-y:auto;padding:1rem}
 
   async function plBrowse(retry = 2) {
     let d;
+    const root = PL.root, path = PL.path;      // what THIS call is listing
     try {
-      d = await (await fetch(`${API}/api/browse?root=${PL.root}&path=${encodeURIComponent(PL.path)}`)).json();
+      d = await (await fetch(`${API}/api/browse?root=${root}&path=${encodeURIComponent(path)}`)).json();
+      // the user clicked another tab or folder while this one was loading
+      // (QA: Shared Albums' 107 chips landed under the Downloads tab)
+      if (root !== PL.root || path !== PL.path) return;
     } catch (e) {
+      if (root !== PL.root || path !== PL.path) return;
       // a mid-body connection reset happens under load (thumbnail bursts, an
       // iCloud sync) — back off and retry, then say so instead of silently
       // showing nothing
@@ -4346,7 +4557,7 @@ main{overflow-y:auto;padding:1rem}
     const f = plFollowPlaces(PL.geo);
     if (f === null) return;                               // caret is not in the article
     const m = f.places;
-    const next = m.length ? m[0] : '';
+    const next = offeredPlace($('#pl-place'), m.length ? m[0] : '');
     // say what follow did, so a wrong guess is obvious rather than mysterious
     const st = $('#pl-geo-state');
     if (!m.length) st.textContent = f.text ? 'no photos of “' + f.text.slice(0, 28) + '”' : '';
@@ -4625,6 +4836,27 @@ main{overflow-y:auto;padding:1rem}
   }
   window.articleRelPath = articleRelPath;
 
+  // How many folders the open article sits below the site root, i.e. how many
+  // "../" a saved image path needs. The connected folder knows for sure; without
+  // it, the page's own stylesheet link says the same thing (a live page links
+  // "../styles.css", a draft in Drafts/.Full Articles/<country>/ links
+  // "../../../styles.css"). Defaulting to 1 without a folder is what saved
+  // draft photos as "../Images/..." and broke them outside the editor.
+  async function articleDepth() {
+    const rel = await articleRelPath();
+    if (rel) return rel.split('/').length - 1;
+    const m = /href="((?:\.\.\/)*)(?:styles|theme|artifact)\.css/.exec(originalHTML || '');
+    return m ? m[1].length / 3 : 1;
+  }
+  // The country folder of an article path: "albania/x.html", "Drafts/albania/x.html"
+  // and "Drafts/.Full Articles/armenia/x.html" all give the country slug.
+  function articleSlug(rel) {
+    if (!rel) return '';
+    const parts = rel.split('/').filter(x => x !== 'Drafts' && !x.startsWith('.'));
+    return parts.length > 1 ? parts[0] : '';
+  }
+  window.articleDepth = articleDepth;
+
   /* ---------- insert executor (runs when Insert is clicked in the editor) ---------- */
   function stripStaleSources(img) {
     // A replaced image that went through the compression pipeline sits inside
@@ -4661,6 +4893,12 @@ main{overflow-y:auto;padding:1rem}
     const aspect = CM.cropLock ? CM.cropLock.aspect
                  : CM.free ? rectAspectFree() : CM.aspect;
     const go = $('#crop-go');
+    if (drop.where === 'image' && CM.dropMode === 'replace' && drop.el && !drop.el.isConnected) {
+      const ref = drop.el.dataset.swapRef;
+      const again = ref && [...document.querySelectorAll('#editor img')].find(i =>
+        (i.getAttribute('data-path') || i.getAttribute('src')) === ref);
+      if (!again) { alert('That photo is no longer in the article.'); closeCropModal(); return; }
+    }
     go.disabled = true;
     try {
       const r = await (await fetch(API + '/api/import', {
@@ -4681,8 +4919,7 @@ main{overflow-y:auto;padding:1rem}
         // remember this photo's develop for "⧉ Previous" on the next one
         localStorage.setItem('pl-lastdev', JSON.stringify({ dev: CM.dev, angle: CM.angleDeg || 0 }));
       } catch (e) {}
-      const rel = await articleRelPath();
-      const depth = rel ? rel.split('/').length - 1 : 1;
+      const depth = await articleDepth();
       const dataPath = '../'.repeat(depth) + r.src.replace(/ /g, '%20');
       // Preview through the photo server — it just performed the import, so
       // it is definitely running, and it serves the repo at /site/ with CORS.
@@ -4718,7 +4955,14 @@ main{overflow-y:auto;padding:1rem}
       }
       const mode = drop.where === 'image' ? CM.dropMode : 'block';
       if (mode === 'replace') {
-        const old = drop.el;
+        let old = drop.el;
+        if (!old.isConnected && old.dataset.swapRef) {
+          const ref = old.dataset.swapRef;
+          old = [...document.querySelectorAll('#editor img')].find(i =>
+            (i.getAttribute('data-path') || i.getAttribute('src')) === ref) || old;
+        }
+        if (!old.isConnected) { alert('That photo is no longer in the article.'); go.disabled = false; return; }
+        delete old.dataset.swapRef;
         old.src = blobUrl;
         old.setAttribute('data-path', dataPath);
         old.setAttribute('alt', alt);
@@ -4815,6 +5059,64 @@ main{overflow-y:auto;padding:1rem}
   const SLOT_CSS = 'display:block;position:relative;overflow:hidden;' +
                    'width:100%;aspect-ratio:2/3;border-radius:2px;';
 
+  // The marker a draft carries where a photo belongs. Written by the draft
+  // builder, read back by adoptPlaceholders() on open, and written again by
+  // stripEmptySlots() on save for any slot still waiting for its photo.
+  const PH_STYLE = "width:100%;height:100%;background:#F2F0E9;border:1px dashed #C9C3B4;" +
+    "border-radius:3px;display:flex;align-items:center;justify-content:center;color:#8C8676;" +
+    "font-family:'Hanken Grotesk',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em";
+
+  window.adoptPlaceholders = function adoptPlaceholders(root) {
+    root.querySelectorAll('.photo-ph').forEach(ph => {
+      const slot = emptySlot();
+      slot.dataset.ph = '1';                       // the draft's own: persists on save
+      const cell = ph.parentElement;
+      // a field-notes pair cell is a bare 2:3 span holding only the marker; the
+      // slot IS that cell (exactly what insertPair builds), so the span goes
+      if (cell && cell.tagName === 'SPAN' && cell.children.length === 1 &&
+          cell.parentElement && cell.parentElement.classList.contains('img-pair')) cell.replaceWith(slot);
+      else ph.replaceWith(slot);
+    });
+  };
+  function placeholderFor(slot) {
+    // A <div> cannot live inside a <p>; the single-portrait drafts use a span there.
+    // A pair cell is a <span> too, so a marker going into one has to be a span as
+    // well or the save writes <span><div> - invalid nesting the browser then
+    // reshuffles on the next open.
+    const inPair = !!(slot.parentElement && slot.parentElement.classList.contains('img-pair'));
+    const ph = document.createElement(slot.closest('p') || inPair ? 'span' : 'div');
+    ph.className = 'photo-ph';
+    ph.setAttribute('style', PH_STYLE);
+    ph.textContent = '[PHOTO]';
+    if (inPair) {
+      const cell = document.createElement('span');
+      cell.setAttribute('style', SLOT_CSS);       // verbatim: cssText re-spaces it
+      cell.appendChild(ph);
+      return cell;
+    }
+    return ph;
+  }
+  // Undo/redo swaps the canvas innerHTML, which drops the per-slot onclick;
+  // this catches those (a live slot stops the event before it gets here).
+  ed().addEventListener('click', e => {
+    // the ✕ is inside the slot, so it has to be checked first or every delete
+    // click reads as "fill this slot" and opens the photo panel instead
+    const x = e.target.closest && e.target.closest('#editor .img-slot-empty > .slot-x');
+    if (x) { e.preventDefault(); e.stopPropagation(); slotDelete(x.closest('.img-slot-empty')); return; }
+    const slot = e.target.closest && e.target.closest('#editor .img-slot-empty');
+    if (!slot || slot.onclick) return;
+    e.preventDefault(); e.stopPropagation(); fillSlot(slot);
+  });
+
+  /* Undo/redo restores the canvas by innerHTML, which loses both the handlers and
+     the ✕ node itself. Put the button back on any slot that came back without one;
+     the delegated handler above is what makes it work after that. */
+  window.restoreSlotButtons = function restoreSlotButtons(root) {
+    (root || ed()).querySelectorAll('.img-slot-empty').forEach(s => {
+      if (!s.querySelector(':scope > .slot-x')) s.appendChild(slotXButton());
+    });
+  };
+
   let SLOT_SEQ = 0;
   function emptySlot() {
     const s = document.createElement('span');
@@ -4824,8 +5126,82 @@ main{overflow-y:auto;padding:1rem}
     s.contentEditable = 'false';        // clicking must not drop a caret inside
     s.title = 'Click to choose a photo, or drag one here';
     s.onclick = e => { e.preventDefault(); e.stopPropagation(); fillSlot(s); };
+    s.appendChild(slotXButton());
     return s;
   }
+
+  // The little ✕ on an empty slot. Built here rather than in emptySlot() so the
+  // delegated rebuild below can put one back on a slot that lost its children to
+  // an undo (History swaps innerHTML, which drops event handlers AND this node).
+  function slotXButton() {
+    const x = document.createElement('button');
+    x.className = 'slot-x';
+    x.type = 'button';
+    x.textContent = '×';
+    x.setAttribute('contenteditable', 'false');
+    x.title = 'Remove this photo placeholder';
+    x.onclick = e => { e.preventDefault(); e.stopPropagation(); slotDelete(e.target.closest('.img-slot-empty')); };
+    return x;
+  }
+
+  /* Delete an empty slot, and take the frame with it when the frame exists only
+     to hold photos. Deleting one cell of a pair leaves a lopsided grid, so the
+     pair collapses to a single landscape-width block when one cell remains and
+     disappears entirely when neither does. */
+  window.slotDelete = function slotDelete(slot) {
+    if (!slot) return;
+    History.checkpoint();
+    const cell = slot.parentElement;
+    const pair = slot.closest('.img-pair, .pair');
+    const solo = slot.closest('.img-landscape, .ls, .fr');
+    slot.remove();
+    // a pair cell is a wrapper with nothing else in it once the slot is gone
+    if (cell && cell !== pair && cell !== solo && !cell.querySelector('img, .img-slot-empty') &&
+        !cell.textContent.trim()) cell.remove();
+    if (solo && solo.isConnected && !solo.querySelector('img, .img-slot-empty')) solo.remove();
+    if (pair && pair.isConnected) {
+      const left = pair.querySelectorAll('img, .img-slot-empty').length;
+      if (!left) pair.remove();
+      else if (left === 1) pair.style.gridTemplateColumns = '1fr';
+    }
+    setDirty(true);
+    History.touch();
+  };
+
+  /* Insert ONE placeholder at the caret. The Pair button has always been the only
+     way to put a photo slot into an article, so a single portrait or a landscape
+     meant inserting a pair and deleting half of it. `shape` is 'portrait' (the
+     2:3 the pair cells use) or 'landscape' (the 3:2 .img-landscape block). */
+  window.insertPhotoSlot = function insertPhotoSlot(shape) {
+    if (!fileHandle) { alert('Open an article first.'); return; }
+    History.checkpoint();
+    const slot = emptySlot();
+    let block = slot;
+    if (shape === 'landscape') {
+      block = document.createElement('div');
+      block.className = 'img-landscape';
+      block.appendChild(slot);
+    } else {
+      // match the pair cell exactly, so filling it produces the same markup
+      block = document.createElement('div');
+      block.className = 'img-pair';
+      block.style.gridTemplateColumns = '1fr';
+      block.appendChild(slot);
+    }
+    // Persist as a [PHOTO] marker. stripEmptySlots() drops any slot WITHOUT
+    // data-ph on the way out, so without this a placeholder you inserted was
+    // silently gone the next time you opened the file - it only looked like it
+    // had been added. A slot that gets filled is replaced by the photo anyway,
+    // so this only ever affects the ones still waiting.
+    slot.dataset.ph = '1';
+    insertBlockAtCaret(block);
+    const after = document.createElement('p');
+    after.innerHTML = '<br>';
+    block.parentElement.insertBefore(after, block.nextSibling);
+    History.touch();
+    setDirty(true);
+    block.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
 
   // Drop a block element exactly where the caret sits, then lift it out of any
   // container that cannot legally hold a <div> - a <p>, a heading, a list item,
@@ -4863,6 +5239,9 @@ main{overflow-y:auto;padding:1rem}
     pair.className = 'img-pair';
     pair.appendChild(emptySlot());
     pair.appendChild(emptySlot());
+    // same reasoning as insertPhotoSlot(): "fill it later" has to survive a save,
+    // and stripEmptySlots() only keeps a slot that carries data-ph
+    pair.querySelectorAll('.img-slot-empty').forEach(s => { s.dataset.ph = '1'; });
     // Put it where the CARET is - see insertBlockAtCaret(). Climbing to the
     // editor's direct child (what this did first) lands the pair after the whole
     // section on a field-notes page, which is how it kept ending up under the
@@ -4887,15 +5266,68 @@ main{overflow-y:auto;padding:1rem}
     setTimeout(() => slot.classList.remove('drag-over'), 1200);
   };
   let PENDING_SLOT = null;
-  window.takePendingSlot = function () { const s = PENDING_SLOT; PENDING_SLOT = null; return s; };
+  window.takePendingSlot = function () {
+    const s = PENDING_SLOT; PENDING_SLOT = null;
+    if (s && s.tagName === 'IMG') (frameOf(s) || s).classList.remove('pl-swap-target');
+    return s;
+  };
+
+  // The frame a photo sits in, if any: a 2:3 pair cell (field-notes span or the
+  // guide's div), a 3:2 .img-landscape / .ls, a cropped day shot's .fr, or a
+  // portrait span. A swapped-in photo inherits that frame's shape and place.
+  window.frameOf = function frameOf(img) {
+    const host = img.closest('picture') ? img.closest('picture').parentElement : img.parentElement;
+    if (!host || host.id === 'editor') return null;
+    if (host.classList.contains('img-landscape') || host.classList.contains('ls') ||
+        host.classList.contains('fr')) return host;
+    return /aspect-ratio/.test(host.getAttribute('style') || '') ? host : null;
+  };
+
+  // ⇄ Swap: pick a replacement for the selected photo from the library. Same
+  // queue a placeholder uses, so the next photo clicked in the picks list (or
+  // dropped on this photo) replaces it inside its frame.
+  window.imgSwap = function imgSwap() {
+    const img = _selImg || document.querySelector('#editor img.img-selected');
+    if (!img) { alert('Click a photo first.'); return; }
+    img.dataset.swapRef = img.getAttribute('data-path') || img.getAttribute('src') || '';
+    PENDING_SLOT = img;
+    pkShow();
+    if (!document.body.classList.contains('photos-open')) togglePhotoPanel();
+    (frameOf(img) || img).classList.add('pl-swap-target');   // stays on until taken or cancelled
+  };
+  // Drop an armed swap (QA: a cancelled Swap hijacked the next pick click, and
+  // one armed in a previous article ran an import for nothing). `except` is
+  // the photo being selected: re-selecting the armed one keeps it.
+  window.cancelPendingSwap = function (except) {
+    if (!PENDING_SLOT || PENDING_SLOT.tagName !== 'IMG' || PENDING_SLOT === except) return false;
+    (frameOf(PENDING_SLOT) || PENDING_SLOT).classList.remove('pl-swap-target');
+    delete PENDING_SLOT.dataset.swapRef;
+    PENDING_SLOT = null;
+    return true;
+  };
 
   // Turn a filled-in photo into a real slot: same frame, cover-cropped.
   window.slotAdopt = function slotAdopt(slot, img) {
+    img.classList.add('img-cropped');
+    const host = slot.parentElement;
+    const frame = host && host.id !== 'editor' && !host.classList.contains('img-pair') &&
+      (host.style.aspectRatio || host.classList.contains('img-landscape') ||
+       host.classList.contains('ls') || host.classList.contains('fr'));
+    if (frame) {
+      // the draft's own frame takes the photo directly, as the published
+      // markup has it. Field-notes frames (.img-landscape, a portrait span)
+      // are positioned and want the absolute fill; the guide's frames
+      // (.pair cell, .ls, .fr) are plain boxes the site CSS covers.
+      const positioned = host.tagName === 'SPAN' || host.classList.contains('img-landscape');
+      img.style.cssText = (positioned ? 'position:absolute;top:0;left:0;' : 'display:block;') +
+                          'width:100%;height:100%;object-fit:cover;object-position:50% 50%;';
+      slot.replaceWith(img);
+      return host;
+    }
     const span = document.createElement('span');
-    span.style.cssText = SLOT_CSS;
+    span.setAttribute('style', SLOT_CSS);
     img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
                         'object-fit:cover;object-position:50% 50%;';
-    img.classList.add('img-cropped');
     span.appendChild(img);
     slot.replaceWith(span);
     return span;
@@ -4905,6 +5337,7 @@ main{overflow-y:auto;padding:1rem}
   // the way out so a half-built pair never reaches the published page.
   window.stripEmptySlots = function stripEmptySlots(root) {
     root.querySelectorAll('.img-slot-empty').forEach(s => {
+      if (s.dataset.ph) { s.replaceWith(placeholderFor(s)); return; }   // the draft's marker stays
       const pair = s.closest('.img-pair');
       s.remove();
       if (pair && !pair.querySelector('span, img, picture')) pair.remove();
@@ -5014,7 +5447,8 @@ main{overflow-y:auto;padding:1rem}
     const img = _selImg || document.querySelector('#editor img.img-selected');
     if (!img) { alert('Select an image first.'); return; }
     const wrap = img.parentElement && (img.parentElement.classList.contains('img-landscape') ||
-      (img.parentElement.tagName === 'SPAN' && /aspect-ratio/.test(img.parentElement.getAttribute('style') || '')))
+      img.parentElement.classList.contains('ls') || img.parentElement.classList.contains('fr') ||
+      /aspect-ratio/.test(img.parentElement.getAttribute('style') || ''))
       ? img.parentElement : null;
     const mode = wrap ? 'wrapped' : 'dataset';
     openStage(img.dataset.originalSrc || img.src, (natW, natH, dispW, dispH) => {
@@ -5980,7 +6414,7 @@ void main(){
   const CAPTION_STYLE = "width:79%;margin:-1rem auto 1.75rem;text-align:center;" +
     "font-family:Hanken Grotesk,sans-serif;font-size:.85rem;font-style:italic;color:rgba(28,40,33,.55)";
   function blockRootOf(img) {
-    return img.closest('.img-pair, .img-landscape') ||
+    return img.closest('.img-pair, .img-landscape, .pair, .ls, .day-shot') ||
            (img.parentElement && img.parentElement.tagName === 'SPAN' &&
             /display\s*:\s*block/.test(img.parentElement.getAttribute('style') || '')
              ? img.parentElement : img);
@@ -6003,6 +6437,7 @@ void main(){
 
   // Edit a photo dropped from the library — cropped first, inserted on confirm
   window.openCropForPhoto = openCropForPhoto;
+  window.dropModes = dropModes;
   let _cropOpenGen = 0;            // last CLICK wins, not last meta response
   async function openCropForPhoto(photo, drop) {
     const cropGen = ++_cropOpenGen;
@@ -6032,7 +6467,7 @@ void main(){
     loadPendingStage(photo, drop, meta, 0, null);
     // prefill country/city while the image loads
     const rel = await articleRelPath();
-    const slug = rel ? (rel.startsWith('Drafts/') ? rel.split('/')[1] : rel.split('/')[0]) : '';
+    const slug = articleSlug(rel);
     const country = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     $('#crop-country').value = country;
     try {
@@ -6044,14 +6479,19 @@ void main(){
   function dropModes(drop) {
     // what can this drop become, given what it landed on?
     if (drop.where !== 'image') return null;
-    if (drop.edit) return [['replace', 'Replace this photo']];   // ✎ Edit re-open
+    if (drop.edit || drop.swap) return [['replace', 'Replace this photo']];   // ✎ Edit / ⇄ Swap
+    const SWAP = ['replace', 'Swap into this frame'];
+    // the guide's own frames (.pair cell, .ls, .fr) are fixed slots in its
+    // layout: pairing inside one would nest a second pair in the cell
+    if (drop.el.closest('.pair, .ls, .fr')) return [SWAP];
     const pair = drop.el.closest('.img-pair');
     if (pair) {
       const n = pair.querySelectorAll('img').length;
-      return n === 1 ? [['pair', 'Complete this pair'], ['replace', 'Replace this photo']]
-           : n === 2 ? [['third', 'Make it a row of 3'], ['replace', 'Replace this photo']]
-           : [['replace', 'Replace this photo']];
+      return n === 1 ? [SWAP, ['pair', 'Complete this pair']]
+           : n === 2 ? [SWAP, ['third', 'Make it a row of 3']]
+           : [SWAP];
     }
+    if (frameOf(drop.el)) return [SWAP, ['pair', 'Pair with this photo']];
     return [['pair', 'Pair with this photo'], ['replace', 'Replace this photo']];
   }
 
@@ -6076,10 +6516,15 @@ void main(){
       let aspect, locked;
       if (onImage) {
         // frame matches the slot it's going into
-        const wrap = drop.el.closest('span[style*="aspect-ratio"], .img-landscape');
+        const wrap = frameOf(drop.el);
         const r = wrap ? wrap.getBoundingClientRect() : null;
         aspect = dropMode === 'pair' || dropMode === 'third' ? 2 / 3
                : r && r.height ? r.width / r.height : 2 / 3;
+        locked = true;
+      } else if (drop.where === 'slot' && drop.el && drop.el.isConnected) {
+        // the frame the slot fills is the frame the photo will fill
+        const r = drop.el.getBoundingClientRect();
+        aspect = r.height ? r.width / r.height : 2 / 3;
         locked = true;
       } else {
         aspect = meta.orient === 'portrait' ? 2 / 3 : 3 / 2;
@@ -6396,6 +6841,7 @@ void main(){
 
   window.closeCropModal = function () {
     disarmMaskDefine();
+    document.querySelectorAll('#editor .img-slot-empty.drag-over').forEach(x => x.classList.remove('drag-over'));
     $('#crop-backdrop').classList.remove('open');
     CM = null;
     // hand focus back to the article so Ctrl+Z works immediately — the most
@@ -6744,7 +7190,9 @@ async function loadAlbums() {
     } else if (!exp) {
       chk = `<div class="chk wait"><b>${files}</b> backed up · enter your iPhone's ` +
             `count below to verify</div>`;
-    } else if (ver && ver.ok) {
+    } else if (ver && ver.ok && !(ver.shortOfPhone > 0)) {
+      // shortOfPhone is checked here too: a status written before the verify
+      // fix still carries ok:true for albums that are short of the phone
       chk = `<div class="chk ok">✓ <b>${files} / ${exp}</b> · matches your iPhone — ` +
             `safe to delete</div>`;
     } else if (ver && !ver.covered) {
@@ -7580,12 +8028,42 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
    pick the app. #library / #editor in the URL selects the view; the last
    choice is remembered. */
 (function suiteRouter() {
+  const VIEWS = ['editor', 'library', 'heroes'];
+  const HEROES = 'http://127.0.0.1:5004';
+
+  // The picker loads on first visit, not with the editor: it starts decoding an
+  // album the moment it opens, and most sessions never switch to it.
+  async function loadHeroes(force) {
+    const frame = document.getElementById('heroes-frame');
+    const off = document.getElementById('heroes-offline');
+    if (frame.dataset.loaded && !force) return;
+    let up = true;
+    try { await fetch(HEROES + '/albums', { mode: 'no-cors', cache: 'no-store' }); }
+    catch (e) { up = false; }                // connection refused: the server is down
+    off.hidden = up;
+    frame.style.display = up ? '' : 'none';
+    if (up) { frame.src = HEROES + '/?embed=1'; frame.dataset.loaded = '1'; }
+  }
+  window.addEventListener('message', ev => {
+    if (ev.origin !== HEROES || !ev.data || ev.data.type !== 'heroes-stat') return;
+    document.getElementById('heroes-tally').innerHTML =
+      (ev.data.tally || '').replace(/^(\d+)/, '<b>$1</b>');
+    document.getElementById('heroes-count').textContent = ev.data.count || '';
+  });
+  document.addEventListener('click', ev => {
+    if (ev.target.id === 'heroes-retry') loadHeroes(true);
+  });
+
   function showView(v) {
+    if (!VIEWS.includes(v)) v = 'editor';
     const lib = document.getElementById('app-library');
     const ed = document.getElementById('app-editor');
+    const heroes = document.getElementById('app-heroes');
     const toLib = v === 'library';
     lib.hidden = !toLib;
-    ed.style.display = toLib ? 'none' : '';
+    heroes.hidden = v !== 'heroes';
+    ed.style.display = v === 'editor' ? '' : 'none';
+    if (v === 'heroes') loadHeroes();
     try { localStorage.setItem('tb:view', v); } catch (e) {}
     if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
     document.querySelectorAll('#applist a').forEach(a =>
@@ -7598,9 +8076,6 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     const row = ev.target.closest('#applist a');
     if (row) {
       list.hidden = true;
-      // the hero picker is its own local server (tools/hero_picker.py, 5004),
-      // not a view in this page, so let the browser follow the link
-      if (row.dataset.view === 'heroes') return;
       ev.preventDefault(); showView(row.dataset.view); return;
     }
     if (ev.target.closest('[data-switcher]')) { list.hidden = !list.hidden; return; }
@@ -7608,12 +8083,12 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   });
   window.addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
-    if (h === 'library' || h === 'editor') showView(h);
+    if (VIEWS.includes(h)) showView(h);
   });
   const h = location.hash.slice(1);
-  let v = (h === 'library' || h === 'editor') ? h : null;
+  let v = VIEWS.includes(h) ? h : null;
   if (!v) { try { v = localStorage.getItem('tb:view'); } catch (e) {} }
-  showView(v === 'library' ? 'library' : 'editor');
+  showView(VIEWS.includes(v) ? v : 'editor');
 })();
 </script>
 </body>
