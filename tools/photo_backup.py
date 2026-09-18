@@ -861,6 +861,102 @@ def backup_album(name, workers=4, verbose=True):
     return st
 
 
+def upgrade_album(name, workers=4, verbose=True):
+    """Re-fetch photos that were saved as the 2048px album copy.
+
+    A photo falls back to the album copy when no original matched at the time.
+    That is permanent today: the planner sees the entry already assigned to a
+    file on disk and skips it forever. So an album backed up while the
+    originals index was missing (or, worse, built without file sizes, which
+    made every candidate fail the "clearly heavier" test) stays at album
+    resolution even after the index is fixed. This pass revisits exactly those
+    files and upgrades the ones that now resolve to an original.
+    """
+    dest = BACKUP / canonical(name)
+    manifest_path = dest / "_manifest.json"
+    man = load_manifest(manifest_path)
+    files, entries = man["files"], man["entries"]
+    if not files:
+        return None
+    taken = {rec["orig"].lower() for rec in files.values() if rec.get("orig")}
+    todo, seen = [], set()
+    for folder in sorted(SHARED.iterdir()) if SHARED.is_dir() else []:
+        if not folder.is_dir() or canonical(folder.name) != canonical(name):
+            continue
+        for sp in sorted(folder.iterdir()):
+            if not sp.is_file() or sp.suffix.lower() not in IMG:
+                continue
+            target = entries.get(sp.name)
+            if not target or target in seen:
+                continue
+            rec = files.get(target) or {}
+            if rec.get("full") or not (dest / target).exists():
+                continue
+            orig = pe.find_original(sp)
+            if not orig or str(orig).lower() in taken:
+                continue
+            seen.add(target)
+            taken.add(str(orig).lower())
+            todo.append((sp, orig, target))
+    st = _status["albums"].setdefault(canonical(name), {})
+    st.update(state="running", started=time.time())
+    status_write()
+    done = {"upgraded": 0, "failed": 0, "bytes": 0}
+
+    def one(item):
+        sp, orig, target = item
+        tpath = dest / target
+        tmp = dest / f"{target}.{os.getpid()}.{threading.get_ident()}.up"
+        try:
+            fetch(orig, tmp)
+            if tmp.stat().st_size <= tpath.stat().st_size:
+                tmp.unlink(missing_ok=True)      # not actually better: keep what we have
+                return
+            gain = tmp.stat().st_size - tpath.stat().st_size
+            # the upgraded file takes the ORIGINAL's name, like a first copy would
+            newname = unique_name(orig.name, set(entries.values()) | {target})
+            (dest / newname).unlink(missing_ok=True)
+            tmp.replace(dest / newname)
+            tpath.unlink(missing_ok=True)
+            rec = dict(files.get(target) or {})
+            rec.update({"from": sp.name, "full": True, "orig": str(orig),
+                        "size": (dest / newname).stat().st_size})
+            try:
+                from PIL import Image
+                with Image.open(dest / newname) as im:
+                    rec["w"], rec["h"] = im.size
+            except Exception:
+                pass
+            with _lock:
+                files.pop(target, None)
+                files[newname] = rec
+                for k, v in list(entries.items()):
+                    if v == target:
+                        entries[k] = newname
+                done["upgraded"] += 1
+                done["bytes"] += gain
+                try:
+                    pe.bthumb_path(tpath, 400).unlink(missing_ok=True)
+                except Exception:
+                    pass
+        except Exception as e:
+            tmp.unlink(missing_ok=True)
+            with _lock:
+                done["failed"] += 1
+                st.setdefault("errors", []).append(f"{target}: {e}")
+
+    if todo:
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            list(ex.map(one, todo))
+        write_json(manifest_path, {"files": files, "entries": entries})
+    st.update(state="done")
+    status_write()
+    if verbose:
+        print(f"  {canonical(name)}: upgraded {done['upgraded']} of {len(todo)} album copies "
+              f"(+{done['bytes']/1e6:.0f} MB), {done['failed']} failed")
+    return done
+
+
 def mp4_duration(path):
     """Seconds, read from the MP4/MOV mvhd atom. Apple re-encodes a shared
     album's videos (destroying their capture date) but the DURATION survives,
@@ -1165,19 +1261,37 @@ def verify_album(name, verbose=True):
                  if p.is_file() and p.suffix.lower() in VID) if vdir.is_dir() else 0
 
     exp = expected_count(canonical(name))
+    # How many DISTINCT photos and videos this album holds, counted across every
+    # rebuild round. One round is only one cut of the album, and a round full of
+    # Apple's "<hash>_00001" twins counts each photo twice: Philippines' _3 round
+    # has 1191 entries for 522 real items, which passed the phone check on its
+    # own while 15 items had never been uploaded at all.
+    items = set()
+    if SHARED.is_dir():
+        for folder in SHARED.iterdir():
+            if not folder.is_dir() or canonical(folder.name) != canonical(name):
+                continue
+            for q in folder.iterdir():
+                if q.is_file() and q.suffix.lower() in IMG | VID:
+                    items.add(stem_key(q.name))
+    album_items = len(items) or (len(photos) + len(vids))
     covered = not missing_p and not missing_v
     res = {"photos": f"{len(photos) - len(missing_p)}/{len(photos)}",
            "videos": f"{len(vids) - len(missing_v)}/{len(vids)}",
            "files": files, "expected": exp,
-           "albumItems": len(photos) + len(vids),
+           "albumItems": album_items,
            "covered": covered,
-           # unverified until you tell us what the phone says
-           "ok": covered and exp is not None and files >= exp,
+           # unverified until you tell us what the phone says. Judged on the
+           # ALBUM's items, not files on disk: the backup keeps surplus files
+           # from earlier rounds (and a photo's full-res original beside its
+           # album copy), so Philippines passed at 649 files while 15 of its
+           # 537 photos were never on Apple's servers at all.
+           "ok": covered and exp is not None and album_items >= exp,
            # What iCloud still owes is measured against the ALBUM FOLDER, not
            # the backup. Armenia and Greece carry surplus files from an earlier
            # download round, and counting those made the gap look smaller than
            # it is — Greece read "45 to arrive" when the true figure was 55.
-           "shortOfPhone": (exp - (len(photos) + len(vids))) if exp is not None else None,
+           "shortOfPhone": (exp - album_items) if exp is not None else None,
            "missingPhotos": len(missing_p), "missingVideos": len(missing_v),
            "examples": (missing_p + missing_v)[:5]}
     st = _status["albums"].setdefault(canonical(name), {})
@@ -1197,7 +1311,11 @@ def verify_album(name, verbose=True):
         elif not covered:
             flag = f"INCOMPLETE — {files} files, album entries not all copied"
         else:
-            flag = f"INCOMPLETE — {files}/{exp}, {exp - files} still to arrive from iCloud"
+            # the gap is measured on the ALBUM's items, like "ok" is: files on
+            # disk include surplus from earlier rounds and read "0 still to
+            # arrive" on an album that is 55 short of the phone
+            flag = (f"INCOMPLETE — {res['albumItems']}/{exp} in the album, "
+                    f"{res['shortOfPhone']} still to arrive from iCloud")
         print(f"  {name}: {flag} (photos {res['photos']}, videos {res['videos']})")
         if res["examples"]:
             print(f"      missing e.g. {res['examples'][:3]}")
@@ -1334,6 +1452,9 @@ def main():
     ap.add_argument("--no-videos", action="store_true",
                     help="photos only (videos are matched by trip date window)")
     ap.add_argument("--interval", type=int, default=120)
+    ap.add_argument("--upgrade", action="store_true",
+                    help="re-fetch photos stored as the 2048px album copy where an "
+                         "original matches now (use after fixing the originals index)")
     a = ap.parse_args()
 
     if not a.normal_priority:
@@ -1343,9 +1464,25 @@ def main():
     print(f"shared albums: {SHARED}")
     print(f"backup to:     {BACKUP}")
     print(f"skipping:      {', '.join(sorted(SKIP))}")
-    if not pe.originals_index()["byTime"]:
-        print("! originals index missing — run tools/index_originals.ps1 first")
+    if a.upgrade:
+        names = [a.album] if a.album else sorted({canonical(n) for n in albums()})
+        for n in names:
+            if (BACKUP / canonical(n) / "_manifest.json").exists():
+                upgrade_album(n, workers=a.workers)
         return
+
+    if not pe.originals_index()["byTime"]:
+        # The index lives in .tmp/, which gets cleared. When it vanished the
+        # watcher printed this line and quit on every start, silently, for two
+        # weeks, while five new albums sat un-backed-up. Rebuild it instead: it
+        # reads placeholder metadata only, nothing is downloaded.
+        import subprocess
+        print("! originals index missing: rebuilding (reads metadata only, a few minutes)")
+        script = Path(__file__).with_name("index_originals.ps1")
+        subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)])
+        if not pe.originals_index()["byTime"]:
+            print("! originals index could not be built; not starting")
+            return
 
     while True:
         todo = [a.album] if a.album else albums()

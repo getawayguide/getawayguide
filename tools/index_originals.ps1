@@ -47,7 +47,10 @@ foreach ($f in $files) {
   if ($dims -match '(\d+)\s*x\s*(\d+)') { $w = [int]$Matches[1]; $h = [int]$Matches[2] }
   # several photos can share a second (bursts): keep a list per timestamp
   if (-not $map.ContainsKey($key)) { $map[$key] = New-Object System.Collections.ArrayList }
-  [void]$map[$key].Add([PSCustomObject]@{ n = $f.Name; w = $w; h = $h; px = ($w * $h) })
+  # sz is what photo_editor.find_original() compares against (a candidate must be
+  # clearly heavier than the 2048px album copy). Without it every match was
+  # rejected and whole albums were archived at album resolution.
+  [void]$map[$key].Add([PSCustomObject]@{ n = $f.Name; w = $w; h = $h; px = ($w * $h); sz = $f.Length })
   if ($i % 2000 -eq 0) {
     Write-Host ("  {0}/{1}  ({2:N0}/s)" -f $i, $files.Count, ($i / $sw.Elapsed.TotalSeconds))
   }
