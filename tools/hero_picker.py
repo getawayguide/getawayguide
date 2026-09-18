@@ -272,6 +272,30 @@ def get_albums():
     return jsonify(albums())
 
 
+# ---- fonts, served from the repo so the picker works with no internet -------
+# This tool used to pull its two typefaces from fonts.googleapis.com. That is a
+# blocking stylesheet in the head, so with no connection the browser sat on the
+# request until it failed and then fell back to system type: the picker came up
+# late and looking wrong, which is no way to judge a hero crop. The site already
+# self-hosts both families (fonts.css + fonts/*.woff2, the same localisation the
+# nav flags got), so the picker now serves those. Same reasoning as the flagcdn
+# removal: no third-party origin in the critical path.
+@app.get("/fonts.css")
+def fonts_css():
+    f = SITE / "fonts.css"
+    if not f.is_file():
+        abort(404)
+    return send_file(f, mimetype="text/css")
+
+
+@app.get("/fonts/<path:name>")
+def font_file(name):
+    f = (SITE / "fonts" / name).resolve()
+    if (SITE / "fonts").resolve() not in f.parents or not f.is_file():
+        abort(404)              # same containment check /img and /photos make
+    return send_file(f, mimetype="font/woff2")
+
+
 def measure(f):
     """Dimensions only: opening an image reads the header, not the pixels."""
     try:
@@ -385,6 +409,13 @@ PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hero picker</title>
+<link rel="stylesheet" href="/fonts.css">
+<script>
+  // ?embed=1: running as the Hero Picker view inside editor.html, which draws
+  // the dark suite bar and the app switcher itself
+  if (new URLSearchParams(location.search).has('embed'))
+    document.documentElement.classList.add('embed');
+</script>
 <style>
   :root { --ink:#1C2821; --terra:#2D6B50; --line:rgba(28,40,33,.14); --warn:#B4553C;
           --amber:#9A7B2E; }
@@ -480,6 +511,28 @@ PAGE = r"""<!doctype html>
     background:var(--ink); color:#fff; padding:10px 18px; font-size:12px;
     letter-spacing:.06em; opacity:0; transition:opacity .25s; pointer-events:none; }
   .toast.on { opacity:1; }
+
+  /* ---- embedded in the editor suite: the controls become the suite's light
+     toolbar under its dark bar, matching the Article Editor's toolbar ---- */
+  .embed body { background:#F7F7F3; height:100vh; display:flex; flex-direction:column;
+    overflow:hidden; }
+  .embed header { background:#fff; border-bottom:1px solid rgba(28,40,33,.14);
+    padding:.55rem 1.1rem; gap:.45rem .55rem; flex:0 0 auto; }
+  .embed header .logo, .embed header .tally { display:none; }   /* both live in the suite bar */
+  .embed select, .embed input[type=text] { font-size:.74rem; padding:.36rem .55rem;
+    border:1px solid rgba(28,40,33,.14); border-radius:3px; color:#1C2821; }
+  .embed select:focus, .embed input[type=text]:focus { outline:none; border-color:#2D6B50;
+    box-shadow:0 0 0 2px rgba(45,107,80,.14); }
+  .embed button { font-family:'Hanken Grotesk',sans-serif; font-size:.6rem; font-weight:600;
+    letter-spacing:.1em; padding:.48rem .85rem; border-radius:3px; border:1px solid
+    rgba(28,40,33,.14); background:#fff; color:#1C2821; transition:background .15s; }
+  .embed button:hover { background:#EDEDE7; }
+  .embed button#save { background:#2D6B50; border-color:#2D6B50; color:#fff; }
+  .embed button#save:hover { background:#255c43; }
+  .embed .scrim-ctl { font-size:.58rem; }
+  .embed .main { height:auto; flex:1 1 auto; min-height:0; }
+  .embed .stage { background:#F7F7F3; }
+  .embed .strip { background:#fff; }
 </style></head>
 <body>
 <header>
@@ -628,6 +681,11 @@ function render(restore) {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(keep.path)}"]`);
     if (t) { t.classList.add('on'); }
   }
+  // The CSS box is the one thing here you copy verbatim into artifact.css, and its
+  // class comes from `country`. Only applyCrop() rewrites it, and that ran solely
+  // when an album had a saved pick to restore -- so opening Philippines after
+  // Albania left it reading `.hp-albania`. Redraw it whenever the album changed.
+  if (restore && cur) { applyCrop(); }
   applyFocusFlags();
 }
 
@@ -898,6 +956,16 @@ function toast(t) {
 document.documentElement.style.setProperty('--shape', heroRatio());
 setScrim(100);
 loadAlbums();
+
+// the picked / shown counts ride up to the suite bar when embedded, the way the
+// Photo Library shows its album totals there
+if (document.documentElement.classList.contains('embed') && window.parent !== window) {
+  const send = () => parent.postMessage({ type: 'heroes-stat',
+    tally: $('tally').textContent, count: $('count').textContent }, '*');
+  new MutationObserver(send).observe($('tally'), { childList: true, subtree: true, characterData: true });
+  new MutationObserver(send).observe($('count'), { childList: true, subtree: true, characterData: true });
+  send();
+}
 </script>
 </body></html>
 """.replace("%TITLES%", json.dumps(TITLES, ensure_ascii=False)
