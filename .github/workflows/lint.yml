@@ -1,9 +1,19 @@
 name: Lint site
 
 # Runs the site linter on every push / PR and fails the build on *breaking*
-# issues (broken internal links, duplicate IDs, broken anchors, nav-list drift).
-# Style warnings (em dashes, paste artifacts, missing alt) are reported but do
-# not fail CI. Run `python tools/lint_site.py` locally for the full report.
+# issues (broken internal links, duplicate IDs, broken anchors, nav-list drift,
+# and assets that 404 live). Style warnings (em dashes, paste artifacts, missing
+# alt) are reported but do not fail CI. Run `python tools/lint_site.py` locally
+# for the full report.
+#
+# A RED X HERE IS ALWAYS REAL. It never fires on style, so it means the commit
+# in front of you broke something a visitor would hit. This went ignored once:
+# a missing image in archive/ failed every push from Sept 18 to Sept 22, 2026,
+# and the repeated identical failure mail read as noise until the same bug was
+# found a third way, by scanning the live site. If this is red, read the log.
+#
+# Link rot is a DIFFERENT workflow (link-rot.yml) and deliberately does not fail
+# a job, so the two never look alike in an inbox.
 
 on:
   push:
@@ -15,8 +25,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Run site linter (CI severity)
