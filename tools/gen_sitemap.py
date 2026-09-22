@@ -43,11 +43,37 @@ def git_lastmod(path):
     except Exception:
         return TODAY
 
+def robots_disallows():
+    """The paths robots.txt tells crawlers to stay out of.
+
+    Read rather than hardcoded, so the sitemap can never contradict robots
+    again. It used to: the exclude list named Drafts/, .tmp/ and .git/ but not
+    archive/, so every regeneration published 48 archive URLs that robots.txt
+    forbids. That is a "Submitted URL blocked by robots.txt" error in Search
+    Console, and archive/ is a duplicate of every live page, which is the last
+    thing to hand a crawler.
+    """
+    rp = os.path.join(ROOT, "robots.txt")
+    if not os.path.exists(rp):
+        return []
+    out = []
+    for line in open(rp, encoding="utf-8"):
+        line = line.split("#")[0].strip()
+        if line.lower().startswith("disallow:"):
+            v = line.split(":", 1)[1].strip().lstrip("/")
+            if v:
+                out.append(v)
+    return out
+
+
+DISALLOW = robots_disallows()
+
 pages = []
 for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
     r = rel(p)
     if r.startswith(("Drafts/", ".tmp/", ".git/")): continue
     if os.path.basename(r) in EXCLUDE: continue
+    if any(r == d or r.startswith(d) for d in DISALLOW): continue
     pages.append(r)
 pages.sort(key=lambda r: (r != "index.html", r))   # homepage first
 
