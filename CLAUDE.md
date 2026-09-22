@@ -153,6 +153,12 @@ embedded map code are never rewritten.
 
 Related: see the no-em-dashes rule in my writing style — both exist so the writing sounds like me.
 
+**The em-dash rule applies to BODY PROSE only** (updated 2026-09-21). It is about how my
+sentences read, so it covers the words in an article: paragraphs, headings, captions, pull
+quotes, field-notes entries. It does **not** cover `<title>`, meta/`og:description`, or UI
+copy such as the 404 page and buttons, where an em dash is a typographic separator rather
+than a voice choice. Do not flag or "fix" those, and do not count them in an audit.
+
 ## Batched Tasks — Finish the Whole List
 
 When I hand you a list of tasks and tell you I'm stepping away ("I'm going to the gym",
@@ -182,15 +188,17 @@ Every published page must have:
 
 | | |
 |---|---|
-| `<title>` and `og:title` | `<Country> Travel Guide: City, City & City`, **under 60 chars** |
+| `<title>` and `og:title` | `<Country> Travel Guide: City, City & City`, **up to ~70 chars** |
 | `<h1>` | `<Country> Travel Guide` (not the bare country name) |
-| meta + `og:description` | **under 160 chars**, no em dash |
+| meta + `og:description` | **under 160 chars** |
 | `rel="canonical"` | from the page's own `og:url` |
 | `og:type` | `article` (About/Privacy/index stay `website`) |
 | JSON-LD | `datePublished` + `dateModified`, and `headline` matching the `<title>` |
 
 Never target "Field Notes" in a title. It's brand, and nobody searches it. Lead with the
-keyword, then spend the rest of the 60 characters on real place names from the page.
+keyword, then spend the rest of the ~70 characters on real place names from the page.
+(The cap was 60 until 2026-09-21; Google truncates around there, but a slightly longer
+title that earns its length with real place names is worth more than a truncated one.)
 
 `dateModified` comes from the last commit that changed the page's **prose**, not `git log -1`
 — sitewide asset passes touch every page at once, and publishing that everywhere is untrue

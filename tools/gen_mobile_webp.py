@@ -120,9 +120,20 @@ def main():
                 return blk
             t = tag.group(0)
             ss = re.search(r'srcset="([^"]+)"', t)
-            if not ss or "-mob-" not in ss.group(1):
-                return blk
-            jpg_set = ss.group(1)
+            if ss and "-mob-" in ss.group(1):
+                jpg_set = ss.group(1)
+            else:
+                # The SIMPLER two-file shape, which Kosovo's field notes use:
+                #   <picture><source media="(min-width:769px)" srcset="…IMG.jpg">
+                #            <img src="…IMG-mob-2x.jpg">
+                # There is no mobile srcset to read, just the src. Without this
+                # branch the whole page was skipped, which is how 22 photos ended
+                # up shipping with no WebP at all while their -mob-2x.webp files
+                # sat unused beside them (and were then pruned as "unused").
+                m_src = re.search(r'src="([^"]*-mob-[^"]*\.jpg)"', t)
+                if not m_src:
+                    return blk
+                jpg_set = m_src.group(1)
 
             # a webp mobile <source>, only if every candidate file exists
             webp_set = jpg_set.replace(".jpg", ".webp")

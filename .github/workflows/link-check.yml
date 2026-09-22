@@ -1,0 +1,54 @@
+name: Link check
+
+# Weekly link-rot check. Articles link to restaurants, hostels and tour
+# operators that quietly close, and nothing else catches that: every other
+# check we run finds OUR mistakes, this one finds the world changing.
+#
+# Scheduled (and on demand) rather than on push/PR, unlike lint.yml: a dead
+# link is never caused by the commit in front of you, and hitting a few hundred
+# external sites on every push would be slow and rude to those sites.
+#
+# It lives here rather than in a Claude cloud routine because that sandbox has
+# no general web egress - it cannot reach the sites being checked (even
+# example.com is refused by policy). GitHub's runners have real internet.
+#
+# NOTIFICATION: when links are dead the checker exits non-zero, the job fails,
+# and GitHub emails the repo owner about the failed scheduled run. A green run
+# means nothing is broken and you hear nothing. The full report is in the log
+# and in the uploaded artifact.
+
+on:
+  schedule:
+    # Every 2 days at 15:00 UTC = 8am Pacific during PDT, 7am once PST starts in
+    # November. Cron has no true "every 48h", so this is odd days of the month
+    # (1,3,5...31); the only wrinkle is a back-to-back run across a 31-day
+    # boundary, which is harmless for a read-only check.
+    - cron: "0 15 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # check_links.py is stdlib-only (urllib + threads), so there is nothing
+      # to install. It already skips google.com/maps links, which are ~1,975 of
+      # the ~2,371 external URLs in the repo and effectively never rot.
+      # pipefail so tee cannot swallow the non-zero exit that fails the job.
+      - name: Check external links
+        run: |
+          set -o pipefail
+          python tools/check_links.py 2>&1 | tee link-report.txt
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.txt
+          retention-days: 30
