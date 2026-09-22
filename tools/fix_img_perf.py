@@ -18,6 +18,22 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
 IMG = re.compile(r"<img\b[^>]*>")
 
+# Page furniture that must never be mistaken for the LCP image: nav flags (.fl),
+# the megamenu's continent icons and map thumb, logos.
+CHROME = re.compile(r'class="[^"]*\b(fl|nav-[\w-]+|mm-[\w-]+|logo|icon)\b')
+
+
+def is_hero_candidate(tag):
+    """Could this <img> plausibly be the page's largest contentful paint?
+
+    Anything declared narrower than 200px is a flag, icon or thumbnail, and
+    anything wearing a nav/menu class is chrome. Both get lazy-loaded like the
+    rest rather than being handed fetchpriority."""
+    w = re.search(r'\bwidth="(\d+)"', tag)
+    if w and int(w.group(1)) < 200:
+        return False
+    return not CHROME.search(tag)
+
 
 def dims(page, tag):
     m = re.search(r'src="([^"]+)"', tag)
@@ -44,23 +60,34 @@ def main():
     touched = 0
     for p in pages:
         rel = os.path.relpath(p, ROOT).replace("\\", "/")
-        if rel.startswith((".tmp/", ".git/", "Drafts/.")) or rel == "editor.html":
+        # "Drafts/." never matched anything - a stray dot meant every draft was
+        # being rewritten despite the intent to skip them (396 tags across 11
+        # pages), and drafts are kept isolated until they ship. archive/ is the
+        # frozen previous design, noindex and robots-disallowed, so editing it
+        # is churn in every future diff for no live benefit.
+        if rel.startswith((".tmp/", ".git/", "Drafts/", "archive/")) or rel == "editor.html":
             continue
         s = open(p, encoding="utf-8").read()
         orig = s
-        idx = [0]
+        picked = [False]
 
         def fix(m):
             tag = m.group(0)
-            first = idx[0] == 0
-            idx[0] += 1
             add = ""
             if "loading=" not in tag:
-                if first:
-                    # above the fold: eager, and tell the browser it's the LCP candidate
-                    if "fetchpriority=" not in tag:
-                        add += ' fetchpriority="high"'
-                    n_e[0] += 1
+                # THIS TOOL NO LONGER GUESSES THE LCP. "First <img> in the
+                # document" is not the hero here - every page opens with a nav
+                # whose dropdown holds 16x12 flags - and after teaching it to
+                # skip chrome it still reached for a src-less lightbox
+                # placeholder, mid-page city maps and an external hotlink. Every
+                # real hero on this site already carries loading="eager" by
+                # hand, set deliberately, so the honest move is to leave the
+                # first plausible hero ALONE (untouched means browser-default
+                # eager, which is right) and lazy-load everything after it.
+                # fetchpriority stays a human decision.
+                if not picked[0] and is_hero_candidate(tag):
+                    picked[0] = True
+                    n_e[0] += 1          # left eager on purpose, not modified
                 else:
                     add += ' loading="lazy"'
                     n_l[0] += 1
@@ -80,7 +107,7 @@ def main():
             touched += 1
             if not DRY:
                 open(p, "w", encoding="utf-8", newline="").write(s)
-    print('%sadded loading="lazy" x%d, width/height x%d, fetchpriority="high" x%d '
+    print('%sadded loading="lazy" x%d, width/height x%d, left x%d hero(s) eager '
           "across %d page(s)" % ("[dry-run] " if DRY else "", n_load, n_dim, n_eager, touched))
 
 
