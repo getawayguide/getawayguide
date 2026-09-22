@@ -7,7 +7,9 @@ Scans live HTML pages (excludes Drafts/, .tmp/, .git/) and reports:
   2. broken in-page anchors  (href="#x" with no id="x")
   3. broken internal file links (href="foo.html" whose target file is missing)
  3b. assets referenced by a live page that are not in the repo (held-back draft files,
-     which 404 on the deployed site), or referenced with the wrong case (Linux host)
+     which 404 on the deployed site), or referenced with the wrong case (Linux host).
+     Covers every srcset candidate, not just the <img src> fallback, and includes
+     archive/ — it is noindex but GitHub Pages still serves it.
   4. Google-Docs paste artifacts (font-size:1rem, opaque color:rgb(28,40,33))
   5. in-sentence em dashes (Kevin's no-em-dash rule; bullet separators are fine)
   6. Field-Notes nav-dropdown drift (a page missing/extra country vs the norm)
@@ -71,8 +73,32 @@ def committed_files():
 
 COMMITTED = committed_files()
 LOWER = {p.lower() for p in COMMITTED}
-ASSET = re.compile(r"""(?:src|href)=["']([^"'>]+)["']|url\(['"]?([^)'"]+)['"]?\)""")
+ASSET = re.compile(r"""(?:src|href)=["']([^"'>]+)["']|url\(['"]?([^)'"]+)['"]?\)"""
+                   r"""|srcset=["']([^"'>]+)["']""")
 REMOTE = ("http://", "https://", "//", "mailto:", "tel:", "data:", "javascript:", "#")
+
+
+def asset_refs(html):
+    """Yield (reference, offset) for every local file a page pulls in.
+
+    srcset has to be split into its candidates. `(?:src|href)=` never matches
+    `srcset=` (after "src" comes an "s", not an "="), so for years this checked
+    only the `<img src>` fallback and none of the six variants a <picture> block
+    actually serves. Every real browser takes the srcset path, so a page could
+    404 all six and still lint clean.
+
+    That is exactly how the archived El Salvador itinerary hid: it pointed its
+    fallback AND four srcsets at "El Tunco Sunset 1-*" variants that were never
+    generated, and only the fallback was ever reported.
+    """
+    for m in ASSET.finditer(html):
+        if m.group(3) is not None:
+            for cand in m.group(3).split(","):
+                cand = cand.strip()
+                if cand:
+                    yield cand.split()[0], m.start()
+        else:
+            yield (m.group(1) or m.group(2) or ""), m.start()
 
 findings = defaultdict(list)   # check name -> list of (file, line, msg)
 def add(check, f, line, msg): findings[check].append((f, line, msg))
@@ -117,10 +143,14 @@ for path, r in pages():
     #     references whose case does not match — Linux serves this site, Windows does not care
     if COMMITTED and not r.startswith("Drafts/"):
         base = os.path.dirname(r)
-        for m in ASSET.finditer(html):
-            raw = (m.group(1) or m.group(2) or "").split("#")[0].split("?")[0].strip()
+        seen = set()
+        for ref, pos in asset_refs(html):
+            raw = ref.split("#")[0].split("?")[0].strip()
             if not raw or raw.startswith(REMOTE):
                 continue
+            if raw in seen:      # a <picture> repeats the same file across tiers
+                continue
+            seen.add(raw)
             u = urllib.parse.unquote(raw)
             t = u.lstrip("/") if u.startswith("/") else "%s/%s" % (base, u) if base else u
             t = nfc(os.path.normpath(t).replace("\\", "/"))
@@ -129,13 +159,13 @@ for path, r in pages():
             if t in COMMITTED:
                 continue
             if t.lower() in LOWER:
-                add("asset-case", r, lineno(html, m.start()),
+                add("asset-case", r, lineno(html, pos),
                     "case does not match the committed file: %s" % raw)
             elif os.path.exists(os.path.join(ROOT, t)):
-                add("unpublished-asset", r, lineno(html, m.start()),
+                add("unpublished-asset", r, lineno(html, pos),
                     "on disk but not in the repo, so it 404s live: %s" % raw)
             else:
-                add("missing-asset", r, lineno(html, m.start()), "no such file: %s" % raw)
+                add("missing-asset", r, lineno(html, pos), "no such file: %s" % raw)
 
     # 4. paste artifacts (skip <style>/<script>)
     for m in re.finditer(r'font-size:\s*1rem', clean):
