@@ -2234,7 +2234,14 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
   .article-body, .artbody { padding-left:24px !important; padding-right:24px !important; }
   .artbody > .measure, .article-body > * { padding-left:0 !important;
     padding-right:0 !important; }
+  /* that reset is for the gutter; a list's left padding is where its bullets
+     live. Zeroing it hung every guide bullet out in the gutter while the field
+     notes (whose lists sit inside .fn-section, not directly in the body) kept
+     their 1.5rem indent. Same indent for both. */
+  .article-body > ul, .article-body > ol { padding-left:1.5rem !important; }
 }
+/* the itinerary's lists indent 1.5rem too, not 20px, so all three templates match */
+.artbody .b-a ul { padding-left:1.5rem; }
 
 /* ---- the guide's banner is the same object as .article-hero.gg-banner: the
        photograph runs edge to edge and the COPY carries the 96px gutter. The
@@ -3353,7 +3360,74 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
   margin:1.6rem auto; }
 .artbody .ls { margin-top:1.6rem; margin-bottom:1.6rem; }
 .artbody .pair { margin-top:1.6rem; margin-bottom:1.6rem; }
-.artbody > .measure > .comp-h { margin-top:56px !important; }
+/* the editor's .img-pair / .img-landscape and the phone values for every photo block
+   are set in the ONE RHYTHM block further down; nothing template-specific here */
+
+/* ---- phone: the field-notes rhythm ----
+   Measured 2026-09-23 at 393px against the georgia / kosovo / turkiye field
+   notes and the live El Salvador guides: paragraph to paragraph 18-25px,
+   heading to its text 16-18, text to the next heading 38-40, text to a photo
+   18-24, photo to text 8-16, photo to photo 2-8. The itinerary template ran
+   50 / 48 / 90 / 26 / 56 / 26. Most of the excess is one line near the end of
+   this file, `.measure { padding-top:30px !important }`, written for the About
+   page's single "How this started" container. Here every paragraph, heading
+   and photo is its own .measure, so each one paid 30px on top of its margins.
+   The rest is the 1.6rem photo rhythm above, which is a desktop measure; on a
+   phone the photos take live's own values, the ones the field notes use. */
+@media (max-width:768px) {
+  .artbody .measure { padding-top:0 !important; }
+  .artbody .day-head { margin-top:40px; }
+  .artbody > .measure > .comp-h { margin-top:40px !important; }
+  .artbody .pair, .artbody .img-pair { margin-top:.15rem; margin-bottom:.15rem; }
+  .artbody .ls, .artbody .img-landscape, .artbody .one-shot, .artbody .day-shot {
+    margin-top:.15rem; margin-bottom:.5rem; }
+  /* the caption's inline -1rem was sized against a 1.5rem photo margin; against
+     .5rem it would land on the photo, so it sits on the photo's own gap instead */
+  .artbody .img-caption { margin-top:0 !important; }
+}
+
+/* ---- ONE RHYTHM, THREE TEMPLATES (2026-09-23) ----
+   Field notes (.fn-section), guides (.article-body) and itineraries (.artbody)
+   are spaced identically from here on. The standard is the live guides' and
+   field notes' shared values, which the heading rules above already set:
+     paragraph -> paragraph      1.1rem (18px); on a phone the p + p rule adds
+                                 1.35em, so 25px
+     text -> section heading     40px          heading -> its text  18px
+     text -> subheading          38px          subheading -> text   16px
+     text -> photo               the paragraph's own 18px
+     photo blocks                pair 1.5rem/1.5rem, landscape .15rem/1.5rem;
+                                 on a phone pair .15/.15, landscape .15/.5
+     caption                     8px under its photo at every width
+   What each template had to give up: the field notes closed sections with 48px
+   (their 3rem section margin) instead of 40; the itinerary ran paragraphs at
+   20-22px, day headings at 44px with 6px under them, section kickers at 56px,
+   photos at 1.6rem, and its wrapped paragraphs never got the phone p + p gap. */
+.artbody > .measure > .copy, .artbody > .measure > .day-copy { margin-bottom:1.1rem !important; }
+.artbody .day-head { margin:40px 0 0 !important; }
+.artbody > .measure > .day-copy:first-child { margin-top:18px !important; }
+.artbody > .measure > .comp-h { margin-top:40px !important; }
+.artbody .pair, .artbody .img-pair { margin-top:1.5rem; margin-bottom:1.5rem; }
+.artbody .ls, .artbody .img-landscape, .artbody .one-shot, .artbody .day-shot {
+  margin-top:.15rem; margin-bottom:1.5rem; }
+.fn-section { margin-bottom:40px !important; }
+.fn-section + .fn-section { margin-top:0 !important; }
+@media (max-width:768px) {
+  /* the itinerary wraps most paragraphs in their own .measure, so the site's
+     `p + p` phone rule never sees them as siblings; give them the same 1.35em */
+  .artbody > .measure > .copy + .copy, .artbody > .measure > .day-copy + .day-copy,
+  .artbody > .measure:has(> .copy:last-child) + .measure > .copy:first-child { margin-top:1.35em !important; }
+  .artbody .pair, .artbody .img-pair { margin-top:.15rem; margin-bottom:.15rem; }
+  .artbody .ls, .artbody .img-landscape, .artbody .one-shot, .artbody .day-shot {
+    margin-top:.15rem; margin-bottom:.5rem; }
+  /* the shared -0.6rem phone caption pull overlapped a .5rem photo margin by 2px */
+  .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption { margin-top:0 !important; }
+  /* a lone hand-cropped photo is an inline-styled span with margin:1rem auto; its caption
+     needs the same 8px, so pull it 8px into that 16 */
+  span[style*="aspect-ratio"] + .img-caption { margin-top:-8px !important; }
+}
+/* the same span on desktop: 1rem under the box, and the caption's -1rem would touch it */
+span[style*="aspect-ratio"] + .img-caption { margin-top:-8px; }
+.artbody > .measure > .comp-h { margin-top:40px !important; }   /* was 56: the one section kicker that broke the 40px standard */
 /* the season matrix ends cleanly, with no rule hanging under the wet row */
 .whm2 .wrow:last-child, .whm .whm-row:last-child { border-bottom:0 !important; }
 /* the tail: the last paragraph, a rule, the standing footnote, then the
@@ -3508,7 +3582,11 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     display:grid !important; grid-template-columns:repeat(2, minmax(0,1fr));
     gap:14px 10px; }
   .ab-stats.plain > *, .ab-stats.boxed > * { border-left:0 !important;
-    padding-left:0 !important; }
+    padding-left:0 !important; text-align:center; }
+  /* three stats on a two-column grid leave the third alone at bottom left;
+     it takes the whole row and sits in the middle of the page */
+  .ab-stats.plain > :nth-child(3):last-child, .ab-stats.boxed > :nth-child(3):last-child {
+    grid-column:1 / -1; }
 }
 
 /* --bleed is each container's own mobile side padding, so a full-bleed child
