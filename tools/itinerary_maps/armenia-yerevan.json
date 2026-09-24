@@ -1,68 +1,68 @@
 {
- "airport": {
-  "anchor": "end",
-  "dx": -10.1,
-  "dy": -19.2,
-  "lat": 40.1473,
-  "lon": 44.3959,
-  "name": "EVN Airport"
- },
- "country_width": 460,
- "dots": [
-  {
-   "anchor": "end",
-   "dx": -11,
-   "dy": 4,
-   "lat": 40.5639,
-   "lon": 45.011,
-   "name": "Lake Sevan"
+  "airport": {
+    "anchor": "end",
+    "dx": -11.4,
+    "dy": 4.1,
+    "lat": 40.1473,
+    "lon": 44.3959,
+    "name": "EVN Airport"
   },
-  {
-   "anchor": "start",
-   "dx": 11,
-   "dy": 4,
-   "lat": 40.1407,
-   "lon": 44.8178,
-   "name": "Garni & Geghard"
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 40.5639,
+      "lon": 45.011,
+      "name": "Lake Sevan"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 40.1407,
+      "lon": 44.8178,
+      "name": "Garni & Geghard"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 39.8784,
+      "lon": 44.5761,
+      "name": "Khor Virap"
+    },
+    {
+      "anchor": "start",
+      "dx": 8.2,
+      "dy": -1.1,
+      "lat": 40.7929,
+      "lon": 43.8465,
+      "name": "Gyumri"
+    }
+  ],
+  "iso3": "ARM",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
   },
-  {
-   "anchor": "start",
-   "dx": 11,
-   "dy": 4,
-   "lat": 39.8784,
-   "lon": 44.5761,
-   "name": "Khor Virap"
-  },
-  {
-   "name": "Gyumri",
-   "lat": 40.7929,
-   "lon": 43.8465,
-   "dx": 14,
-   "dy": -14,
-   "anchor": "start"
-  }
- ],
- "iso3": "ARM",
- "legs": [],
- "margins": {
-  "b": 130,
-  "l": 240,
-  "r": 240,
-  "t": 130
- },
- "simplify": 110,
- "slug": "armenia-yerevan",
- "smooth": true,
- "stops": [
-  {
-   "n": 1,
-   "name": "Yerevan",
-   "marker": "star",
-   "lat": 40.1792,
-   "lon": 44.4991,
-   "dx": -22.5,
-   "dy": 8.5,
-   "anchor": "end"
-  }
- ]
+  "simplify": 110,
+  "slug": "armenia-yerevan",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "dx": 82.4,
+      "dy": -10.3,
+      "lat": 40.1792,
+      "lon": 44.4991,
+      "marker": "star",
+      "n": 1,
+      "name": "Yerevan"
+    }
+  ]
 }
