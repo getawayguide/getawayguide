@@ -37,7 +37,13 @@ VERB = re.compile(r"\b(is|are|was|were|has|have|it's|means?|feels?|lives?|sits?|
 def rel(p): return os.path.relpath(p, ROOT).replace("\\", "/")
 
 def pages():
-    for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
+    # The recursive glob cannot see Drafts/.Full Articles/ (glob skips
+    # dot-directories), which is where the real draft articles live, so
+    # --drafts has to name that path explicitly.
+    found = glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True)
+    if INCLUDE_DRAFTS:
+        found += glob.glob(os.path.join(ROOT, "Drafts", ".Full Articles", "*", "*.html"))
+    for p in sorted(set(found)):
         r = rel(p)
         if r.startswith("Drafts/") and not INCLUDE_DRAFTS: continue
         if r.startswith(".tmp/") or r.startswith(".git/"): continue

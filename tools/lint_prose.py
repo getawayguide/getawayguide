@@ -62,9 +62,18 @@ def pages(drafts=False):
     pats = [os.path.join(ROOT, "*.html"), os.path.join(ROOT, "*", "*.html")]
     if drafts:
         pats.append(os.path.join(ROOT, "Drafts", "*", "field-notes.html"))
+        # The articles actually being written live in Drafts/.Full Articles/
+        # <country>/. glob NEVER matches a directory whose name starts with a
+        # dot unless the pattern spells the dot out, and the skip below used to
+        # exclude "Drafts/." outright -- so --drafts covered eleven old field
+        # notes and none of the ~44 real articles. Every prose check therefore
+        # passed on files it had never opened, which is why spelling and typo
+        # problems kept being found by eye during review instead of here.
+        pats.append(os.path.join(ROOT, "Drafts", ".Full Articles", "*", "*.html"))
     for p in sorted({q for pat in pats for q in glob.glob(pat)}):
         rel = os.path.relpath(p, ROOT).replace("\\", "/")
-        if rel.startswith((".tmp/", "Drafts/.")) or rel == "editor.html":
+        # .Archive is the retired tree; .Full Articles is live work.
+        if rel.startswith((".tmp/", "Drafts/.Archive")) or rel == "editor.html":
             continue
         if rel.startswith("Drafts/") and not drafts:
             continue

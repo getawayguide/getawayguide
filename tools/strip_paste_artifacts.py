@@ -38,10 +38,22 @@ def strip(html):
 
 
 def main():
+    # Live pages AND drafts. This globbed only "*/field-notes.html" from the
+    # repo root, so it never saw Drafts/ at all -- and paste artifacts are a
+    # DRAFT problem by definition (they arrive with Google-Docs text and should
+    # be gone before a page ships). Same blind spot as lint_prose, americanize
+    # and lint_site had: the tools were pointed at the published site while the
+    # work happens in Drafts/.
     slug = sys.argv[1] if len(sys.argv) > 1 else None
-    pat = "%s/field-notes.html" % slug if slug else "*/field-notes.html"
+    if slug:
+        pats = ["%s/field-notes.html" % slug,
+                "Drafts/%s/field-notes.html" % slug,
+                "Drafts/.Full Articles/%s/*.html" % slug]
+    else:
+        pats = ["*/field-notes.html", "Drafts/*/field-notes.html",
+                "Drafts/.Full Articles/*/*.html"]
     total = 0
-    for f in sorted(glob.glob(os.path.join(ROOT, pat))):
+    for f in sorted({q for pat in pats for q in glob.glob(os.path.join(ROOT, pat))}):
         h = open(f, encoding="utf-8").read()
         new, n = strip(h)
         if n:

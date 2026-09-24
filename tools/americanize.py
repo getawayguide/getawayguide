@@ -113,9 +113,17 @@ def main():
     ap.add_argument("slug", nargs="?")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
-    pat = "Drafts/%s/field-notes.html" % a.slug if a.slug else "Drafts/*/field-notes.html"
+    # Field notes AND the full articles. This swept only field-notes.html for
+    # months, so CLAUDE.md's American-spellings rule had never once run on the
+    # ~44 articles in Drafts/.Full Articles/ -- glob skips dot-directories
+    # unless the pattern names them.
+    if a.slug:
+        pats = ["Drafts/%s/field-notes.html" % a.slug,
+                "Drafts/.Full Articles/%s/*.html" % a.slug]
+    else:
+        pats = ["Drafts/*/field-notes.html", "Drafts/.Full Articles/*/*.html"]
     total = 0
-    for f in sorted(glob.glob(os.path.join(ROOT, pat))):
+    for f in sorted({q for pat in pats for q in glob.glob(os.path.join(ROOT, pat))}):
         html = open(f, encoding="utf-8").read()
         new, applied = convert(html)
         if not applied:
