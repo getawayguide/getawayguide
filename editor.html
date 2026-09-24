@@ -497,14 +497,29 @@
     /* ---- a map figure gets an Edit button on hover; the label editor (tools/map_editor.py,
        :5002) then runs in a modal over the article instead of a separate tab, and its Save
        is spliced straight back into the figure being edited ---- */
-    #editor figure.itinerary-map { position:relative; }
-    #editor figure.itinerary-map > .map-edit { position:absolute; top:8px; right:8px; z-index:3;
+    #editor figure.itinerary-map, #editor figure.citymap-fig { position:relative; }
+    #editor figure.itinerary-map > .map-edit, #editor figure.citymap-fig > .map-edit { position:absolute; top:8px; right:8px; z-index:3;
       font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase;
       padding:.45rem .7rem; border-radius:3px; border:1px solid rgba(28,40,33,.18); background:#fff;
       color:#1C2821; cursor:pointer; opacity:0; transition:opacity .15s; box-shadow:0 1px 3px rgba(0,0,0,.12); }
-    #editor figure.itinerary-map:hover > .map-edit { opacity:1; }
-    #editor figure.itinerary-map > .map-edit:hover { background:#2D6B50; border-color:#2D6B50; color:#fff; }
-    #map-modal { position:fixed; inset:0; z-index:90; background:rgba(28,40,33,.55); display:grid; place-items:center; }
+    #editor figure.itinerary-map:hover > .map-edit, #editor figure.citymap-fig:hover > .map-edit { opacity:1; }
+    #editor figure.itinerary-map > .map-edit:hover, #editor figure.citymap-fig > .map-edit:hover { background:#2D6B50; border-color:#2D6B50; color:#fff; }
+    /* ---- Preview: the unsaved article served back by the photo server under its own path,
+       so every relative asset resolves, framed at the three widths the site's CSS breaks at ---- */
+    #pv-modal { position:fixed; inset:0; z-index:150; background:rgba(28,40,33,.55); display:grid; place-items:center; }
+    #pv-modal[hidden] { display:none; }
+    #pv-modal .box { width:min(1400px, 96vw); height:min(940px, 94vh); background:#EDEDE7; border-radius:8px; overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.35); display:grid; grid-template-rows:44px 1fr; }
+    #pv-modal .bar { display:flex; align-items:center; gap:.6rem; padding:0 .8rem; background:#fff; border-bottom:1px solid #D8E5DC;
+      font:600 .62rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#1C2821; }
+    #pv-modal .bar .spacer { flex:1; }
+    #pv-modal .bar button { font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; padding:.45rem .7rem;
+      border-radius:3px; border:1px solid rgba(28,40,33,.18); background:#fff; color:#1C2821; cursor:pointer; }
+    #pv-modal .bar .devs button.on { background:#1C2821; color:#fff; border-color:#1C2821; }
+    #pv-modal .bar #pv-close { font-size:1.1rem; padding:.2rem .6rem; border:0; }
+    #pv-modal .stage { overflow:auto; display:grid; place-items:start center; padding:18px; }
+    #pv-frame { width:393px; height:100%; min-height:820px; border:0; background:#fff; box-shadow:0 6px 30px rgba(0,0,0,.18); }
+    #map-modal { position:fixed; inset:0; z-index:150; background:rgba(28,40,33,.55); display:grid; place-items:center; }
     #map-modal[hidden] { display:none; }
     #map-modal .box { width:min(1240px, 94vw); height:min(860px, 90vh); background:#f4f2ec; border-radius:8px;
       overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.35); display:grid; }
@@ -1119,6 +1134,7 @@ main{overflow-y:auto;padding:1rem}
     <span class="save-status" id="save-status"></span>
     <button class="btn btn-open" id="btn-photos" onclick="togglePhotoPanel()">Photos</button>
     <button class="btn btn-open" id="btn-review" onclick="window.review && review.toggle()" title="Track changes and comments for the open article">Review</button>
+    <button class="btn btn-open" id="btn-preview" onclick="openPreview()" title="See this article as a phone, tablet or desktop page, unsaved edits included">Preview</button>
     <button class="btn btn-open" id="btn-open">Open Article</button>
     <button class="btn btn-save" id="btn-save" disabled>Save</button>
   </div>
@@ -1232,7 +1248,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=aa7e7128" defer></script>
+<script src="review.js?v=aec5108d" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1460,6 +1476,19 @@ main{overflow-y:auto;padding:1rem}
     <b>The hero picker isn't running.</b><br>
     Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
     <br><button type="button" id="heroes-retry">Try again</button>
+  </div>
+</div>
+
+<div id="pv-modal" hidden>
+  <div class="box">
+    <div class="bar">
+      <span class="ttl">Preview</span>
+      <span class="devs"><button data-w="393" class="on">Phone 393</button><button data-w="820">Tablet 820</button><button data-w="1280">Desktop 1280</button></span>
+      <button id="pv-refresh" title="Rebuild from the editor's current text">Refresh</button>
+      <span class="spacer"></span>
+      <button id="pv-close" title="Close (Esc)">&times;</button>
+    </div>
+    <div class="stage"><iframe id="pv-frame" title="Article preview"></iframe></div>
   </div>
 </div>
 
@@ -2015,6 +2044,7 @@ main{overflow-y:auto;padding:1rem}
     return { apply, clear };
   })();
   window.__siteCss = siteCss;   // test seam: the headless checks open an article without the file picker
+  window.__setOriginalHTML = h => { originalHTML = h; };   // same seam: the Preview needs the page the body came from
 
   async function loadFile(fh) {
     fileHandle = fh;
@@ -2298,6 +2328,7 @@ main{overflow-y:auto;padding:1rem}
   function normalizeForSave(el) {
     // 0. Leftover find-marks (defensive)
     el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
+    el.querySelectorAll('mark.lint').forEach(unwrapEl);        // prose-check highlights are editor chrome
     // the ✕ on an empty slot is editor chrome. stripEmptySlots() already drops it
     // with the slot it lives in, but a photo dropped straight into a draft frame
     // can leave the slot element standing, so sweep for it here too.
@@ -2589,15 +2620,10 @@ main{overflow-y:auto;padding:1rem}
   function insertFnSubHd() { insertLabelBlock('fn-sub-hd', 'Sub Heading'); }
   function insertEyebrow() { insertLabelBlock('eyebrow', 'Eyebrow'); }
 
-  async function saveFile(opts) {
-    const manual = !(opts && opts.auto);
-    const editor = document.getElementById('editor');
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(originalHTML, 'text/html');
-    const originalBody = doc.querySelector('.article-body, .artbody');
-    if (!originalBody) return;
-
+  /* The saved document, assembled from the editor's DOM: blob URLs back to paths, picture
+     sources restored, editor chrome out, review marks resolved, body pretty-printed into the
+     page's own <head>. saveFile() writes what this returns; the Preview modal serves it. */
+  function assembleDocument(editor, doc, originalBody) {
     // Clone editor content and prepare for saving
     const saveEl = document.createElement('div');
     saveEl.innerHTML = editor.innerHTML;
@@ -2716,6 +2742,19 @@ main{overflow-y:auto;padding:1rem}
 
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    return { newHTML, saveEl };
+  }
+
+  async function saveFile(opts) {
+    const manual = !(opts && opts.auto);
+    const editor = document.getElementById('editor');
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(originalHTML, 'text/html');
+    const originalBody = doc.querySelector('.article-body, .artbody');
+    if (!originalBody) return;
+
+    const { newHTML, saveEl } = assembleDocument(editor, doc, originalBody);
 
     try {
       const writable = await fileHandle.createWritable();
@@ -5203,7 +5242,7 @@ main{overflow-y:auto;padding:1rem}
     return b;
   }
   window.restoreMapButtons = function restoreMapButtons(root) {
-    (root || ed()).querySelectorAll('figure.itinerary-map').forEach(f => {
+    (root || ed()).querySelectorAll('figure.itinerary-map, figure.citymap-fig').forEach(f => {
       if (!f.querySelector(':scope > .map-edit')) f.appendChild(mapEditButton());
     });
   };
@@ -5220,20 +5259,56 @@ main{overflow-y:auto;padding:1rem}
       if (!rel) off.firstChild.textContent = 'Could not tell which article this is, so there is no map to edit.';
       return;
     }
-    if (!slugs.length) { frame.style.display = 'none'; off.hidden = false; off.firstChild.textContent = 'No map config points at this page (tools/itinerary_maps/*.json).'; return; }
-    // a page with more than one map: the figures and the configs are matched in order
-    const figs = [...ed().querySelectorAll('figure.itinerary-map')];
-    const slug = slugs[Math.min(Math.max(figs.indexOf(fig), 0), slugs.length - 1)];
-    frame.src = MAPS + '/?embed=1&slug=' + encodeURIComponent(slug);
+    const city = fig.classList.contains('citymap-fig');
+    const pool = city ? (slugs.city || []) : (slugs.itinerary || slugs || []);
+    if (!pool.length) { frame.style.display = 'none'; off.hidden = false; off.firstChild.textContent = city ? 'No city-map config (tools/city_maps/*.json) is embedded in this page.' : 'No map config points at this page (tools/itinerary_maps/*.json).'; return; }
+    let slug = null;
+    if (city) {                                // a city figure names its own config in the base image path
+      const m = fig.innerHTML.match(/city-maps\/([a-z0-9-]+)(?:-mobile)?\.png/);
+      slug = m && pool.includes(m[1]) ? m[1] : null;
+    }
+    if (!slug) {                               // otherwise the figures and the configs are matched in order
+      const figs = [...ed().querySelectorAll(city ? 'figure.citymap-fig' : 'figure.itinerary-map')];
+      slug = pool[Math.min(Math.max(figs.indexOf(fig), 0), pool.length - 1)];
+    }
+    frame.src = MAPS + '/?embed=1&' + (city ? 'city=' : 'slug=') + encodeURIComponent(slug) + '&page=' + encodeURIComponent(rel);
   }
   function closeMapEditor() {
     const modal = document.getElementById('map-modal'), frame = document.getElementById('map-frame');
     modal.hidden = true; frame.src = 'about:blank'; mapTarget = null;
   }
+  /* ---- Preview ------------------------------------------------------------------------ */
+  let pvWidth = 393;
+  async function openPreview() {
+    const modal = document.getElementById('pv-modal'), frame = document.getElementById('pv-frame');
+    const rel = (typeof articleRelPath === 'function' && await articleRelPath()) || (window.review && review.state && review.state.rel);
+    if (!rel) { alert('Open an article from the connected folder first, so the preview knows where its images live.'); return; }
+    if (typeof originalHTML !== 'string' || !originalHTML) { alert('Open an article first.'); return; }
+    const doc = new DOMParser().parseFromString(originalHTML, 'text/html');
+    const body = doc.querySelector('.article-body, .artbody'); if (!body) return;
+    let html;
+    try { html = assembleDocument(document.getElementById('editor'), doc, body).newHTML; }
+    catch (e) { alert('Could not build the page: ' + e.message); return; }
+    let r; try { r = await (await fetch(API + '/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rel, html }) })).json(); }
+    catch (e) { alert('The photo server is not running, so there is nothing to serve the preview from.'); return; }
+    modal.hidden = false; frame.style.width = pvWidth + 'px';
+    frame.src = API + r.url + '?t=' + Date.now();
+  }
+  function closePreview() { const m = document.getElementById('pv-modal'); m.hidden = true; document.getElementById('pv-frame').src = 'about:blank'; }
+  document.getElementById('pv-close').onclick = closePreview;
+  document.getElementById('pv-refresh').onclick = openPreview;
+  document.getElementById('pv-modal').addEventListener('click', e => { if (e.target.id === 'pv-modal') closePreview(); });
+  document.querySelectorAll('#pv-modal .devs button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#pv-modal .devs button').forEach(x => x.classList.toggle('on', x === b));
+    pvWidth = +b.dataset.w; document.getElementById('pv-frame').style.width = pvWidth + 'px';
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pv-modal').hidden) closePreview(); });
+  window.openPreview = openPreview;
+
   ed().addEventListener('click', e => {
-    const b = e.target.closest && e.target.closest('#editor figure.itinerary-map > .map-edit');
+    const b = e.target.closest && e.target.closest('#editor figure.itinerary-map > .map-edit, #editor figure.citymap-fig > .map-edit');
     if (!b) return;
-    e.preventDefault(); e.stopPropagation(); openMapEditor(b.closest('figure.itinerary-map'));
+    e.preventDefault(); e.stopPropagation(); openMapEditor(b.closest('figure.itinerary-map, figure.citymap-fig'));
   });
   document.getElementById('map-close-off').onclick = closeMapEditor;
   document.getElementById('map-modal').addEventListener('click', e => { if (e.target.id === 'map-modal') closeMapEditor(); });
@@ -5241,6 +5316,18 @@ main{overflow-y:auto;padding:1rem}
   window.addEventListener('message', ev => {
     if (ev.origin !== MAPS || !ev.data || ev.data.source !== 'map-editor') return;
     if (ev.data.type === 'map-done') { closeMapEditor(); return; }
+    if (ev.data.type === 'map-saved' && mapTarget && ev.data.city) {
+      // only the pin overlays change when labels move; the base raster and the key stay
+      const dk = mapTarget.querySelector('.citymap.desk .cmmap svg'), mb = mapTarget.querySelector('.citymap.mob .cmworld svg');
+      if (dk && ev.data.desk_svg) dk.outerHTML = ev.data.desk_svg;
+      if (mb && ev.data.mob_svg) mb.outerHTML = ev.data.mob_svg;
+      ed().dispatchEvent(new Event('input', { bubbles: true }));
+      if (window.__History && window.__History.touch) try { window.__History.touch(); } catch (e) {}
+      if (typeof setDirty === 'function') try { setDirty(true); } catch (e) {}
+      if (window.review && review.checkDisk) review.checkDisk();
+      if (typeof toast === 'function') toast('City map updated in the article. Save to keep it with your other edits.');
+      return;
+    }
     if (ev.data.type === 'map-saved' && mapTarget && ev.data.svg) {
       mapTarget.innerHTML = ev.data.svg;              // the figure's own style and width stay; only the SVG changed
       window.restoreMapButtons(mapTarget.parentElement || ed());

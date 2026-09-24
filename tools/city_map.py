@@ -288,8 +288,12 @@ async def _raster(svg, W, H):
         png = await pg.locator("#t").screenshot(); await br.close(); return png
 
 
-def build(cfg_path, embed=False, demo=None):
+def build(cfg_path, embed=False, demo=None, article=None):
     cfg = json.load(open(cfg_path, encoding="utf-8"))
+    if article:
+        # the label editor passes the page the writer has open: a draft whose map is already
+        # embedded gets re-embedded THERE, not in the live page the config names
+        cfg["article"] = article
     slug = cfg["slug"]; city = cfg["city"]; kicker = cfg["kicker"]
     os.makedirs(IMGDIR, exist_ok=True); os.makedirs(PREV, exist_ok=True)
     osm = json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
@@ -612,7 +616,8 @@ def build(cfg_path, embed=False, demo=None):
             # (so base + pins move together) — see the JS. This avoids the SVG <image>
             # paint bug that left the map blank / half-rendered at the edges.
             img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
-            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" style="paint-order:stroke">']
+            # data-proj lets the label editor turn a dragged pixel back into lat/lon
+            o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" style="paint-order:stroke" data-proj="{cx:.8f} {cy:.8f} {scale:.4f} {W} {H}">']
             # a ROUTE drawn under the pins: an ordered list of [lat,lon] following the
             # real road, so a driving route reads as the road it is rather than as
             # straight hops between town centers. Under the pins, over the base map.
@@ -637,9 +642,9 @@ def build(cfg_path, embed=False, demo=None):
                          f'letter-spacing="{1.8 * ps:.1f}" font-style="italic" font-weight="500" '
                          f'fill="{wl.get("fill", "#5E93A3")}" text-anchor="middle" '
                          f'opacity="0.95">{html.escape(wl["text"])}</text>')
-            for d in dls_adj:  # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA), nudged off water
+            for di, d in enumerate(dls_adj):  # faint neighborhood/district labels baked onto the map (e.g. VECRĪGA), nudged off water
                 lx, ly = d["x"], d["y"]
-                o.append(f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
+                o.append(f'<text class="cmdl" data-dl="{di}" x="{lx:.0f}" y="{ly:.0f}" font-size="{11*ps:.0f}" letter-spacing="{2.5*ps:.1f}" '
                          f'fill="#9DAAA0" text-anchor="middle" stroke="{LAND}" stroke-width="3">{html.escape(d["text"])}</text>')
             for i in range(len(POIS), 0, -1):     # draw high->low so lower (earlier, more important) numbers sit on top
                 name, la, lo, cat, key = POIS[i - 1]
@@ -659,7 +664,7 @@ def build(cfg_path, embed=False, demo=None):
                                    "s": (0, 13.5 * ps, "middle"),
                                    "e": (10.5 * ps, -14 * ps, "start"),
                                    "w": (-10.5 * ps, -14 * ps, "end")}[side]
-                    lab = (f'<text x="{x + dx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" '
+                    lab = (f'<text class="cmlab" data-side="{side}" x="{x + dx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" '
                            f'font-size="{10.5 * ps:.1f}" font-weight="600" fill="{INK}" '
                            f'stroke="{LAND}" stroke-width="{3.2 * ps:.1f}">{html.escape(name)}</text>')
                 o.append(f'<a href="{html.escape(HREF[name])}" target="_blank" rel="noopener"><g class="{cls}" data-i="{i}" data-name="{html.escape(name)}">'
@@ -736,11 +741,26 @@ def build(cfg_path, embed=False, demo=None):
         marker = f"city-maps/{slug}.png"
         if marker in s:
             fig = s.rindex('<figure class="citymap-fig">', 0, s.index(marker))
-            ys = s.rindex("<style>", 0, fig)
-            sc = s.index("<script>", s.index("</figure>", fig))
-            se = s.index("</script>", sc) + len("</script>")
-            open(p, "w", encoding="utf-8", newline="").write(s[:ys] + frag.strip() + s[se:])
-            print(f"re-embedded {slug} in place -> {cfg['article']}")
+            fe = s.index("</figure>", fig) + len("</figure>")
+            # The fragment is <style> + <figure> + <script>, adjacent. Only replace the whole
+            # run when it IS adjacent: a page that was saved from the article editor keeps the
+            # figure but can drop or move the style and script, and searching outward for the
+            # nearest <style>/<script> then swallowed everything in between (a whole "Where to
+            # Stay" section, on the Yerevan draft). Otherwise only the figure is replaced.
+            ys = s.rfind("<style>", 0, fig)
+            sc = s.find("<script>", fe)
+            style_adj = ys >= 0 and s[s.find("</style>", ys) + len("</style>"):fig].strip() == "" and ".citymap" in s[ys:fig]
+            script_adj = sc >= 0 and s[fe:sc].strip() == ""
+            if style_adj and script_adj:
+                se = s.index("</script>", sc) + len("</script>")
+                new_page = s[:ys] + frag.strip() + s[se:]
+                how = "in place"
+            else:
+                m_fig = re.search(r'<figure class="citymap-fig">.*?</figure>', frag, re.S)
+                new_page = s[:fig] + m_fig.group(0) + s[fe:]
+                how = "figure only (its style/script are not adjacent on this page, so they were left as they are)"
+            open(p, "w", encoding="utf-8", newline="").write(new_page)
+            print(f"re-embedded {slug} {how} -> {cfg['article']}")
             return frag
         # Validate the anchors before writing — a missing/misordered anchor otherwise silently
         # mangles the article (post is searched AFTER pre so the map region is always pre..post).
