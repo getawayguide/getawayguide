@@ -171,7 +171,20 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="resolve but don't rewrite the article")
     ap.add_argument("--limit", type=int, default=0, help="max NEW lookups this run (batching)")
     ap.add_argument("--headful", action="store_true")
+    ap.add_argument("--queries", help="JSON file holding a list of search texts: resolve those, print {text: url|null} as JSON, touch no article")
     a = ap.parse_args()
+
+    if a.queries:
+        # the article editor's Resolve button: it sends the placeholders it can see and
+        # rewrites its own DOM, so nothing on disk is touched (the writer may have unsaved
+        # edits). Same cache, same browser path as the file mode.
+        qs = json.load(open(a.queries, encoding="utf-8"))
+        cache = load(CACHE, {})
+        todo = [q for q in qs if q not in cache or not cache[q].get("ok")]
+        if todo:
+            asyncio.run(resolve_many(todo, cache, headful=a.headful))
+        print(json.dumps({q: (cache.get(q) or {}).get("url") for q in qs}, ensure_ascii=False))
+        return
 
     files = articles(a.slug if a.slug and not a.all else None, live=a.live)
     if not files: sys.exit("no article found")

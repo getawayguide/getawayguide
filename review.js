@@ -35,7 +35,7 @@
   const $ = id => document.getElementById(id);
   const ed = () => $('editor');
 
-  const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] },
+  const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] }, lint: [],
                   active: null, filter: 'all', view: 'contextual', draft: null, hidden: [], hover: null };
 
   // ------------------------------------------------------------------ pane
@@ -59,6 +59,8 @@
         <div class="rv-seg"><button id="rv-markup" aria-pressed="true" title="All markup: every change shown on the page">Markup</button><button id="rv-final" title="No markup: the page as it reads with the decisions so far">Clean</button></div>
         <div class="rv-seg"><button id="rv-v-ctx" aria-pressed="true" title="Cards level with the text they belong to">Beside</button><button id="rv-v-list" title="Every card as a list, unplaced ones too">List</button></div>
         <button id="rv-resolved" class="rv-btn" aria-pressed="false" title="Show resolved comment threads in the list" style="display:none">Resolved <span id="rv-n-res">0</span></button>
+        <button id="rv-lint" class="rv-btn" title="Run every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes">Check prose</button>
+        <button id="rv-maps" class="rv-btn" title="Turn Google Maps search links into real place pins" style="display:none">Resolve maps <span id="rv-n-maps">0</span></button>
         <span class="rv-more"><button id="rv-more" class="rv-ico" title="More">&#8943;</button>
           <div class="rv-dd"><button id="rv-all-yes">Accept all changes</button><button id="rv-all-no">Reject all changes</button></div></span>
       </div>
@@ -68,6 +70,8 @@
     side.appendChild(pane);
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.id = 'rv-lines'; document.body.appendChild(svg);
     $('rv-close').onclick = () => toggle(false);
+    $('rv-lint').onclick = runLint;
+    $('rv-maps').onclick = resolveMaps;
     $('rv-refresh').onclick = () => refresh();
     hashOpen();                                   // /browser?review=<path>: opened from Claude's pass
     $('rv-f-all').onclick = () => setFilter('all');
@@ -126,7 +130,7 @@
 
   // ------------------------------------------------------------------ boot
   async function boot(rel) {
-    state.rel = rel; state.slug = null; state.changes = []; state.st = {}; state.last = {}; state.comments = { threads: [] }; state.hidden = []; state.active = null;
+    state.rel = rel; state.slug = null; state.changes = []; state.st = {}; state.last = {}; state.comments = { threads: [] }; state.hidden = []; state.active = null; state.lint = [];
     let r;
     try { r = await (await fetch(API + '/review/for?rel=' + encodeURIComponent(rel), { cache: 'no-store' })).json(); }
     catch (e) { console.warn('review: server not reachable', e); return; }
@@ -352,7 +356,8 @@
     renderAll();
     setTimeout(() => { const ta = document.querySelector('.rv-cm.draft textarea'); if (ta) ta.focus(); }, 0);
   }
-  function wrapRange(range, id, draft) {   // one <mark> per text node, so the article's own structure is never touched
+  function wrapRange(range, id, draft, kind) {   // one <mark> per text node, so the article's own structure is never touched
+    kind = kind || 'cm';
     const walker = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT);
     const nodes = []; let n, first = null;
     while ((n = walker.nextNode())) if (range.intersectsNode(n) && n.nodeValue.trim() && !n.parentElement.closest('sup.rl-n')) nodes.push(n);
@@ -361,7 +366,7 @@
       if (e0 <= s0) continue;
       if (e0 < t.nodeValue.length) t.splitText(e0);
       if (s0 > 0) t = t.splitText(s0);
-      const m = document.createElement('mark'); m.className = 'cm' + (draft ? ' draft' : ''); m.dataset.cm = id;
+      const m = document.createElement('mark'); m.className = kind + (draft ? ' draft' : ''); m.dataset[kind] = id;
       t.parentNode.insertBefore(m, t); m.appendChild(t); first = first || m;
     }
     return first;
@@ -478,12 +483,14 @@
       for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: ed().querySelector(`mark.cm[data-cm="${t.id}"]`) });
     }
     if (showCh && state.view === 'list') for (const id of state.hidden) if (state.st[id] === undefined) out.push({ kind: 'change', id, c: byId(id), dim: true, el: null });
+    if (state.filter !== 'changes') for (const f of state.lint) out.push({ kind: 'lint', id: f.id, f, el: f.anchor ? ed().querySelector(`mark.lint[data-lint="${f.id}"]`) : null });
     out.sort((a, b) => { if (!a.el && !b.el) return 0; if (!a.el) return 1; if (!b.el) return -1;
       return (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1; });
     return out;
   }
   function renderAll() {
     if (!$('review-pane')) return;
+    mapsCount();
     const pend = pending(), open = state.comments.threads.filter(t => !t.resolved).length + (state.draft ? 1 : 0);
     $('rv-n-ch').textContent = pend.length; $('rv-n-cm').textContent = open;
     const nres = state.comments.threads.filter(t => t.resolved).length; $('rv-n-res').textContent = nres; $('rv-resolved').style.display = state.view === 'list' && nres ? '' : 'none';
@@ -508,7 +515,7 @@
     const its = items(); let lost = 0;
     for (const it of its) {
       if (!listMode && !it.el) { lost++; continue; }                  // the margin holds only what has a place in the text
-      host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card({ id: it.id, draft: true }) : card(it.t));
+      host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card({ id: it.id, draft: true }) : it.kind === 'lint' ? lintCard(it.f) : card(it.t));
     }
     if (lost) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${lost} more not found in the open text · see List`; host.appendChild(n); }
     if (!host.children.length) {
@@ -601,9 +608,10 @@
   }
   // ------------------------------------------------------------------ margin geometry
   const anchorOf = card => card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
-                         : card.dataset.cm ? ed().querySelector(`mark.cm[data-cm="${card.dataset.cm}"]`) : null;
+                         : card.dataset.cm ? ed().querySelector(`mark.cm[data-cm="${card.dataset.cm}"]`)
+                         : card.dataset.lint ? ed().querySelector(`mark.lint[data-lint="${card.dataset.lint}"]`) : null;
   function anchorRect(card) {                // first on-page box of the anchor; a hover preview may hide one of its marks
-    const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : `mark.cm[data-cm="${card.dataset.cm}"]`;
+    const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : card.dataset.cm ? `mark.cm[data-cm="${card.dataset.cm}"]` : `mark.lint[data-lint="${card.dataset.lint}"]`;
     for (const el of ed().querySelectorAll(sel)) { const r = el.getClientRects()[0]; if (r) return r; }
     return null;
   }
@@ -621,7 +629,7 @@
     }
     if (!rows.length) { drawLines(); return; }
     rows.sort((a, b) => a.y - b.y);
-    let ai = rows.findIndex(r => (r.c.dataset.id || r.c.dataset.cm) === state.active); if (ai < 0) ai = 0;
+    let ai = rows.findIndex(r => (r.c.dataset.id || r.c.dataset.cm || r.c.dataset.lint) === state.active); if (ai < 0) ai = 0;
     const GAP = 8, pos = new Array(rows.length);
     pos[ai] = rows[ai].y;
     let floor = pos[ai] + rows[ai].h + GAP;
@@ -645,9 +653,9 @@
       if (card.style.display === 'none') continue;
       const cr = card.getBoundingClientRect(); if (cr.bottom < br.top || cr.top > br.bottom) continue;
       const ar = anchorRect(card); if (!ar || ar.bottom < sc.top || ar.top > sc.bottom) continue;
-      const id = card.dataset.id || card.dataset.cm, on = state.active === id || state.hover === id;
+      const id = card.dataset.id || card.dataset.cm || card.dataset.lint, on = state.active === id || state.hover === id;
       const x0 = cr.right, y0 = cr.top + 15, x1 = ar.left - 3, y1 = ar.top + ar.height / 2;
-      const kind = card.classList.contains('rv-cm') ? 'cm' : card.classList.contains('mv') ? 'mv' : card.classList.contains('ed') ? 'ed' : 'rm';
+      const kind = card.classList.contains('rv-lint') ? 'lint' : card.classList.contains('rv-cm') ? 'cm' : card.classList.contains('mv') ? 'mv' : card.classList.contains('ed') ? 'ed' : 'rm';
       const p = document.createElementNS(NS, 'path');
       p.setAttribute('d', `M${x0},${y0} L${xg},${y1} H${x1}`);
       p.setAttribute('class', `ln ${kind}${on ? ' on' : ''}`);
@@ -718,6 +726,69 @@
   }
   window.addEventListener('focus', checkDisk);
   setInterval(checkDisk, 30000);
+
+  // ---- prose checks: every check the repo has, on the text as it stands, as margin cards ---
+  // The server runs tools/prose_check.py on the editor's own HTML, so unsaved edits count and
+  // nothing on disk is touched. A mechanical finding carries a fix, applied here in place.
+  async function runLint() {
+    if (!ed()) return;
+    const b = $('rv-lint'); b.disabled = true; b.textContent = 'Checking…';
+    ed().querySelectorAll('mark.lint').forEach(unwrap); state.lint = [];
+    let r; try { r = await (await fetch(API + '/review/lint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: ed().innerHTML }) })).json(); }
+    catch (e) { toast('Server not reachable'); b.disabled = false; b.textContent = 'Check prose'; return; }
+    state.lint = r.findings || [];
+    for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); else f.anchor = null; }
+    b.disabled = false; b.textContent = 'Check prose';
+    if (state.filter === 'changes') setFilter('all');
+    toggle(true); renderAll();
+    toast(state.lint.length ? `${state.lint.length} prose finding(s).` : 'Prose: clean.');
+  }
+  function lintFix(f) {
+    const marks = [...ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`)];
+    if (!marks.length || f.fix == null) return;
+    marks[0].textContent = f.fix; marks.slice(1).forEach(m => { m.textContent = ''; });
+    marks.forEach(unwrap);
+    state.lint = state.lint.filter(x => x.id !== f.id);
+    dirty(); if (H()) H().touch(); renderAll();
+  }
+  function lintDrop(f) {
+    ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`).forEach(unwrap);
+    state.lint = state.lint.filter(x => x.id !== f.id); renderAll();
+  }
+  function lintCard(f) {
+    const d = document.createElement('div');
+    d.className = 'rv-card rv-lint ' + (f.severity || 'warn') + (state.active === f.id ? ' active' : ''); d.dataset.lint = f.id;
+    const q = f.anchor ? `<div class="t">&ldquo;${esc(f.anchor.quote)}&rdquo;${f.fix != null ? ` &rarr; <ins>${esc(f.fix)}</ins>` : ''}</div>` : '';
+    d.innerHTML = `<div class="who"><span class="av lint">!</span><b>${esc(f.kind)}</b><span class="tm">${esc(f.severity || '')}</span>
+        <span class="acts">${f.fix != null ? '<button class="yes" data-a="fix" title="Apply this fix">&#10003;</button>' : ''}<button class="no" data-a="drop" title="Dismiss">&#10005;</button></span></div>
+      ${q}<div class="m">${esc(f.message)}</div>`;
+    d.onclick = e => { if (!e.target.closest('button')) { state.active = f.id; const m = ed().querySelector(`mark.lint[data-lint="${f.id}"]`); if (m) m.scrollIntoView({ block: 'center' }); renderAll(); } };
+    const fx = d.querySelector('[data-a="fix"]'); if (fx) fx.onclick = e => { e.stopPropagation(); lintFix(f); };
+    d.querySelector('[data-a="drop"]').onclick = e => { e.stopPropagation(); lintDrop(f); };
+    d.onmouseenter = () => { state.hover = f.id; ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`).forEach(m => m.classList.add('cm-hover')); drawLines(); };
+    d.onmouseleave = () => { state.hover = null; ed().querySelectorAll('mark.lint.cm-hover').forEach(m => m.classList.remove('cm-hover')); drawLines(); };
+    return d;
+  }
+
+  // ---- Maps placeholders -> real pins, in the text the writer is looking at -----------------
+  const MAPS_SEARCH = 'https://www.google.com/maps/search/?api=1&query=';
+  function mapsPlaceholders() { return [...ed().querySelectorAll('a[href]')].filter(a => (a.getAttribute('href') || '').startsWith(MAPS_SEARCH)); }
+  function mapsQuery(a) { const raw = a.getAttribute('href').slice(MAPS_SEARCH.length).split('&')[0]; try { return decodeURIComponent(raw.replace(/\+/g, ' ')).trim(); } catch (e) { return raw; } }
+  function mapsCount() { const n = mapsPlaceholders().length; const b = $('rv-maps'); if (b) { b.style.display = n ? '' : 'none'; $('rv-n-maps').textContent = n; } return n; }
+  async function resolveMaps() {
+    const links = mapsPlaceholders(); if (!links.length) return;
+    const qs = [...new Set(links.map(mapsQuery))];
+    const b = $('rv-maps'); b.disabled = true; b.firstChild.textContent = 'Resolving… ';
+    toast(`Looking up ${qs.length} place(s) on Google Maps. About ten seconds each the first time.`, 8000);
+    let r; try { r = await (await fetch(API + '/review/resolve-maps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ queries: qs }) })).json(); }
+    catch (e) { toast('Server not reachable'); b.disabled = false; b.firstChild.textContent = 'Resolve maps '; return; }
+    let done = 0, miss = [];
+    for (const a of links) { const u = (r.urls || {})[mapsQuery(a)]; if (u) { a.setAttribute('href', u); done++; } else miss.push(mapsQuery(a)); }
+    b.disabled = false; b.firstChild.textContent = 'Resolve maps ';
+    if (done) { dirty(); if (H()) H().touch(); }
+    mapsCount();
+    toast(done ? `${done} link(s) now point at the place.${miss.length ? ' Could not resolve: ' + miss.join('; ') : ''}` : 'Nothing resolved: ' + (r.log || miss.join('; ')), 8000);
+  }
 
   // ---- refresh: new comments or changes that arrived while the article was open -----------
   async function refresh() {
@@ -830,5 +901,11 @@ body.review-open #rv-lines{display:block}
 #editor mark.cm{background:#F1EFE8;color:inherit;border-bottom:2px solid #D9BE63;cursor:pointer}
 #editor mark.cm.draft{background:#E3F0E8;border-bottom-color:#2D6B50}
 #editor mark.cm.cm-hit,#editor mark.cm.cm-hover{background:#F5D96A}
+#editor mark.lint{background:#FBEFC2;color:inherit;border-bottom:2px solid #E8C86A;cursor:pointer}
+#editor mark.lint.cm-hover{background:#F5D96A}
+.rv-lint{border-left:3px solid #E8C86A}.rv-lint.error{border-left-color:#B4553C}.rv-lint.info{border-left-color:#8a9790}
+.rv-lint .av.lint{background:#9A7B2E}.rv-lint .t{margin:.3rem 0 0;line-height:1.45}.rv-lint .t ins{color:#2557A7;text-decoration:none;font-weight:600}
+.rv-lint .m{font-size:.72rem;color:#6b7a70;margin-top:.3rem}
+#rv-lines .ln.lint{stroke:#E8C86A}#rv-lines .dt.lint{fill:#E8C86A}
 `; document.head.appendChild(css);
 })();

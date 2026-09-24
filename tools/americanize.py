@@ -80,7 +80,10 @@ def match_case(src, repl):
     return repl
 
 
-def convert(html):
+def find(html):
+    """Every British spelling in the prose, with its position: [(start, end, new, old)].
+    convert() applies these; tools/prose_check.py shows them in the editor's margin
+    without applying anything, which is why the positions are exposed on their own."""
     ok = mask(html)
     edits = []          # (start, end, new, old)
     for brit, amer in BASE:
@@ -96,6 +99,11 @@ def convert(html):
                 if prev and prev.group(1)[0].isupper():
                     continue
             edits.append((s, e, match_case(word, amer), word))
+    return edits
+
+
+def convert(html):
+    edits = find(html)
     if not edits:
         return html, []
     edits.sort(key=lambda t: -t[0])          # apply back-to-front

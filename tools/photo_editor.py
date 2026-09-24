@@ -47,7 +47,7 @@ from html.parser import HTMLParser
 from urllib.parse import unquote
 from pathlib import Path
 
-from flask import Flask, abort, jsonify, request, send_file, send_from_directory
+from flask import Flask, abort, jsonify, request, send_file, send_from_directory, Response
 
 try:
     from pillow_heif import register_heif_opener
@@ -1325,6 +1325,69 @@ def review_commit(slug):
     return jsonify(_redline.commit(slug, d.get("accepted", [])))
 
 
+@app.route("/review/lint", methods=["POST", "OPTIONS"])
+def review_lint():
+    """every prose check on the HTML the editor holds (unsaved edits included)"""
+    if request.method == "OPTIONS":
+        return "", 204
+    import prose_check
+    d = request.get_json(force=True) or {}
+    return jsonify({"findings": prose_check.check(d.get("html") or "")})
+
+
+@app.route("/review/resolve-maps", methods=["POST", "OPTIONS"])
+def review_resolve_maps():
+    """Maps search placeholders the editor can see -> real place URLs. The resolver drives a
+    browser, so it runs as its own process (tools/resolve_draft_maps.py --queries) and the
+    editor rewrites its own DOM with the answer; nothing on disk is touched."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True) or {}
+    qs = [q for q in (d.get("queries") or []) if isinstance(q, str) and q.strip()][:200]
+    if not qs:
+        return jsonify({"urls": {}})
+    tmp = ROOT / ".tmp" / "resolve_queries.json"
+    tmp.write_text(json.dumps(qs, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "resolve_draft_maps.py"), "--queries", str(tmp)],
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+    line = (r.stdout or "").strip().splitlines()
+    try:
+        urls = json.loads(line[-1]) if line else {}
+    except Exception:
+        return jsonify({"ok": False, "log": (r.stdout + r.stderr)[-1500:]}), 500
+    return jsonify({"ok": True, "urls": urls})
+
+
+_PREVIEWS = {}       # rel -> html the editor holds right now, served back under the page's own path
+
+
+@app.route("/preview", methods=["POST", "OPTIONS"])
+def preview_put():
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True) or {}
+    rel = (d.get("rel") or "").replace("\\", "/").lstrip("./")
+    if not rel or not d.get("html"):
+        abort(400)
+    _PREVIEWS[rel] = d["html"]
+    return jsonify({"ok": True, "url": "/preview/" + rel})
+
+
+@app.route("/preview/<path:rel>")
+def preview_get(rel):
+    """The unsaved article as a page. A <base> pointing at the page's real folder makes every
+    relative path (../styles.css, ../../../Images/...) resolve exactly as it will on disk."""
+    html = _PREVIEWS.get(rel)
+    if html is None:
+        abort(404)
+    base = "/site/" + rel.rsplit("/", 1)[0] + "/" if "/" in rel else "/site/"
+    tag = '<base href="%s">' % base
+    html = re.sub(r"(<head[^>]*>)", r"\1" + tag, html, count=1) if "<head" in html else tag + html
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 @app.route("/comments/<key>", methods=["GET", "POST", "OPTIONS"])
 def comments(key):
     if request.method == "OPTIONS":
@@ -2192,8 +2255,12 @@ def api_set_pos():
 def api_pipeline():
     d = request.get_json(force=True)
     if d["page"].startswith("Drafts/"):
-        return jsonify({"ok": True, "log": "Draft page: pipeline runs at publish "
-                                           "(preview reads the originals directly)."})
+        # a draft goes through tools/draft_images.py, which stages it as a temporary live
+        # page so the same six tools can run on it, then copies the result back
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "draft_images.py"), d["page"]],
+                           capture_output=True, text=True, cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
+        tail = "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-12:])
+        return jsonify({"ok": r.returncode == 0, "log": "$ draft_images.py\n" + tail}), (200 if r.returncode == 0 else 500)
     log = []
     for tool in PIPELINE:
         args = [sys.executable, str(ROOT / "tools" / tool)]
