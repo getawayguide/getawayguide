@@ -52,12 +52,21 @@ def articles(slug=None, live=False):
     Published articles were assumed to be clean, but pages published before the draft
     resolver existed still carry the same /maps/search/ placeholders (615 of them across
     21 live pages), so the same fix has to be runnable against them."""
-    base = "%s/field-notes.html" if live else "Drafts/%s/field-notes.html"
-    pats = [base % slug] if slug else [base % "*"]
+    if live:
+        # every PUBLISHED page in a country folder, not just field-notes.html. The article
+        # pages (el-tunco.html, ruta-de-las-flores.html and the rest) carry the same
+        # placeholders and were never swept, because this only ever globbed the field notes.
+        pats = ["%s/*.html" % (slug or "*")]
+    else:
+        pats = ["Drafts/%s/field-notes.html" % (slug or "*"),
+                "Drafts/.Full Articles/%s/*.html" % (slug or "*")]
     out = []
     for pat in pats:
         out += [p.replace("\\", "/") for p in glob.glob(os.path.join(ROOT, pat))]
-    return sorted(p for p in out if "/Drafts/" not in p or not live)
+    skip = ("/archive/", "/.tmp/", "/editor.html")
+    return sorted(p for p in out
+                  if ("/Drafts/" not in p or not live)
+                  and not any(k in p.replace("\\", "/").lower() for k in skip))
 
 
 def queries_in(path):
