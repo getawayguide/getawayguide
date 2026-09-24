@@ -11,6 +11,18 @@ Thumbnails are cut to the same 16:9 the hero uses, so what you see in the strip
 is the crop you get. They are built by a small thread pool the moment an album
 is opened, and JPEGs are decoded at reduced scale, which is most of the reason
 the strip fills quickly now.
+
+Full bleed (the header button, or F) hides the strip and shows the hero exactly
+as the site cuts it for the rule being set: the real window width at the fixed
+680 / 560 / 470 height, the phone frame centered at 402px, and the photo served
+at the device pixels that frame needs (up to 4000 wide) rather than the 1600 the
+stage uses beside the strip. Left and right arrows step through the photos.
+
+Two things the frame gets from the site rather than from a constant: the article
+banner is an aspect ratio (1440/560, floor 420px), not a fixed height, so it grows
+with the window; and the nav is position:fixed over a hero that starts at top:0, so
+it hides the top 60px (63 on a phone) behind 96% white. The picker draws that band,
+because a crop judged on pixels the nav covers is judged on pixels nobody sees.
 """
 import hashlib
 import os
@@ -55,21 +67,36 @@ def is_stray_thumb(name):
 # same 680px. Judging a crop at 1440 when the screen is 1920 shows a frame
 # noticeably taller than the one that will exist. Heights are read off the
 # live site; the ratio is computed per width.
-SHAPE_H = {"home": 680, "article": 560}
-SHAPE_H_PHONE = {"home": 470, "article": 470}
+# The article banner is the exception: it is NOT a fixed height. artifact.css
+# gives .article-hero.gg-banner `aspect-ratio:1440/560; min-height:420px`, so it
+# grows with the window (741px tall at 1905, 498 at 1280) and only the phone
+# pins it, at 420. The picker used to cut it at a flat 560, which on a monitor
+# showed a banner a third shorter than the page does.
+SHAPE_H = {"home": 680}
+SHAPE_H_PHONE = {"home": 470, "article": 420}
+ARTICLE_RATIO, ARTICLE_MIN_H = 1440 / 560, 420
 DEFAULT_VW = 1440
 
 
-def shape_ratio(shape="home", vw=DEFAULT_VW):
-    """The aspect the site cuts for this hero at this viewport width."""
-    if shape == "wide":
-        return 16 / 9
+def shape_box(shape="home", vw=DEFAULT_VW):
+    """The (width, height) the site cuts for this hero at this viewport width."""
     try:
         vw = max(320, min(3840, int(vw)))
     except (TypeError, ValueError):
         vw = DEFAULT_VW
-    h = (SHAPE_H_PHONE if vw <= 768 else SHAPE_H).get(shape, SHAPE_H["home"])
-    return vw / h
+    if shape == "wide":
+        return vw, vw / (16 / 9)
+    if vw <= 768:
+        return vw, SHAPE_H_PHONE.get(shape, SHAPE_H_PHONE["home"])
+    if shape == "article":
+        return vw, max(ARTICLE_MIN_H, vw / ARTICLE_RATIO)
+    return vw, SHAPE_H["home"]
+
+
+def shape_ratio(shape="home", vw=DEFAULT_VW):
+    """The aspect the site cuts for this hero at this viewport width."""
+    w, h = shape_box(shape, vw)
+    return w / h
 
 
 SHAPES = {"home": shape_ratio("home"), "article": shape_ratio("article"),
@@ -358,7 +385,9 @@ def quality():
 def img():
     src = (BACKUP / request.args["p"]).resolve()
     assert BACKUP in src.parents, "outside the backup"
-    w = min(int(request.args.get("w", 480)), 2400)
+    # 4000 covers a full-bleed hero on a 2x monitor (the site itself never
+    # serves more); the strip and the plain stage ask for far less
+    w = min(int(request.args.get("w", 480)), 4000)
     crop = request.args.get("crop") == "1"
     ratio = shape_ratio(request.args.get("shape", "home"),
                         request.args.get("vw", DEFAULT_VW))
@@ -447,24 +476,51 @@ PAGE = r"""<!doctype html>
   .hero[data-axis="x"] img { cursor:ew-resize; }
   .hero[data-axis="y"] img { cursor:ns-resize; }
   .hero img.dragging { cursor:grabbing; }
+  /* ---- the site's nav is position:fixed over a hero that starts at top:0, so
+     it COVERS the top 60px of every hero (63 on a phone) behind 96% white. The
+     picker showed the whole frame uncovered, which is why a photo looked bigger
+     here than on the page and why a subject near the top edge could be judged
+     on pixels no visitor ever sees. ---- */
+  /* an explicit display: on a class beats the UA's [hidden] rule, so each
+     one needs saying: the desktop band was drawing a hamburger too, and the
+     phone band the whole menu, overflowing a 402px frame */
+  .navband[hidden], .navband .nb-links[hidden], .navband .nb-burger[hidden] { display:none; }
+  .navband { position:absolute; left:0; right:0; top:0; height:var(--nav,0px);
+    background:rgba(255,255,255,.96); border-bottom:1px solid rgba(28,40,33,.1);
+    z-index:6; pointer-events:none; display:flex; align-items:center;
+    padding:0 calc(38px * var(--navk,1)); gap:calc(30px * var(--navk,1));
+    overflow:hidden; }
+  .navband .nb-logo { font-family:Newsreader,Georgia,serif; font-style:italic;
+    color:var(--terra); font-size:calc(19px * var(--navk,1)); }
+  .navband .nb-links { margin-left:auto; display:flex; gap:calc(34px * var(--navk,1));
+    font-size:calc(11px * var(--navk,1)); letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(28,40,33,.8); white-space:nowrap; }
+  .navband .nb-burger { margin-left:auto; display:grid; gap:calc(4px * var(--navk,1)); }
+  .navband .nb-burger i { display:block; width:calc(20px * var(--navk,1));
+    height:calc(1.5px * var(--navk,1)); background:rgba(28,40,33,.8); }
   /* the scrim strength is live: not every photo needs the same weight */
   .veil { position:absolute; inset:0; pointer-events:none; opacity:var(--scrim,1);
     background:linear-gradient(180deg,
     rgba(18,26,21,.46) 0%, rgba(18,26,21,.16) 38%, rgba(18,26,21,.86) 100%); }
-  .cpy { position:absolute; left:3rem; right:3rem; bottom:3.4rem; pointer-events:none; }
+  /* The overlay is the site's, so every size here comes from the site's rule
+     for the width being previewed and is then scaled by however much the frame
+     is shrunk to fit the window. Sized in rem and vw of the PICKER's window, a
+     402px phone frame drew a 57px headline and full-size padding. */
+  .cpy { position:absolute; left:var(--cx,96px); right:var(--cx,96px);
+    bottom:var(--cb,54px); pointer-events:none; }
   .cropcss { background:#12160f; color:#93a199; border:1px solid #27322b;
     border-radius:7px; padding:11px 13px; font-size:11.5px; line-height:1.6;
     overflow-x:auto; margin:.6rem 0 0; white-space:pre; }
   .cropcss b { color:#7fd1a4; font-weight:400; }
   .cropcss i { color:#65736b; font-style:normal; }
-  .cpy .eb { font-size:.64rem; letter-spacing:.18em; text-transform:uppercase;
-    color:rgba(255,255,255,.78); margin-bottom:.8rem; }
+  .cpy .eb { font-size:var(--ceb,10px); letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(255,255,255,.78); margin-bottom:.9em; }
   .cpy h1 { font-family:Newsreader,Georgia,serif; font-weight:300; margin:0;
-    font-size:clamp(1.6rem,3vw,2.9rem); line-height:1.07; letter-spacing:-.018em;
-    color:#fff; max-width:26ch; }
-  .cpy .cta { display:inline-block; margin-top:1.2rem; font-size:.62rem;
+    font-size:var(--ch1,54px); line-height:var(--clh,1.06); letter-spacing:-.018em;
+    color:#fff; max-width:22ch; }
+  .cpy .cta { display:inline-block; margin-top:1.5em; font-size:var(--ccta,10px);
     letter-spacing:.16em; text-transform:uppercase; color:#fff;
-    border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:.3rem; }
+    border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:.35em; }
   .meta { display:flex; gap:22px; margin-top:12px; font-size:12px;
     color:rgba(28,40,33,.6); flex-wrap:wrap; align-items:center; }
   .meta b { color:var(--ink); font-weight:500; }
@@ -507,6 +563,23 @@ PAGE = r"""<!doctype html>
   .scrim-ctl input[type=range] { width:120px; accent-color:var(--terra); }
   .scrim-ctl b { color:var(--ink); font-variant-numeric:tabular-nums;
     min-width:34px; text-align:right; }
+  /* ---- full bleed: the strip hides and the hero runs edge to edge at the
+     site's own size for the rule being set (the real window width, the fixed
+     680 / 560 / 470 height, the phone frame centered at its 402px), so the
+     photo is judged in the exact frame, at the exact pixels, the page will show.
+     A rule wider than the window falls back to the window, which is what the
+     site would do in a window that size too. ---- */
+  .full .main { grid-template-columns:minmax(0,1fr); }
+  .full .strip { display:none; }
+  .full .stage { padding:0 0 22px; }
+  /* the frame takes the site's own rule for the shape, not a height computed
+     from the rule's nominal width: the article banner is an aspect ratio with a
+     floor, so in a window narrower than the rule it still keeps the page's
+     proportion instead of coming out squarer and taller than the page does */
+  .full .hero { width:min(100%, calc(var(--bw, 1440) * 1px)); margin:0 auto;
+    height:var(--fh, auto); aspect-ratio:var(--far, auto); min-height:var(--fmin, 0); }
+  .full .meta, .full .hint, .full .key { margin-left:26px; margin-right:26px; }
+  .full .cropcss { margin:.6rem 26px 0; }
   .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; font-size:12px;
     letter-spacing:.06em; opacity:0; transition:opacity .25s; pointer-events:none; }
@@ -559,6 +632,7 @@ with the window.">
   <span class="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
+  <button class="q" id="bleed" title="Hide the strip and show the hero edge to edge, the size the site cuts it (F)">Full bleed</button>
   <button class="q" id="reset">Center crop</button>
   <button id="save">Save pick</button>
 </header>
@@ -567,6 +641,9 @@ with the window.">
     <div class="hero" id="hero">
       <img id="pic" draggable="false" alt="">
       <div class="veil"></div>
+      <div class="navband" id="navband"><span class="nb-logo">getawayguide</span>
+        <span class="nb-links" id="nb-links"><span>Home</span><span>Destinations</span><span>Resources</span><span>About Me</span></span>
+        <span class="nb-burger" id="nb-burger" hidden><i></i><i></i><i></i></span></div>
       <div class="cpy">
         <div class="eb" id="eb">Country &middot; Field notes</div>
         <h1 id="h1">Pick a photo from the strip</h1>
@@ -699,7 +776,11 @@ function boxOf(i) {
   const shape = $('shape').value;
   const vw = BP[i].vw;
   if (shape === 'wide') { return { w: vw, h: vw / (16 / 9) }; }
-  return { w: vw, h: vw <= 768 ? 470 : (shape === 'article' ? 560 : 680) };
+  if (vw <= 768) { return { w: vw, h: shape === 'article' ? 420 : 470 }; }
+  // the article banner is aspect-ratio 1440/560 with a 420px floor, not a
+  // fixed height: it is 741 tall on a 1905 monitor and 498 on a 1280 laptop
+  if (shape === 'article') { return { w: vw, h: Math.max(420, vw * 560 / 1440) }; }
+  return { w: vw, h: 680 };
 }
 function heroRatio() { const b = boxOf(bpi); return b.w / b.h; }
 
@@ -726,11 +807,86 @@ function readCrops(sel) {
   } catch (e) { return { desktop: 50, laptop: 50, phone: 50 }; }
 }
 
+/* the site's literal sizing for the full-bleed frame: a fixed height where the
+   site fixes one, the aspect ratio with its floor where the site uses that */
+function siteFrame() {
+  const shape = $('shape').value, vw = BP[bpi].vw, r = document.documentElement.style;
+  r.setProperty('--bw', vw);
+  const set = (h, ar, min) => { r.setProperty('--fh', h); r.setProperty('--far', ar); r.setProperty('--fmin', min); };
+  if (shape === 'wide') { set('auto', '16 / 9', '0'); }
+  else if (vw <= 768) { set((shape === 'article' ? 420 : 470) + 'px', 'auto', '0'); }
+  else if (shape === 'article') { set('auto', '1440 / 560', '420px'); }
+  else { set('680px', 'auto', '0'); }
+  // the band is a share of the frame, so it is sized after the frame is
+  requestAnimationFrame(() => navBand($('hero').getBoundingClientRect()));
+}
+
 function applyShape() {
   document.documentElement.style.setProperty('--shape', heroRatio());
+  siteFrame();
   applyCrop();
   render();
+  loadPic();
 }
+
+/* ---- full bleed ---- */
+let full = false, picW = 0;      // picW: the width the stage photo was last asked at
+
+function setFull(on, quiet) {
+  full = !!on;
+  document.documentElement.classList.toggle('full', full);
+  $('bleed').textContent = full ? 'Show strip' : 'Full bleed';
+  try { localStorage.setItem('hp-full', full ? '1' : '0'); } catch (e) {}
+  if (!quiet) { applyShape(); }
+}
+$('bleed').onclick = () => setFull(!full);
+
+/* Enough device pixels to fill the rendered frame with no upscaling. cover
+   scales the photo to the frame's HEIGHT when it is pinned there, so the width
+   it needs can be well over the frame's own width. Rounded up in 200px steps
+   so the cache holds a handful of variants per photo, not one per window size. */
+function wantW() {
+  const box = $('hero').getBoundingClientRect(), img = $('pic');
+  const dpr = window.devicePixelRatio || 1;
+  const src = img.naturalWidth ? img.naturalWidth / img.naturalHeight : 1.5;
+  const w = Math.max(box.width, box.height * src) * dpr;
+  return Math.min(4000, Math.ceil(w / 200) * 200);
+}
+
+/* the stage photo is 1600 wide beside the strip, which is plenty for a frame
+   under 1200px; at full bleed it is whatever the frame needs, and never a
+   downgrade once a bigger one is loaded */
+function loadPic(force) {
+  if (!cur) { return; }
+  const w = full ? wantW() : 1600;
+  if (!force && w <= picW) { return; }
+  picW = w;
+  const img = $('pic');
+  img.onload = () => {              // the axis is not known until the photo is
+    applyCrop();
+    if (full && wantW() > picW) { loadPic(); }   // the first guess used a stand-in ratio
+  };
+  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(cur.path);
+}
+let resizeT = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => { if (full) { applyCrop(); loadPic(); } }, 250);
+});
+
+/* with the strip hidden the arrow keys are how you move between photos */
+document.addEventListener('keydown', e => {
+  if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) { return; }
+  if (e.key === 'f' || e.key === 'F') { setFull(!full); e.preventDefault(); return; }
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') { return; }
+  const ts = [...document.querySelectorAll('.strip .t')];
+  if (!ts.length) { return; }
+  let i = ts.findIndex(t => t.classList.contains('on'));
+  i = (i + (e.key === 'ArrowRight' ? 1 : -1) + ts.length) % ts.length;
+  pick(ts[i]);
+  ts[i].scrollIntoView({ block: 'nearest' });
+  e.preventDefault();
+});
 $('shape').onchange = applyShape;
 $('vw').onchange = () => { bpi = +$('vw').value; applyShape(); };
 
@@ -772,8 +928,8 @@ function pick(t) {
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
           tier: t.dataset.tier };
   crops = { desktop: 50, laptop: 50, phone: 50 };
-  $('pic').onload = applyCrop;      // the axis is not known until the photo is
-  $('pic').src = '/img?w=1600&p=' + encodeURIComponent(cur.path);
+  picW = 0;
+  loadPic(true);
   applyCrop();
   const q = cur.tier === 'good'
     ? '<span class="good">sharp at 2× on a 1440 hero</span>'
@@ -784,7 +940,8 @@ function pick(t) {
   const soft = f && t.dataset.cut && +f < +t.dataset.cut
     ? ' <span class="bad">soft focus</span>' : '';
   $('meta').innerHTML = `<span><b>${cur.name}</b></span>` +
-    `<span>${cur.w}px wide</span>` + q + soft + `<span id="oyv">crop 50%</span>`;
+    `<span>${cur.w}px wide</span>` + q + soft + `<span id="oyv">crop 50%</span>`
+    + `<span id="frv"></span>`;
 }
 
 async function toggleStar(t) {
@@ -835,6 +992,13 @@ function applyCrop() {
 
   const read = document.getElementById('oyv');
   if (read) { read.textContent = 'crop ' + Math.round(v) + '%'; }
+  const fr = document.getElementById('frv');
+  const r = $('hero').getBoundingClientRect();
+  if (fr) {
+    fr.textContent = 'frame ' + Math.round(r.width) + '×' + Math.round(r.height)
+      + (full ? '' : ' (scaled)');
+  }
+  navBand(r);
   $('hint').innerHTML = cur
     ? 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
       + '</b> to set the ' + BP[bpi].label.toLowerCase() + ' crop. This photo is '
@@ -842,6 +1006,10 @@ function applyCrop() {
       + ', so in this frame it is pinned by ' + (g.axis === 'x' ? 'height' : 'width')
       + ' and only that one axis moves. It keeps ' + Math.round(g.shown * 100)
       + '% of the photo.'
+      + ($('shape').value === 'wide' ? '' : ' The top '
+         + (BP[bpi].vw <= 768 ? NAV_H_PHONE : NAV_H)
+         + 'px sits under the site’s nav, so nothing you put there is seen.')
+      + (full ? ' <b>← →</b> step through the strip, <b>F</b> brings it back.' : '')
     : 'Drag the photo to set the crop.';
 
   const cls = '.hero .slide img.hp-' + slug(country);
@@ -856,6 +1024,35 @@ function applyCrop() {
   $('cropcss').innerHTML =
     mark(0) + '\n\n@media ' + BP[1].media + ' {\n  ' + mark(1) + '\n}\n\n'
     + '@media ' + BP[2].media + ' {\n  ' + mark(2) + '\n}';
+}
+
+/* The nav is a fixed 60px (63 on a phone) and the hero runs under it, so the
+   band is drawn at the site's height, scaled by however much this frame is
+   smaller than the rule it stands for. */
+const NAV_H = 60, NAV_H_PHONE = 63;
+function navBand(r) {
+  const vw = BP[bpi].vw, phone = vw <= 768;
+  const k = r.width ? r.width / vw : 1;
+  const hero = $('hero');
+  // "Plain 16:9" is not a page hero, so no site nav sits over it
+  const on = $('shape').value !== 'wide';
+  $('navband').hidden = !on;
+  hero.style.setProperty('--navk', k);
+  hero.style.setProperty('--nav', on ? Math.round((phone ? NAV_H_PHONE : NAV_H) * k) + 'px' : '0px');
+  $('nb-links').hidden = phone;
+  $('nb-burger').hidden = !phone;
+
+  // the site's own type for this rule, then shrunk with the frame. The headline
+  // is clamp(2rem,3.6vw,3.4rem) above 768 and a flat 26px below it.
+  const px = n => (n * k).toFixed(1) + 'px';
+  hero.style.setProperty('--ch1', px(phone ? 26 : Math.min(54.4, Math.max(32, vw * .036))));
+  hero.style.setProperty('--clh', phone ? '1.14' : '1.06');
+  hero.style.setProperty('--ceb', px(10.24));            // .64rem, the kicker
+  hero.style.setProperty('--ccta', px(9.92));            // .62rem
+  // measured off the page rather than read off artifact.css: a later rule wins
+  // on a phone, where the gutter renders at 20px and the copy sits 19.2 up
+  hero.style.setProperty('--cx', px(phone ? 20 : 96));
+  hero.style.setProperty('--cb', px(phone ? 19.2 : 54.4));
 }
 
 let drag = null;
@@ -954,6 +1151,8 @@ function toast(t) {
   $('vw').value = '0';
 })();
 document.documentElement.style.setProperty('--shape', heroRatio());
+siteFrame();
+try { setFull(localStorage.getItem('hp-full') === '1', true); } catch (e) {}
 setScrim(100);
 loadAlbums();
 
