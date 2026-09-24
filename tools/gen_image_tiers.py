@@ -139,7 +139,7 @@ def main():
                              dest, icc, a.dry_run)
         src.close()
         print("  %-46s %s" % (stem.relative_to(WEB), 
-              " ".join(sorted({s for s, _ in [(k, v) for k, v in targets.items()]}))))
+              " ".join(sorted(targets))))
 
     print("\n%s%d file(s) written, %d image(s) already complete, %d without an original"
           % ("[dry-run] " if a.dry_run else "", made, skipped, missing))

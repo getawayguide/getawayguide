@@ -155,13 +155,15 @@
     const n2 = ENT(needle); if (html.indexOf(n2) >= 0) return n2;
     return null;
   }
-  function injectMarks() {
+  function injectMarks(only) {               // only: just these changes, numbered after the existing ones
     const e = ed(); let html = e.innerHTML;
     const spans = [];
+    const list = only || state.changes;
+    let n = only ? Math.max(0, ...state.changes.map(c => c.n || 0)) : 0;
     // Every uncommitted change is marked, whatever the server has recorded for it: a decision
     // only becomes real when it is applied in this text and saved. (The standalone review page
     // stored "accept all" as a UI default, which once left this loop with nothing to mark.)
-    for (const c of state.changes) {
+    for (const c of list) {
       if (c.kind === 'grammar') trimTags(c);
       if (c.kind === 'insert') {                 // zero-width span right after the anchor
         const key = locate(html, c.after); if (!key) { state.hidden.push(c.id); continue; }
@@ -179,7 +181,7 @@
       c.inner = inner.map(x => x.id); inner.forEach(x => x.inside = c.id);
       outer.push(spans[i]); i = j;
     }
-    let out = '', pos = 0, n = 0;
+    let out = '', pos = 0;
     for (const [s0, e0, c, key] of outer) {
       out += html.slice(pos, s0); n++; c.n = n;
       out += markHtml(c, html.slice(s0, e0), n);
@@ -187,7 +189,7 @@
     }
     out += html.slice(pos);
     let m = n; for (const [, , c] of outer) for (const id of c.inner) { m++; byId(id).n = m; }
-    for (const id of state.hidden) { m++; byId(id).n = m; }
+    for (const id of state.hidden) if (!byId(id).n) { m++; byId(id).n = m; }
     e.innerHTML = out;
     if (window.restoreSlotButtons) window.restoreSlotButtons(e);
   }
@@ -215,7 +217,7 @@
     if (a && a === b) {
       const names = [...a.matchAll(/<([a-z][a-z0-9]*)/gi)].map(m => m[1].toLowerCase());
       const rest = c.find.slice(a.length);
-      if (!names.some(n => new RegExp('</' + n + '\s*>', 'i').test(rest))) { c.find = rest; c.replace = c.replace.slice(b.length); }
+      if (!names.some(n => new RegExp('</' + n + '\\s*>', 'i').test(rest))) { c.find = rest; c.replace = c.replace.slice(b.length); }
     }
   }
   function markHtml(c, oldHtml, n) {
@@ -724,7 +726,10 @@
     state.comments = r.comments || { threads: [] }; anchorComments();
     const known = new Set(state.changes.map(c => c.id));
     const fresh = (r.changes || []).filter(c => !known.has(c.id));
-    if (fresh.length) { state.slug = r.slug; state.changes.push(...fresh); reinject(fresh.map(c => c.id).filter(id => byId(id).kind === 'grammar')); }
+    // every kind gets marked, through the same path boot() uses: reinject() only knows
+    // grammar finds, so a fresh cut, move or insert used to land in state with no mark
+    // and no place in the margin, undecidable until the file was reopened
+    if (fresh.length) { state.slug = r.slug; state.changes.push(...fresh); injectMarks(fresh); if (window.review && review.syncFromDom) review.syncFromDom(); }
     renderAll();
     toast(fresh.length ? `${fresh.length} new change(s) added.` : 'Up to date.');
   }

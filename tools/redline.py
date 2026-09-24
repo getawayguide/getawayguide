@@ -56,6 +56,11 @@ def load(slug):
     p["decisions"] = json.loads(dec.read_text(encoding="utf-8")) if dec.exists() else {}
     app = d / "applied.json"
     p["applied"] = json.loads(app.read_text(encoding="utf-8")) if app.exists() else None
+    # a round saved in more than one sitting keeps its running tally in progress.json;
+    # commit() used to start from p["applied"] alone, so every save after the first
+    # threw the earlier one's ids away and a round could only complete in one go
+    prog = d / "progress.json"
+    p["progress"] = json.loads(prog.read_text(encoding="utf-8")) if prog.exists() else None
     return p
 
 
@@ -198,7 +203,6 @@ def render(slug):
                         "".join(f'<div class="rl-dpara">{b}</div>' for b in blocks)
                         for f, blocks in dests.items())
     payload = json.dumps([{k: v for k, v in c.items() if not k.startswith("_")} for c in ordered], ensure_ascii=False)
-    words_cut = sum(c.get("words", 0) for c in p["changes"] if c["kind"] == "cut")
     return (head + OVERLAY_CSS + "</head>" + body_tag
             + '<div id="rl-bar">' + BAR + '</div>'
             + '<div id="rl-doc">' + marked
@@ -236,8 +240,8 @@ def apply(slug, decisions=None, root=None, dry=False):
         if g["kind"] != "grammar" or not ok(g["id"]):
             continue
         s = get(p["article"])
-        if s.count(g["find"]) == 0:
-            problems.append(f'{g["id"]}: text not found'); continue
+        if s.count(g["find"]) != 1:
+            problems.append(f'{g["id"]}: text appears {s.count(g["find"])}x'); continue
         plan.append(("replace", p["article"], g["find"], g["replace"], g["id"]))
         for c in cuts:                       # the fix travels with a moved sentence
             if g["find"] in c["sentence"]:
@@ -575,7 +579,7 @@ def commit(slug, accepted_ids):
     arts = ROOT / p["article_dir"]
     by_id = {c["id"]: c for c in p["changes"]}
     acc = [by_id[i] for i in accepted_ids if i in by_id]
-    applied = p["applied"] or {"ids": [], "moves": [], "log": []}
+    applied = p["applied"] or p["progress"] or {"ids": [], "moves": [], "log": []}
     todo = [c for c in acc if c["kind"] == "cut" and c.get("dest_file") and c["id"] not in applied["ids"]]
     files, problems, plan = {}, [], []
     get = lambda f: files.setdefault(f, (arts / f).read_text(encoding="utf-8", newline=""))
