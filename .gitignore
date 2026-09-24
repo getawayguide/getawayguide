@@ -19,3 +19,6 @@ Drafts/
 
 # The re-theme staging tree; the site itself lives at the repo root
 preview/
+
+# Windows shortcuts (the desktop editor launcher lives here)
+*.lnk
