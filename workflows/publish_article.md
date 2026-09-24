@@ -86,9 +86,18 @@ Photos, in this exact order (CLAUDE.md, "Image System"):
 
     python tools/recompress_desktop.py
     python tools/add_picture_mobile.py
+    python tools/gen_mobile_jpg.py
+    python tools/gen_image_tiers.py --country <Country>
     python tools/gen_mobile_webp.py
     python tools/fix_img_perf.py
     python tools/fix_case.py
+
+`gen_image_tiers.py` is the step that was missing when Kosovo shipped with one un-tiered
+JPEG and no WebP. It builds every `-1x/-2x/-3x` and `-mob-1x/-3x` file from the archival
+originals. It does NOT rewrite the page: no tool yet turns a `<picture>` block's srcsets
+into the 1x/2x/3x form, so after this step check the srcsets by hand (Kosovo's were) and
+confirm with `python tools/lint_site.py`, which reads every candidate.
+(`python tools/draft_images.py <draft>` runs this whole list on a draft.)
 
 Then:
 

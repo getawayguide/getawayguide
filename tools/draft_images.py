@@ -28,10 +28,15 @@ PIPELINE = [
     ["recompress_desktop.py", "--new-only"],   # desktop jpg for every original the body references
     ["add_picture_mobile.py"],                  # <picture> with the desktop source
     ["gen_mobile_jpg.py"],                      # -mob-2x.jpg + the fallback src repointed at it
+    ["gen_image_tiers.py", "--country", "{country}"],   # the -1x/-2x/-3x and -mob-1x/-3x FILES, JPEG + WebP
     ["gen_mobile_webp.py"],                     # webp next to the mobile jpg
     ["fix_img_perf.py"],                        # loading= and intrinsic width/height
     ["fix_case.py"],                            # case-exact paths for GitHub Pages
 ]
+# gen_image_tiers.py makes the tier files from the archival originals but writes no HTML:
+# nothing in tools/ yet rewrites a <picture> block's srcsets into the 1x/2x/3x form
+# (Kosovo's were written by hand on 2026-09-23). Until that exists, a draft leaves here
+# with every tier ON DISK and the single-size srcset the older tools write.
 
 
 def main():
@@ -50,6 +55,9 @@ def main():
     tmp = live_dir / f"_draft-{draft.stem}.html"
 
     src = draft.read_text(encoding="utf-8", newline="")
+    # the country the tier tool works on is whichever Images/<Country>/ the body draws from
+    m_c = re.search(r'Images/(?!web/)([^/"]+)/', src)
+    country_name = m_c.group(1) if m_c else None
     staged = src.replace(f"{up}Images/", "../Images/")
     # the tools scan from the literal marker class="article-body"; the artifact template's body
     # is "artbody", so a hidden marker span goes in right after its opening tag (and out again)
@@ -64,6 +72,11 @@ def main():
     print(f"staged {draft.name} as {tmp.relative_to(ROOT)} ({staged.count('../Images/')} image paths flattened)")
     try:
         for tool in PIPELINE:
+            if "{country}" in tool:
+                if not country_name:
+                    print('\n== ' + tool[0] + '\n   skipped: no Images/<Country>/ path in the body')
+                    continue
+                tool = [t.replace("{country}", country_name) for t in tool]
             cmd = [sys.executable, str(ROOT / "tools" / tool[0])] + tool[1:] + (["--dry-run"] if dry else [])
             print(f"\n== {' '.join(tool)}")
             r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
