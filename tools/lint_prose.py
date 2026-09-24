@@ -136,13 +136,42 @@ def main():
                         # a gap can straddle a tag: `<span> &mdash; </span> text` renders as
                         # two spaces while each text node holds only one, so the per-part
                         # pass above can't see it. Collapse across the boundary.
+                        # Only the stretch between the first and last real TEXT in the span
+                        # is prose. Outside it, whitespace between two tags is an embed's
+                        # indentation, and collapsing that is markup surgery this tool has
+                        # no business doing: the first run deleted the space between a
+                        # YouTube <img> and its overlay <div>.
+                        # NOT first/last: `last` is the reassembly cursor a few lines down,
+                        # and shadowing it re-appended most of the file once per span.
+                        textish = [i for i in range(0, len(parts), 2) if parts[i].strip()]
+                        lo, hi = (textish[0], textish[-1]) if textish else (0, -1)
                         ends_space = False
                         for i in range(0, len(parts), 2):
-                            if ends_space and parts[i][:1] == " ":
-                                parts[i] = parts[i].lstrip(" ")
+                            part = parts[i]       # NOT p: p is the file path being rewritten
+                            if part == "":
+                                continue          # two adjacent tags carry nothing between them
+                            if not part.strip() and not (lo < i < hi):
+                                continue          # outside the prose, leave the markup alone
+                            if not part.strip():
+                                # A part that is ONLY whitespace still renders as a space.
+                                # Skipping it (the `if p.strip()` this replaces) lost the
+                                # state, so `<b>Kazbegi</a> </b> — the` kept both spaces:
+                                # 'Kazbegi', ' ', ' — the' and nothing joined the last two.
+                                # Drop it only when it is the SECOND space. Never rewrite it
+                                # otherwise: these parts are usually a newline plus the
+                                # indentation of the next tag, and normalising them to " "
+                                # reflowed all 58 pages and invented 61 new double spaces.
+                                if ends_space:
+                                    parts[i] = ""
+                                    fixed += 1
+                                else:
+                                    ends_space = True
+                                continue
+                            if ends_space and part[:1] == " ":
+                                part = part.lstrip(" ")
                                 fixed += 1
-                            if parts[i].strip():
-                                ends_space = parts[i].endswith(" ")
+                            parts[i] = part
+                            ends_space = part.endswith(" ")
                     out.append(new[last:s0]); out.append("".join(parts)); last = s1
                 out.append(new[last:])
                 new = "".join(out)
