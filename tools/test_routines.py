@@ -272,6 +272,21 @@ def stress_email():
     r = subprocess.run([PY, "tools/report_email.py"], cwd=ROOT, input="{not json",
                        capture_output=True, text=True, encoding="utf-8")
     check("email: fails loudly on bad JSON", r.returncode != 0, (r.stderr.strip().splitlines() or [""])[-1][:56])
+    # The bytes, not the decoded string. Every check above asked subprocess to decode as
+    # utf-8, so none of them could see that a redirected stdout on Windows had encoded the
+    # page with the locale codepage: the mail promised utf-8 in its own <meta> and delivered
+    # cp1252, and every em dash in an excerpt arrived as the replacement character.
+    f.write_text(json.dumps({"summary": "encoding", "groups": [{"name": "t.html", "findings": [
+        {"rule": "em-dash", "message": "Em dash — here", "value": "café — naïve – “quoted” …"}]}]}),
+        encoding="utf-8")
+    r = subprocess.run([PY, "tools/report_email.py", str(f)], cwd=ROOT, capture_output=True)
+    try:
+        page = r.stdout.decode("utf-8")
+        bad = page.count("�")
+        check("email: stdout is utf-8, as the meta promises", bad == 0 and "—" in page,
+              "no replacement chars, em dash intact" if bad == 0 else "%d replacement chars" % bad)
+    except UnicodeDecodeError as e:
+        check("email: stdout is utf-8, as the meta promises", False, str(e)[:60])
     # the real report, end to end
     r = run(["tools/audit.py", "--json", str(ROOT / ".tmp/stress-findings.json"), "--title", "Publish hygiene"])
     r2 = run(["tools/report_email.py", str(ROOT / ".tmp/stress-findings.json")])
@@ -286,6 +301,9 @@ def stress_email():
               ("dark palette reaches every surface", all(c in html for c in ("#101412", "#191F1B", "#E7E3D8", "#7FC9A1"))),
               ("tables only, no flex or grid", "display:flex" not in html and "display:grid" not in html),
               ("600px cap", "max-width:600px" in html),
+              # the excerpt is evidence: a double-space finding whose two spaces collapse
+              # into one shows the reader nothing wrong
+              ("excerpts keep their whitespace", "white-space:pre-wrap" in html),
               ("every font stack has a fallback", all(("Georgia" in s or "Arial" in s or "monospace" in s or "sans-serif" in s)
                                                       for s in re.findall(r"font-family:([^;\"]+)", html)))]
     for n, ok in checks:

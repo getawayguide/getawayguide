@@ -297,7 +297,9 @@ def render(d, preview=False, dark=False):
             if f.get("value"):
                 a(f'<div class="box" style="font-family:{MONO};font-size:12px;line-height:1.55;color:{t.text};'
                   f'background:{t.box};border-left:2px solid {t.line};padding:8px 11px;margin-top:8px;'
-                  f'word-break:break-word">{esc(f["value"])}</div>')
+                  # pre-wrap, or HTML collapses the run of spaces and the double-space
+                  # finding shows an excerpt with nothing visibly wrong with it
+                  f'white-space:pre-wrap;word-break:break-word">{esc(f["value"])}</div>')
             a('</td></tr></table></td></tr>')
 
     a('<tr><td style="height:34px;line-height:34px;font-size:0">&nbsp;</td></tr>')
@@ -308,8 +310,16 @@ def render(d, preview=False, dark=False):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    raw = open(args[0], encoding="utf-8").read() if args else sys.stdin.read()
-    sys.stdout.write(render(json.loads(raw), preview="--preview" in sys.argv, dark="--dark" in sys.argv))
+    if args:
+        raw = open(args[0], encoding="utf-8").read()
+    else:
+        raw = sys.stdin.buffer.read().decode("utf-8")
+    html = render(json.loads(raw), preview="--preview" in sys.argv, dark="--dark" in sys.argv)
+    # Write the bytes ourselves. A redirected stdout on Windows encodes with the locale
+    # codepage, so an em dash in an excerpt left cp1252's 0x97 in a file whose own <meta>
+    # promises utf-8, and every dash in the mail rendered as the replacement character.
+    sys.stdout.buffer.write(html.encode("utf-8"))
+    sys.stdout.buffer.flush()
 
 
 if __name__ == "__main__":
