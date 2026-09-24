@@ -34,9 +34,21 @@ it, each finding is fingerprinted (check + page + rule + value), the run compare
 the last one, and the mail carries only what is new, saying how many known ones it withheld.
 The state file is written only on a real run, so a dry look never moves the baseline.
 
+A DAILY CLOUD ROUTINE needs its baseline committed, because it starts from a fresh clone
+and .tmp/ is gitignored, so it would otherwise call every finding new every morning. Give
+it its own tracked path:
+
+    python tools/audit.py --new-only --state audit-state.json     # the routine
+    python tools/audit.py --new-only                              # you, locally (.tmp/)
+
+Keep those two separate. One shared baseline conflates "a machine has seen this" with
+"Kevin has seen this": run the audit here at 10am and tomorrow's mail goes quiet about
+findings that never reached an inbox.
+
 Exit code is 1 when anything HIGH was found, so a routine can gate on it.
 """
 import argparse
+import hashlib
 import html as htmlmod
 import json
 import os
@@ -433,8 +445,20 @@ LEAD_FOR = {
 def fingerprint(section, group, f):
     """What makes a finding the SAME finding across runs. Deliberately not the wording: a
     message reworded here should not re-alert; a different page, rule or offending value
-    should."""
-    return "%s|%s|%s|%s" % (section, group, f.get("rule", ""), (f.get("value") or "")[:160])
+    should.
+
+    Hashed, because the state file this lands in is meant to be committed so a daily cloud
+    run can tell today's findings from yesterday's, and a cloud run starts from a fresh
+    clone with no .tmp/. Held in the clear it read:
+
+        Draft readiness|Drafts/.Full Articles/armenia/yerevan.html|placeholder|[Russian Ballet]
+
+    getawayguide is a public repo and Drafts/ is a local-only one precisely so unfinished
+    work stays private, so committing that would publish the draft paths and a 160-character
+    excerpt of the prose. The digest compares identically and says nothing.
+    """
+    raw = "%s|%s|%s|%s" % (section, group, f.get("rule", ""), (f.get("value") or "")[:160])
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
 
 
 def filter_new(sections, state_path, write=True):
