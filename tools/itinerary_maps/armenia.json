@@ -1,8 +1,8 @@
 {
   "airport": {
     "anchor": "end",
-    "dx": -14,
-    "dy": -14,
+    "dx": -10.1,
+    "dy": -19.2,
     "lat": 40.1473,
     "lon": 44.3959,
     "name": "EVN Airport"
@@ -59,8 +59,8 @@
     {
       "anchor": "end",
       "days": "Days 1–5",
-      "dx": -14,
-      "dy": 4,
+      "dx": -22.5,
+      "dy": 8.5,
       "href": "#yerevan",
       "lat": 40.1792,
       "lon": 44.4991,

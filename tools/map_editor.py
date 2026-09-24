@@ -29,6 +29,8 @@ CFG_DIR = ROOT / "tools" / "itinerary_maps"
 PAGES = {
     "el-salvador": "el-salvador/el-salvador-itinerary.html",
     "australia": "Drafts/australia/field-notes.html",
+    "armenia": "Drafts/.Full Articles/armenia/armenia-itinerary.html",
+    "armenia-yerevan": "Drafts/.Full Articles/armenia/yerevan.html",
 }
 
 app = Flask(__name__)

@@ -56,7 +56,10 @@ def ensure_montserrat(html):
         return html, False
     if "&amp;display=swap" in html:
         return html.replace("&amp;display=swap", MONT + "&amp;display=swap", 1), True
-    sys.exit("! could not add Montserrat (no &display=swap in the font link) — add it by hand")
+    # no Google Fonts link at all: the page takes its faces from the site stylesheets
+    # (fonts.css / styles.css @font-face), so there is nothing to extend and nothing to add
+    print("  (no Google Fonts link on this page; Montserrat left to the stylesheets)")
+    return html, False
 
 
 def main():

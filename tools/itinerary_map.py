@@ -298,7 +298,12 @@ def build(cfg):
         x, y = T(s["lat"], s["lon"])
         no_num = single or s.get("no_number")
         num = None if no_num else s["n"]
-        inner = f'<g class="imap-pin">{pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
+        # "marker": "star" on a stop draws the city-guide star (the Yerevan guide's
+        # country map) instead of the numbered pin; the label offsets work the same
+        STAR = ('<path d="M 0 -9.5 L 2.24 -2.94 L 9.03 -2.94 L 3.54 1.12 L 5.59 7.69 L 0 3.65 '
+                'L -5.59 7.69 L -3.54 1.12 L -9.03 -2.94 L -2.24 -2.94 Z" '
+                f'fill="{P["pin"]}" stroke="{P["bg"]}" stroke-width="1.4" stroke-linejoin="round"/>')
+        inner = f'<g class="imap-pin">{STAR if s.get("marker") == "star" else pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
         if s.get("name"):
             dx, dy = s.get("dx", 16), s.get("dy", 4)
             anc = s.get("anchor", "start")
