@@ -25,6 +25,14 @@ because something real got through:
     python tools/audit.py --checks tiers,heroes    # some of them
     python tools/audit.py --json findings.json     # the schema tools/report_email.py reads
     python tools/audit.py --drafts-only            # just the draft readiness board
+    python tools/audit.py --new-only --state .tmp/audit_state.json    # only what changed
+
+--new-only is what makes a DAILY routine worth reading. Without it a finding nobody has
+fixed yet arrives again every morning, identical, and the mail becomes something to archive
+unread; the whole reason the routines are silent when clean is to avoid exactly that. With
+it, each finding is fingerprinted (check + page + rule + value), the run compares against
+the last one, and the mail carries only what is new, saying how many known ones it withheld.
+The state file is written only on a real run, so a dry look never moves the baseline.
 
 Exit code is 1 when anything HIGH was found, so a routine can gate on it.
 """
@@ -253,12 +261,16 @@ def check_drafts():
     for p, r in draft_pages():
         html = p.read_text(encoding="utf-8")
         body = html[html.find('class="article-body"'):] if 'class="article-body"' in html else html
-        notes = [b for b in BRACKET.findall(body) if b.upper() != "[PHOTO]"]
+        # the bracket scan comes from prose_check, which masks scripts and styles and only
+        # reads prose. Scanning the raw HTML here reported a page's own JavaScript, so a
+        # draft's readiness line said "[p] ['class']" was a leftover note.
+        found = prose_check.check(html)
+        notes = [(f.get("anchor") or {}).get("quote", "") for f in found if f["kind"] == "placeholder"]
         maps = SEARCH_LINK.findall(html)
         photos = [m for m in IMG.finditer(body)
                   if "/Images/" in attrs(m.group(0)).get("src", "")
                   and "/Images/web/" not in attrs(m.group(0)).get("src", "")]
-        prose = [f for f in prose_check.check(html) if f["kind"] not in ("maps", "placeholder")]
+        prose = [f for f in found if f["kind"] not in ("maps", "placeholder")]
         if not (notes or maps or photos or prose):
             continue
         out = []
@@ -276,6 +288,87 @@ def check_drafts():
                 len(prose), ", ".join(sorted({f["kind"] for f in prose}))), None))
         groups.append({"name": r, "note": note, "findings": out})
         note = None
+    return groups
+
+
+# ---------------------------------------------------------------- 7. seo
+def check_seo():
+    """CLAUDE.md, "Publishing a Country". Belgium and Germany both went live without this,
+    which is why it is a step of the publish and not a follow-up."""
+    groups = []
+    for p, r in live_pages():
+        html = p.read_text(encoding="utf-8")
+        if 'name="robots"' in html and "noindex" in html:
+            continue                                     # 404.html and friends
+        probs = []
+
+        def meta(prop, attr="property"):
+            # unescaped, because a length is what a reader and a search engine SEE. Estonia's
+            # description measured 161 only because an apostrophe is written &#x27;, five
+            # characters for one, and the cap is about the sentence, not the markup.
+            m = re.search(r'<meta[^>]*%s="%s"[^>]*content="([^"]*)"' % (attr, re.escape(prop)), html, re.I)
+            if not m:
+                m = re.search(r'<meta[^>]*content="([^"]*)"[^>]*%s="%s"' % (attr, re.escape(prop)), html, re.I)
+            return htmlmod.unescape(m.group(1)) if m else None
+
+        t = re.search(r"<title>(.*?)</title>", html, re.S | re.I)
+        title = htmlmod.unescape(t.group(1).strip()) if t else None
+        if not title:
+            probs.append(finding("high", "no-title", "No <title>."))
+        elif len(title) > 70:
+            probs.append(finding("medium", "title-long", "Title is %d characters; Google truncates around 70." % len(title), title))
+        og_t = meta("og:title")
+        if not og_t:
+            probs.append(finding("medium", "no-og-title", "No og:title, so a share shows whatever the crawler guesses."))
+        desc = meta("description", "name")
+        if not desc:
+            probs.append(finding("high", "no-description", "No meta description."))
+        elif len(desc) >= 160:
+            probs.append(finding("medium", "description-long", "Description is %d characters; the cap is 160." % len(desc), desc))
+        od = meta("og:description")
+        if od and len(od) >= 160:
+            probs.append(finding("low", "og-description-long", "og:description is %d characters." % len(od), od))
+        if 'rel="canonical"' not in html:
+            probs.append(finding("high", "no-canonical", "No rel=\"canonical\"."))
+        ogtype = meta("og:type")
+        wants_article = "/" in r and not r.endswith("/index.html")
+        if ogtype is None:
+            probs.append(finding("medium", "no-og-type", "No og:type."))
+        elif wants_article and ogtype != "article":
+            probs.append(finding("medium", "og-type", "og:type is %r; an article page should be \"article\"." % ogtype))
+        ld = re.search(r'<script[^>]*application/ld\+json[^>]*>(.*?)</script>', html, re.S | re.I)
+        if not ld:
+            probs.append(finding("medium", "no-jsonld", "No JSON-LD block."))
+        else:
+            blob = ld.group(1)
+            # datePublished/dateModified and headline are Article properties. CLAUDE.md asks
+            # for them when publishing a COUNTRY; about.html, contact.html and privacy.html
+            # are "@type": "WebPage", where schema.org defines neither, so demanding them
+            # there was this check inventing a rule the site never had.
+            is_article = re.search(r'"@type"\s*:\s*"[^"]*Article[^"]*"', blob) is not None
+            if is_article:
+                for key in ("datePublished", "dateModified"):
+                    if key not in blob:
+                        probs.append(finding("medium", "jsonld-date", "JSON-LD has no %s." % key))
+                hm = re.search(r'"headline"\s*:\s*"([^"]*)"', blob)
+                # the <title> carries HTML entities and the JSON does not, so "... Hike &amp;
+                # Tirana" and "... Hike & Tirana" are the same headline; comparing them raw
+                # reported drift on every country page at once, which is the shape of a bug
+                # rather than the shape of a mistake someone made twenty times
+                plain = title or ""
+                if hm and plain and hm.group(1).strip() and hm.group(1).strip() not in plain:
+                    probs.append(finding("low", "headline-drift", "The JSON-LD headline does not match the <title>.", hm.group(1)[:90]))
+        # The "<Country> Travel Guide" h1 is the GUIDE page's rule (field-notes.html). A
+        # country LANDING page is a different thing: a .country-hero with a breadcrumb above
+        # the name, where the bare country reads correctly. Kevin's call, 2026-09-24, on
+        # el-salvador/index.html, the only page of that shape.
+        if r.endswith("/field-notes.html"):
+            h1 = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S | re.I)
+            txt = re.sub(r"<[^>]+>", "", h1.group(1)).strip() if h1 else ""
+            if txt and not txt.lower().endswith("travel guide"):
+                probs.append(finding("low", "h1", "A country guide <h1> should read \"<Country> Travel Guide\".", txt[:70]))
+        if probs:
+            groups.append({"name": r, "findings": probs})
     return groups
 
 
@@ -311,10 +404,10 @@ def check_selfcheck():
              "findings": probs}] if probs else []
 
 
-CHECKS = {"prose": check_prose, "tiers": check_tiers, "heroes": check_heroes,
-          "maps": check_maps, "drafts": check_drafts, "selfcheck": check_selfcheck}
+CHECKS = {"prose": check_prose, "tiers": check_tiers, "heroes": check_heroes, "maps": check_maps,
+          "drafts": check_drafts, "seo": check_seo, "selfcheck": check_selfcheck}
 TITLES = {"prose": "Prose", "tiers": "Image tiers", "heroes": "Heroes", "maps": "Map links",
-          "drafts": "Draft readiness", "selfcheck": "Routine dependencies"}
+          "drafts": "Draft readiness", "seo": "SEO metadata", "selfcheck": "Routine dependencies"}
 
 
 def run(names):
@@ -326,21 +419,91 @@ def run(names):
     return sections
 
 
-def to_findings(sections, title, subtitle):
+LEAD_FOR = {
+    "tiers": "a <picture> that is not serving the sizes the site promises, which is bandwidth on every visit",
+    "heroes": "a hero that is heavier than it should be, which is the first thing a visitor waits for",
+    "maps": "a map link that drops the reader on a Google results page instead of the pin",
+    "prose": "writing that slipped past the style rules",
+    "drafts": "what is between each draft and publishing",
+    "seo": "a page whose metadata is not what CLAUDE.md requires to publish",
+    "selfcheck": "a tool a routine depends on that a fresh clone would not have",
+}
+
+
+def fingerprint(section, group, f):
+    """What makes a finding the SAME finding across runs. Deliberately not the wording: a
+    message reworded here should not re-alert; a different page, rule or offending value
+    should."""
+    return "%s|%s|%s|%s" % (section, group, f.get("rule", ""), (f.get("value") or "")[:160])
+
+
+def filter_new(sections, state_path, write=True):
+    """-> (sections holding only unseen findings, how many known ones were withheld)"""
+    state_path = Path(state_path)
+    try:
+        known = set(json.loads(state_path.read_text(encoding="utf-8")).get("seen", []))
+    except Exception:
+        known = set()
+    out, seen_now, withheld = [], set(), 0
+    for n, gs in sections:
+        keep = []
+        for g in gs:
+            fresh = []
+            for f in g["findings"]:
+                fp = fingerprint(TITLES[n], g["name"], f)
+                seen_now.add(fp)
+                if fp in known:
+                    withheld += 1
+                else:
+                    fresh.append(f)
+            if fresh:
+                keep.append({**g, "findings": fresh})
+        if keep:
+            out.append((n, keep))
+    if write:
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text(json.dumps({"seen": sorted(seen_now),
+                                          "at": __import__("datetime").datetime.now().isoformat(timespec="seconds")},
+                                         indent=1), encoding="utf-8")
+    return out, withheld
+
+
+def to_findings(sections, title, subtitle, cap=6, withheld=0):
+    """The report, capped so it is readable on a phone: every section is listed, the worst
+    pages in each are shown, and the tail is counted rather than printed."""
     groups, counts = [], {"high": 0, "medium": 0, "low": 0}
+    rank = {"high": 0, "medium": 1, "low": 2}
     for n, gs in sections:
         for g in gs:
             for f in g["findings"]:
                 counts[f.get("severity", "low")] = counts.get(f.get("severity", "low"), 0) + 1
-            groups.append({**g, "name": g["name"], "section": TITLES[n]})
+        # worst first, so a capped section still shows the pages that matter
+        ordered = sorted(gs, key=lambda g: min(rank.get(f.get("severity"), 2) for f in g["findings"]))
+        shown = ordered if n == "selfcheck" else ordered[:cap]
+        for g in shown:
+            groups.append({**g, "section": TITLES[n]})
+        if len(ordered) > len(shown):
+            groups.append({"name": "and %d more page(s)" % (len(ordered) - len(shown)),
+                           "section": TITLES[n],
+                           "findings": [finding("low", "more",
+                                                "Run python tools/audit.py --checks %s to see them all." % n)]})
     total = sum(counts.values())
+    lead = []
+    if withheld:
+        lead.append("%d finding%s you have already seen %s left out of this one. Run "
+                    "python tools/audit.py without --new-only to see everything."
+                    % (withheld, "" if withheld == 1 else "s", "is" if withheld == 1 else "are"))
+    if total:
+        worst = sorted(sections, key=lambda s: -sum(len(g["findings"]) for g in s[1]))[:3]
+        lead.append("The short version: " + "; ".join(
+            "%s, %s" % (TITLES[n].lower(), LEAD_FOR.get(n, "")) for n, _ in worst) + ".")
     if total:
         bits = [f"{counts[k]} {lbl}" for k, lbl in (("high", "worth fixing"), ("medium", "minor"), ("low", "cosmetic")) if counts[k]]
         summary = "%d finding%s: %s" % (total, "" if total == 1 else "s", ", ".join(bits))
     else:
         summary = "Everything checked came back clean"
     return {"title": title, "subtitle": subtitle, "status": "findings" if total else "clean",
-            "summary": summary, "groups": groups,
+            "summary": summary, "groups": groups, "lead": lead,
             "footer": "Report only. Nothing was changed. Generated by tools/audit.py."}
 
 
@@ -351,6 +514,10 @@ def main():
     ap.add_argument("--title", default="Site audit")
     ap.add_argument("--subtitle", default=None)
     ap.add_argument("--drafts-only", action="store_true")
+    ap.add_argument("--new-only", action="store_true",
+                    help="report only findings not seen on the last run (for a daily routine)")
+    ap.add_argument("--state", default=".tmp/audit_state.json")
+    ap.add_argument("--dry-state", action="store_true", help="with --new-only, do not move the baseline")
     a = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -358,9 +525,12 @@ def main():
         pass
     names = ["drafts"] if a.drafts_only else [c.strip() for c in a.checks.split(",") if c.strip() in CHECKS]
     sections = run(names)
+    withheld = 0
+    if a.new_only:
+        sections, withheld = filter_new(sections, ROOT / a.state, write=not a.dry_state)
     sub = a.subtitle or "%d published pages, %d drafts, checks: %s" % (
         len(live_pages()), len(draft_pages()), ", ".join(names))
-    d = to_findings(sections, a.title, sub)
+    d = to_findings(sections, a.title, sub, withheld=withheld)
     if a.json:
         Path(a.json).write_text(json.dumps(d, indent=1, ensure_ascii=False), encoding="utf-8")
         print("wrote %s" % a.json)
