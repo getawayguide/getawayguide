@@ -51,6 +51,10 @@ SERVICES = {
                 "args": ["-u", "tools/photo_editor.py"],            "log": "editor"},
     "heroes":  {"label": "hero picker",    "port": 5004,
                 "args": ["-u", "tools/hero_picker.py"],             "log": "heroes"},
+    # the map label editor used to be launched by hand and killed after; it is part of the
+    # suite now because the article editor's Edit button on a map opens it in place
+    "maps":    {"label": "map editor",     "port": 5002,
+                "args": ["-u", "tools/map_editor.py"],              "log": "maps"},
     "watcher": {"label": "backup watcher", "match": "photo_backup",
                 "args": ["-u", "tools/photo_backup.py", "--watch",
                          "--workers", "4", "--interval", "90"],     "log": "watcher"},
@@ -148,7 +152,7 @@ def fix_icloud(log=print):
 
 def status():
     w = watcher_pids()
-    return {"server": port_open(5003), "heroes": port_open(5004),
+    return {"server": port_open(5003), "heroes": port_open(5004), "maps": port_open(5002),
             "watcher": bool(w), "watcherPids": w}
 
 
@@ -178,6 +182,17 @@ def start_all(open_editor_window=True, log=print):
     for name, s in SERVICES.items():
         log(f"Starting {s['label']}..." if start(name) else f"{s['label']} already running.")
     if open_editor_window:
+        # The editor opens from file://, where a browser may serve an unversioned script
+        # from cache: edit review.js, reload, and still be running the old one. Restamping
+        # the content hashes here means the desktop shortcut always picks up a code change.
+        try:
+            r = subprocess.run([sys.executable, str(ROOT / "tools" / "stamp_assets.py")],
+                               cwd=str(ROOT), capture_output=True, text=True, timeout=30)
+            for line in r.stdout.splitlines():
+                if "->" in line or "restamped" in line:
+                    log(line.strip())
+        except Exception as e:                      # never block the launch on a stamp
+            log(f"asset stamp skipped: {e}")
         # give the server a moment so the first thumbnails don't 404
         for _ in range(20):
             if port_open(5003):

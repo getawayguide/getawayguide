@@ -15,7 +15,7 @@
   <!-- the SAME self-hosted faces the published pages use. Google serves the
        variable cut, the site ships static 300/400/500/600, and at the body
        weight of 350 those render at different thicknesses. -->
-  <link rel="stylesheet" href="fonts.css?v=09652e8d">
+  <link rel="stylesheet" href="fonts.css?v=1541d4a8">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -494,6 +494,24 @@
       font:600 12px/18px Hanken Grotesk,Helvetica,Arial,sans-serif; cursor:pointer;
       opacity:0; transition:opacity .12s; }
     #editor .img-slot-empty:hover > .slot-x { opacity:1; }
+    /* ---- a map figure gets an Edit button on hover; the label editor (tools/map_editor.py,
+       :5002) then runs in a modal over the article instead of a separate tab, and its Save
+       is spliced straight back into the figure being edited ---- */
+    #editor figure.itinerary-map { position:relative; }
+    #editor figure.itinerary-map > .map-edit { position:absolute; top:8px; right:8px; z-index:3;
+      font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase;
+      padding:.45rem .7rem; border-radius:3px; border:1px solid rgba(28,40,33,.18); background:#fff;
+      color:#1C2821; cursor:pointer; opacity:0; transition:opacity .15s; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+    #editor figure.itinerary-map:hover > .map-edit { opacity:1; }
+    #editor figure.itinerary-map > .map-edit:hover { background:#2D6B50; border-color:#2D6B50; color:#fff; }
+    #map-modal { position:fixed; inset:0; z-index:90; background:rgba(28,40,33,.55); display:grid; place-items:center; }
+    #map-modal[hidden] { display:none; }
+    #map-modal .box { width:min(1240px, 94vw); height:min(860px, 90vh); background:#f4f2ec; border-radius:8px;
+      overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.35); display:grid; }
+    #map-frame { width:100%; height:100%; border:0; display:block; }
+    #map-offline { align-self:center; justify-self:center; max-width:30rem; background:#fff; border:1px solid #D8E5DC;
+      border-radius:6px; padding:1.2rem 1.4rem; font-size:.85rem; line-height:1.6; color:#1C2821; }
+    #map-offline[hidden] { display:none; }
     #editor .img-slot-empty > .slot-x:hover { background:#a34b3c; color:#fff; border-color:#a34b3c; }
     /* A placeholder that came with a draft sits INSIDE the page's own frame
        (a 2:3 pair cell, a 3:2 .ls / .img-landscape, a cropped .fr, a portrait
@@ -1214,7 +1232,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js" defer></script>
+<script src="review.js?v=aa7e7128" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1442,6 +1460,15 @@ main{overflow-y:auto;padding:1rem}
     <b>The hero picker isn't running.</b><br>
     Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
     <br><button type="button" id="heroes-retry">Try again</button>
+  </div>
+</div>
+
+<div id="map-modal" hidden>
+  <div class="box">
+    <iframe id="map-frame" title="Map label editor"></iframe>
+    <div id="map-offline" hidden><b>The map editor isn't running.</b><br>
+      Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
+      <br><button type="button" id="map-close-off" class="hold" style="margin-top:.8rem">Close</button></div>
   </div>
 </div>
 
@@ -2041,6 +2068,7 @@ main{overflow-y:auto;padding:1rem}
     // button makes, so a photo goes straight into the frame the draft left
     // for it. They come back as markers on save until they are filled.
     window.adoptPlaceholders(editor);
+    if (window.restoreMapButtons) window.restoreMapButtons(editor);
     // review.js listens for this: if a proposal is pending for this article it marks the
     // changes in place and opens the review pane; comments are re-anchored either way
     document.dispatchEvent(new CustomEvent('article-loaded'));
@@ -2274,6 +2302,7 @@ main{overflow-y:auto;padding:1rem}
     // with the slot it lives in, but a photo dropped straight into a draft frame
     // can leave the slot element standing, so sweep for it here too.
     el.querySelectorAll('.slot-x').forEach(x => x.remove());
+    el.querySelectorAll('.map-edit').forEach(x => x.remove());   // the Edit button on a map figure
 
     // 1. strong→b, em→i (site convention)
     const retag = (from, to) => {
@@ -5156,7 +5185,72 @@ main{overflow-y:auto;padding:1rem}
     (root || ed()).querySelectorAll('.img-slot-empty').forEach(s => {
       if (!s.querySelector(':scope > .slot-x')) s.appendChild(slotXButton());
     });
+    if (window.restoreMapButtons) window.restoreMapButtons(root);
   };
+
+  /* ---- maps: hover a map figure, click Edit, move its labels in place ----------------------
+     The label editor is its own server (tools/map_editor.py, :5002; the suite starts it).
+     It opens in a modal with the right map preselected, and when it saves it re-embeds the
+     figure into the file on disk AND posts the new SVG back here, which is spliced into the
+     figure being edited. Without that splice the editor's copy would be stale and the next
+     Save would put the old map back. */
+  const MAPS = 'http://127.0.0.1:5002';
+  let mapTarget = null;
+  function mapEditButton() {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'map-edit'; b.textContent = 'Edit map';
+    b.contentEditable = 'false'; b.title = 'Move the labels on this map';
+    return b;
+  }
+  window.restoreMapButtons = function restoreMapButtons(root) {
+    (root || ed()).querySelectorAll('figure.itinerary-map').forEach(f => {
+      if (!f.querySelector(':scope > .map-edit')) f.appendChild(mapEditButton());
+    });
+  };
+  async function openMapEditor(fig) {
+    const rel = window.review && review.state && review.state.rel;
+    const modal = document.getElementById('map-modal'), frame = document.getElementById('map-frame'), off = document.getElementById('map-offline');
+    mapTarget = fig; modal.hidden = false; off.hidden = true; frame.style.display = '';
+    let slugs = null;
+    try {
+      if (!rel) throw new Error('no rel');
+      slugs = await (await fetch(MAPS + '/api/slug-for?page=' + encodeURIComponent(rel), { cache: 'no-store' })).json();
+    } catch (e) {
+      frame.style.display = 'none'; off.hidden = false;
+      if (!rel) off.firstChild.textContent = 'Could not tell which article this is, so there is no map to edit.';
+      return;
+    }
+    if (!slugs.length) { frame.style.display = 'none'; off.hidden = false; off.firstChild.textContent = 'No map config points at this page (tools/itinerary_maps/*.json).'; return; }
+    // a page with more than one map: the figures and the configs are matched in order
+    const figs = [...ed().querySelectorAll('figure.itinerary-map')];
+    const slug = slugs[Math.min(Math.max(figs.indexOf(fig), 0), slugs.length - 1)];
+    frame.src = MAPS + '/?embed=1&slug=' + encodeURIComponent(slug);
+  }
+  function closeMapEditor() {
+    const modal = document.getElementById('map-modal'), frame = document.getElementById('map-frame');
+    modal.hidden = true; frame.src = 'about:blank'; mapTarget = null;
+  }
+  ed().addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('#editor figure.itinerary-map > .map-edit');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation(); openMapEditor(b.closest('figure.itinerary-map'));
+  });
+  document.getElementById('map-close-off').onclick = closeMapEditor;
+  document.getElementById('map-modal').addEventListener('click', e => { if (e.target.id === 'map-modal') closeMapEditor(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('map-modal').hidden) closeMapEditor(); });
+  window.addEventListener('message', ev => {
+    if (ev.origin !== MAPS || !ev.data || ev.data.source !== 'map-editor') return;
+    if (ev.data.type === 'map-done') { closeMapEditor(); return; }
+    if (ev.data.type === 'map-saved' && mapTarget && ev.data.svg) {
+      mapTarget.innerHTML = ev.data.svg;              // the figure's own style and width stay; only the SVG changed
+      window.restoreMapButtons(mapTarget.parentElement || ed());
+      ed().dispatchEvent(new Event('input', { bubbles: true }));
+      if (window.__History && window.__History.touch) try { window.__History.touch(); } catch (e) {}
+      if (typeof setDirty === 'function') try { setDirty(true); } catch (e) {}
+      if (window.review && review.checkDisk) review.checkDisk();   // the file changed under us, by us
+      if (typeof toast === 'function') toast('Map updated in the article. Save to keep it with your other edits.');
+    }
+  });
 
   let SLOT_SEQ = 0;
   function emptySlot() {
@@ -7915,6 +8009,7 @@ async function renderSuite() {
     <div class="act-sub" style="display:flex;gap:1rem;flex-wrap:wrap">
       <span>${dot(true)} photo server</span>
       <span>${dot(st.heroes)} hero picker${st.heroes ? '' : ' (off)'}</span>
+      <span>${dot(st.maps)} map editor${st.maps ? '' : ' (off)'}</span>
       <span>${dot(st.watcher)} backup watcher ${st.watcher ? 'running' : 'paused'}</span>
     </div>
     <div style="display:flex;gap:.5rem;margin-top:.6rem">

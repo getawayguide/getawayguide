@@ -36,6 +36,15 @@ PAGES = {
 app = Flask(__name__)
 
 
+@app.after_request
+def _cors(resp):
+    """The article editor calls this server from another origin (file:// or :5003) to ask
+    which map a page carries; without this header the browser drops the answer and the
+    Edit button shows the offline panel over a server that is running."""
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
+
+
 def page_for(slug):
     if slug in PAGES:
         return PAGES[slug]
@@ -110,6 +119,14 @@ def api_save(slug):
     return jsonify(ok=ok, log=(r.stdout + r.stderr).strip(), svg=esvg, afs=afs, page=page)
 
 
+@app.route("/api/slug-for")
+def api_slug_for():
+    """slugs whose map lives on this repo-relative page, for the article editor's Edit button"""
+    page = (request.args.get("page") or "").replace("\\", "/").lstrip("./")
+    hits = [p.stem for p in sorted(CFG_DIR.glob("*.json")) if page_for(p.stem) == page]
+    return jsonify(hits)
+
+
 @app.route("/")
 def index():
     return Response(PAGE, mimetype="text/html")
@@ -143,6 +160,9 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   .eh.drag>.hit{stroke:var(--green);stroke-dasharray:none;stroke-width:1.4}
   .hit{fill:transparent;stroke:transparent;vector-effect:non-scaling-stroke}
   #empty{margin:auto;color:#9a8;font-size:14px}
+  body.embed #side{display:none}
+  body.embed #done{display:inline-block}
+  #done{display:none}
 </style></head>
 <body>
 <div id="side"><h1>Maps</h1><div id="list"></div></div>
@@ -152,6 +172,7 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
     <span id="hint">drag any label / pill · double-click a place label to flip its side</span>
     <button class="ghost" id="reset" disabled>Revert</button>
     <button id="save" disabled>Save &amp; embed</button>
+    <button class="ghost" id="done" title="Back to the article">Done</button>
     <span id="status"></span>
   </div>
   <div id="stage"><div id="empty">Pick a map on the left</div></div>
@@ -163,11 +184,20 @@ const listEl=document.getElementById('list'), stage=document.getElementById('sta
 const saveBtn=document.getElementById('save'), resetBtn=document.getElementById('reset');
 const ttl=document.getElementById('ttl'), statusEl=document.getElementById('status');
 
+// ?embed=1&slug=<map>: opened from the article editor's Edit button on a map figure.
+// The sidebar goes, the map comes up already selected, and Done hands control back.
+const Q=new URLSearchParams(location.search), EMBED=Q.has('embed'), WANT=Q.get('slug');
+if(EMBED) document.body.classList.add('embed');
+const tell=(msg)=>{ if(window.parent!==window) window.parent.postMessage(Object.assign({source:'map-editor'},msg),'*'); };
+document.getElementById('done').onclick=()=>{ if(dirty && !confirm('Discard the unsaved label moves?')) return; dirty=false; tell({type:'map-done',slug}); };
+
 fetch('/api/maps').then(r=>r.json()).then(maps=>{
   maps.forEach(m=>{
     const b=document.createElement('button'); b.className='mapbtn'; b.textContent=m.replace(/-/g,' ');
     b.onclick=()=>selectMap(m,b); listEl.appendChild(b);
+    if(WANT && m===WANT) selectMap(m,b);
   });
+  if(WANT && !maps.includes(WANT)) { ttl.textContent='No map called '+WANT; }
 });
 
 function selectMap(m,btn){
@@ -253,6 +283,7 @@ saveBtn.onclick=()=>{
     body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{
       dirty=false; afs=d.afs; render(d.svg);
       statusEl.textContent = d.ok ? ('saved → '+d.page) : ('embed error: '+d.log);
+      if(d.ok) tell({type:'map-saved',slug,page:d.page,svg:d.svg});
     });
 };
 resetBtn.onclick=()=>{ if(slug) fetch('/api/map/'+slug).then(r=>r.json()).then(d=>{cfg=d.config;afs=d.afs;dirty=false;render(d.svg);saveBtn.disabled=true;statusEl.textContent='reverted';}); };
