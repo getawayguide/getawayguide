@@ -142,7 +142,19 @@ def stress_editor():
     try:
         rel = "Drafts/.Full Articles/armenia/yerevan.html"
         big = "<html><head><title>T</title></head><body>" + "<p>x</p>" * 40000 + "</body></html>"
-        st, d = post(SRV + "/preview", {"rel": rel, "html": big})
+        # One retry. The 20-concurrent lint case runs just above this and the photo server is
+        # Flask's single-threaded dev server, so a 0.3 MB POST arriving while it is still
+        # draining that burst gets its connection reset. That is the dev server under a load
+        # no writer will ever make, not the preview route: the same request succeeds on its
+        # own every time. Without the retry the suite cries wolf and stops being read.
+        for attempt in (1, 2):
+            try:
+                st, d = post(SRV + "/preview", {"rel": rel, "html": big})
+                break
+            except (urllib.error.URLError, ConnectionError):
+                if attempt == 2:
+                    raise
+                time.sleep(2)
         st2, body = get(SRV + d["url"].replace(" ", "%20"), raw=True)
         check("preview: %.1f MB document" % (len(big) / 1e6), st2 == 200 and len(body) > len(big) - 100, "%d bytes back" % len(body))
     except Exception as e:
