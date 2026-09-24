@@ -150,8 +150,12 @@ def main():
                             part = parts[i]       # NOT p: p is the file path being rewritten
                             if part == "":
                                 continue          # two adjacent tags carry nothing between them
-                            if not part.strip() and not (lo < i < hi):
-                                continue          # outside the prose, leave the markup alone
+                            if not part.strip() and (not (lo < i < hi) or "\n" in part):
+                                # outside the prose, or a line break: leave the markup alone.
+                                # A newline between two tags is source formatting, and any
+                                # run of whitespace holding one already renders as a single
+                                # space, so there is no double space there to close up.
+                                continue
                             if not part.strip():
                                 # A part that is ONLY whitespace still renders as a space.
                                 # Skipping it (the `if p.strip()` this replaces) lost the

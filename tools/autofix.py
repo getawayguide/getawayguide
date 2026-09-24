@@ -46,9 +46,13 @@ ROOT = Path(__file__).resolve().parent.parent
 # Each class says how to APPLY and how to PREVIEW. preview=None means the tool has no
 # read-only mode, so --dry-run reports that and does NOT run it.
 CLASSES = {
+    # Every apply/preview names the published pages explicitly. americanize walked ONLY
+    # Drafts/ and strip_paste_artifacts walked drafts as well as live pages, so the first
+    # version of this tool would have rewritten unfinished writing while promising not to,
+    # and because Drafts/ is its own repo none of it would have reached the commit.
     "spelling": {
-        "apply": ["tools/americanize.py"],
-        "preview": ["tools/americanize.py", "--dry-run"],
+        "apply": ["tools/americanize.py", "--live"],
+        "preview": ["tools/americanize.py", "--live", "--dry-run"],
         "subject": "Use the American spelling",
         "body": "americanize.py, which skips anything inside a tag and treats a capitalised\n"
                 "British word next to another capital as part of a name, so Viaduct Harbour\n"
@@ -64,7 +68,7 @@ CLASSES = {
                 "missing word rather than a stray space.",
     },
     "paste": {
-        "apply": ["tools/strip_paste_artifacts.py"],
+        "apply": ["tools/strip_paste_artifacts.py", "--live"],
         "preview": None,
         "subject": "Strip the Google-Docs styles off the prose",
         "body": "strip_paste_artifacts.py. These arrive with every Google-Docs paste and fight\n"

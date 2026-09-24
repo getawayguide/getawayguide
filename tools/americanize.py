@@ -123,18 +123,29 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("slug", nargs="?")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--live", action="store_true",
+                    help="the PUBLISHED pages only, never Drafts/ (what tools/autofix.py runs)")
     a = ap.parse_args()
     # Field notes AND the full articles. This swept only field-notes.html for
     # months, so CLAUDE.md's American-spellings rule had never once run on the
     # ~44 articles in Drafts/.Full Articles/ -- glob skips dot-directories
     # unless the pattern names them.
-    if a.slug:
+    if a.live:
+        # Drafts are unfinished writing and go through the review margin; a
+        # routine that rewrites them silently is exactly what that margin exists
+        # to prevent. Same page set as lint_prose.pages(): the root and the
+        # country folders, never archive/ or the editor.
+        pats = ["*.html", "%s/*.html" % (a.slug or "*")]
+    elif a.slug:
         pats = ["Drafts/%s/field-notes.html" % a.slug,
                 "Drafts/.Full Articles/%s/*.html" % a.slug]
     else:
         pats = ["Drafts/*/field-notes.html", "Drafts/.Full Articles/*/*.html"]
     total = 0
     for f in sorted({q for pat in pats for q in glob.glob(os.path.join(ROOT, pat))}):
+        rel0 = os.path.relpath(f, ROOT).replace("\\", "/")
+        if a.live and (rel0 == "editor.html" or rel0.startswith(("archive/", "Drafts/", ".tmp/", "tools/"))):
+            continue
         html = open(f, encoding="utf-8").read()
         new, applied = convert(html)
         if not applied:
