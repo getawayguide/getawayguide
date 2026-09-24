@@ -304,7 +304,12 @@ def stress_email():
     r2 = run(["tools/report_email.py", str(ROOT / ".tmp/stress-findings.json")])
     html = r2.stdout
     checks = [("has the nav", "getawayguide</a>" in html),
-              ("has the hero", "linear-gradient" in html),
+              # The hero's gradient is a stack of solid bands, not a CSS gradient: Gmail's
+              # phone apps drop background-image and the hero arrived flat. So assert the
+              # ramp is really there -- its first green and its last near-black -- rather
+              # than that some gradient keyword appears.
+              ("has the hero", 'bgcolor="#3C6B55"' in html and 'bgcolor="#241A12"' in html
+                               and "linear-gradient" not in html),
               ("has the footer", "Dispatches from the road" in html),
               # the one <style> block is deliberate: it is the only way to hand a phone a
               # designed dark palette instead of letting it invert the card itself

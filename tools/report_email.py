@@ -109,7 +109,6 @@ DARK_CSS = """
   .card{background:%(card)s!important;border-color:%(line)s!important}
   .nav{background:%(card)s!important;border-bottom-color:%(line)s!important}
   .wm a,.wm{color:%(green)s!important}
-  .navlink{color:%(text)s!important}
   .tx{color:%(text)s!important}
   .muted{color:%(muted)s!important}
   .h2{color:%(text)s!important;border-bottom-color:%(line)s!important}
@@ -171,17 +170,27 @@ def pill(t, severity):
 
 
 def nav(t):
-    links = "".join(
-        f'<a class="navlink" href="{SITE}/{href}" style="font-family:{BODY};font-size:10px;'
-        f'letter-spacing:.14em;text-transform:uppercase;color:{t.text};text-decoration:none;'
-        f'opacity:.6;padding-left:16px">{esc(x)}</a>'
-        for x, href in (("Home", "index.html"), ("Destinations", "destinations.html"), ("About", "about.html")))
+    # The wordmark alone. The Home / Destinations / About links were the site's nav
+    # transplanted into a report nobody opens to go browsing, and on a phone they
+    # crowded the wordmark on the one line they share.
     return (f'<tr><td class="nav" bgcolor="{t.nav}" style="padding:14px 30px;border-bottom:1px solid {t.line};background-color:{t.nav}">'
-            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
-            f'<td class="wm" align="left" style="font-family:{DISPLAY};font-style:italic;font-weight:300;'
+            f'<div class="wm" style="font-family:{DISPLAY};font-style:italic;font-weight:300;'
             f'font-size:20px;color:{t.green};letter-spacing:-.01em">'
-            f'<a href="{SITE}" style="color:{t.green};text-decoration:none">getawayguide</a></td>'
-            f'<td align="right" style="white-space:nowrap">{links}</td></tr></table></td></tr>')
+            f'<a href="{SITE}" style="color:{t.green};text-decoration:none">getawayguide</a></div></td></tr>')
+
+
+GRADIENT_STOPS = [(0.0, (0x3C, 0x6B, 0x55)), (0.30, (0x2F, 0x59, 0x43)),
+                  (0.65, (0x5A, 0x45, 0x36)), (1.0, (0x24, 0x1A, 0x12))]
+
+
+def grad_at(u):
+    """The hero gradient sampled at 0..1, as #rrggbb."""
+    u = min(1.0, max(0.0, u))
+    for (a, ca), (b, cb) in zip(GRADIENT_STOPS, GRADIENT_STOPS[1:]):
+        if u <= b:
+            k = 0.0 if b == a else (u - a) / (b - a)
+            return "#%02X%02X%02X" % tuple(round(ca[i] + (cb[i] - ca[i]) * k) for i in range(3))
+    return "#%02X%02X%02X" % GRADIENT_STOPS[-1][1]
 
 
 def hero(t, d):
@@ -189,16 +198,44 @@ def hero(t, d):
     stamp = "%d %s %d" % (day.day, day.strftime("%B"), day.year)
     kicker = "%s &middot; %s" % (esc(d.get("title", "Report")).upper(), stamp.upper())
     lead = d.get("subtitle")
-    return (f'<tr><td bgcolor="{INK}" style="padding:0;background-color:{INK};background-image:{HERO_GRADIENT}">'
-            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{INK}"><tr>'
-            f'<td bgcolor="{INK}" style="padding:46px 30px 40px 30px;background-color:{INK};background-image:{HERO_GRADIENT}">'
-            f'<div style="font-family:{BODY};font-size:10.5px;font-weight:600;letter-spacing:.18em;'
-            f'text-transform:uppercase;color:rgba(255,255,255,.72)">{kicker}</div>'
-            f'<div style="font-family:{DISPLAY};font-weight:300;font-size:31px;line-height:1.1;'
-            f'letter-spacing:-.018em;color:#FFFFFF;margin-top:14px">{esc(d.get("summary", ""))}</div>'
-            + (f'<div style="font-family:{BODY};font-size:14px;line-height:1.6;'
-               f'color:rgba(255,255,255,.82);margin-top:14px">{esc(lead)}</div>' if lead else "")
-            + '</td></tr></table></td></tr>')
+
+    # The gradient is built from solid bands, not from CSS. Gmail's iOS and Android apps
+    # drop background-image outright, which is why the hero arrived flat on the phone while
+    # the desktop preview looked right. bgcolor is an HTML attribute every client honours,
+    # so each band paints; stacked, they read as the gradient.
+    # Each band carries an explicit point on the ramp rather than its share of the height.
+    # Sampling by height put the three text blocks a third of the gradient apart each, and a
+    # 74px title next to a 46px lead in two very different colours reads as stripes, not as a
+    # gradient. The text sits in the green end, where neighbouring samples barely differ; the
+    # swing through brown to near-black happens in the thin strips underneath, where a step
+    # every 7px is small enough to pass for a ramp.
+    rows = []
+    BANDS = [("pad", 9.0, 0.00), ("pad", 9.0, 0.03), ("pad", 9.0, 0.06), ("pad", 9.0, 0.09),
+             ("kicker", 0, 0.13), ("title", 0, 0.20), ("lead", 0, 0.30),
+             ("pad", 8.0, 0.40), ("pad", 8.0, 0.48), ("pad", 8.0, 0.56), ("pad", 7.0, 0.64),
+             ("pad", 7.0, 0.72), ("pad", 7.0, 0.80), ("pad", 7.0, 0.88), ("pad", 7.0, 1.00)]
+    for kind, h, u in BANDS:
+        if kind == "lead" and not lead:
+            continue
+        colour = grad_at(u)
+        if kind == "pad":
+            rows.append(f'<tr><td bgcolor="{colour}" height="{int(h)}" style="height:{int(h)}px;'
+                        f'line-height:{int(h)}px;font-size:0;background-color:{colour}">&nbsp;</td></tr>')
+            continue
+        inner = {
+            "kicker": f'<div style="font-family:{BODY};font-size:10.5px;font-weight:600;letter-spacing:.18em;'
+                      f'text-transform:uppercase;color:#D9E2DA">{kicker}</div>',
+            "title":  f'<div style="font-family:{DISPLAY};font-weight:300;font-size:31px;line-height:1.1;'
+                      f'letter-spacing:-.018em;color:#FFFFFF">{esc(d.get("summary", ""))}</div>',
+            "lead":   f'<div style="font-family:{BODY};font-size:14px;line-height:1.6;'
+                      f'color:#DCE4DD">{esc(lead or "")}</div>',
+        }[kind]
+        pad = "0 30px 12px 30px" if kind != "lead" else "0 30px 0 30px"
+        rows.append(f'<tr><td bgcolor="{colour}" style="padding:{pad};background-color:{colour}">{inner}</td></tr>')
+
+    return (f'<tr><td bgcolor="{INK}" style="padding:0;background-color:{INK}">'
+            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
+            + "".join(rows) + '</table></td></tr>')
 
 
 def h2(t, text):
