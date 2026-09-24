@@ -417,7 +417,7 @@
     #editor h3 { font-family: 'Newsreader', serif; font-size: 1.5rem; font-weight: 400; font-style: normal; color: var(--ink); line-height: 1.28; letter-spacing: -.01em; margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
     #editor p { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.82; color: rgba(28,40,33,.78); margin-bottom: 1.1rem; font-weight: 400; }
     #editor a { color: #2D6B50; font-weight: 600; }
-    #editor strong { font-weight: 600; color: var(--ink); }
+    #editor strong, #editor b { font-weight: 600; color: var(--ink); }   /* <b> is what the Bold button writes; it renders as ink on the site */
     #editor em { font-style: italic; }
     #editor ul, #editor ol { padding-left: 1.5rem; margin: 1rem 0 1.5rem; }
     #editor li > ul, #editor li > ol, #editor ul > ul, #editor ul > ol, #editor ol > ul, #editor ol > ol { margin: .25rem 0 .5rem; }
@@ -513,6 +513,12 @@
     body.photos-open #photo-panel { display: flex; }
     body.photos-open #todo-list, body.photos-open .sidebar-head { display: none; }
     body.photos-open .workspace { grid-template-columns: 320px 1fr; }
+    /* the review margin (review.js) is the third thing that can live in the ONE left sidebar:
+       it swaps in for the to-do list / photo library the way Photos does, so there is never a
+       second sidebar. Wider than the to-do list because its cards hold sentences. */
+    body.review-open #todo-list, body.review-open .sidebar-head, body.review-open .todo-footer,
+    body.review-open .sidebar-foot, body.review-open #photo-panel { display: none; }
+    body.review-open .workspace { grid-template-columns: 372px 1fr; }
     #pl-tabs { display: flex; gap: 4px; padding: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--b-subtle); }
     #pl-tabs button { font-family: 'Hanken Grotesk', sans-serif; font-size: .55rem; letter-spacing: .05em;
       border: 1px solid var(--b-medium); background: #fff; border-radius: 10px; padding: 3px 9px; cursor: pointer; }
@@ -1094,6 +1100,7 @@ main{overflow-y:auto;padding:1rem}
     <span id="word-count" style="font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.4)"></span>
     <span class="save-status" id="save-status"></span>
     <button class="btn btn-open" id="btn-photos" onclick="togglePhotoPanel()">Photos</button>
+    <button class="btn btn-open" id="btn-review" onclick="window.review && review.toggle()" title="Track changes and comments for the open article">Review</button>
     <button class="btn btn-open" id="btn-open">Open Article</button>
     <button class="btn btn-save" id="btn-save" disabled>Save</button>
   </div>
@@ -1207,6 +1214,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
+<script src="review.js" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1933,15 +1941,31 @@ main{overflow-y:auto;padding:1rem}
       rewrite(sheet.cssRules);
       return sheet;
     }
+    // A city map is laid out by a <style> block the page carries itself (city_map.py
+    // writes it into the head), not by the site sheets. Without it the editor showed
+    // the map as its legend's bare links over the base PNG, with no pins and no frame,
+    // on every guide that has one. Those blocks come along, scoped like the sheets.
+    let pageSheet = null;
+    function applyPage(doc) {
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => x !== pageSheet); pageSheet = null;
+      const blocks = [...doc.querySelectorAll('style')].filter(b => /\.citymap|\.cmmap|\.cmpin/.test(b.textContent));
+      if (!blocks.length) return;
+      try {
+        const sheet = new CSSStyleSheet(); sheet.replaceSync(blocks.map(b => b.textContent).join(String.fromCharCode(10)));
+        rewrite(sheet.cssRules); pageSheet = sheet;
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+      } catch (e) { console.warn('page css not applied:', e.message); }
+    }
     function clear() {
       const ed = document.getElementById('editor');
-      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => x !== cache);
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter(x => x !== cache && x !== pageSheet); pageSheet = null;
       for (const a of applied) a.startsWith('data-') ? ed.removeAttribute(a) : ed.classList.remove(a);
       applied = [];
       document.querySelector('.editor-scroll').style.background = '';
     }
     async function apply(doc, body) {
       clear();
+      applyPage(doc);                                          // the page's own city-map styles, every template
       if (!body.classList.contains('artbody')) return;        // field notes keep the hand-tuned look
       const ed = document.getElementById('editor');
       const pageBody = doc.body;
@@ -1963,6 +1987,7 @@ main{overflow-y:auto;padding:1rem}
     }
     return { apply, clear };
   })();
+  window.__siteCss = siteCss;   // test seam: the headless checks open an article without the file picker
 
   async function loadFile(fh) {
     fileHandle = fh;
@@ -2016,6 +2041,9 @@ main{overflow-y:auto;padding:1rem}
     // button makes, so a photo goes straight into the frame the draft left
     // for it. They come back as markers on save until they are filled.
     window.adoptPlaceholders(editor);
+    // review.js listens for this: if a proposal is pending for this article it marks the
+    // changes in place and opens the review pane; comments are re-anchored either way
+    document.dispatchEvent(new CustomEvent('article-loaded'));
 
     // Convert all existing image src paths to blob URLs so they display reliably in the editor.
     // Images are always stored under Travel Blog/Images/ — use folderHandle to get file blobs.
@@ -2651,6 +2679,9 @@ main{overflow-y:auto;padding:1rem}
       wrapper.appendChild(img);
     });
 
+    // review marks and comment anchors are editor chrome, never content: accepted changes are
+    // already plain text, anything still pending is written as the original
+    if (window.review) window.review.prepareForSave(saveEl);
     normalizeForSave(saveEl);
     originalBody.innerHTML = prettyPrintBody(saveEl);
 
@@ -2663,6 +2694,9 @@ main{overflow-y:auto;padding:1rem}
       await writable.close();
       originalHTML = newHTML;
       setDirty(false);
+      // the accepted changes are now in the file; commit the half the editor cannot do
+      // itself, the destination side of accepted moves, which live in other articles
+      if (window.review) window.review.onSaved();
       const status = document.getElementById('save-status');
       status.textContent = '✓ Saved';
       status.className = 'save-status saved';
@@ -3701,7 +3735,7 @@ main{overflow-y:auto;padding:1rem}
     const ed = () => document.getElementById('editor');
     // selection/drop/swap highlights are editor chrome, not content: with them
     // in the snapshot a highlight change looked like an edit and ate the redo
-    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|pl-swap-target|pl-pair-target)\b/g;
+    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|pl-swap-target|pl-pair-target|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
     function state() {
       const e = ed();
       const html = e.innerHTML.replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
@@ -3745,6 +3779,9 @@ main{overflow-y:auto;padding:1rem}
         restoreSel(e, stack[idx].sel);
         // the ✕ on each empty slot is a real node, so this innerHTML swap drops it
         if (window.restoreSlotButtons) window.restoreSlotButtons(e);
+        // undo can bring a decided change's marks back, or redo remove them again: the DOM
+        // is the truth, so the review re-reads its decisions from it
+        if (window.review) window.review.syncFromDom();
         applying = false;
         setDirty(true); updateWordCount(); syncToolbar();
         return true;
@@ -4008,6 +4045,7 @@ main{overflow-y:auto;padding:1rem}
 
   window.togglePhotoPanel = function () {
     document.body.classList.toggle('photos-open');
+    if (document.body.classList.contains('photos-open') && window.review) review.toggle(false);   // one sidebar
     if (document.body.classList.contains('photos-open') && !PL.online) plBoot();
   };
 
@@ -4856,6 +4894,9 @@ main{overflow-y:auto;padding:1rem}
     return parts.length > 1 ? parts[0] : '';
   }
   window.articleDepth = articleDepth;
+  // review.js works out the open article's repo path from its canonical link when no site
+  // folder is connected, which is the common case: the folder is only ever connected for images
+  window.articleHead = () => originalHTML || '';
 
   /* ---------- insert executor (runs when Insert is clicked in the editor) ---------- */
   function stripStaleSources(img) {
@@ -8033,19 +8074,41 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
 
   // The picker loads on first visit, not with the editor: it starts decoding an
   // album the moment it opens, and most sessions never switch to it.
+  // The picker says it is alive itself: once embedded it posts its tallies up,
+  // so that message is the proof, and the fetch below is only the fallback for
+  // when none arrives. Probing FIRST and believing the probe was wrong: this
+  // editor is opened from file://, and a fetch from an opaque origin to
+  // 127.0.0.1 can be refused by the browser on its own (private-network rules,
+  // or a proxy that cannot be reached with no internet) while the picker is
+  // running perfectly well. That drew "the hero picker isn't running" over a
+  // working picker, and the retry button did the same thing again.
+  let heroesAlive = false, heroesProbe = null;
   async function loadHeroes(force) {
     const frame = document.getElementById('heroes-frame');
     const off = document.getElementById('heroes-offline');
     if (frame.dataset.loaded && !force) return;
-    let up = true;
-    try { await fetch(HEROES + '/albums', { mode: 'no-cors', cache: 'no-store' }); }
-    catch (e) { up = false; }                // connection refused: the server is down
-    off.hidden = up;
-    frame.style.display = up ? '' : 'none';
-    if (up) { frame.src = HEROES + '/?embed=1'; frame.dataset.loaded = '1'; }
+    heroesAlive = false;
+    off.hidden = true;
+    frame.style.display = '';
+    frame.src = HEROES + '/?embed=1';
+    frame.dataset.loaded = '1';
+    clearTimeout(heroesProbe);
+    heroesProbe = setTimeout(async () => {
+      if (heroesAlive) return;
+      let up = true;
+      try { await fetch(HEROES + '/albums', { mode: 'no-cors', cache: 'no-store' }); }
+      catch (e) { up = false; }              // connection refused: the server is down
+      if (heroesAlive || up) return;
+      off.hidden = false;
+      frame.style.display = 'none';
+      frame.dataset.loaded = '';
+    }, 5000);
   }
   window.addEventListener('message', ev => {
     if (ev.origin !== HEROES || !ev.data || ev.data.type !== 'heroes-stat') return;
+    heroesAlive = true;                      // it spoke, so it is up
+    document.getElementById('heroes-offline').hidden = true;
+    document.getElementById('heroes-frame').style.display = '';
     document.getElementById('heroes-tally').innerHTML =
       (ev.data.tally || '').replace(/^(\d+)/, '<b>$1</b>');
     document.getElementById('heroes-count').textContent = ev.data.count || '';

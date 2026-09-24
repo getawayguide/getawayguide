@@ -1229,6 +1229,114 @@ def browser_page():
     return send_file(ROOT / "editor.html")
 
 
+# editor.html links its fonts and icons by relative path, which resolve against /browser and so
+# against the server root; without these the editor rendered in the system fallback font
+@app.route("/fonts.css")
+def fonts_css():
+    return send_file(ROOT / "fonts.css")
+
+
+@app.route("/fonts/<path:name>")
+def font_file(name):
+    return send_from_directory(ROOT / "fonts", name)
+
+
+@app.route("/Images/<path:rel>")
+def image_file(rel):
+    return send_from_directory(ROOT / "Images", rel)
+
+
+# ---- redline review of AI edits ------------------------------------------------
+# Claude writes a proposal to .tmp/redline/<slug>/ instead of editing an article, then opens
+# /redline/<slug> in a NEW tab. Served here so the page gets the site's real stylesheets and
+# photos through /site/, which the standalone preview could not. A separate tab, so an article
+# open in the editor is untouched until Apply, which also backs the originals up.
+import redline as _redline
+
+
+@app.route("/redline")
+def redline_index():
+    rows = _redline.pending()
+    items = "".join(
+        f'<li><a href="/redline/{r["slug"]}">{r["title"]}</a> &middot; {r["changes"]} changes'
+        f'{" &middot; applied" if r["applied"] else ""}</li>' for r in rows) or "<li>nothing pending</li>"
+    return (f'<!doctype html><meta charset="utf-8"><title>Redline reviews</title>'
+            f'<body style="font:15px/1.6 Hanken Grotesk,Helvetica,Arial,sans-serif;padding:2rem">'
+            f'<h1 style="font:400 1.4rem Newsreader,Georgia,serif">Redline reviews</h1><ul>{items}</ul>')
+
+
+@app.route("/redline/<slug>")
+def redline_page(slug):
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    return _redline.render(slug)
+
+
+@app.route("/redline/<slug>/decisions", methods=["POST", "OPTIONS"])
+def redline_decisions(slug):
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    _redline.save_decisions(slug, request.get_json(force=True) or {})
+    return jsonify({"ok": True})
+
+
+@app.route("/redline/<slug>/apply", methods=["POST", "OPTIONS"])
+def redline_apply(slug):
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    return jsonify(_redline.apply(slug))
+
+
+# ---- the review inside the editor (review.js) -----------------------------------
+@app.route("/review.js")
+def review_js():
+    # editor.html is served from /browser, a route, so a relative review.js has nowhere to resolve
+    return send_file(ROOT / "review.js", mimetype="application/javascript")
+
+
+@app.route("/review/for")
+def review_for():
+    rel = request.args.get("rel", "")
+    if not rel:
+        abort(400)
+    return jsonify(_redline.review_state(rel))
+
+
+@app.route("/review/<slug>/decisions", methods=["POST", "OPTIONS"])
+def review_decisions(slug):
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    return jsonify({"ok": True, "decisions": _redline.merge_decisions(slug, request.get_json(force=True) or {})})
+
+
+@app.route("/review/<slug>/commit", methods=["POST", "OPTIONS"])
+def review_commit(slug):
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    d = request.get_json(force=True) or {}
+    return jsonify(_redline.commit(slug, d.get("accepted", [])))
+
+
+@app.route("/comments/<key>", methods=["GET", "POST", "OPTIONS"])
+def comments(key):
+    if request.method == "OPTIONS":
+        return "", 204
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,120}", key):
+        abort(400)
+    if request.method == "POST":
+        _redline.comments_save(key, request.get_json(force=True) or {"threads": []})
+        return jsonify({"ok": True})
+    return jsonify(_redline.comments_load(key))
+
+
 @app.route("/api/backup_activity")
 def api_backup_activity():
     """What the backup is doing RIGHT NOW: which album, which files, how fast.
