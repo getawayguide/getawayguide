@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import lint_prose            # noqa: E402
 import americanize           # noqa: E402
 import strip_paste_artifacts # noqa: E402
+import prose_rules           # noqa: E402  the em-dash judgement, shared with lint_site
 
 TAG = re.compile(r"<[^>]+>")
 BLOCK = re.compile(r"<(script|style|svg|noscript|figure)\b.*?</\1>", re.S | re.I)
@@ -79,17 +80,33 @@ def check(html):
                        "space-period": "Space before a period. Usually a missing word, so not auto-fixed.",
                        "no-space-comma": "No space after the comma."}.get(name, name)
                 add(name, msg, text, h.start(), h.end(), fix)
-        # em dashes in body prose. The bullet separator "<b>Term</b> — text" is site convention:
-        # on a bold-led list item the first dash is the separator and is skipped.
-        # (the bold may wrap a link, and the same convention appears in a <p> that opens a
-        # bulleted list of places, so any element that OPENS with <b>…</b> — qualifies)
-        # the term may be bold or a link: the guides link the place name instead of bolding it
-        sep = re.match(r"\s*(?:<[^>]+>\s*)*<(?:b|a)\b.*?</(?:b|a)>(?:\s*<[^>]+>)*\s*—", inner, re.S) is not None
-        for h in re.finditer("—", text):
-            if sep and h.start() == text.find("—"):
+        # Em dashes in body prose, judged by prose_rules, the same call lint_site's pre-push
+        # gate makes, so the editor margin and the gate never disagree about a bullet.
+        # Headings are reported separately: CLAUDE.md lists them as covered, lint_site has
+        # always skipped them, and that is Kevin's call rather than this tool's.
+        heading = m.group(1).lower() in ("h1", "h2", "h3", "h4")
+        # Bounded on purpose. Slicing `inner[:dash]` for every dash is quadratic, and a
+        # paragraph holding thousands of them (a pathological paste) took the request down.
+        # The rule only ever looks back to the block opening or the previous sentence, so a
+        # window is the same answer; and past a dozen the reader needs the page, not the list.
+        WINDOW, MAX = 600, 12
+        seen = 0
+        for h in re.finditer("—", inner):
+            if seen >= MAX:
+                add("em-dash", "More em dashes below this one on the same line.", text,
+                    min(len(text) - 1, 0), min(len(text), 1), None, "low")
+                break
+            back = inner[max(0, h.start() - WINDOW):h.start()]
+            if prose_rules.em_dash_is_separator(back):
                 continue
-            add("em-dash", "Em dash in body prose. Use a comma, a period or an en dash for a range.",
-                text, h.start(), h.end(), None)
+            seen += 1
+            at = len(_visible(inner[:h.start()])) if len(inner) < 20000 else 0
+            if heading:
+                add("em-dash-heading", "Em dash in a heading. The gate allows these; CLAUDE.md lists headings as covered.",
+                    text, at, at + 1, None, "low")
+            else:
+                add("em-dash", "Em dash in body prose. Use a comma, a period or an en dash for a range.",
+                    text, at, at + 1, None)
         for h in BRACKET.finditer(text):
             what = h.group(0)
             if what.strip("[] ") == "":

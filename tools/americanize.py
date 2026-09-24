@@ -17,6 +17,8 @@ Two protections, because a blind find/replace would corrupt real names:
 """
 import argparse, glob, os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import prose_rules
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # British -> American. -ise verbs are expanded to their inflections automatically below.
@@ -93,11 +95,12 @@ def find(html):
                 continue
             word = m.group(0)
             # Capitalised and preceded by another capitalised word -> part of a proper name
-            if word[0].isupper():
-                before = html[max(0, s - 40):s]
-                prev = re.search(r"([A-Za-z’'\-]+)\s+$", before)
-                if prev and prev.group(1)[0].isupper():
-                    continue
+            # a capitalized British word next to another capitalized word is part of a
+            # name and must never be "corrected" (CLAUDE.md). prose_rules owns that test
+            # so the routine emails and this tool agree; it also looks FORWARD, which the
+            # version here did not, so Centre Pompidou and Grey Glacier are safe now.
+            if prose_rules.is_proper_name(html, s, e):
+                continue
             edits.append((s, e, match_case(word, amer), word))
     return edits
 

@@ -25,6 +25,8 @@ Exit code is non-zero if any issues are found (so it can gate a push).
 """
 import re, sys, os, glob, subprocess, unicodedata, urllib.parse
 from collections import Counter, defaultdict
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import prose_rules          # the em-dash judgement, shared with tools/prose_check.py
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INCLUDE_DRAFTS = "--drafts" in sys.argv
@@ -207,18 +209,7 @@ for path, r in pages():
             # Libertad". Word count cannot tell those from prose; the markup can. Tags may
             # also sit between the bold close and the dash (Belgium wraps the dash itself
             # in a <span>), so the tail allows them.
-            if re.match(r"^\s*(?:<(?!b\b|strong\b)[^>]+>\s*)*<(b|strong)\b[^>]*>.*?</\1>\s*(?:<[^>]+>\s*)*$",
-                        ln[block:m.start()], re.S):
-                continue
-            head = max(block, ln.rfind(". ", 0, m.start()), 0)
-            pre = re.sub(r"^\W+", "", strip_tags(ln[head:m.start()]).strip())
-            # first person belongs with the other pronouns already here: a bullet like
-            # "I walked past the cathedral <b>twice</b> — it was closed" is narration, not a
-            # lead-in, but it is short and carries none of the listed verbs, so it slipped through
-            lead_in = (len(pre.split()) <= 9 and
-                       not re.search(r"\b(is|are|was|were|has|have|will|can|you|we|it|they|i|my|me|our)\b",
-                                     pre, re.I))
-            if pre and not lead_in:
+            if not prose_rules.em_dash_is_separator(ln[block:m.start()]):
                 add("em-dash", r, i, strip_tags(ln[max(0, m.start()-35):m.start()+30]).strip())
                 break
 
