@@ -114,6 +114,11 @@ Then:
 - [ ] Spacing rhythm (one standard for field notes, guides, itineraries,
       enforced in artifact.css, commit 0443179)
 - [ ] `python tools/strip_paste_artifacts.py` if anything came from Google Docs
+- [ ] `python tools/fix_list_weight.py` - hand-styled `list-style:none` lists carry an
+      inline `font-weight:300` the draft builder wrote. The published CSS overrides it
+      (artifact.css forces 400 !important), but the EDITOR does not, so the bullets look
+      lighter than the prose while you write and normal once shipped. Dropping the dead
+      inline weight makes the editor agree with the page.
 
 **These need no human.** Do not queue them behind a review round.
 
