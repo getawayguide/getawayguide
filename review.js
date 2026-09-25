@@ -168,7 +168,8 @@
     // only becomes real when it is applied in this text and saved. (The standalone review page
     // stored "accept all" as a UI default, which once left this loop with nothing to mark.)
     for (const c of list) {
-      if (c.kind === 'grammar') trimTags(c);
+      if (c.kind === 'grammar') { trimTags(c); c.struct = !balanced(c.find) || !balanced(c.replace); }
+      if (c.kind === 'insert') c.struct = false;
       if (c.kind === 'insert') {                 // zero-width span right after the anchor
         const key = locate(html, c.after); if (!key) { state.hidden.push(c.id); continue; }
         const i = html.indexOf(key) + key.length; spans.push([i, i, c, '']); continue;
@@ -214,6 +215,14 @@
       const rest = c.find.slice(0, -a.length);
       if (!shut.some(n => new RegExp('<' + n + '[ >]', 'i').test(rest))) { c.find = rest; c.replace = c.replace.slice(0, -b.length); }
     }
+    // leading: a shared run of CLOSING tags. "</b> — the manuscript library…" closes a <b>
+    // that opened before the change, so it is unchanged text and belongs outside the marks.
+    // Left in, the parser closed the <b> AND the <del> around it, the old text fell out of
+    // the <del>, and accepting kept both versions (Yerevan r7: Matenadaran, Ararat, Moscow
+    // Cinema all shipped with the old bullet and the new one run together).
+    const SHUT = /^(\s*<\/[a-z][^>]*>)+/i;
+    a = (c.find.match(SHUT) || [''])[0]; b = (c.replace.match(SHUT) || [''])[0];
+    if (a && a === b) { c.find = c.find.slice(a.length); c.replace = c.replace.slice(b.length); }
     // leading: a shared run of OPENING tags, but only when none of them closes inside the
     // change (a shared "<b>…</b>" belongs to the text; stripping it would leave a stray </b>)
     const TAG = /^(\s*<[a-z][^>]*>)+/i;
@@ -224,8 +233,29 @@
       if (!names.some(n => new RegExp('</' + n + '\\s*>', 'i').test(rest))) { c.find = rest; c.replace = c.replace.slice(b.length); }
     }
   }
+  // Can this fragment sit inside an inline <del>/<ins> without the parser moving it? Only if
+  // every tag it opens it also closes, in order. "…sour cream</li><li><div…>" cannot: the
+  // </li> closes the <ins> with it and the new list item lands outside, unmarked, as live
+  // DOM. That is how the r7 photo placeholders arrived as dead "[PHOTO]" text on the wrong
+  // side of the line, and how a new heading arrived with its old paragraph still in front.
+  const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
+  function balanced(h) {
+    const stack = [];
+    for (const m of (h || '').matchAll(/<(\/?)([a-z][a-z0-9]*)[^>]*?(\/?)>/gi)) {
+      const [, close, name, self] = m; const n = name.toLowerCase();
+      if (self || VOID.test(n)) continue;
+      if (!close) { stack.push(n); continue; }
+      if (stack.pop() !== n) return false;
+    }
+    return !stack.length;
+  }
   function markHtml(c, oldHtml, n) {
     const ce = ' contenteditable="false"';
+    // A change that crosses a block boundary is not wrapped at all. The original stays
+    // exactly as it is, a chip marks the spot, the pane shows the before and after, and
+    // Accept swaps the whole fragment in one piece (decide()).
+    if (c.struct)
+      return `<ins class="rl ed struct" data-id="${c.id}"${ce}></ins><sup class="rl-n" data-id="${c.id}"${ce}>${n}</sup>${oldHtml}`;
     if (c.kind === 'insert')
       return `<ins class="rl ed blk" data-id="${c.id}"${ce}>${c.html}</ins><sup class="rl-n" data-id="${c.id}"${ce}>${n}</sup>`;
     if (c.kind === 'grammar')
@@ -251,7 +281,20 @@
       if (m.tagName === 'DEL') { accept ? m.remove() : unwrap(m); }
       else if (m.tagName === 'INS') { accept ? unwrap(m) : m.remove(); }
     }
-    if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture')) holder.remove();
+    if (accept && c.struct) {
+      // the fragment was never wrapped, so it is still intact in the serialised canvas
+      const e = ed(), h = e.innerHTML, key = locate(h, c.find);
+      if (key) e.innerHTML = h.replace(key, () => c.replace);   // a function: "$" in the text is literal
+      else console.warn('review: layout change', id, 'no longer matches; nothing applied');
+    } else if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture,.photo-ph')) holder.remove();
+    if (accept) {
+      // an accepted change can carry a [PHOTO] marker; make it the same live, clickable slot
+      // a marker becomes when the article is opened, instead of dead text until the next open
+      const e = ed();
+      if (window.adoptPlaceholders) window.adoptPlaceholders(e);
+      if (window.restoreSlotButtons) window.restoreSlotButtons(e);
+      if (window.restoreMapButtons) window.restoreMapButtons(e);
+    }
     state.st[id] = accept; state.last[id] = accept;
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
@@ -889,6 +932,7 @@ body.review-open #rv-lines{display:block}
 #editor del.mv{color:#2D6B50!important;text-decoration:line-through double!important;text-decoration-thickness:1px!important}
 #editor ins.mv{color:#2D6B50!important;text-decoration:underline double!important;text-decoration-thickness:1px!important;text-underline-offset:2px}
 #editor del.rl *,#editor ins.rl *{color:inherit!important}
+#editor ins.rl.struct{text-decoration:none!important;background:none}#editor ins.rl.struct::before{content:'\\00b6  layout change';font:600 .6rem/1 'DM Mono',monospace;letter-spacing:.04em;color:#6b5a1e;background:#FFF3B0;border:1px solid #e6d27a;border-radius:3px;padding:.12rem .35rem;margin-right:.2rem;vertical-align:middle}
 #editor sup.rl-n{font:600 .56rem/1 'DM Mono',monospace!important;color:#fff!important;background:#8a9790;border-radius:8px;padding:.15rem .3rem;margin-left:.15rem;vertical-align:super;cursor:pointer;user-select:none;text-decoration:none!important}
 #editor .rl-hit del.rl,#editor .rl-hit ins.rl,#editor del.rl-hover,#editor ins.rl-hover{background:#FFF3B0}#editor .rl-hit sup.rl-n,#editor sup.rl-hover{background:#1C2821}
 #editor :is(p,li,div.copy):has(del.rl,ins.rl){box-shadow:-2px 0 0 0 #C9C3B4;padding-left:.5rem}

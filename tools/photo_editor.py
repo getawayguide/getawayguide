@@ -1853,7 +1853,8 @@ def api_suite():
                                "code": None, "started": time.time()})
             threading.Thread(target=_suite_run, args=(action,), daemon=True).start()
         return jsonify({"ok": True, "job": _suite_job})
-    return jsonify({"status": _suite_status(), "job": _suite_job, "tidy": _tidy_preview()})
+    return jsonify({"status": _suite_status(), "job": _suite_job, "tidy": _tidy_preview(),
+                    "compress": _compress_status()})
 
 
 def _tidy_preview():
@@ -2292,16 +2293,15 @@ def api_set_pos():
     return jsonify({"ok": True})
 
 
-@app.route("/api/pipeline", methods=["POST"])
-def api_pipeline():
-    d = request.get_json(force=True)
-    if d["page"].startswith("Drafts/"):
+def _run_pipeline(page):
+    """The six compression tools for one page. Returns (ok, log)."""
+    if page.startswith("Drafts/"):
         # a draft goes through tools/draft_images.py, which stages it as a temporary live
         # page so the same six tools can run on it, then copies the result back
-        r = subprocess.run([sys.executable, str(ROOT / "tools" / "draft_images.py"), d["page"]],
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "draft_images.py"), page],
                            capture_output=True, text=True, cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
         tail = "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-12:])
-        return jsonify({"ok": r.returncode == 0, "log": "$ draft_images.py\n" + tail}), (200 if r.returncode == 0 else 500)
+        return r.returncode == 0, "$ draft_images.py\n" + tail
     log = []
     for tool in PIPELINE:
         args = [sys.executable, str(ROOT / "tools" / tool)]
@@ -2311,8 +2311,147 @@ def api_pipeline():
         tail = (r.stdout or r.stderr or "").strip().splitlines()[-3:]
         log.append(f"$ {tool}\n" + "\n".join(tail))
         if r.returncode != 0:
-            return jsonify({"ok": False, "log": "\n\n".join(log)}), 500
-    return jsonify({"ok": True, "log": "\n\n".join(log)})
+            return False, "\n\n".join(log)
+    return True, "\n\n".join(log)
+
+
+@app.route("/api/pipeline", methods=["POST"])
+def api_pipeline():
+    # the direct, run-it-now route: the stand-alone photo tool page still uses it
+    ok, log = _run_pipeline(request.get_json(force=True)["page"])
+    return jsonify({"ok": ok, "log": log}), (200 if ok else 500)
+
+
+# ---- compression after you leave the article -------------------------------------------
+# Kevin, 2026-09-25: "the compress photos is pretty disruptive to the editor. Can we just do
+# that after an article is saved and we're not in the editor?" It used to run on every save
+# that brought new photos, then RELOAD the article from disk so the canvas matched the
+# rewritten <picture> markup, which threw away the caret, the undo history and the review
+# state in the middle of a session. Now a save only QUEUES the page. The editor reports which
+# article it has open every 30 s; a page is compressed once no report for it has arrived for
+# OPEN_GRACE seconds, i.e. after you switch article or close the tab. Nothing is reloaded
+# under you, because the page is not open when its file changes; the next open reads the
+# finished markup like any other.
+#
+# The live-page tools run SITE-WIDE (no page argument), so a live page is only compressed
+# when no queued live page is open either; a draft goes through draft_images.py, which works
+# on the one file, so drafts only wait for themselves. The queue is a file, so a server
+# restart does not forget it.
+OPEN_GRACE = 75
+_cq_lock = threading.Lock()
+_cq_open = {}                                   # rel -> time of the last heartbeat
+_cq_state = {"running": None, "last": None}
+CQ_FILE = photo_suite.META / "compress_queue.json"
+
+
+def _cq_load():
+    try:
+        return json.loads(CQ_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _cq_save(q):
+    try:
+        CQ_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CQ_FILE.write_text(json.dumps(q, indent=1), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _cq_is_open(rel, now):
+    return now - _cq_open.get(rel, 0) < OPEN_GRACE
+
+
+def _cq_ready(rel, q, now):
+    if _cq_is_open(rel, now):
+        return False
+    if not rel.startswith("Drafts/"):
+        # site-wide tools: wait until no queued live page is open either
+        if any(_cq_is_open(o, now) for o in q if not o.startswith("Drafts/")):
+            return False
+    return True
+
+
+def _cq_tick():
+    """One pass of the worker: compress the oldest page that is ready. Returns the page or None."""
+    with _cq_lock:
+        q, now = _cq_load(), time.time()
+        rel = next((r for r in sorted(q, key=lambda r: q[r].get("queued", 0))
+                    if _cq_ready(r, q, now) and q[r].get("tries", 0) < 3), None)
+        if not rel:
+            return None
+        _cq_state["running"] = rel
+    try:
+        ok, log = _run_pipeline(rel)
+    except Exception as e:                       # a crash is a failed try, not a dead worker
+        ok, log = False, "error: %s" % e
+    with _cq_lock:
+        q = _cq_load()
+        if ok:
+            q.pop(rel, None)
+        else:
+            e = q.setdefault(rel, {"queued": time.time()})
+            e["tries"] = e.get("tries", 0) + 1
+            e["error"] = log[-400:]
+        _cq_save(q)
+        _cq_state["running"] = None
+        _cq_state["last"] = {"page": rel, "ok": ok, "at": time.strftime("%H:%M"), "log": log[-400:]}
+    return rel
+
+
+def _cq_worker():
+    while True:
+        time.sleep(15)
+        try:
+            _cq_tick()
+        except Exception as e:                   # the worker must never die quietly
+            _cq_state["running"] = None
+            _cq_state["last"] = {"page": None, "ok": False, "at": time.strftime("%H:%M"),
+                                 "log": "worker error: %s" % e}
+
+
+if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
+    threading.Thread(target=_cq_worker, daemon=True, name="compress-queue").start()
+
+
+@app.route("/api/pipeline/queue", methods=["POST", "OPTIONS"])
+def api_pipeline_queue():
+    """The editor's save: note the page, compress later."""
+    if request.method == "OPTIONS":
+        return "", 204
+    page = (request.get_json(force=True) or {}).get("page") or ""
+    if not page or ".." in page or not (ROOT / page).is_file():
+        abort(400)
+    with _cq_lock:
+        q = _cq_load()
+        q[page] = {"queued": time.time(), "tries": 0}
+        _cq_save(q)
+        _cq_open[page] = time.time()             # the save came from the open editor
+    return jsonify({"ok": True, "queued": sorted(q)})
+
+
+@app.route("/api/editor/open", methods=["POST", "OPTIONS"])
+def api_editor_open():
+    """Heartbeat from the editor: which article is open. closing:true on switch or tab close.
+    Sent with sendBeacon on the way out, as text/plain, so it is parsed with force=True."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True, silent=True) or {}
+    page = d.get("page") or ""
+    with _cq_lock:
+        if d.get("closing"):
+            _cq_open.pop(page, None)
+        elif page:
+            _cq_open[page] = time.time()
+    return jsonify({"ok": True, "compressing": _cq_state["running"] == page})
+
+
+def _compress_status():
+    with _cq_lock:
+        q = _cq_load()
+        return {"queued": sorted(q), "running": _cq_state["running"], "last": _cq_state["last"],
+                "failed": {r: e.get("error", "") for r, e in q.items() if e.get("tries", 0) >= 3}}
 
 
 # --------------------------------------------------------------------- UI page

@@ -534,11 +534,19 @@ COMMENTS = STORE / "_comments"
 def slug_for(rel):
     """slug of the pending proposal for this repo-relative article path, else None"""
     rel = rel.replace("\\", "/").lstrip("./")
+    # The NEWEST open round wins. This returned the first match in directory order, so a round
+    # with one change left undecided (yerevan-r7's hero subtitle) kept counting as open and was
+    # served in place of the round written after it: the new tab showed two stale changes and
+    # none of the new ones. A round a newer one replaces should be closed, but the newest must
+    # win even when it is not.
+    best = None
     for d in STORE.glob("*/proposal.json"):
         p = json.loads(d.read_text(encoding="utf-8"))
         if p["article_dir"] + "/" + p["article"] == rel and not (d.parent / "applied.json").exists():
-            return p["slug"]
-    return None
+            m = d.stat().st_mtime
+            if best is None or m > best[0]:
+                best = (m, p["slug"])
+    return best[1] if best else None
 
 
 def comments_key(rel):

@@ -432,6 +432,15 @@
     #editor p.fn-sub-label { font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; color: var(--ink); margin: 1.5rem 0 .25rem; }
     #editor img { max-width: 100%; height: auto; cursor: pointer; }
     #editor img.img-selected { outline: 2px solid var(--terra); outline-offset: 2px; }
+    /* Divider lines are selectable like a shape in Word: hover shows the line is live, a
+       click selects it, Delete removes it. A "line" is an <hr> or the border-bottom that
+       separates the entries of a hand-styled list. */
+    #editor hr { cursor: pointer; }
+    #editor .line-hot:not(.line-sel) { box-shadow: 0 2px 0 0 rgba(45,107,80,.45); }
+    #editor hr.line-hot:not(.line-sel) { outline: 2px solid rgba(45,107,80,.35); outline-offset: 3px; }
+    #editor .line-sel { box-shadow: 0 2px 0 0 var(--terra,#2D6B50), 0 5px 0 0 rgba(45,107,80,.18); }
+    #editor hr.line-sel { box-shadow: none; outline: 2px solid var(--terra,#2D6B50); outline-offset: 3px; }
+    #editor.line-cursor { cursor: pointer; }
     #editor img.img-cropped { cursor: grab; }
     #editor img.img-cropped.img-panning { cursor: grabbing; }
     #editor blockquote { border-left: 3px solid var(--terra); padding-left: 1.25rem; margin: 1.5rem 0; opacity: .75; }
@@ -1254,7 +1263,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=aec5108d" defer></script>
+<script src="review.js?v=a6403833" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -2760,6 +2769,7 @@ main{overflow-y:auto;padding:1rem}
     stripEmptySlots(saveEl);
     // Strip editor-only classes
     saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
+    saveEl.querySelectorAll('.line-sel, .line-hot').forEach(el => el.classList.remove('line-sel', 'line-hot'));
     // a ⇄ Swap that was started and never finished leaves its marker behind
     saveEl.querySelectorAll('[data-swap-ref]').forEach(el => el.removeAttribute('data-swap-ref'));
     saveEl.querySelectorAll('.pl-swap-target').forEach(el => el.classList.remove('pl-swap-target'));
@@ -2872,7 +2882,8 @@ main{overflow-y:auto;padding:1rem}
       const status = document.getElementById('save-status');
       status.textContent = '✓ Saved';
       status.className = 'save-status saved';
-      setTimeout(() => { if (!isDirty) { status.textContent = ''; status.className = 'save-status'; } }, 2500);
+      // only clear our own words: queuePipeline() may have replaced them with a longer note
+      setTimeout(() => { if (!isDirty && status.textContent === '✓ Saved') { status.textContent = ''; status.className = 'save-status'; } }, 2500);
 
       // New body images are still the full-resolution originals at this point -
       // a 4.4MB JPEG in a 283px frame. Run the compression pipeline now rather
@@ -2887,7 +2898,7 @@ main{overflow-y:auto;padding:1rem}
       // pair was half-built - the placeholder vanished (stripEmptySlots keeps
       // it out of the saved file) and the pending slot went stale, so the next
       // photo fell to the end of the article.
-      if (unwrapped.length && manual) runPipelineNow(unwrapped.length);
+      if (unwrapped.length && manual) queuePipeline(unwrapped.length);
     } catch (e) {
       alert('Save failed: ' + e.message);
     }
@@ -3756,84 +3767,63 @@ main{overflow-y:auto;padding:1rem}
   }
 
   // ================= IMAGE PIPELINE =================
-  // Runs recompress_desktop -> add_picture_mobile -> gen_mobile_webp ->
-  // fix_img_perf -> fix_case for the open page. The tools rewrite the HTML on
-  // disk, so the editor reloads from the file afterwards; without that the next
-  // save would write the pre-pipeline DOM straight back over the <picture> tags.
-  async function runPipelineNow(count) {
+  // New photos arrive as full-resolution originals and have to go through the six
+  // compression tools before the page is fit to publish. This used to happen on the save
+  // itself: the tools rewrote the file, and the editor then RELOADED the article so the
+  // canvas matched the new <picture> markup. That reload threw away the caret, the undo
+  // history and the review state in the middle of writing, and Kevin called it out as
+  // disruptive (2026-09-25): "Can we just do that after an article is saved and we're not in
+  // the editor?"
+  //
+  // So the save only QUEUES the page with the photo server, and the heartbeat below tells the
+  // server which article is open. The server compresses a queued page once the editor has
+  // stopped reporting it (you opened another article, or closed the tab), so the file only
+  // changes while nobody has it open and nothing is ever reloaded under you. The Live
+  // Activity panel shows what is queued, running, or failed.
+  async function queuePipeline(count) {
     const relFn = window.articleRelPath;
-    if (typeof relFn !== 'function') {
-      console.warn('runPipelineNow: articleRelPath not available yet');
-      return;
-    }
+    if (typeof relFn !== 'function') return;
     const rel = await relFn();
     if (!rel) return;
-    const t = pipeToast();
-    t.innerHTML = pipeHead('Compressing ' + count + ' new image' + (count > 1 ? 's' : '')) +
-      '<div style="font-size:.78rem;opacity:.85">Building desktop + mobile WebP variants. ' +
-      'This takes a few seconds per photo.</div>';
     try {
-      const r = await (await fetch(API + '/api/pipeline', {
+      const r = await (await fetch(API + '/api/pipeline/queue', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ page: rel })
       })).json();
-      if (!r.ok) throw new Error((r.log || 'pipeline failed').slice(-300));
-      t.innerHTML = pipeHead('✓ Images compressed', '#6EC99A') +
-        '<div style="font-size:.78rem;opacity:.85">Reloading the article so the editor ' +
-        'matches the file on disk.</div>';
-      await reloadFromDisk();
-      setTimeout(() => t.remove(), 2500);
+      if (!r.ok) throw new Error('not queued');
+      const status = document.getElementById('save-status');
+      status.textContent = '✓ Saved · ' + count + ' photo' + (count > 1 ? 's' : '') +
+        ' will compress after you close this article';
+      status.className = 'save-status saved';
+      setTimeout(() => { if (!isDirty) { status.textContent = ''; status.className = 'save-status'; } }, 5000);
     } catch (e) {
-      t.innerHTML = pipeHead('Compression failed', '#F2C124') +
-        '<div style="font-size:.78rem;opacity:.85">The page saved fine, but the photos are ' +
-        'still full-resolution.</div>' +
-        '<pre style="background:rgba(255,255,255,.08);padding:.5rem .65rem;border-radius:4px;' +
-        'margin:.5rem 0;font-size:.7rem;max-height:8rem;overflow:auto">' +
-        String(e.message || e).replace(/[<>&]/g, '') + '</pre>' + pipeDismiss();
+      console.warn('compression not queued', e);    // the page saved; the photos stay full-size
     }
   }
 
-  function pipeToast() {
-    let t = document.getElementById('img-pipeline-toast');
-    if (!t) {
-      t = document.createElement('div');
-      t.id = 'img-pipeline-toast';
-      t.style.cssText = 'position:fixed;bottom:1.25rem;right:1.25rem;z-index:500;' +
-        'background:#1C2821;color:#F7F7F3;padding:1rem 1.25rem;border-radius:6px;' +
-        'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:380px;' +
-        "font-family:Hanken Grotesk,sans-serif;font-size:.85rem;line-height:1.5";
-      document.body.appendChild(t);
+  // Which article is open, every 30 s, so the server knows what it must not touch yet. A
+  // switch to another article releases the previous one at once; closing the tab releases
+  // it with a beacon (a fetch would be cancelled with the page). The beacon goes as
+  // text/plain because a JSON beacon to another origin is refused without a preflight.
+  (function editorHeartbeat() {
+    let cur = null;
+    const send = body => fetch(API + '/api/editor/open', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
+    async function beat() {
+      if (!fileHandle || typeof window.articleRelPath !== 'function') return;
+      let rel; try { rel = await window.articleRelPath(); } catch (e) { return; }
+      if (!rel) return;
+      if (cur && cur !== rel) send({ page: cur, closing: true });
+      cur = rel;
+      send({ page: rel });
     }
-    return t;
-  }
-  function pipeHead(text, color) {
-    return '<div style="font-family:Hanken Grotesk,sans-serif;font-size:.6rem;' +
-      'letter-spacing:.15em;text-transform:uppercase;color:' + (color || '#F2C124') +
-      ';margin-bottom:.4rem">' + text + '</div>';
-  }
-  function pipeDismiss() {
-    return '<button onclick="this.parentNode.remove()" style="background:none;' +
-      'border:1px solid rgba(255,255,255,.25);color:#F7F7F3;border-radius:3px;' +
-      'padding:.3rem .8rem;cursor:pointer;font-family:Hanken Grotesk,sans-serif;' +
-      'font-size:.55rem;letter-spacing:.12em;text-transform:uppercase">Dismiss</button>';
-  }
-
-  // Re-read the file the pipeline just rewrote, keeping the scroll position.
-  // loadFile() is the same path "Open Article" uses - it rebuilds the DOM and
-  // re-points every img at a blob URL. Hand-rolling a lighter version here
-  // would drift from it, and the images would break.
-  async function reloadFromDisk() {
-    if (!fileHandle) return;
-    // A pair mid-build means the on-disk copy is MISSING the placeholders
-    // (they never publish). Swapping the DOM for it would delete them under
-    // the user; the editor keeps its DOM and catches up on the next open.
-    if (document.querySelector('#editor .img-slot-empty:not([data-ph])')) return;
-    const pane = document.querySelector('.editor-pane');
-    const y = pane ? pane.scrollTop : document.scrollingElement.scrollTop;
-    await loadFile(fileHandle);
-    setDirty(false);
-    if (pane) pane.scrollTop = y; else document.scrollingElement.scrollTop = y;
-  }
+    setInterval(beat, 30000);
+    document.addEventListener('article-loaded', () => setTimeout(beat, 300));
+    window.addEventListener('pagehide', () => {
+      if (cur) navigator.sendBeacon(API + '/api/editor/open',
+        new Blob([JSON.stringify({ page: cur, closing: true })], { type: 'text/plain' }));
+    });
+  })();
 
 
   // ================= KEYBOARD SHORTCUTS =================
@@ -3909,7 +3899,7 @@ main{overflow-y:auto;padding:1rem}
     const ed = () => document.getElementById('editor');
     // selection/drop/swap highlights are editor chrome, not content: with them
     // in the snapshot a highlight change looked like an edit and ate the redo
-    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|pl-swap-target|pl-pair-target|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
+    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|line-sel|line-hot|pl-swap-target|pl-pair-target|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
     function state() {
       const e = ed();
       const html = e.innerHTML.replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
@@ -3964,6 +3954,85 @@ main{overflow-y:auto;padding:1rem}
     };
   })();
   window.__History = History;
+
+  // ---- divider lines you can click and delete ------------------------------------------
+  // Kevin, 2026-09-25: "Make lines elements that I can interact and delete like microsoft
+  // word. Right now I can't interact with them." The lines between list entries are a
+  // border-bottom, not an element, so nothing could select them and no key reached them.
+  // A click within a few pixels of an element's bottom border (or anywhere on an <hr>)
+  // now selects that line; Delete or Backspace removes it; Ctrl+Z puts it back.
+  (function () {
+    const edEl = () => document.getElementById('editor');
+    const GRAB = 6;                              // px either side of the line that count as on it
+    let sel = null, hot = null;
+    function lineAt(e) {
+      const t = e.target;
+      if (!t || !t.closest) return null;
+      if (t.tagName === 'HR' && t.closest('#editor')) return t;
+      // the innermost element under the pointer whose own bottom border is near it
+      for (let el = t; el && el.id !== 'editor'; el = el.parentElement) {
+        if (el.closest('.img-slot-empty, [contenteditable="false"]') && el.tagName !== 'LI') continue;
+        const cs = getComputedStyle(el);
+        const w = parseFloat(cs.borderBottomWidth);
+        if (!w || cs.borderBottomStyle === 'none') continue;
+        const r = el.getBoundingClientRect();
+        if (Math.abs(e.clientY - (r.bottom - w / 2)) <= GRAB && e.clientX >= r.left && e.clientX <= r.right) return el;
+        return null;                             // the nearest bordered box decides; no reaching past it
+      }
+      return null;
+    }
+    function select(el) {
+      if (sel && sel !== el) sel.classList.remove('line-sel');
+      sel = el; if (el) el.classList.add('line-sel');
+    }
+    document.addEventListener('mousemove', e => {
+      if (!e.target.closest || !e.target.closest('#editor')) { if (hot) { hot.classList.remove('line-hot'); hot = null; edEl().classList.remove('line-cursor'); } return; }
+      const el = lineAt(e);
+      if (el === hot) return;
+      if (hot) hot.classList.remove('line-hot');
+      hot = el; if (el) el.classList.add('line-hot');
+      edEl().classList.toggle('line-cursor', !!el);
+    }, { passive: true });
+    // mousedown, not click: a click that lands on the line must not also drop the caret
+    edEl().addEventListener('mousedown', e => {
+      const el = lineAt(e);
+      if (!el) { select(null); return; }
+      e.preventDefault();
+      // keep keyboard focus in the canvas (Ctrl+Z is bound there), just without a caret
+      edEl().focus({ preventScroll: true });
+      window.getSelection().removeAllRanges();
+      select(el);
+    }, true);
+    document.addEventListener('keydown', e => {
+      if (!sel) return;
+      if (e.key === 'Escape') { select(null); return; }
+      if (e.key !== 'Delete' && e.key !== 'Backspace') { if (!e.ctrlKey && !e.metaKey && e.key.length === 1) select(null); return; }
+      if (!sel.isConnected) { select(null); return; }
+      e.preventDefault(); e.stopPropagation();
+      History.checkpoint();
+      const el = sel; select(null);
+      const land = el.tagName === 'HR' ? (el.previousElementSibling || el.nextElementSibling) : el;
+      if (el.tagName === 'HR') el.remove();
+      else {
+        el.classList.remove('line-hot');
+        // an inline border is removed outright; one that comes from a stylesheet is overridden
+        el.style.removeProperty('border-bottom');
+        ['border-bottom-width', 'border-bottom-style', 'border-bottom-color'].forEach(p => el.style.removeProperty(p));
+        if (parseFloat(getComputedStyle(el).borderBottomWidth) && getComputedStyle(el).borderBottomStyle !== 'none')
+          el.style.borderBottom = 'none';
+        if (!el.getAttribute('style')) el.removeAttribute('style');
+      }
+      hot = null; edEl().classList.remove('line-cursor');
+      // the caret lands where the line was, as in Word, so the next Ctrl+Z reaches the canvas
+      if (land && land.isConnected) {
+        const r = document.createRange(); r.selectNodeContents(land); r.collapse(false);
+        const gs = window.getSelection(); gs.removeAllRanges(); gs.addRange(r);
+      }
+      edEl().focus({ preventScroll: true });
+      History.checkpoint();
+      setDirty(true);
+    }, true);
+  })();
 
   (function wireHistory() {
     const ed = document.getElementById('editor');
@@ -5199,7 +5268,7 @@ main{overflow-y:auto;padding:1rem}
     openCropForPhoto(JSON.parse(raw), drop);
   });
 
-  // Exported: runPipelineNow() lives in an earlier <script> block and cannot
+  // Exported: queuePipeline() lives in an earlier <script> block and cannot
   // see a function declared inside this one. Without this the post-save
   // compression pipeline threw "articleRelPath is not defined" and silently
   // never ran -- the save badge still appeared, so nothing said so.
@@ -5517,6 +5586,9 @@ main{overflow-y:auto;padding:1rem}
 
   window.adoptPlaceholders = function adoptPlaceholders(root) {
     root.querySelectorAll('.photo-ph').forEach(ph => {
+      // a marker inside a still-undecided review change stays a marker: rejecting the
+      // change has to remove exactly what it added. review.js adopts it on accept.
+      if (ph.closest('ins.rl, del.rl')) return;
       const slot = emptySlot();
       slot.dataset.ph = '1';                       // the draft's own: persists on save
       const cell = ph.parentElement;
@@ -8582,7 +8654,8 @@ async function renderSuite() {
     <h3>Tidy-up</h3>
     <div class="act-sub">What <b>tools/autofix.py</b> would fix, checked when the editor opened (${esc(d.tidy.at)}). Nothing has been changed.</div>
     <pre class="act-sub" style="white-space:pre-wrap;margin:.5rem 0 0;max-height:220px;overflow:auto;letter-spacing:0">${esc(d.tidy.lines.join('\n'))}</pre>
-  </div>` : ''}`;
+  </div>` : ''}
+  ${compressCard(d.compress)}`;
   $('#ctl-backup').onclick = () => suiteAction(st.watcher ? 'pause' : 'resume');
   $('#ctl-fix').onclick = () => suiteAction('fix');
   if (suiteTimer) clearTimeout(suiteTimer);
@@ -8592,6 +8665,22 @@ async function renderSuite() {
     // header dot catch up without waiting for the 6 s tick
     loadAlbums();
   }
+}
+// Photo compression now waits until an article is closed (see queuePipeline); this says
+// what is waiting, what is running, and anything that failed three times and stopped.
+function compressCard(c) {
+  if (!c) return '';
+  const name = r => esc(String(r).split('/').slice(-2).join('/'));
+  const failed = Object.keys(c.failed || {});
+  const waiting = (c.queued || []).filter(r => r !== c.running && !failed.includes(r));
+  const last = c.last;
+  if (!waiting.length && !c.running && !failed.length && !(last && last.page)) return '';
+  const rows = [];
+  if (c.running) rows.push(`<div>Compressing now: <b>${name(c.running)}</b></div>`);
+  if (waiting.length) rows.push(`<div>Waiting until you close it: ${waiting.map(name).join(', ')}</div>`);
+  failed.forEach(r => rows.push(`<div style="color:#c9694b">Failed three times, stopped: <b>${name(r)}</b><pre class="act-sub" style="white-space:pre-wrap;margin:.3rem 0 0;max-height:120px;overflow:auto;letter-spacing:0">${esc(c.failed[r])}</pre></div>`));
+  if (last && last.page && !c.running) rows.push(`<div style="opacity:.75">Last: ${name(last.page)} at ${esc(last.at)}, ${last.ok ? 'done' : 'failed'}</div>`);
+  return `<div class="act-card" style="margin-bottom:.6rem"><h3>Photo compression</h3><div class="act-sub" style="display:grid;gap:.3rem">${rows.join('')}</div></div>`;
 }
 async function suiteAction(action) {
   if (action === 'fix' && !confirm('Restart Apple\'s iCloud photo services now? Any photo mid-copy is retried on the next pass. Takes about a minute.')) return;
