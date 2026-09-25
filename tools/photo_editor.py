@@ -1008,7 +1008,18 @@ _thumb_gate = threading.Semaphore(4)   # decode a few at a time; a burst of iClo
 
 @app.route("/thumb")
 def thumb():
-    p = source_path(request.args["root"], request.args["path"])
+    # A missing or unreadable path is the caller's mistake, not a server fault. This used to
+    # raise out of source_path/stat and answer 500, so the UI got an opaque failure where a
+    # 404 it could actually show was the right answer.
+    if not request.args.get("root") or not request.args.get("path"):
+        abort(400)
+    try:
+        p = source_path(request.args["root"], request.args["path"])
+        p.stat()
+    except FileNotFoundError:
+        abort(404)
+    except (ValueError, KeyError, OSError):
+        abort(400)
     size = int(request.args.get("s", 320))
     rot = int(request.args.get("rot", 0)) % 360
     flip = request.args.get("flip") or None
@@ -1040,7 +1051,10 @@ def api_erase():
     import base64
     import io
     import uuid
-    d = request.get_json(force=True)
+    d = request.get_json(force=True) or {}
+    # Same as /api/import: a body with neither a token nor a photo to work on is a 400.
+    if not isinstance(d, dict) or not (d.get("token") or d.get("path")):
+        abort(400)
     if d.get("token"):
         im = Image.open(ERASED / (re.sub(r"\W", "", d["token"]) + ".jpg")).convert("RGB")
         icc = im.info.get("icc_profile")
@@ -2105,8 +2119,15 @@ def api_import():
     only needs the archived file + its repo-relative path."""
     if request.method == "OPTIONS":
         return "", 204
-    d = request.get_json(force=True)
-    src = source_path(d["root"], d["path"])
+    d = request.get_json(force=True) or {}
+    # An empty or wrong-shaped body answered 500, because d["root"] raised straight out of
+    # the handler. The request is malformed, so say that instead.
+    if not isinstance(d, dict) or not d.get("root") or not d.get("path"):
+        abort(400)
+    try:
+        src = source_path(d["root"], d["path"])
+    except (ValueError, KeyError, OSError):
+        abort(400)
     # A file already IN the backup is the full-resolution original - that is the
     # whole point of the backup. Re-resolving it against the library wastes a
     # lookup and, worse, find_original() matches on capture SECOND, so a burst

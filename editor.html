@@ -5755,7 +5755,18 @@ main{overflow-y:auto;padding:1rem}
       const wrap = document.createElement('div');
       wrap.className = 'img-pair'; wrap.style.gridTemplateColumns = '1fr';
       wrap.appendChild(slot);
-      node.replaceWith(wrap);
+      // A <div> cannot live inside a <p>: the browser leaves the DOM in a shape no
+      // serializer agrees on. normalizeForSave happened to rescue it, so the file was
+      // fine while the live document was wrong until you saved and reopened. Lift it out,
+      // and drop the paragraph when the photo was all it held.
+      const para = node.closest('p');
+      if (para && para.parentElement) {
+        para.insertAdjacentElement('afterend', wrap);
+        node.remove();
+        if (!para.textContent.trim() && !para.querySelector('img,picture')) para.remove();
+      } else {
+        node.replaceWith(wrap);
+      }
     }
     if (window.deselectImg) window.deselectImg();
     setDirty(true);
