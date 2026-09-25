@@ -1349,7 +1349,7 @@ main{overflow-y:auto;padding:1rem}
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
-      <button class="tool-btn" onclick="fmt('insertHorizontalRule')" title="Horizontal rule">―</button>
+      <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it.">―</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
       <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
@@ -2770,6 +2770,11 @@ main{overflow-y:auto;padding:1rem}
     // Strip editor-only classes
     saveEl.querySelectorAll('.img-selected').forEach(el => el.classList.remove('img-selected'));
     saveEl.querySelectorAll('.line-sel, .line-hot').forEach(el => el.classList.remove('line-sel', 'line-hot'));
+    // the review margin's highlight classes: an entry hovered in the margin at the moment of
+    // saving was written out as class="rl-hit" (Yerevan, Elie's Lahmajun, 2026-09-25)
+    const CHROME = ['rl-hit', 'rl-hover', 'rl-pv-yes', 'rl-pv-no', 'cm-hit', 'cm-hover'];
+    saveEl.querySelectorAll(CHROME.map(c => '.' + c).join(',')).forEach(el => el.classList.remove(...CHROME));
+    saveEl.querySelectorAll('[class=""]').forEach(el => el.removeAttribute('class'));
     // a ⇄ Swap that was started and never finished leaves its marker behind
     saveEl.querySelectorAll('[data-swap-ref]').forEach(el => el.removeAttribute('data-swap-ref'));
     saveEl.querySelectorAll('.pl-swap-target').forEach(el => el.classList.remove('pl-swap-target'));
@@ -3954,6 +3959,41 @@ main{overflow-y:auto;padding:1rem}
     };
   })();
   window.__History = History;
+
+  // ---- adding a divider line ----------------------------------------------------------
+  // The toolbar's line button used to be execCommand('insertHorizontalRule'): a bare <hr>
+  // that neither the site nor the editor styles, so it drew the browser's default, a
+  // darker two-tone rule than the hairline every list in the articles uses (Kevin,
+  // 2026-09-25: "adds in a darker line than the one used in the article"). It also dropped
+  // an <hr> INSIDE a list item, where it is not a divider at all. Now: in a list, the line
+  // goes under the current entry exactly as the entries around it draw theirs; anywhere else
+  // it is an <hr> carrying that same hairline, placed after the current block.
+  const LINE_DEFAULT = '1px solid rgba(26, 22, 16, 0.1)';
+  function articleLine(near) {
+    // the line this list, else this article, already uses, so a new one cannot look different
+    const pick = root => [...root.querySelectorAll('[style*="border-bottom"]')]
+      .map(x => x.style.borderBottom).find(b => b && !/none|0px/.test(b));
+    return (near && pick(near)) || pick(document.getElementById('editor')) || LINE_DEFAULT;
+  }
+  window.insertLine = function insertLine() {
+    const edEl = document.getElementById('editor');
+    const s = window.getSelection();
+    if (!s.rangeCount || !edEl.contains(s.anchorNode)) { alert('Put the cursor where the line should go first.'); return; }
+    const at = s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentElement;
+    History.checkpoint();
+    const li = at.closest('#editor li');
+    if (li) {
+      li.style.borderBottom = articleLine(li.parentElement);
+    } else {
+      let block = at;
+      while (block.parentElement && block.parentElement !== edEl) block = block.parentElement;
+      const hr = document.createElement('hr');
+      hr.setAttribute('style', 'border:0;border-top:' + articleLine(null) + ';margin:1.5rem 0');
+      block.after(hr);
+    }
+    History.checkpoint();
+    setDirty(true);
+  };
 
   // ---- divider lines you can click and delete ------------------------------------------
   // Kevin, 2026-09-25: "Make lines elements that I can interact and delete like microsoft
