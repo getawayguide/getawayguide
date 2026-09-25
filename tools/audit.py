@@ -416,10 +416,36 @@ def check_selfcheck():
              "findings": probs}] if probs else []
 
 
+def check_dates():
+    """A page states its date twice and the two disagreed on five published pages.
+
+    The byline under the title is what a reader believes; dateModified is what a search engine
+    reads. Only the second was ever maintained, so every El Salvador article told a reader
+    March and a crawler September. Worse, the Armenia drafts were built from
+    ruta-de-las-flores.html and inherited ITS byline, so the Yerevan guide was dated the day
+    the Santa Ana page was written. tools/article_dates.py --fix settles them."""
+    import article_dates as ad
+    groups = []
+    for path, rel, _ in ad.pages(False):
+        s = path.read_text(encoding="utf-8", newline="")
+        b, j = ad.BYLINE.search(s), ad.JSONLD.search(s)
+        if not (b and j):
+            continue
+        shown = ad.iso(b.group(2))
+        if shown != j.group(2):
+            groups.append({"name": rel, "findings": [finding(
+                "medium", "date-mismatch",
+                "The byline says %s and dateModified says %s. Run tools/article_dates.py --fix."
+                % (b.group(2), j.group(2)), shown + " vs " + j.group(2))]})
+    return groups
+
+
 CHECKS = {"prose": check_prose, "tiers": check_tiers, "heroes": check_heroes, "maps": check_maps,
-          "drafts": check_drafts, "seo": check_seo, "selfcheck": check_selfcheck}
+          "dates": check_dates, "drafts": check_drafts, "seo": check_seo,
+          "selfcheck": check_selfcheck}
 TITLES = {"prose": "Prose", "tiers": "Image tiers", "heroes": "Heroes", "maps": "Map links",
-          "drafts": "Draft readiness", "seo": "SEO metadata", "selfcheck": "Routine dependencies"}
+          "dates": "Article dates", "drafts": "Draft readiness", "seo": "SEO metadata",
+          "selfcheck": "Routine dependencies"}
 
 
 def run(names):
