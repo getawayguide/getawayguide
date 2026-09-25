@@ -28,6 +28,7 @@ abandons its in-flight copies, and those keep their place in iCloud's
 hydration queue as ghosts, so every restart pushed fresh workers further back
 in line. The watcher waits slow hydrations out itself.
 """
+import re
 import os
 import signal
 import socket
@@ -178,6 +179,51 @@ def open_editor():
         os.startfile(str(ROOT / "editor.html"))
 
 
+def autofix_preview(log=print):
+    """Say what tools/autofix.py would tidy, on the way into the editor.
+
+    This is the local answer to "should the routine fix things automatically". It could have
+    gone in the cloud routine, but that runs from a fresh clone, so for a fix to survive it
+    would have to PUSH -- an unattended write to the live site every two days. Here Kevin is
+    already sitting at the machine, the repo is his working copy, and every fix is a local
+    commit he can read and revert before anything is pushed.
+
+    Deliberately a DRY RUN. It reports and prints the one command that applies it; nothing is
+    written by opening the editor. It also never blocks the launch: a failure here is a line
+    of log, not a reason the editor does not open.
+    """
+    try:
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "autofix.py"), "--dry-run"],
+                           cwd=str(ROOT), capture_output=True, timeout=240)
+        out = (r.stdout or b"").decode("utf-8", "replace")
+        if r.returncode == 2:                       # dirty tree: it refused, which is correct
+            log("autofix: skipped, you have uncommitted changes")
+            return
+        # Each fixer prints its own tally, and a tally of zero is not work. Counting the
+        # CLASSES it ran and calling that "would tidy 4 things" was the first version, which
+        # announced work on a clean tree every single launch -- the same crying-wolf the
+        # routines are built to avoid.
+        hits = []
+        for l in out.splitlines():
+            t = l.strip()
+            if re.match(r"^(would change|changed)\s+0\b", t) or re.match(r"^prose issues:\s*0\b", t):
+                continue                            # an explicit nothing
+            if re.search(r"\.html\b", t) or re.match(r"^(would change|changed)\s+\d", t) \
+               or re.match(r"^prose issues:\s*[1-9]", t):
+                hits.append(t)
+        if not hits:
+            log("autofix: nothing to tidy")
+            return
+        log("autofix would tidy:")
+        for h in hits[:6]:
+            log("   " + h[:110])
+        if len(hits) > 6:
+            log("   ... and %d more" % (len(hits) - 6))
+        log("   apply with:  python tools/autofix.py")
+    except Exception as e:
+        log(f"autofix preview skipped: {e}")
+
+
 def start_all(open_editor_window=True, log=print):
     for name, s in SERVICES.items():
         log(f"Starting {s['label']}..." if start(name) else f"{s['label']} already running.")
@@ -193,6 +239,7 @@ def start_all(open_editor_window=True, log=print):
                     log(line.strip())
         except Exception as e:                      # never block the launch on a stamp
             log(f"asset stamp skipped: {e}")
+        autofix_preview(log)
         # give the server a moment so the first thumbnails don't 404
         for _ in range(20):
             if port_open(5003):

@@ -58,6 +58,24 @@ for stem in ISE:
 
 KEEP = ["Viaduct Harbour", "Lady Janes Ice Cream Parlour", "Lady Jane's Ice Cream Parlour"]
 
+# The -our family in ONE pass, with whatever suffix it is wearing. The list above grew
+# harbours, centres, theatres, metres, litres, storeys and specialities one at a time, each
+# added the day someone tripped over it, and it still missed neighbourhood -- which was
+# sitting on el-salvador-itinerary.html, live. The American form is always the same suffix on
+# the -or stem, so this needs no word list: colourful, neighbourhood, flavours, labourer,
+# savoury and honoured all follow from their stem.
+#
+# The stems are spelled out rather than matching any "...our" precisely so that hour, tour,
+# four, flour, your, sour, pour, devour, contour and velour cannot match.
+OUR_RX = re.compile(
+    r"\b(col|harb|fav|neighb|flav|behavi|lab|rum|hon|hum|od|vap|sav|splend|glam|parl|arm|endeav)"
+    r"our(\w*)\b", re.I)
+
+# Travel writing is full of distances, and the -re plurals above stop at metre/metres.
+for _pre in ("kilo", "centi", "milli"):
+    BASE.append((_pre + "metre", _pre + "meter"))
+    BASE.append((_pre + "metres", _pre + "meters"))
+
 BLOCK = re.compile(r"<(style|script)\b.*?</\1>", re.S | re.I)
 TAG = re.compile(r"<[^>]+>")
 
@@ -102,6 +120,18 @@ def find(html):
             if prose_rules.is_proper_name(html, s, e):
                 continue
             edits.append((s, e, match_case(word, amer), word))
+    # the -our family, any suffix, in one pass
+    seen = {(s, e) for s, e, _, _ in edits}
+    for m in OUR_RX.finditer(html):
+        s, e = m.span()
+        if (s, e) in seen or not all(ok[s:e]):
+            continue
+        if prose_rules.is_proper_name(html, s, e):
+            continue
+        word = m.group(0)
+        amer = m.group(1) + "or" + m.group(2)
+        edits.append((s, e, match_case(word, amer), word))
+    edits.sort(key=lambda x: x[0])
     return edits
 
 

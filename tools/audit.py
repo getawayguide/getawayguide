@@ -503,13 +503,58 @@ TITLES = {"prose": "Prose", "tiers": "Image tiers", "heroes": "Heroes", "maps": 
           "selfcheck": "Routine dependencies"}
 
 
+IGNORE_FILE = ROOT / "tools" / "audit_ignore.txt"
+
+
+def load_ignores():
+    """[(rule, page-glob, reason)] from tools/audit_ignore.txt, for findings Kevin has ruled
+    on. A check cannot know a decision was made against it, so without this the same finding
+    arrives in every routine email forever and the mail becomes something to archive unread
+    -- which is the failure this whole audit exists to avoid."""
+    rules = []
+    if not IGNORE_FILE.exists():
+        return rules
+    for raw in IGNORE_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = re.split(r"\s{2,}|\t", line, maxsplit=2)
+        if len(parts) >= 2:
+            rules.append((parts[0].strip(), parts[1].strip(),
+                          parts[2].strip() if len(parts) > 2 else ""))
+    return rules
+
+
+def ignored_by(rules, section, page, rule):
+    import fnmatch
+    for r_rule, r_page, reason in rules:
+        if r_rule not in ("*", rule, section):
+            continue
+        if r_page != "*" and not fnmatch.fnmatch(page, r_page):
+            continue
+        return reason or "(no reason given)"
+    return None
+
+
 def run(names):
-    sections = []
+    rules = load_ignores()
+    sections, skipped = [], 0
     for n in names:
         groups = CHECKS[n]()
-        if groups:
-            sections.append((n, groups))
+        keep = []
+        for g in groups:
+            fresh = [f for f in g.get("findings", [])
+                     if not ignored_by(rules, TITLES.get(n, n), g["name"], f.get("rule", ""))]
+            skipped += len(g.get("findings", [])) - len(fresh)
+            if fresh:
+                keep.append({**g, "findings": fresh})
+        if keep:
+            sections.append((n, keep))
+    run.skipped = skipped
     return sections
+
+
+run.skipped = 0
 
 
 LEAD_FOR = {
@@ -635,6 +680,10 @@ def main():
         sections, withheld = filter_new(sections, ROOT / a.state, write=not a.dry_state)
     sub = a.subtitle or "%d published pages, %d drafts, checks: %s" % (
         len(live_pages()), len(draft_pages()), ", ".join(names))
+    # Say what was suppressed. An ignore list that hides its own effect is how a check quietly
+    # stops covering something; this way the number is in the mail every week.
+    if run.skipped:
+        sub += "; %d ruled on in tools/audit_ignore.txt" % run.skipped
     d = to_findings(sections, a.title, sub, withheld=withheld)
     if a.json:
         Path(a.json).write_text(json.dumps(d, indent=1, ensure_ascii=False), encoding="utf-8")

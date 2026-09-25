@@ -1,0 +1,19 @@
+# Findings Kevin has ruled on.
+#
+# A check cannot know a decision was taken against it, so without this file the same finding
+# arrives in every routine email forever, and the mail becomes something to archive unread.
+# That is the exact failure the audit exists to prevent, so a decision gets written down here
+# instead. Every run reports how many it skipped, so this suppresses noise, never evidence.
+#
+# Three columns, separated by TWO OR MORE SPACES:
+#
+#     <rule or section or *>    <page glob or *>    <why, in a sentence>
+#
+# The first column matches a rule name (one-tier, webp-missing, maps-search, em-dash ...) or
+# a whole section title ("Draft readiness"), or * for anything. The second is a glob against
+# the page path. Delete a line to start hearing about it again.
+
+one-tier          index.html                     The Albania and Peru heroes come from 1800px sources and El Tunco from 1536px. There is no larger original, and upscaling would invent detail. Send better photos and tools/gen_hero_variants.py closes these in one command. (Kevin, 2026-09-25)
+one-tier          el-salvador/el-tunco.html      Same: the hero is 1536px and no larger source exists. (Kevin, 2026-09-25)
+
+Draft readiness   *                              Drafts are unfinished by definition and the readiness board is something to open when publishing a country, not something to be mailed about weekly. Run `python tools/audit.py --drafts-only` when it is actually time to ship. (Kevin, 2026-09-25)
