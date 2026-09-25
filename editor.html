@@ -2287,6 +2287,21 @@ main{overflow-y:auto;padding:1rem}
     if (window.__History) window.__History.touch();
   });
 
+  // The article's lists rule every entry except the last. An empty bullet carries no rule
+  // (see the Enter handler below), and earns it back as soon as it holds text -- unless it
+  // is the last item, which by that same convention never has one.
+  function noRule(style) {
+    return style.replace(/border-bottom\s*:[^;]*;?/gi, '').replace(/;\s*$/, '');
+  }
+  document.getElementById('editor').addEventListener('input', function () {
+    document.querySelectorAll('#editor li[data-li-style]').forEach(function (li) {
+      if (li.textContent.trim() === '') return;
+      const full = li.dataset.liStyle;
+      li.setAttribute('style', li.nextElementSibling ? full : noRule(full));
+      delete li.dataset.liStyle;
+    });
+  });
+
   // List keyboard behavior: Tab=indent, Shift+Tab=outdent, Enter on empty item=exit list
   document.getElementById('editor').addEventListener('keydown', function(e) {
     const sel = window.getSelection();
@@ -2304,7 +2319,51 @@ main{overflow-y:auto;padding:1rem}
 
     if (e.key === 'Enter' && !e.shiftKey) {
       const isEmpty = li.textContent.trim() === '';
-      if (!isEmpty) return;
+      if (!isEmpty) {
+        // Chromium clones the <li> WITH its style attribute. In the article's lists every
+        // entry carries `border-bottom`, so a new empty bullet draws its own rule: a stray
+        // horizontal divider between two entries, 49px tall and holding no text, which
+        // survives the save and lands in the file. (Kevin: "When I hit enter It creates a
+        // new line that it shouldn't ... Same comment for all dividers like this.")
+        const style = li.getAttribute('style');
+        if (!style) return;
+        // The rule comes from the LIST, not from this item: the last entry has none by
+        // convention, so keying off `style` alone made Enter on the last bullet fall
+        // through to the browser and the item never gained its separator.
+        const ruled = [...li.parentElement.children]
+          .map(x => x.getAttribute('style') || '')
+          .find(s => /border-bottom/i.test(s));
+        if (!ruled) return;                                    // plain list: native Enter is fine
+        // Only the "start a new entry" case. A split in the middle of the text is a real
+        // split and the browser does it correctly.
+        const r0 = sel.getRangeAt(0);
+        if (!r0.collapsed) return;
+        const after = r0.cloneRange();
+        after.selectNodeContents(li);
+        after.setStart(r0.endContainer, r0.endOffset);
+        if (after.toString().trim() !== '' || li.querySelector('ul,ol')) return;
+        e.preventDefault();
+        if (window.__History) window.__History.checkpoint();
+        const wasLast = !li.nextElementSibling;
+        const nli = document.createElement('li');
+        // An EMPTY bullet never draws a rule, wherever it sits: a blank row with a line
+        // under it is exactly the stray divider being reported. It takes the full style
+        // back on the first keystroke, in the input handler below.
+        nli.setAttribute('style', noRule(ruled));
+        nli.dataset.liStyle = ruled;
+        nli.innerHTML = '<br>';
+        li.insertAdjacentElement('afterend', nli);
+        // ...and the item it follows gains one, because it is no longer last.
+        if (wasLast) li.setAttribute('style', ruled);
+        const caret = document.createRange();
+        caret.setStart(nli, 0);
+        caret.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(caret);
+        setDirty(true);
+        if (window.__History) window.__History.touch();
+        return;
+      }
       e.preventDefault();
       const parentList = li.parentElement;
       const isNested = parentList && parentList.parentElement && parentList.parentElement.closest('li');
@@ -2338,6 +2397,10 @@ main{overflow-y:auto;padding:1rem}
   }
 
   function normalizeForSave(el) {
+    // data-li-style is editor bookkeeping: the rule an empty new bullet is holding back
+    // until it has text. Whatever state it is in when the file is written, the attribute
+    // itself must not reach the page.
+    el.querySelectorAll('li[data-li-style]').forEach(li => li.removeAttribute('data-li-style'));
     // 0. Leftover find-marks (defensive)
     el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
     el.querySelectorAll('mark.lint').forEach(unwrapEl);        // prose-check highlights are editor chrome
@@ -5111,22 +5174,38 @@ main{overflow-y:auto;padding:1rem}
     const head = originalHTML || '';
     const m = /<link[^>]+rel="canonical"[^>]+href="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head)
            || /property="og:url"[^>]+content="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head);
-    if (m) return m[1] + '/' + m[2];
-    return null;
+    if (!m) return null;
+    // The canonical link names where the page will be PUBLISHED, which for a draft is not
+    // where it is. Returning it bare said Drafts/.Full Articles/armenia/yerevan.html was
+    // armenia/yerevan.html: a path that does not exist, a depth of 1 instead of 3, and
+    // imported photos written as ../Images/... The stylesheet depth says which tree it is
+    // really in, the same way review.js resolveRel() has always done it.
+    const d = depthFromStyles();
+    const prefix = d >= 3 ? 'Drafts/.Full Articles/' : d === 2 ? 'Drafts/' : '';
+    return prefix + m[1] + '/' + m[2];
   }
   window.articleRelPath = articleRelPath;
 
   // How many folders the open article sits below the site root, i.e. how many
-  // "../" a saved image path needs. The connected folder knows for sure; without
-  // it, the page's own stylesheet link says the same thing (a live page links
-  // "../styles.css", a draft in Drafts/.Full Articles/<country>/ links
-  // "../../../styles.css"). Defaulting to 1 without a folder is what saved
-  // draft photos as "../Images/..." and broke them outside the editor.
-  async function articleDepth() {
-    const rel = await articleRelPath();
-    if (rel) return rel.split('/').length - 1;
+  // "../" a saved image path needs. A live page links "../styles.css", a draft in
+  // Drafts/.Full Articles/<country>/ links "../../../styles.css". Defaulting to 1
+  // without a folder is what saved draft photos as "../Images/..." and broke them
+  // outside the editor.
+  function depthFromStyles() {
     const m = /href="((?:\.\.\/)*)(?:styles|theme|artifact)\.css/.exec(originalHTML || '');
     return m ? m[1].length / 3 : 1;
+  }
+  // Reads the stylesheet directly rather than going through articleRelPath(), which now
+  // depends on THIS for its own prefix; routing it the other way was circular, and made the
+  // depth only as good as the path guess instead of the other way round.
+  async function articleDepth() {
+    if (folderHandle && fileHandle) {
+      try {
+        const parts = await folderHandle.resolve(fileHandle);
+        if (parts) return parts.length - 1;
+      } catch (e) { /* fall through */ }
+    }
+    return depthFromStyles();
   }
   // The country folder of an article path: "albania/x.html", "Drafts/albania/x.html"
   // and "Drafts/.Full Articles/armenia/x.html" all give the country slug.
@@ -5351,6 +5430,13 @@ main{overflow-y:auto;padding:1rem}
       if (idx >= items.length) { list.parentElement.insertBefore(node, list.nextSibling); return; }
       const rest = document.createElement(list.tagName.toLowerCase());
       if (list.className) rest.className = list.className;
+      // The style attribute carries the list's whole appearance. Copying only the class
+      // left the half BELOW an inserted photo with browser defaults, so the remaining
+      // entries suddenly grew a disc bullet and a 24px indent: the article's lists are
+      // styled inline with list-style:none;padding:0. That is what "I can't add a photo
+      // between two list items" looks like -- the photo does go in, the list breaks under it.
+      const st = list.getAttribute('style');
+      if (st) rest.setAttribute('style', st);
       // B7: the second half of a split <ol> restarted at 1
       if (list.tagName === 'OL') {
         rest.start = (parseInt(list.getAttribute('start') || '1', 10)) + idx;
