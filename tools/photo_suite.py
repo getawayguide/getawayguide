@@ -191,7 +191,31 @@ def autofix_preview(log=print):
     Deliberately a DRY RUN. It reports and prints the one command that applies it; nothing is
     written by opening the editor. It also never blocks the launch: a failure here is a line
     of log, not a reason the editor does not open.
+
+    The lines also go to ~/Backup/_meta/autofix.txt, because under the shortcut this runs
+    in pythonw and `print` goes nowhere: the preview had no visible output at all on the
+    one path Kevin actually launches from. The photo server hands that file to the editor's
+    Live Activity panel, which is where he will see it.
     """
+    lines = []
+    _log = log
+
+    def log(s):
+        lines.append(s)
+        _log(s)
+
+    try:
+        _autofix_preview(log)
+    finally:
+        try:
+            META.mkdir(parents=True, exist_ok=True)
+            (META / "autofix.txt").write_text("\n".join([time.strftime("%Y-%m-%d %H:%M")] + lines),
+                                              encoding="utf-8")
+        except OSError:
+            pass
+
+
+def _autofix_preview(log):
     try:
         r = subprocess.run([sys.executable, str(ROOT / "tools" / "autofix.py"), "--dry-run"],
                            cwd=str(ROOT), capture_output=True, timeout=240)
@@ -253,10 +277,22 @@ def refresh_link_scan(log=print):
     """
     try:
         META.mkdir(parents=True, exist_ok=True)
+        # One scan at a time. Every click on the shortcut used to start another one, and
+        # three ran side by side today, each writing the same cache file and interleaving
+        # in the log. A live pid in the lock means one is running; a stale pid means the
+        # last one died without cleaning up, and that must not block scans for ever.
+        lock = META / "linkscan.pid"
+        try:
+            pid = int(lock.read_text().strip())
+            if _ps(f"(Get-Process -Id {pid} -ErrorAction SilentlyContinue).Id").strip() == str(pid):
+                return
+        except (OSError, ValueError):
+            pass
         out = open(META / "linkscan.log", "ab")
-        subprocess.Popen([PYW, "-u", "tools/fix_links.py", "--scan"], cwd=str(ROOT),
-                         stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                         creationflags=DETACHED, close_fds=True)
+        p = subprocess.Popen([PYW, "-u", "tools/fix_links.py", "--scan"], cwd=str(ROOT),
+                             stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                             creationflags=DETACHED, close_fds=True)
+        lock.write_text(str(p.pid))
     except Exception as e:                          # never block the launch on this
         log(f"link scan not started: {e}")
 
@@ -276,14 +312,19 @@ def start_all(open_editor_window=True, log=print):
                     log(line.strip())
         except Exception as e:                      # never block the launch on a stamp
             log(f"asset stamp skipped: {e}")
-        autofix_preview(log)
-        refresh_link_scan(log)
         # give the server a moment so the first thumbnails don't 404
         for _ in range(20):
             if port_open(5003):
                 break
             time.sleep(0.25)
+        # THE EDITOR OPENS BEFORE THE PREVIEW, not after. The shortcut runs this under
+        # pythonw, with no console, and the first version ran the preview first: two
+        # minutes of nothing on screen, which from a double-click is indistinguishable
+        # from "the shortcut is broken" (2026-09-25). Only the asset stamp has to
+        # precede the browser, and that is a second.
         open_editor()
+        autofix_preview(log)
+        refresh_link_scan(log)
 
 
 def main(argv):

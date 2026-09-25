@@ -1853,7 +1853,22 @@ def api_suite():
                                "code": None, "started": time.time()})
             threading.Thread(target=_suite_run, args=(action,), daemon=True).start()
         return jsonify({"ok": True, "job": _suite_job})
-    return jsonify({"status": _suite_status(), "job": _suite_job})
+    return jsonify({"status": _suite_status(), "job": _suite_job, "tidy": _tidy_preview()})
+
+
+def _tidy_preview():
+    """What tools/autofix.py would tidy, as photo_suite wrote it at launch.
+
+    The launcher runs under pythonw from the shortcut, so its console output does not
+    exist; this file is the only place the startup preview lands, and the Live Activity
+    panel is where Kevin reads it. First line is the timestamp of the launch."""
+    try:
+        lines = (photo_suite.META / "autofix.txt").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    if not lines:
+        return None
+    return {"at": lines[0], "lines": lines[1:]}
 
 
 @app.route("/api/hold", methods=["POST", "OPTIONS"])

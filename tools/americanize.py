@@ -100,26 +100,41 @@ def match_case(src, repl):
     return repl
 
 
+# Tokenise once and look each word up, instead of scanning the page once PER WORD. The
+# loop this replaced ran re.finditer for every BASE entry on every page: 224 patterns x
+# 50 live pages = 11,200 scans of ~200KB of single-line HTML with re.I, which came to 109
+# SECONDS -- and it ran on the way into the editor, where two invisible minutes under
+# pythonw read as "the shortcut is broken". (A single 224-way alternation was the first
+# fix and still cost a second per page; the tokeniser is ~50x cheaper again.)
+#
+# Equivalence: every BASE entry is letters only, so `\bentry\b` with re.I matches exactly
+# the maximal \w+ runs whose lower-case form is the entry. Checked against the old loop
+# over all 107 live pages and drafts: identical output.
+AMER = {b.lower(): a for b, a in BASE}
+WORD = re.compile(r"\w+")
+
+
 def find(html):
     """Every British spelling in the prose, with its position: [(start, end, new, old)].
     convert() applies these; tools/prose_check.py shows them in the editor's margin
     without applying anything, which is why the positions are exposed on their own."""
     ok = mask(html)
     edits = []          # (start, end, new, old)
-    for brit, amer in BASE:
-        for m in re.finditer(r"\b%s\b" % re.escape(brit), html, re.I):
-            s, e = m.span()
-            if not all(ok[s:e]):
-                continue
-            word = m.group(0)
-            # Capitalised and preceded by another capitalised word -> part of a proper name
-            # a capitalized British word next to another capitalized word is part of a
-            # name and must never be "corrected" (CLAUDE.md). prose_rules owns that test
-            # so the routine emails and this tool agree; it also looks FORWARD, which the
-            # version here did not, so Centre Pompidou and Grey Glacier are safe now.
-            if prose_rules.is_proper_name(html, s, e):
-                continue
-            edits.append((s, e, match_case(word, amer), word))
+    for m in WORD.finditer(html):
+        if m.group(0).lower() not in AMER:
+            continue
+        s, e = m.span()
+        if not all(ok[s:e]):
+            continue
+        word = m.group(0)
+        # Capitalised and preceded by another capitalised word -> part of a proper name
+        # a capitalized British word next to another capitalized word is part of a
+        # name and must never be "corrected" (CLAUDE.md). prose_rules owns that test
+        # so the routine emails and this tool agree; it also looks FORWARD, which the
+        # version here did not, so Centre Pompidou and Grey Glacier are safe now.
+        if prose_rules.is_proper_name(html, s, e):
+            continue
+        edits.append((s, e, match_case(word, AMER[word.lower()]), word))
     # the -our family, any suffix, in one pass
     seen = {(s, e) for s, e, _, _ in edits}
     for m in OUR_RX.finditer(html):

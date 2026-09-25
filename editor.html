@@ -8577,7 +8577,12 @@ async function renderSuite() {
         Fix iCloud sync</button>
     </div>
     ${(job.log && job.log.length) || busy ? `<pre id="ctl-log" class="act-sub" style="white-space:pre-wrap;margin:.6rem 0 0;max-height:180px;overflow:auto;letter-spacing:0">${esc((job.log || []).join('\n') || 'working…')}${busy ? '\n…' : ''}</pre>` : ''}
-  </div>`;
+  </div>
+  ${d.tidy && d.tidy.lines && d.tidy.lines.length ? `<div class="act-card" style="margin-bottom:.6rem">
+    <h3>Tidy-up</h3>
+    <div class="act-sub">What <b>tools/autofix.py</b> would fix, checked when the editor opened (${esc(d.tidy.at)}). Nothing has been changed.</div>
+    <pre class="act-sub" style="white-space:pre-wrap;margin:.5rem 0 0;max-height:220px;overflow:auto;letter-spacing:0">${esc(d.tidy.lines.join('\n'))}</pre>
+  </div>` : ''}`;
   $('#ctl-backup').onclick = () => suiteAction(st.watcher ? 'pause' : 'resume');
   $('#ctl-fix').onclick = () => suiteAction('fix');
   if (suiteTimer) clearTimeout(suiteTimer);
