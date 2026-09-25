@@ -60,6 +60,13 @@ Output: an outline and a field-notes text file. Do not write prose yet.
 
 ## Stage 1 — draft
 
+    python tools/learn_from_comments.py --brief     # READ THIS FIRST, every time
+
+That prints what Kevin's past review comments keep asking for, counted from the
+editor margin. It is the cheapest thing in this file: 48% of his comments on
+Armenia were asking for a link he should not have had to ask for. Satisfy the
+checklist in the draft and those rounds are about the writing instead.
+
 Template is `ruta-de-las-flores.html` (see the new-article memory). Draft every
 page of the country in one sitting: itinerary, top-10, each city, index.
 
@@ -129,6 +136,15 @@ this stage is a failure of Stage 3, not a review item.
 
 Answer his comments as thread replies plus a new proposal round. Never edit
 directly, never answer in chat (see the review-workflow memory).
+
+Afterwards, fold the round back into the process:
+
+    python tools/learn_from_comments.py        # what he asked for that was new
+
+Anything mechanical he had to ask for belongs in Stage 1's checklist or in a tool,
+not in a note to try harder next time. The tool also pulls out comments that are
+not about the writing at all: he reports editor bugs in the margin, because that
+is where he is standing when he hits one, and they die there otherwise.
 
 ## Stage 6 — publish
 
