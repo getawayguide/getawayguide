@@ -88,8 +88,21 @@ CLASSES = {
         "body": "recompress_desktop.py, rebuilding the variants under Images/web/ from the\n"
                 "originals. The originals under Images/ are never touched.",
     },
+    # Reads the cached scan in .tmp/link_scan.json and never touches the network itself,
+    # because this runs as the editor opens and 400 HTTP requests is not a thing to put in
+    # front of a launch. `python tools/fix_links.py --scan` refreshes the cache.
+    "links": {
+        "apply": ["tools/fix_links.py"],
+        "preview": ["tools/fix_links.py", "--dry-run"],
+        "subject": "Repoint the links whose destination moved",
+        "body": "fix_links.py, which repoints a link ONLY when the destination proves it is\n"
+                "the same page: the address differs by a scheme, a www or a trailing slash,\n"
+                "or the original's slug or numeric id survives in the target. A tour that now\n"
+                "lands the reader on the city page, a dead 404 and a redirect to another\n"
+                "domain are all left alone and reported instead.",
+    },
 }
-DEFAULT = ["spelling", "spacing", "paste", "maps"]
+DEFAULT = ["spelling", "spacing", "paste", "maps", "links"]
 
 
 def out(s=""):
@@ -163,7 +176,13 @@ def main():
         out("\n=== %s: %s" % (name, " ".join(argv)))
         before_new = set() if a.dry_run else untracked()
         r = run(list(argv))
-        for l in (r.stdout or "").strip().splitlines()[-6:]:
+        # The last handful of lines: every fixer ends with its own tally, which is the
+        # part worth showing. Say so when there was more, though -- a silently clipped
+        # list of pages reads as the whole list, and fix_links names one page per line.
+        _lines = (r.stdout or "").strip().splitlines()
+        if len(_lines) > 6:
+            out("    (%d earlier line(s) not shown)" % (len(_lines) - 6))
+        for l in _lines[-6:]:
             out("    " + l)
         if r.returncode:
             err = (r.stderr or "").strip().splitlines()

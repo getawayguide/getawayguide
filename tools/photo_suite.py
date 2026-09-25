@@ -200,16 +200,26 @@ def autofix_preview(log=print):
         # CLASSES it ran and calling that "would tidy 4 things" was the first version, which
         # announced work on a clean tree every single launch -- the same crying-wolf the
         # routines are built to avoid.
-        hits = []
+        hits, needs_person = [], []
         for l in out.splitlines():
             t = l.strip()
+            if t.startswith("links needing a person:"):
+                # NOT something autofix tidies -- a dead link is Kevin's call, and
+                # listing it under "would tidy" would promise a fix that is never
+                # coming. It gets its own line below.
+                needs_person.append(t)
+                continue
             if re.match(r"^(would change|changed)\s+0\b", t) or re.match(r"^prose issues:\s*0\b", t):
                 continue                            # an explicit nothing
             if re.search(r"\.html\b", t) or re.match(r"^(would change|changed)\s+\d", t) \
                or re.match(r"^prose issues:\s*[1-9]", t):
                 hits.append(t)
-        if not hits:
+        if not hits and not needs_person:
             log("autofix: nothing to tidy")
+            return
+        if not hits:
+            for t in needs_person:
+                log(t)
             return
         log("autofix would tidy:")
         for h in hits[:6]:
@@ -226,8 +236,29 @@ def autofix_preview(log=print):
                 + (" +%d more" % (len(dirty) - 3) if len(dirty) > 3 else ""))
         else:
             log("   apply with:  python tools/autofix.py")
+        for t in needs_person:
+            log(t)
     except Exception as e:
         log(f"autofix preview skipped: {e}")
+
+
+def refresh_link_scan(log=print):
+    """Re-resolve the outbound links in the background, for NEXT launch.
+
+    fix_links.py reads a cached scan so the preview above costs nothing. Something
+    has to fill that cache, and it cannot be the preview: ~400 HTTP requests is
+    three or four minutes, and nothing that slow belongs in front of the editor
+    opening. So it is kicked off detached here and nobody waits for it -- this
+    launch reports on yesterday's scan, and the one after reports on today's.
+    """
+    try:
+        META.mkdir(parents=True, exist_ok=True)
+        out = open(META / "linkscan.log", "ab")
+        subprocess.Popen([PYW, "-u", "tools/fix_links.py", "--scan"], cwd=str(ROOT),
+                         stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                         creationflags=DETACHED, close_fds=True)
+    except Exception as e:                          # never block the launch on this
+        log(f"link scan not started: {e}")
 
 
 def start_all(open_editor_window=True, log=print):
@@ -246,6 +277,7 @@ def start_all(open_editor_window=True, log=print):
         except Exception as e:                      # never block the launch on a stamp
             log(f"asset stamp skipped: {e}")
         autofix_preview(log)
+        refresh_link_scan(log)
         # give the server a moment so the first thumbnails don't 404
         for _ in range(20):
             if port_open(5003):
