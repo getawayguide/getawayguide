@@ -196,9 +196,6 @@ def autofix_preview(log=print):
         r = subprocess.run([sys.executable, str(ROOT / "tools" / "autofix.py"), "--dry-run"],
                            cwd=str(ROOT), capture_output=True, timeout=240)
         out = (r.stdout or b"").decode("utf-8", "replace")
-        if r.returncode == 2:                       # dirty tree: it refused, which is correct
-            log("autofix: skipped, you have uncommitted changes")
-            return
         # Each fixer prints its own tally, and a tally of zero is not work. Counting the
         # CLASSES it ran and calling that "would tidy 4 things" was the first version, which
         # announced work on a clean tree every single launch -- the same crying-wolf the
@@ -219,7 +216,16 @@ def autofix_preview(log=print):
             log("   " + h[:110])
         if len(hits) > 6:
             log("   ... and %d more" % (len(hits) - 6))
-        log("   apply with:  python tools/autofix.py")
+        # A dry run deliberately skips autofix's dirty-tree guard, because it writes nothing.
+        # The APPLY does not, so printing the command while the tree is dirty would hand over
+        # a command that is about to refuse. Say what has to happen first instead.
+        dirty = subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=str(ROOT),
+                               capture_output=True, text=True, timeout=60).stdout.split()
+        if dirty:
+            log("   to apply, commit or stash these first: " + ", ".join(dirty[:3])
+                + (" +%d more" % (len(dirty) - 3) if len(dirty) > 3 else ""))
+        else:
+            log("   apply with:  python tools/autofix.py")
     except Exception as e:
         log(f"autofix preview skipped: {e}")
 
