@@ -132,14 +132,29 @@ directly, never answer in chat (see the review-workflow memory).
 
 ## Stage 6 — publish
 
-    python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe
+Pick the destination-card photo first. It is the one publish decision that needs
+Kevin: the default is `Images/dest-cards/<Name>_1.JPG`, but he often names a
+different shot (India used `India_3.JPG`). If it is not the `_1`, crop it to keep
+the subject and add the slug to `SRC_OVERRIDE` in `tools/gen_og_images.py` so the
+OG image comes from the same photo. Check it survives the 1.9:1 mobile crop.
+
+    python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe --thumb <path> --dry-run
+    python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe --thumb <path>
     python tools/lint_site.py
     python tools/screenshot.py <page>.html      # read all three widths
-    python tools/gen_sitemap.py
     python tools/gen_search_index.py
 
-`publish_country.py` does SEO metadata itself and asserts
-`SEO metadata: complete`. If it says anything else the country is not finished.
+**Always `--dry-run` first.** This publish touches every page on the site (the nav
+is regenerated on all of them), and the script has been silently broken before: a
+2026-07 restructure left it reporting success while inserting nothing.
+
+One run does the rest, so do not do these by hand: SEO metadata (it asserts
+`SEO metadata: complete`, and anything else means the country is not finished),
+the grouped nav on every page, the destinations card and `fieldNotesMap` entry,
+`localize_flags` for the new flag, OG images, JSON-LD, the sitemap, the city-map
+pin and accommodation checks, and `update_draft_nav` so the remaining drafts do
+not drift. If `archive/` shows up in `git status` afterwards, that is a bug:
+`git checkout HEAD -- archive/`.
 
 Do not push until Kevin asks.
 
