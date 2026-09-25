@@ -89,14 +89,23 @@ def check(html):
         # paragraph holding thousands of them (a pathological paste) took the request down.
         # The rule only ever looks back to the block opening or the previous sentence, so a
         # window is the same answer; and past a dozen the reader needs the page, not the list.
-        WINDOW, MAX = 600, 12
+        # The window has to reach the block's opening tag, because that is what tells a
+        # `<b>Term</b> — description` bullet apart from a dash in a sentence. A fixed 600
+        # characters did not: one Google Maps URL runs 400-500 characters, so a bullet whose
+        # bold lead-in holds two links puts the <li> 875 characters back, the window opened
+        # mid-URL, and the site's own bullet convention was reported as a voice error. Seek
+        # the real opening and keep a generous cap so the scan stays linear.
+        WINDOW, MAX = 4000, 12
+        OPEN = re.compile(r"<(?:li|p|h[1-4])[^>]*>", re.I)
         seen = 0
         for h in re.finditer("—", inner):
             if seen >= MAX:
                 add("em-dash", "More em dashes below this one on the same line.", text,
                     min(len(text) - 1, 0), min(len(text), 1), None, "low")
                 break
-            back = inner[max(0, h.start() - WINDOW):h.start()]
+            lo = max(0, h.start() - WINDOW)
+            opens = list(OPEN.finditer(inner, lo, h.start()))
+            back = inner[opens[-1].start():h.start()] if opens else inner[lo:h.start()]
             if prose_rules.em_dash_is_separator(back):
                 continue
             seen += 1
