@@ -46,11 +46,16 @@ tools/resolve_urls.ps1 and come back as a TSV. The scan is cached in
 .tmp/link_scan.json, because the editor's startup preview has to be instant and
 must never block the launch on 400 HTTP requests.
 
+Writing is OPT-IN. A bare run reports what it WOULD repoint and changes nothing, because
+the cloud routine runs this tool too and "report only" must not depend on a prompt
+remembering to leave a flag off.
+
   python tools/fix_links.py --scan           refresh the cache (hits the network)
-  python tools/fix_links.py --list           what the cache says, nothing written
-  python tools/fix_links.py --dry-run        what would be rewritten
-  python tools/fix_links.py                  rewrite the safe classes
+  python tools/fix_links.py                  what would be rewritten; writes nothing
+  python tools/fix_links.py --apply          rewrite the safe classes
   python tools/fix_links.py --report         the human half: what needs Kevin
+  python tools/fix_links.py --list           every class, including the ones it would fix
+  python tools/fix_links.py --json F         findings for tools/report_email.py
 """
 import argparse
 import glob
@@ -126,7 +131,52 @@ def collect(include_maps=False):
 # ------------------------------------------------------------------- scanning
 
 def scan(urls, workers=10, timeout=20):
-    """Resolve every URL through PowerShell. Returns {url: [status, final, note]}."""
+    """Resolve every URL. Returns {url: [status, final, note]}.
+
+    Two backends on purpose. On Kevin's Windows box Python has no working TLS and
+    the agent's shell has no egress, so the requests go out through PowerShell.
+    In the cloud routine's Linux container there is no PowerShell and urllib works
+    fine. The CLASSIFICATION is the same code either way, which is the whole point
+    -- a rule described in English gets applied differently every run, and the
+    routine and Kevin's machine have to agree about what a dead link is.
+    """
+    if os.name != "nt" or not os.path.exists(PS1):
+        return _scan_python(urls, workers=workers, timeout=timeout)
+    return _scan_powershell(urls, workers=workers, timeout=timeout)
+
+
+def _scan_python(urls, workers=10, timeout=20):
+    import urllib.request
+    import urllib.error
+    from concurrent.futures import ThreadPoolExecutor
+
+    ua = "Mozilla/5.0 (compatible; getawayguide-linkcheck/1.0; +https://getawayguide.io)"
+
+    def one(u):
+        for method in ("HEAD", "GET"):
+            try:
+                req = urllib.request.Request(u, method=method, headers={"User-Agent": ua})
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    return u, [int(r.status), r.geturl(), ""]
+            except urllib.error.HTTPError as e:
+                # the same HEAD-is-refused dance the PowerShell side does
+                if method == "HEAD" and e.code in (400, 403, 405, 429, 501):
+                    continue
+                return u, [int(e.code), getattr(e, "url", u) or u, ""]
+            except Exception as e:
+                if method == "HEAD":
+                    continue
+                return u, [0, u, type(e).__name__ + ": " + str(e)[:100]]
+        return u, [0, u, "no response"]
+
+    out = {}
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for u, row in ex.map(one, urls):
+            out[u] = row
+    return out
+
+
+def _scan_powershell(urls, workers=10, timeout=20):
     tmp = os.path.join(ROOT, ".tmp")
     os.makedirs(tmp, exist_ok=True)
     infile, outfile = os.path.join(tmp, "_urls.txt"), os.path.join(tmp, "_scan.tsv")
@@ -315,6 +365,72 @@ def rewrite(found, decisions, dry=False):
     return changed
 
 
+# --------------------------------------------------------------- the report
+
+# What each class is, how loudly to say it, and the one line that explains why it
+# is in the email at all. Kept next to the severities so the two cannot drift.
+REPORTABLE = [
+    ("soft-404", "high", "Gone, but still answering 200",
+     "The destination is an ancestor of the page we asked for: the tour or the listing "
+     "was dropped and the site is showing a category page instead. Every link checker "
+     "calls these healthy, because the status code is 200. The recommendation is dead."),
+    ("gone", "high", "Dead",
+     "The site returned a 404. Nothing at that address any more."),
+    ("stale-date", "medium", "Pinned to a date that has passed",
+     "The link carries a booking date from an earlier trip, and the site quietly moves "
+     "the reader to today instead. Worth dropping the date parameters."),
+    ("unclear", "medium", "Redirected somewhere we cannot vouch for",
+     "A redirect that changed domain, or landed somewhere whose relationship to the "
+     "original could not be established. Left alone deliberately."),
+    ("unreachable", "low", "No answer",
+     "A timeout or a failed handshake, which is NOT the same claim as a 404. These are "
+     "usually large sites refusing an unfamiliar client; check one in a browser before "
+     "touching the article."),
+    ("blocked", "low", "Refuses bots",
+     "401, 403, 406 or 429. alltrails and travel.state.gov do this on every link we have. "
+     "Not broken, never actionable, listed only so the count is honest."),
+]
+
+
+def write_json(path, buckets, found, age_h, checked):
+    groups, counts = [], {}
+    for kind, sev, title, why in REPORTABLE:
+        rows = buckets.get(kind, [])
+        if not rows:
+            continue
+        counts[sev] = counts.get(sev, 0) + len(rows)
+        by_page = {}
+        for url, final, detail in sorted(rows):
+            for rel in sorted(found[url]["pages"]):
+                by_page.setdefault(rel, []).append(
+                    {"severity": sev, "rule": kind,
+                     "detail": detail or ("-> " + final if final and final != url else ""),
+                     "value": url})
+        for rel, fs in sorted(by_page.items()):
+            groups.append({"name": rel, "section": title, "findings": fs})
+
+    total = sum(counts.values())
+    bits = [f"{counts[k]} {lbl}" for k, lbl in
+            (("high", "dead"), ("medium", "worth a look"), ("low", "probably fine"))
+            if counts.get(k)]
+    lead = [w for _, _, t, w in REPORTABLE if any(g["section"] == t for g in groups)
+            for w in ([t + ". " + w])]
+    doc = {
+        "title": "Outbound links",
+        "subtitle": "%d external link(s) checked, scan %.0f hour(s) old" % (checked, age_h),
+        "status": "findings" if total else "clean",
+        "summary": ("%d link%s: %s" % (total, "" if total == 1 else "s", ", ".join(bits)))
+                   if total else "Every outbound link resolves",
+        "lead": lead,
+        "groups": groups,
+        "footer": "Report only. The links whose destination proved it was the same page were "
+                  "already repointed on Kevin's machine by tools/autofix.py; these are the ones "
+                  "that need a person. Generated by tools/fix_links.py.",
+    }
+    io.open(path, "w", encoding="utf-8").write(json.dumps(doc, indent=1, ensure_ascii=False))
+    print("wrote %s (%d finding(s) across %d group(s))" % (path, total, len(groups)))
+
+
 # ---------------------------------------------------------------------- main
 
 def main():
@@ -323,7 +439,14 @@ def main():
                     help="re-resolve every link over the network (slow, needs PowerShell)")
     ap.add_argument("--list", action="store_true", help="what the cache says; writes nothing")
     ap.add_argument("--report", action="store_true", help="only the findings that need Kevin")
-    ap.add_argument("--dry-run", action="store_true")
+    # Writing is OPT-IN. The cloud routine runs this tool too, from a clone it would have to
+    # push for a change to survive, and "report only" must not depend on the prompt
+    # remembering to leave a flag off. A bare run reports and writes nothing.
+    ap.add_argument("--apply", action="store_true", help="actually rewrite the safe classes")
+    ap.add_argument("--dry-run", action="store_true", help="the default; kept for symmetry")
+    ap.add_argument("--json", metavar="PATH",
+                    help="write findings.json in the schema tools/report_email.py reads, so "
+                         "the link email looks like the other two and reuses that renderer")
     ap.add_argument("--max-age", type=float, default=36.0,
                     help="hours before the cache counts as stale (default 36)")
     ap.add_argument("--workers", type=int, default=10)
@@ -362,19 +485,23 @@ def main():
     if age_h > a.max_age and not a.scan:
         print("note: the scan is %.0f hours old; --scan refreshes it" % age_h)
 
+    if a.json:
+        write_json(a.json, buckets, found, age_h, len(res))
+        return 0
+
     # -- the half a machine may do ------------------------------------------
     if a.list or a.report:
         pass
     else:
         if fixable:
-            changed = rewrite(found, fixable, dry=a.dry_run)
+            changed = rewrite(found, fixable, dry=not a.apply)
             for rel, n in changed:
                 print("  %-52s %2d link(s)" % (rel, n))
             print("%s %d link(s) across %d page(s)"
-                  % ("would change" if a.dry_run else "changed",
+                  % ("changed" if a.apply else "would change",
                      sum(n for _, n in changed), len(changed)))
         else:
-            print("%s 0 links" % ("would change" if a.dry_run else "changed"))
+            print("%s 0 links" % ("changed" if a.apply else "would change"))
 
     if not (a.list or a.report):
         # autofix.py reads the line above; the rest is noise at launch time

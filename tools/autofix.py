@@ -92,8 +92,8 @@ CLASSES = {
     # because this runs as the editor opens and 400 HTTP requests is not a thing to put in
     # front of a launch. `python tools/fix_links.py --scan` refreshes the cache.
     "links": {
-        "apply": ["tools/fix_links.py"],
-        "preview": ["tools/fix_links.py", "--dry-run"],
+        "apply": ["tools/fix_links.py", "--apply"],
+        "preview": ["tools/fix_links.py"],           # writing is opt-in; a bare run reports
         "subject": "Repoint the links whose destination moved",
         "body": "fix_links.py, which repoints a link ONLY when the destination proves it is\n"
                 "the same page: the address differs by a scheme, a www or a trailing slash,\n"
