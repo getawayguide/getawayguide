@@ -25,6 +25,15 @@ Exit code is non-zero if any issues are found (so it can gate a push).
 """
 import re, sys, os, glob, subprocess, unicodedata, urllib.parse
 from collections import Counter, defaultdict
+
+# A redirected stdout on this box is cp1252, and the tick this prints when the site is clean
+# is U+2713. So the gate crashed with UnicodeEncodeError the moment anything CAPTURED its
+# output -- a cloud routine, a subprocess, a pipe -- and only ever worked when a human was
+# watching it. It stayed hidden until the site reached zero issues and it got that far.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prose_rules          # the em-dash judgement, shared with tools/prose_check.py
 
