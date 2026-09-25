@@ -1274,7 +1274,7 @@ main{overflow-y:auto;padding:1rem}
         <div id="pk-empty"></div>
       </div>
       <div id="pl-countrybar">
-        <select id="pl-country" onchange="plSetCountry(this.value)"
+        <select id="pl-country" onchange="plPickCountry(this.value)"
                 title="Browse a trip's photos, the same albums as the Photo Library"></select>
         <button id="pl-modebtn" onclick="plToggleMode()"
                 title="Switch between trips and the raw source folders">Folders</button>
@@ -2325,15 +2325,16 @@ main{overflow-y:auto;padding:1rem}
         // horizontal divider between two entries, 49px tall and holding no text, which
         // survives the save and lands in the file. (Kevin: "When I hit enter It creates a
         // new line that it shouldn't ... Same comment for all dividers like this.")
-        const style = li.getAttribute('style');
-        if (!style) return;
+        const style = li.getAttribute('style') || '';
         // The rule comes from the LIST, not from this item: the last entry has none by
         // convention, so keying off `style` alone made Enter on the last bullet fall
         // through to the browser and the item never gained its separator.
         const ruled = [...li.parentElement.children]
           .map(x => x.getAttribute('style') || '')
           .find(s => /border-bottom/i.test(s));
-        if (!ruled) return;                                    // plain list: native Enter is fine
+        const sub = li.querySelector(':scope > ul, :scope > ol');
+        // A plain bullet with nothing nested in it is one the browser gets right.
+        if (!ruled && !sub) return;
         // Only the "start a new entry" case. A split in the middle of the text is a real
         // split and the browser does it correctly.
         const r0 = sel.getRangeAt(0);
@@ -2341,7 +2342,14 @@ main{overflow-y:auto;padding:1rem}
         const after = r0.cloneRange();
         after.selectNodeContents(li);
         after.setStart(r0.endContainer, r0.endOffset);
-        if (after.toString().trim() !== '' || li.querySelector('ul,ol')) return;
+        // A bullet that owns a sub-list still counts as "at the end" when the caret is
+        // past its own text: the sub-list is not text after the caret, it belongs to this
+        // bullet. Treating it as content made Chromium split mid-bullet and re-parent the
+        // whole sub-list under a new BLANK bullet -- which, because it then held a <ul>,
+        // was not empty, so the "Enter on an empty item leaves the list" escape stopped
+        // working and there was no way out.
+        if (sub) after.setEndBefore(sub);
+        if (after.toString().trim() !== '') return;
         e.preventDefault();
         if (window.__History) window.__History.checkpoint();
         const wasLast = !li.nextElementSibling;
@@ -2349,12 +2357,14 @@ main{overflow-y:auto;padding:1rem}
         // An EMPTY bullet never draws a rule, wherever it sits: a blank row with a line
         // under it is exactly the stray divider being reported. It takes the full style
         // back on the first keystroke, in the input handler below.
-        nli.setAttribute('style', noRule(ruled));
-        nli.dataset.liStyle = ruled;
+        // A ruled list hands the new bullet its style without the rule; an unruled one
+        // (the nested case) just gets a clean sibling.
+        if (ruled) { nli.setAttribute('style', noRule(ruled)); nli.dataset.liStyle = ruled; }
+        else if (style) nli.setAttribute('style', style);
         nli.innerHTML = '<br>';
         li.insertAdjacentElement('afterend', nli);
         // ...and the item it follows gains one, because it is no longer last.
-        if (wasLast) li.setAttribute('style', ruled);
+        if (wasLast && ruled) li.setAttribute('style', ruled);
         const caret = document.createRange();
         caret.setStart(nli, 0);
         caret.collapse(true);
@@ -2371,10 +2381,29 @@ main{overflow-y:auto;padding:1rem}
         // In a nested list — outdent back to parent level
         document.execCommand('outdent', false, null);
       } else {
-        // Top-level list — exit into a new paragraph
+        // Top-level list — exit into a new paragraph, SPLITTING the list where you stood.
+        // It used to drop the paragraph after the whole </ul>, so leaving a list from the
+        // middle silently jumped you past every bullet below. Pressing Enter twice is the
+        // obvious way to make room for a photo mid-list, which is exactly when it bit.
         const p = document.createElement('p');
         p.innerHTML = '<br>';
+        const idx = [...parentList.children].indexOf(li);
+        const below = [];
+        for (let s = li.nextElementSibling; s; s = s.nextElementSibling) below.push(s);
         parentList.insertAdjacentElement('afterend', p);
+        if (below.length) {
+          const rest = document.createElement(parentList.tagName.toLowerCase());
+          if (parentList.className) rest.className = parentList.className;
+          const st = parentList.getAttribute('style');
+          if (st) rest.setAttribute('style', st);
+          if (parentList.tagName === 'OL') {
+            // the removed empty item does not take a number, so the tail carries on from
+            // however many real items stayed above it
+            rest.start = parseInt(parentList.getAttribute('start') || '1', 10) + idx;
+          }
+          below.forEach(n => rest.appendChild(n));
+          p.insertAdjacentElement('afterend', rest);
+        }
         li.remove();
         if (parentList.children.length === 0) parentList.remove();
         const range = document.createRange();
@@ -4301,14 +4330,34 @@ main{overflow-y:auto;padding:1rem}
     if (PL.backupRoot === null) return;
     PL.root = PL.backupRoot;
     PL.path = album;
+    // A place filter belongs to the trip it was chosen in. Switching albums used to keep
+    // it, so after moving from Armenia to Georgia the grid was still filtered by
+    // "city:Yerevan" against Georgia's photos. loadGeo() resets on a new key, but only
+    // once it runs; clearing here means the switch itself is what clears it.
+    PL.place = '';
+    PL.geoKey = null;
+    PL.geo = null;
     plBrowse();
+  };
+
+  // The select's own onchange. Remembers WHICH article the hand-pick was for, so opening
+  // a different article still re-points (which is the useful behaviour) while opening the
+  // same one again does not undo the choice. The listener below used to call
+  // plLoadCountries() with no argument, so a hand-picked trip was overwritten every time.
+  window.plPickCountry = async function (album) {
+    try { PL.pickedFor = await articleRelPath(); } catch (e) { PL.pickedFor = null; }
+    plSetCountry(album);
   };
 
   // Opening another article re-points the sidebar at that country, but never
   // over a trip the user has just chosen by hand for this article.
-  document.addEventListener('article-loaded', () => {
+  document.addEventListener('article-loaded', async () => {
     if (PL.mode !== 'country' || !PL.online) return;
-    plLoadCountries();
+    let rel = null;
+    try { rel = await articleRelPath(); } catch (e) {}
+    const same = rel && rel === PL.pickedFor;
+    if (!same) PL.pickedFor = null;
+    plLoadCountries(same ? $('#pl-country').value : null);
   });
 
   window.plBoot = async function () {
@@ -5167,14 +5216,15 @@ main{overflow-y:auto;padding:1rem}
         if (parts) return parts.join('/');
       } catch (e) { /* fall through */ }
     }
-    // the open review round knows the path it was opened with
-    if (window.review && review.state && review.state.rel) return review.state.rel;
-    // else the page's own head: a published page has a canonical link, and a draft that
-    // has been through the SEO pass has og:url
+    // The page's own head comes BEFORE the review round's remembered path, because the head
+    // is whatever is open right now and review.state.rel is a cache of whatever was open
+    // last. Taking the cache first meant opening a second article still reported the first
+    // one, so the photo sidebar never re-pointed off the previous country.
     const head = originalHTML || '';
     const m = /<link[^>]+rel="canonical"[^>]+href="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head)
            || /property="og:url"[^>]+content="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head);
-    if (!m) return null;
+    // Only when the head says nothing: a page with neither a canonical link nor og:url.
+    if (!m) return (window.review && review.state && review.state.rel) || null;
     // The canonical link names where the page will be PUBLISHED, which for a draft is not
     // where it is. Returning it bare said Drafts/.Full Articles/armenia/yerevan.html was
     // armenia/yerevan.html: a path that does not exist, a depth of 1 instead of 3, and
