@@ -299,8 +299,13 @@ def stress_email():
               "no replacement chars, em dash intact" if bad == 0 else "%d replacement chars" % bad)
     except UnicodeDecodeError as e:
         check("email: stdout is utf-8, as the meta promises", False, str(e)[:60])
-    # the real report, end to end
-    r = run(["tools/audit.py", "--json", str(ROOT / ".tmp/stress-findings.json"), "--title", "Publish hygiene"])
+    # The real report, end to end. --no-ignore because this asserts the SHAPE of the email,
+    # and tools/audit_ignore.txt is a record of Kevin's decisions, not of what the renderer
+    # can draw: once it muted enough sections the site rendered with no findings at all and
+    # "excerpts keep their whitespace" failed for want of an excerpt to look at. A structural
+    # test must not depend on the site being dirty.
+    r = run(["tools/audit.py", "--no-ignore", "--json", str(ROOT / ".tmp/stress-findings.json"),
+             "--title", "Publish hygiene"])
     r2 = run(["tools/report_email.py", str(ROOT / ".tmp/stress-findings.json")])
     html = r2.stdout
     checks = [("has the nav", "getawayguide</a>" in html),

@@ -536,8 +536,11 @@ def ignored_by(rules, section, page, rule):
     return None
 
 
-def run(names):
-    rules = load_ignores()
+def run(names, use_ignores=True):
+    # Asking for a section by name outranks a standing decision to mute it. --drafts-only is
+    # "show me the draft board", and the ignore list silently returned nothing at all, which
+    # is worse than noise: the command looked broken.
+    rules = load_ignores() if use_ignores else []
     sections, skipped = [], 0
     for n in names:
         groups = CHECKS[n]()
@@ -668,13 +671,15 @@ def main():
                     help="report only findings not seen on the last run (for a daily routine)")
     ap.add_argument("--state", default=".tmp/audit_state.json")
     ap.add_argument("--dry-state", action="store_true", help="with --new-only, do not move the baseline")
+    ap.add_argument("--no-ignore", action="store_true",
+                    help="report everything, including what tools/audit_ignore.txt mutes")
     a = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
     names = ["drafts"] if a.drafts_only else [c.strip() for c in a.checks.split(",") if c.strip() in CHECKS]
-    sections = run(names)
+    sections = run(names, use_ignores=not (a.no_ignore or a.drafts_only))
     withheld = 0
     if a.new_only:
         sections, withheld = filter_new(sections, ROOT / a.state, write=not a.dry_state)
