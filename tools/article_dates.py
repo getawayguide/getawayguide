@@ -49,8 +49,19 @@ def out(s=""):
 
 
 def iso(byline):
-    mo, day, yr = byline.replace(",", "").split()
-    return "%s-%02d-%02d" % (yr, MON_N[mo], int(day))
+    """-> YYYY-MM-DD, or None when the text only LOOKS like a byline.
+
+    The regex matches any three-letter capitalised word, so `Xxx 99, 2026` reaches here and
+    used to raise KeyError and take the whole run down. A page whose byline is not a real
+    date is not this tool's to guess at: it reports nothing and moves on."""
+    try:
+        mo, day, yr = byline.replace(",", "").split()
+        d = int(day)
+    except ValueError:
+        return None
+    if mo not in MON_N or not 1 <= d <= 31:
+        return None
+    return "%s-%02d-%02d" % (yr, MON_N[mo], d)
 
 
 def pretty(iso_date):
@@ -102,6 +113,8 @@ def main():
         if not b:
             continue
         shown = iso(b.group(2))
+        if shown is None:
+            continue                     # looks like a byline, is not a date
         j = JSONLD.search(s)
 
         if is_draft:

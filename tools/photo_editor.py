@@ -1366,10 +1366,15 @@ def preview_put():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True) or {}
-    rel = (d.get("rel") or "").replace("\\", "/").lstrip("./")
-    if not rel or not d.get("html"):
+    # Types, not just truthiness. `{"rel": ["a"]}` reached .replace() and came back a 500;
+    # a request whose shape is wrong is the caller's mistake and deserves a 400.
+    rel, html = d.get("rel"), d.get("html")
+    if not isinstance(rel, str) or not isinstance(html, str):
         abort(400)
-    _PREVIEWS[rel] = d["html"]
+    rel = rel.replace("\\", "/").lstrip("./")
+    if not rel or not html:
+        abort(400)
+    _PREVIEWS[rel] = html
     return jsonify({"ok": True, "url": "/preview/" + rel})
 
 

@@ -432,6 +432,8 @@ def check_dates():
         if not (b and j):
             continue
         shown = ad.iso(b.group(2))
+        if shown is None:
+            continue                     # looks like a byline, is not a date
         if shown != j.group(2):
             groups.append({"name": rel, "findings": [finding(
                 "medium", "date-mismatch",

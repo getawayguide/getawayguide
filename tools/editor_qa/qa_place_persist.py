@@ -31,6 +31,9 @@ async def main():
 
         print("\n== Sidebar (article editor) ==")
         await pg.evaluate("window.togglePhotoPanel()")
+        # The sidebar now opens on TRIPS (the Photo Library's albums); the raw
+        # source tabs this test drives live behind the Folders button.
+        await pg.evaluate("() => { if (plDebug().mode === 'country') plToggleMode(); }")
         await pg.wait_for_selector("#pl-tabs :text('Backup')", timeout=15000)
         await pg.click("#pl-tabs :text('Backup')"); await pg.wait_for_selector("#pl-folders :text('Armenia (2026)')", timeout=15000)
         await pg.click("#pl-folders :text('Armenia (2026)')")

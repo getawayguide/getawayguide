@@ -552,6 +552,11 @@
     body.review-open #todo-list, body.review-open .sidebar-head, body.review-open .todo-footer,
     body.review-open .sidebar-foot, body.review-open #photo-panel { display: none; }
     body.review-open .workspace { grid-template-columns: 372px 1fr; }
+    #pl-countrybar { display: flex; gap: 4px; padding: 8px; align-items: center; border-bottom: 1px solid var(--b-subtle); }
+    #pl-country { flex: 1; min-width: 0; font: inherit; font-size: .72rem; padding: 3px 4px; }
+    #pl-modebtn { font-family: 'Hanken Grotesk', sans-serif; font-size: .5rem; letter-spacing: .06em;
+                  text-transform: uppercase; padding: .35rem .5rem; border: 1px solid var(--b-medium);
+                  background: #fff; border-radius: 3px; cursor: pointer; white-space: nowrap; }
     #pl-tabs { display: flex; gap: 4px; padding: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--b-subtle); }
     #pl-tabs button { font-family: 'Hanken Grotesk', sans-serif; font-size: .55rem; letter-spacing: .05em;
       border: 1px solid var(--b-medium); background: #fff; border-radius: 10px; padding: 3px 9px; cursor: pointer; }
@@ -1119,6 +1124,7 @@ main{overflow-y:auto;padding:1rem}
   <button class="img-tool-btn" onclick="imgCrop('1/1')" title="Square 1:1">⬜ 1:1</button>
   <button class="img-tool-btn" onclick="imgCrop('none')" title="Remove crop/reshape">✂ Off</button>
   <div class="img-tool-divider"></div>
+  <button class="img-tool-btn" onclick="imgClear()" title="Clear this photo and leave its placeholder, so the frame stays and you can fill it with another photo later">⌧ Clear</button>
   <button class="img-tool-btn" onclick="imgDelete()" title="Delete image" style="color:#ff8080">✕</button>
 </div>
 <div id="img-resize-handle"></div>
@@ -1266,6 +1272,12 @@ main{overflow-y:auto;padding:1rem}
         <select id="pk-place" onchange="pkPlaceChanged()" onmousedown="window.PLpicking&&window.PLpicking(true)" onblur="window.PLpicking&&window.PLpicking(false)" style="display:none"></select>
         <div id="pk-grid"></div>
         <div id="pk-empty"></div>
+      </div>
+      <div id="pl-countrybar">
+        <select id="pl-country" onchange="plSetCountry(this.value)"
+                title="Browse a trip's photos, the same albums as the Photo Library"></select>
+        <button id="pl-modebtn" onclick="plToggleMode()"
+                title="Switch between trips and the raw source folders">Folders</button>
       </div>
       <div id="pl-tabs"></div>
       <div id="pl-crumbs"></div>
@@ -3076,6 +3088,7 @@ main{overflow-y:auto;padding:1rem}
     document.getElementById('img-width-input').value = w;
   }
 
+  window.deselectImg = deselectImg;
   function deselectImg() {
     if (_selImg) _selImg.classList.remove('img-selected');
     _selImg = null;
@@ -3174,6 +3187,7 @@ main{overflow-y:auto;padding:1rem}
     deselectImg();
     setDirty(true);
   }
+
 
   function imgPan() {
     if (!_selImg) return;
@@ -4117,17 +4131,135 @@ main{overflow-y:auto;padding:1rem}
     if (document.body.classList.contains('photos-open') && !PL.online) plBoot();
   };
 
+  /* ---- trips, not folders -------------------------------------------------
+     The sidebar used to open on the raw photo SOURCES (iCloud, Downloads,
+     Pictures, the repo archive) and make you walk down a folder tree to reach
+     a trip's photos. The Photo Library already organises the same pictures by
+     trip album, and that is the list Kevin thinks in, so the sidebar now opens
+     on those albums: one menu, the trip's photos underneath it, and the place
+     bar filtering them by where they were taken. The old folder tabs are still
+     one click away behind "Folders" for the times a photo is somewhere else
+     (a download, a screenshot). Kevin, 2026-09-24. */
+  PL.mode = localStorage.getItem('plMode') || 'country';
+  PL.albums = [];
+  PL.backupRoot = null;
+
+  window.plToggleMode = function () {
+    PL.mode = PL.mode === 'country' ? 'folders' : 'country';
+    localStorage.setItem('plMode', PL.mode);
+    plApplyMode();
+  };
+
+  function plApplyMode() {
+    const country = PL.mode === 'country';
+    $('#pl-countrybar').style.display = country ? 'flex' : 'none';
+    $('#pl-tabs').style.display = country ? 'none' : 'flex';
+    // a trip album is flat, so the folder crumbs/list are only for folder mode
+    $('#pl-crumbs').style.display = country ? 'none' : '';
+    $('#pl-folders').style.display = country ? 'none' : '';
+    $('#pl-modebtn').textContent = country ? 'Folders' : 'Trips';
+    if (country) plLoadCountries(); else plBrowse();
+  }
+
+  // The albums are the Backup tree's top-level folders - exactly what the
+  // Photo Library lists - reached through the ordinary source/browse API, so a
+  // photo picked here goes through the same crop/develop/import path.
+  window.plLoadCountries = async function (keep) {
+    try {
+      if (PL.backupRoot === null) {
+        PL.backupRoot = (await (await fetch(API + '/api/pick_root')).json()).root;
+      }
+      if (!PL.albums.length) {
+        const d = await (await fetch(`${API}/api/browse?root=${PL.backupRoot}&path=`)).json();
+        PL.albums = (d.dirs || []).filter(n => !n.startsWith('_'));
+      }
+    } catch (e) { return; }
+    const sel = $('#pl-country');
+    sel.innerHTML = '';
+    PL.albums.forEach(a => {
+      const o = document.createElement('option');
+      o.value = a; o.textContent = a;
+      sel.appendChild(o);
+    });
+    const want = keep && PL.albums.includes(keep) ? keep : await plDefaultCountry();
+    if (want) { sel.value = want; plSetCountry(want); return; }
+    // Nothing matched. Say so instead of selecting albums[0]: a dozen countries have
+    // no album, and silently showing the alphabetically first one (Albania) is worse
+    // than showing none, because it looks like an answer.
+    const o = document.createElement('option');
+    o.value = ''; o.textContent = '— pick a trip —';
+    sel.insertBefore(o, sel.firstChild);
+    sel.value = '';
+  };
+
+  // An album is named for the TRIP, not the country folder, so matching the slug
+  // against the album name only works when the two happen to agree. A plain
+  // startsWith missed 16 of the 36 country folders: Türkiye's photos are in
+  // "Turkey 2.0 (2026)", Indonesia's in "Bali (2024)", Chile's in
+  // "Patagonia (2024)", and a dozen countries have no album at all. Worse, the
+  // caller then fell back to albums[0], so a Türkiye article did not just fail to
+  // default -- it confidently showed Albania. (Kevin, twice: "the picture sidebar
+  // also doesn't default to the country of the article that you're writing still".)
+  const ALBUM_ALIAS = {
+    'turkiye': 'turkey', 'türkiye': 'turkey',
+    'indonesia': 'bali',
+    'chile': 'patagonia',
+  };
+  // "Greece 2.0 (2026)" -> "greece"; "Argentina & Paraguay (2024)" -> "argentina & paraguay"
+  function albumKey(a) {
+    return a.toLowerCase()
+            .replace(/\s*\(\s*\d{4}\s*\)\s*$/, '')     // the trip year
+            .replace(/\s+\d+(\.\d+)?$/, '')            // a "2.0" second visit
+            .trim();
+  }
+
+  // Which album the open article is about: "Drafts/.Full Articles/armenia/
+  // yerevan.html" -> "Armenia" -> "Armenia (2026)". Same derivation the crop
+  // modal and Blog Picks use, so all three agree.
+  // Takes the album names to choose from, so the photo library and Blog Picks
+  // share one answer. They used to disagree: Blog Picks asked articleRelPath(),
+  // which needs the site folder connected and is null in the usual case, so it
+  // fell through to albums[0] almost every time (Kevin: "make sure the same
+  // happens for the blog picks, lands on the country being written").
+  async function plDefaultCountry(names) {
+    names = names || PL.albums;
+    let country = '';
+    try { country = (await articleContext()).country || ''; } catch (e) {}
+    if (!country) return '';
+    const lc = country.toLowerCase();
+    const want = ALBUM_ALIAS[lc] || lc;
+    return names.find(a => albumKey(a) === want)
+        || names.find(a => albumKey(a).startsWith(want))
+        || names.find(a => a.toLowerCase().startsWith(lc))
+        || '';
+  }
+
+  window.plSetCountry = function (album) {
+    if (PL.backupRoot === null) return;
+    PL.root = PL.backupRoot;
+    PL.path = album;
+    plBrowse();
+  };
+
+  // Opening another article re-points the sidebar at that country, but never
+  // over a trip the user has just chosen by hand for this article.
+  document.addEventListener('article-loaded', () => {
+    if (PL.mode !== 'country' || !PL.online) return;
+    plLoadCountries();
+  });
+
   window.plBoot = async function () {
     try {
       const st = await (await fetch(API + '/api/state')).json();
       PL.online = true;
       $('#pl-offline').style.display = 'none';
       renderTabs(st.sources);
-      plBrowse();
+      plApplyMode();
       if ($('#pk-panel').style.display !== 'none') pkBoot();   // picks opened while offline
     } catch (e) {
       PL.online = false;
       ['#pl-tabs', '#pl-crumbs', '#pl-folders', '#pl-grid'].forEach(q => { $(q).innerHTML = ''; });
+      $('#pl-countrybar').style.display = 'none';
       $('#pl-offline').style.display = 'block';
     }
   };
@@ -4153,6 +4285,7 @@ main{overflow-y:auto;padding:1rem}
     $('#pk-toggle').classList.add('on');
     pkBoot();
   }
+  window.pkHide = pkHide;
   function pkHide() {
     $('#pk-panel').style.display = 'none';
     $('#pk-toggle').classList.remove('on');
@@ -4175,23 +4308,32 @@ main{overflow-y:auto;padding:1rem}
           'you want, then come back.';
         return;
       }
-      // Default to the album matching the open article's country. Same
-      // derivation the crop modal uses to prefill the country field, so
-      // "Drafts/albania/field-notes.html" -> "Albania" -> "Albania (2025)".
-      const rel = await articleRelPath();
-      const slug = articleSlug(rel);
-      const guess = slug.replace(/-/g, ' ');
       PK.albums.forEach(a => {
         const o = document.createElement('option');
         o.value = a.album;
         o.textContent = a.album + '  (' + a.n + ')';
         sel.appendChild(o);
       });
-      const match = PK.albums.find(a =>
-        guess && a.album.toLowerCase().startsWith(guess.toLowerCase()));
-      PK.album = (match || PK.albums[0]).album;
-      sel.value = PK.album;
-      pkLoad();
+      // Default to the album for the open article's country, through the same
+      // matcher the photo library uses so the two panels never disagree. This
+      // used to ask articleRelPath(), which needs the site folder connected --
+      // usually it is not -- so the slug came back empty and it landed on
+      // albums[0] regardless of what was being written.
+      const want = await plDefaultCountry(PK.albums.map(a => a.album));
+      if (want) {
+        PK.album = want;
+        sel.value = want;
+        pkLoad();
+      } else {
+        const o = document.createElement('option');
+        o.value = ''; o.textContent = '— pick a trip —';
+        sel.insertBefore(o, sel.firstChild);
+        sel.value = '';
+        PK.album = null;
+        $('#pk-grid').innerHTML = '';
+        $('#pk-empty').textContent =
+          'No shortlist for this country yet. Pick a trip above to see another one.';
+      }
     } catch (e) {
       $('#pk-empty').textContent = 'Photo server not running.';
     }
@@ -4303,7 +4445,7 @@ main{overflow-y:auto;padding:1rem}
         // by data-slot-id and falls back to any open placeholder, which is
         // exactly the recovery the drop path already gets.
         const slot = takePendingSlot();
-        const target = !slot ? { el: null, where: 'end' }
+        const target = !slot ? dropAtCaret()
           : slot.tagName === 'IMG' ? { el: slot, where: 'image', swap: true }   // ⇄ Swap
           : { el: slot, where: 'slot' };
         openCropForPhoto({ root: PK.root, path: rel, name: pick.n }, target);
@@ -4441,6 +4583,7 @@ main{overflow-y:auto;padding:1rem}
   // test hook: feed a fake geo result straight to the place bar
   window.plSetGeoForTest = g => { PL.geo = g; renderPlaceBar(); };
   window.plDebug = () => ({ root: PL.root, path: PL.path, place: PL.place, geoKey: PL.geoKey,
+    mode: PL.mode, backupRoot: PL.backupRoot, albums: PL.albums && PL.albums.length,
     geo: PL.geo && { total: PL.geo.total, pending: PL.geo.pending, groups: PL.geo.groups.length },
     follow: PL.follow, picking: PL.picking, items: PL.items && PL.items.length, rendered: PL.rendered });
   let geoPoll = null;
@@ -4866,6 +5009,22 @@ main{overflow-y:auto;padding:1rem}
     return best;
   }
 
+  // Where a photo goes when it is CLICKED in the sidebar rather than dragged:
+  // after the block the caret is in (a bullet splits its list, as a drop does).
+  // With no caret in the article it falls back to the end, which used to be the
+  // only behaviour - every picks-list click landed at the bottom of the article
+  // no matter where the cursor was (Kevin, 2026-09-24).
+  window.dropAtCaret = function dropAtCaret() {
+    const edEl = ed();
+    let range = null;
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount && edEl.contains(sel.anchorNode)) range = sel.getRangeAt(0);
+    else if (typeof _savedRange !== 'undefined' && _savedRange && edEl.contains(_savedRange.startContainer)) range = _savedRange;
+    if (!range) return { el: null, where: 'end' };
+    const blk = blockOf(range.startContainer);
+    return blk ? { el: blk, where: 'after' } : { el: null, where: 'end' };
+  };
+
   function blockOf(node) {
     // the insertion granularity: list items count as blocks so photos can go
     // between bullets; otherwise the nearest block-level child of the editor
@@ -4933,12 +5092,27 @@ main{overflow-y:auto;padding:1rem}
   // compression pipeline threw "articleRelPath is not defined" and silently
   // never ran -- the save badge still appeared, so nothing said so.
   async function articleRelPath() {
-    // repo-relative path of the open article, via the connected folder handle
-    if (!folderHandle || !fileHandle) return null;
-    try {
-      const parts = await folderHandle.resolve(fileHandle);
-      return parts ? parts.join('/') : null;
-    } catch (e) { return null; }
+    // The article's repo-relative path. The connected folder answers it exactly, but the
+    // folder is usually NOT connected -- Kevin does not normally connect one -- and every
+    // caller that asked this got null and quietly did something worse: Blog Picks defaulted
+    // to the alphabetically first album, the compression pipeline could not find the page.
+    // So the fallbacks that used to live inside articleContext() are here, where everyone
+    // gets them. The folder is now a shortcut, not a requirement.
+    if (folderHandle && fileHandle) {
+      try {
+        const parts = await folderHandle.resolve(fileHandle);
+        if (parts) return parts.join('/');
+      } catch (e) { /* fall through */ }
+    }
+    // the open review round knows the path it was opened with
+    if (window.review && review.state && review.state.rel) return review.state.rel;
+    // else the page's own head: a published page has a canonical link, and a draft that
+    // has been through the SEO pass has og:url
+    const head = originalHTML || '';
+    const m = /<link[^>]+rel="canonical"[^>]+href="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head)
+           || /property="og:url"[^>]+content="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head);
+    if (m) return m[1] + '/' + m[2];
+    return null;
   }
   window.articleRelPath = articleRelPath;
 
@@ -4956,6 +5130,36 @@ main{overflow-y:auto;padding:1rem}
   }
   // The country folder of an article path: "albania/x.html", "Drafts/albania/x.html"
   // and "Drafts/.Full Articles/armenia/x.html" all give the country slug.
+  // The open article's country, city and kind, with no site folder needed.
+  //   country : the folder ("armenia" -> "Armenia"), from the canonical link
+  //   kind    : 'city' | 'itinerary' | 'top10' | 'index' | 'field-notes' | ''
+  //   city    : the page's own city for a city page, else '' (the caller may
+  //             fill it from the photo's location)
+  window.articleContext = async function articleContext() {
+    let rel = null;
+    try { rel = await articleRelPath(); } catch (e) {}
+    if (!rel && window.review && review.state && review.state.rel) rel = review.state.rel;
+    if (!rel) {
+      const head = originalHTML || '';
+      const m = /<link[^>]+rel="canonical"[^>]+href="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head)
+             || /property="og:url"[^>]+content="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head);
+      if (m) rel = m[1] + '/' + m[2];
+    }
+    const slug = articleSlug(rel || '');
+    const title = t => t.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const country = title(slug);
+    const file = (rel || '').split('/').pop() || '';
+    const stem = file.replace(/\.html$/, '');
+    let kind = '', city = '';
+    if (!stem) kind = '';
+    else if (/-itinerary$/.test(stem)) kind = 'itinerary';
+    else if (/^top-10-/.test(stem)) kind = 'top10';
+    else if (stem === 'index') kind = 'index';
+    else if (stem === 'field-notes') kind = 'field-notes';
+    else { kind = 'city'; city = title(stem); }
+    return { rel, country, city, kind, slug };
+  };
+
   function articleSlug(rel) {
     if (!rel) return '';
     const parts = rel.split('/').filter(x => x !== 'Drafts' && !x.startsWith('.'));
@@ -5390,6 +5594,39 @@ main{overflow-y:auto;padding:1rem}
     History.touch();
   };
 
+  // Clear the photo but keep its place: the frame gets an empty slot back, the
+  // way it was before the photo went in, so it can be filled again later and
+  // saves as a [PHOTO] marker. Deleting used to be the only option, which took
+  // the frame with it (Kevin, 2026-09-24).
+  window.imgClear = function imgClear() {
+    const img = _selImg || document.querySelector('#editor img.img-selected');
+    if (!img) { alert('Click a photo first.'); return; }
+    History.checkpoint();
+    const pic = img.closest('picture');
+    const node = pic || img;
+    const host = node.parentElement;
+    const block = blockRootOf(img);
+    const cap = block && captionOf(block); if (cap) cap.remove();
+    const slot = emptySlot();
+    slot.dataset.ph = '1';
+    const framed = host && host.id !== 'editor' &&
+      (host.tagName === 'SPAN' && /aspect-ratio/.test(host.getAttribute('style') || '') ||
+       host.classList.contains('img-landscape') || host.classList.contains('ls') ||
+       host.classList.contains('fr') || host.classList.contains('pair'));
+    if (framed) node.replaceWith(slot);            // the frame keeps its shape; the slot fills it
+    else {
+      // a loose photo: give it the standard 2:3 pair cell so it has a frame to come back to
+      const wrap = document.createElement('div');
+      wrap.className = 'img-pair'; wrap.style.gridTemplateColumns = '1fr';
+      wrap.appendChild(slot);
+      node.replaceWith(wrap);
+    }
+    if (window.deselectImg) window.deselectImg();
+    setDirty(true);
+    History.touch();
+    slot.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
   /* Insert ONE placeholder at the caret. The Pair button has always been the only
      way to put a photo slot into an article, so a single portrait or a landscape
      meant inserting a pair and deleting half of it. `shape` is 'portrait' (the
@@ -5417,9 +5654,15 @@ main{overflow-y:auto;padding:1rem}
     // so this only ever affects the ones still waiting.
     slot.dataset.ph = '1';
     insertBlockAtCaret(block);
-    const after = document.createElement('p');
-    after.innerHTML = '<br>';
-    block.parentElement.insertBefore(after, block.nextSibling);
+    // A trailing empty paragraph is "somewhere to keep typing" after a photo in
+    // running prose. Between two halves of a split bullet list it is just a
+    // blank gap, so it is only added when the neighbour is not a list.
+    const nxt = block.nextElementSibling;
+    if (!nxt || !/^(UL|OL)$/.test(nxt.tagName)) {
+      const after = document.createElement('p');
+      after.innerHTML = '<br>';
+      block.parentElement.insertBefore(after, block.nextSibling);
+    }
     History.touch();
     setDirty(true);
     block.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -5444,6 +5687,22 @@ main{overflow-y:auto;padding:1rem}
     }
     const r = sel.getRangeAt(0).cloneRange();
     r.collapse(true);
+    // Inside a bullet, the block goes right after THAT bullet, splitting the
+    // list around it - the same thing a drag-drop onto a bullet does. The old
+    // climb below lifted the block out of every list level, so a caret in a
+    // nested "What to Do" sub-list put the placeholder after the whole outer
+    // list: the bottom of the section, nowhere near the cursor (Kevin, 2026-09-24).
+    const anchorEl = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+    const li = anchorEl && anchorEl.closest && anchorEl.closest('li');
+    if (li && ed.contains(li)) {
+      // a bullet nested in another bullet's sub-list: split at the OUTER item,
+      // which is the smallest thing a block can legally sit between
+      let top = li;
+      while (top.parentElement && top.parentElement.closest && top.parentElement.closest('li') &&
+             ed.contains(top.parentElement.closest('li'))) top = top.parentElement.closest('li');
+      insertAtDrop({ el: top, where: 'after' }, node);
+      return;
+    }
     r.insertNode(node);                       // splits the text node in place
     let parent = node.parentElement;
     while (parent && parent !== ed &&
@@ -5699,6 +5958,19 @@ main{overflow-y:auto;padding:1rem}
       $('#crop-orient').style.display = 'none';
       $('#crop-dropmode').style.display = 'none';
       $('#crop-go').textContent = 'Apply';
+      // Straighten, rotate and flip all need the SOURCE pixels, and this mode
+      // only rewrites CSS on the photo already in the page - so the controls
+      // were sitting there live and doing nothing at all. Turn them off and
+      // say where the working one is (✎ Edit re-imports from the archive
+      // original in bake mode, where the angle really is applied).
+      ['#rot-ccw', '#rot-cw', '#flip-h', '#crop-angle'].forEach(q => {
+        const el = $(q); if (!el) return;
+        el.disabled = true;
+        el.title = 'Straighten and rotate re-encode the photo, so they only run '
+                 + 'on insert. Use ✎ Edit to reopen this photo\'s original.';
+      });
+      $('#crop-angle-name').title = $('#crop-angle').title;
+      $('#crop-angle-name').style.opacity = '.45';
       resetLockUI(false);
       const cap = captionOf(blockRootOf(img));
       $('#crop-caption').value = cap ? cap.textContent : '';
@@ -6458,7 +6730,20 @@ void main(){
     CM.angleDeg = +this.value;
     $('#crop-angle-val').textContent = this.value + '°';
     devRender();
+    goLabel();
   });
+  // The Insert/Apply button names the tilt it is about to bake ("Insert · +5°"),
+  // so whether a straighten was accepted is visible before the click rather
+  // than something to go and check in the file afterwards (Kevin, 2026-09-24).
+  window.goLabel = function goLabel() {
+    const go = $('#crop-go'); if (!go || !CM) return;
+    const base = go.dataset.base || go.textContent.replace(/\s*·.*$/, '');
+    go.dataset.base = base;
+    const a = CM.angleDeg || 0;
+    // only in bake mode: 'css' (edit-existing) cannot straighten at all
+    const canBake = CM.devMode !== 'css';
+    go.textContent = (canBake && Math.abs(a) > 0.01) ? base + ' · ' + (a > 0 ? '+' : '') + a + '°' : base;
+  };
   $('#crop-angle-name').addEventListener('dblclick', () => {
     if (!CM) return;
     CM.angleDeg = 0;
@@ -6687,15 +6972,46 @@ void main(){
     } else note.style.display = 'none';
     if (cropGen !== _cropOpenGen) return;   // a newer photo was clicked mid-fetch
     loadPendingStage(photo, drop, meta, 0, null);
-    // prefill country/city while the image loads
-    const rel = await articleRelPath();
-    const slug = articleSlug(rel);
-    const country = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    $('#crop-country').value = country;
-    try {
-      const cities = JSON.parse(localStorage.getItem('pl-cities') || '{}');
-      $('#crop-city').value = cities[country] || '';
-    } catch (e) {}
+    // prefill country/city from the article itself. articleRelPath() needs the
+    // connected site folder, which is usually NOT connected, so the country
+    // came up blank and the city was just whatever was typed last. The
+    // article's own path (canonical link + stylesheet depth, the way review.js
+    // finds it) says the country; the page kind says the city: a city page
+    // (yerevan.html) names its city, an itinerary / top-10 / index page takes
+    // the city the PHOTO was shot in when its location is known (Kevin, 2026-09-24).
+    const ctx = await articleContext();
+    $('#crop-country').value = ctx.country;
+    let city = ctx.city;
+    if (!city) {
+      const geo = (typeof PK !== 'undefined' && PK.geo && PK.geo.photos && PK.geo.photos[photo.name])
+               || (PL.geo && PL.geo.photos && PL.geo.photos[photo.name]);
+      if (geo && geo.city && geo.city !== 'Other') city = geo.city;
+    }
+    if (!city) {
+      try { city = JSON.parse(localStorage.getItem('pl-cities') || '{}')[ctx.country] || ''; } catch (e) {}
+    }
+    $('#crop-city').value = city;
+
+    // The alt text starts as the PLACE, not the filename. loadPendingStage seeds it
+    // with the photo's stem ("IMG_0777"), which is not alt text and had to be retyped
+    // for every photo. Kevin: "For the alt text of the photo please fill out the
+    // location and I can add more on to the end."
+    //
+    // Only ever replaces that seed, so anything typed or kept from a previous open
+    // survives. And loadPendingStage schedules a focus+select() at 60ms, which would
+    // wipe the prefill on the first keystroke -- the whole point is to type onto the
+    // END of it -- so the caret is placed after that fires.
+    const stem = photo.name.replace(/\.[^.]+$/, '');
+    const altEl = $('#crop-alt');
+    const where = [city, ctx.country].filter(Boolean).join(', ');
+    if (where && altEl.value.trim() === stem) {
+      altEl.value = where;
+      setTimeout(() => {
+        if (altEl.value !== where) return;          // they already started typing
+        altEl.focus();
+        altEl.setSelectionRange(altEl.value.length, altEl.value.length);
+      }, 90);
+    }
   }
 
   function dropModes(drop) {
@@ -6762,7 +7078,13 @@ void main(){
       CM.angleDeg = prevAngle;
       CM.angleBaked = prevAngleBaked;
       CM.masks = prevMasks;
-      ['#rot-ccw', '#rot-cw', '#flip-h', '#crop-angle'].forEach(q => { $(q).disabled = !!CM.eraseToken; });
+      ['#rot-ccw', '#rot-cw', '#flip-h', '#crop-angle'].forEach(q => {
+        const el = $(q); if (!el) return;
+        el.disabled = !!CM.eraseToken;          // an erase bakes the pixels first
+        el.title = '';
+      });
+      $('#crop-angle-name').style.opacity = '';
+      $('#crop-angle-name').title = 'Double-click to reset';
       resetLockUI(true);
       $('#crop-go').textContent = 'Insert';
       if (!keep) {
