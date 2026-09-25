@@ -201,6 +201,24 @@ for path, r in pages():
             q = ln.rfind('"', 0, m.start()); eq = ln.rfind("=", 0, max(0, q))
             if q > 0 and eq > 0 and q - eq <= 2 and ln.find('"', m.start()) > m.start():
                 continue                                    # inside an attribute, not prose
+            # CLAUDE.md scopes the rule to BODY PROSE: "It does not cover <title>,
+            # meta/og:description, or UI copy". A card heading is the article's TITLE drawn
+            # as UI -- "Ruta de las Flores — El Salvador's Historic Route" is the same string
+            # as the <title>, so flagging it on the card while exempting it in the head was
+            # the rule contradicting itself. Headings and kickers are titles too.
+            open_tag = max(ln.rfind("<", 0, m.start()), 0)
+            enclosing = ln[max(0, ln.rfind("<", 0, m.start())):m.start()]
+            before = ln[:m.start()]
+            last_open = before.rfind("<")
+            TITLEISH = ("card-h", "sec-h", "kick", "toc-", "nav-", "hero-h", "art-card")
+            tag_start = before.rfind("<div"), before.rfind("<h1"), before.rfind("<h2"), \
+                        before.rfind("<h3"), before.rfind("<h4"), before.rfind("<span"), \
+                        before.rfind("<a ")
+            cut = max(t for t in tag_start)
+            if cut >= 0 and ">" in before[cut:]:
+                opener = before[cut:before.index(">", cut) + 1]
+                if any(k in opener for k in TITLEISH) or re.match(r"<h[1-4]\b", opener):
+                    continue
             block = max(ln.rfind("<li", 0, m.start()), ln.rfind("<p", 0, m.start()), 0)
             # The documented lead-in is `<b>Name</b> — description` opening its own bullet, so
             # match that shape instead of inferring it from length. Two real lead-ins were

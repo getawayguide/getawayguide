@@ -185,9 +185,34 @@ def check_tiers():
             if not fallback:
                 continue
             name = fallback.rsplit("/", 1)[-1]
-            desk_webp = [s for s in srcs if s.get("type") == "image/webp" and "min-width" in s.get("media", "")]
-            desk_jpg = [s for s in srcs if not s.get("type") and "min-width" in s.get("media", "")]
-            mob_webp = [s for s in srcs if s.get("type") == "image/webp" and "min-width" not in s.get("media", "")]
+            # Two shapes are in use and both are correct. A body image names the desktop
+            # source with `media="(min-width:769px)"`; a HERO leaves the desktop source with
+            # no media at all and narrows the mobile one with `max-width:768px`. Keying on
+            # min-width alone meant every hero was reported as having no desktop WebP while
+            # the file sat right there in the markup, and the desktop source fell into the
+            # mobile bucket, so its tier count was judged against the wrong rule.
+            # The un-media'd <source> means opposite things in the two patterns, so which
+            # breakpoint the block DOES name is what disambiguates it:
+            #   body image  `media="(min-width:769px)"` for desktop -> bare source = mobile
+            #   hero        `media="(max-width:768px)"` for mobile  -> bare source = desktop
+            # Reading a bare source as desktop unconditionally reported every El Salvador
+            # body image as having no mobile WebP; reading it as mobile unconditionally
+            # reported every hero as having no desktop WebP. Both were wrong about half the
+            # site, in opposite directions.
+            has_min = any("min-width" in s.get("media", "") for s in srcs)
+            has_max = any("max-width" in s.get("media", "") for s in srcs)
+
+            def where(s):
+                m = s.get("media", "")
+                if "min-width" in m:
+                    return "desktop"
+                if "max-width" in m:
+                    return "mobile"
+                return "mobile" if has_min else ("desktop" if has_max else "desktop")
+
+            desk_webp = [s for s in srcs if s.get("type") == "image/webp" and where(s) == "desktop"]
+            desk_jpg = [s for s in srcs if not s.get("type") and where(s) == "desktop"]
+            mob_webp = [s for s in srcs if s.get("type") == "image/webp" and where(s) == "mobile"]
             if not desk_webp:
                 probs.append(finding("medium", "webp-missing", "No desktop WebP source, so every visitor downloads the JPEG.", name))
             if not mob_webp:
@@ -263,7 +288,12 @@ def check_heroes():
         for f in sorted(refs):
             if f not in COMMITTED:
                 probs.append(finding("high", "hero-tier-missing", "A hero tier is not published, so it 404s.", f))
-        if region and not refs:
+        # A country index (el-salvador/index.html) leads with a grid of article cards, not a
+        # photo hero, so there is nothing here to find. Kevin, 2026-09-25: "country pages are
+        # not supposed to have picture heroes." Reporting it as unchecked made the section
+        # look like it had a problem every single run.
+        is_country_index = r.count("/") == 1 and r.endswith("/index.html")
+        if region and not refs and not is_country_index:
             probs.append(finding("low", "hero-unchecked", "Could not find the hero's image references to check."))
         if probs:
             groups.append({"name": r, "findings": probs[:8]})

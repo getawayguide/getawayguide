@@ -9,9 +9,13 @@ through `background:url()` rather than an <img>, which is why the heroes check n
 
 The convention this follows is the one already on disk (hero-el-salvador, hero-queenstown):
 
-    hero-<slug>.jpg / .webp        2000px on the long edge   the desktop 1x
-    hero-<slug>-2x.jpg / .webp     2561px                    the desktop 2x
-    hero-<slug>-mob.jpg / .webp    1206px                    phones
+    hero-<slug>.jpg / .webp         2000px on the long edge   the desktop 1x
+    hero-<slug>-2x.jpg / .webp      2561px                    the desktop 2x
+    hero-<slug>-mob.jpg / .webp     1206px                    phones at 2x/3x
+    hero-<slug>-mob-1x.jpg / .webp   603px                    phones at 1x
+
+The -mob-1x is the one every existing hero was missing: the mobile <source> carried a single
+file, so a 1x phone downloaded the same 1206px image as a 3x one. It halves that.
 
 ICC PROFILE: these are Display P3. Pillow's convert("RGB") drops the profile and a browser
 then reads P3 values as sRGB, which renders the photo visibly grey. Every write carries it.
@@ -30,7 +34,7 @@ from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 # long edge, suffix
-SIZES = [(2000, ""), (2561, "-2x"), (1206, "-mob")]
+SIZES = [(2000, ""), (2561, "-2x"), (1206, "-mob"), (603, "-mob-1x")]
 JPEG_Q, WEBP_Q = 86, 82
 
 
@@ -66,9 +70,18 @@ def main():
     if not a.dry_run:
         outdir.mkdir(parents=True, exist_ok=True)
     total = 0
+    done = set()
     for long_edge, suffix in SIZES:
         scale = min(1.0, long_edge / max(w, h))
         size = (max(1, round(w * scale)), max(1, round(h * scale)))
+        # A source smaller than the tier cannot fill it. Writing it anyway produced a -2x
+        # that was byte-for-byte the same picture as the 1x, which is not a tier: it is a
+        # second copy the browser may download believing it is sharper.
+        if size in done:
+            out("  skip (source is only %dpx; -2x would duplicate the 1x)  hero-%s%s"
+                % (max(w, h), a.slug, suffix))
+            continue
+        done.add(size)
         im = rgb if scale == 1.0 else rgb.resize(size, Image.LANCZOS)
         for ext, kw in ((".jpg", dict(quality=JPEG_Q, optimize=True, progressive=True)),
                         (".webp", dict(quality=WEBP_Q, method=6))):
