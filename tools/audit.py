@@ -234,9 +234,32 @@ def check_heroes():
                     probs.append(finding("high", "hero-original", "The hero fallback is an archival original.", src))
         # the other shape: a background image-set in the page's own <style>
         for mm in re.finditer(r"url\(['\"]?([^)'\"]+)['\"]?\)", region + (re.search(r'<style id="hero-tiers">.*?</style>', html, re.S).group(0) if re.search(r'<style id="hero-tiers">', html) else "")):
-            f = resolve(mm.group(1), r)
-            if f and "/Images/" in mm.group(1):
+            ref = mm.group(1)
+            f = resolve(ref, r)
+            if f and "/Images/" in ref:
                 refs.add(f)
+            # A hero can be a CSS background as easily as an <img>, and the original test
+            # was only ever applied to the <img>. top-10-el-salvador.html served the 13MB
+            # archival JPEG as `background:url(...)` for months and this check called the
+            # page clean, because it collected the reference and never judged it.
+            if "/Images/" in ref and "/Images/web/" not in ref:
+                probs.append(finding("high", "hero-original",
+                                     "The hero background is an archival original.", ref))
+
+        # Whatever route it arrives by, a single image this heavy is the page's whole
+        # budget. `Waterfall Main.webp` was 6.77MB and lived under Images/web/, so every
+        # path-based rule above considered it correct.
+        HEAVY = 4 * 1024 * 1024
+        for f in sorted(refs):
+            full = ROOT / f
+            try:
+                n = full.stat().st_size
+            except OSError:
+                continue
+            if n > HEAVY:
+                probs.append(finding("high", "hero-heavy",
+                                     "%.1f MB for one hero image; rebuild it with "
+                                     "tools/gen_hero_variants.py." % (n / 1048576), f))
         for f in sorted(refs):
             if f not in COMMITTED:
                 probs.append(finding("high", "hero-tier-missing", "A hero tier is not published, so it 404s.", f))
