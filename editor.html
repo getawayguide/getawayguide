@@ -6609,8 +6609,11 @@ void main(){
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       drawMaskGuides();
     } else {
-      // no WebGL: approximate with a CSS filter on the stage image
+      // no WebGL: approximate with a CSS filter on the stage image, and show the
+      // straighten as a CSS rotation so the slider still visibly does something
       $('#crop-img').style.filter = devCssFilter();
+      const fdeg = CM.angleBaked ? 0 : (CM.angleDeg || 0);
+      $('#crop-img').style.transform = Math.abs(fdeg) > 0.01 ? 'rotate(' + fdeg + 'deg)' : '';
       drawMaskGuides();
     }
     if (withHist !== false) {      // both paths get a histogram
