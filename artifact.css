@@ -145,7 +145,11 @@
 /* subtitles hold to two lines on desktop and laptop: 620px wrapped a 27-word itinerary
    lead to three. The article banner's inline min(600px,90%) is overridden below for the
    same reason. */
-.article-hero.gg-banner .article-lead { max-width:min(760px, 90%) !important; }
+.article-hero.gg-banner .article-lead { max-width:min(700px, 90%) !important; text-wrap:balance; }
+.artsub { text-wrap:balance; }
+/* balance: the two lines break evenly instead of a full first line and a two-word second
+   (Kevin, 2026-09-26, on the monastery subtitle). The lead sits a little narrower than
+   the title's 700px measure rather than wider. */
 .ah-banner .artsub { color:rgba(255,255,255,.82); margin-left:0; }
 .ah-split .artsub { margin-left:0; }
 .phone .artsub { font-size:16px; margin-left:0; }
