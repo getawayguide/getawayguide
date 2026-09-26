@@ -450,7 +450,7 @@
     const d = state.draft; if (!d || !text.trim()) return;
     const m = ed().querySelector(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
     const t = { id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] };
-    if (toClaude) { t.kind = 'task'; t.status = 'sent'; }
+    if (toClaude) { t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); }
     state.comments.threads.push(t);
     state.draft = null; _range = null; state.active = d.id;
     saveComments().then(() => { if (toClaude) { toast('Sent. The edit lands here when Claude answers.', 4000); pollTasks(); } }); renderAll();
@@ -460,11 +460,25 @@
   const CLAUDE_MARK = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2l1.7 6.3 5.8-3.3-3.3 5.8L22 12l-5.8 1.2 3.3 5.8-5.8-3.3L12 22l-1.7-6.3-5.8 3.3 3.3-5.8L2 12l5.8-1.2L4.5 5l5.8 3.3z"/></svg>';
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
-    t.kind = 'task'; t.status = 'sent'; t.resolved = false; delete t.edit;
+    t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit;
     saveComments().then(pollTasks); renderAll(); toast('Sent to Claude.');
   }
   let _pollT = null;
-  function startPolling() { if (_pollT) return; _pollT = setInterval(() => { if (document.body.classList.contains('review-open')) pollTasks(); }, 8000); }
+  const ageSec = iso => iso ? Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000) : 0;
+  const ageText = sec => sec < 60 ? Math.round(sec) + 's' : sec < 3600 ? Math.round(sec / 60) + ' min' : Math.round(sec / 360) / 10 + ' h';
+  function tickAges() {
+    let needNote = false;
+    document.querySelectorAll('#review-pane .chip.sent .age').forEach(a => {
+      const sec = ageSec(a.dataset.since); a.textContent = ' · ' + ageText(sec);
+      if (sec > 90 && !a.closest('.rv-card').querySelector('.wait-note')) needNote = true;
+    });
+    if (needNote && !state.draft) renderAll();
+  }
+  function startPolling() {
+    if (_pollT) return;
+    _pollT = setInterval(() => { if (document.body.classList.contains('review-open')) pollTasks(); }, 8000);
+    setInterval(tickAges, 1000);
+  }
   async function pollTasks() {
     if (!state.key || state._polling) return;
     if (!state.comments.threads.some(t => isTask(t) && !t.resolved && t.status !== 'applied')) return;
@@ -765,12 +779,15 @@
     const av = a => `<span class="av${a === AUTHOR ? ' me' : ''}">${esc((a || '?')[0])}</span>`;
     const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${esc(r.text)}</div></div>`).join('');
     const chip = !isTask(t) ? '' : t.status === 'applied' ? '<span class="chip done">Claude edited</span>' : t.status === 'offered' ? '<span class="chip wait">edit ready</span>'
-               : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>' : '<span class="chip sent">&#10148; sent to Claude</span>';
+               : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>'
+               : `<span class="chip sent"><span class="spin"></span>waiting for Claude<span class="age" data-since="${esc(t.sentAt || t.created || '')}"></span></span>`;
+    const waitNote = isTask(t) && !t.resolved && (t.status === 'sent' || !t.status) && ageSec(t.sentAt || t.created) > 90
+      ? '<div class="lbl wait-note">Nothing has picked this up yet. Claude answers from the Claude Code session (say <b>answer my tasks</b>, or run <b>/loop answer my editor tasks</b> to have it checked every minute), or on its own with an API key in .env.</div>' : '';
     d.innerHTML = `<div class="who">${av(t.author)}<b>${esc(t.author)}</b><span class="tm">${when(t.created)}${t.edited ? ' · edited' : ''}</span>${chip}
         <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
           <span class="menu"><button class="ico" data-a="more" title="More thread actions">&#8943;</button>
           <div class="dd">${t.resolved ? '<button data-a="reopen">Reopen</button>' : '<button data-a="resolve2">Resolve thread</button>'}${t.author === AUTHOR ? '<button data-a="edit">Edit</button>' : ''}<button data-a="del">Delete thread</button></div></span></span></div>
-      ${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}
+      ${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}${waitNote}
       <div class="tx">${esc(t.text)}</div>${replies}
       ${t.status === 'offered' && t.edit ? `<div class="alt"><button class="use" data-a="use" title="Put Claude's version in the text">Use</button><span>${esc(plain(t.edit.replace)).slice(0, 700)}</span></div>` : ''}
       ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
@@ -1084,7 +1101,11 @@ body.review-open #review-pane{display:flex}
 .rv-card .acts .claude:hover{background:#FBEDE6;border-color:#eec3b3}
 .rv-card .act .send svg{vertical-align:-3px;margin-right:.15rem;color:#D97757}
 .rv-card .chip{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .4rem;border-radius:999px;margin-left:.35rem;white-space:nowrap}
-.rv-card .chip.sent{background:#FBEFC2;color:#5c4a12}.rv-card .chip.done{background:#E3F0E8;color:#2D6B50}.rv-card .chip.wait{background:#E8EEF7;color:#2f4b78}.rv-card .chip.fail{background:#F8E5E0;color:#B4553C}
+.rv-card .chip.sent{background:#FBEFC2;color:#5c4a12;display:inline-flex;align-items:center;gap:.3rem}
+.rv-card .chip .spin{width:9px;height:9px;border:1.5px solid #c9a94a;border-top-color:transparent;border-radius:50%;animation:rvspin .8s linear infinite;display:inline-block}
+@keyframes rvspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.rv-card .chip .spin{animation:none;border-top-color:#c9a94a;opacity:.6}}
+.rv-card .wait-note{color:#5c4a12;background:#FFF8E1;border:1px solid #F1E2A8;border-radius:4px;padding:.35rem .5rem;margin:.35rem 0 0;font-size:.72rem;line-height:1.4}.rv-card .chip.done{background:#E3F0E8;color:#2D6B50}.rv-card .chip.wait{background:#E8EEF7;color:#2f4b78}.rv-card .chip.fail{background:#F8E5E0;color:#B4553C}
 .rv-card .act .send{border-color:#b9d4c5;color:#2D6B50}
 .rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4}
 .rv-card .alt .use{flex-shrink:0;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #b9d4c5;background:#E3F0E8;color:#2D6B50;border-radius:3px;cursor:pointer}

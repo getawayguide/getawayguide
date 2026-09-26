@@ -163,6 +163,27 @@
       color: rgba(28,40,33,.35);
     }
 
+    #ap-backdrop{position:fixed;inset:0;background:rgba(28,40,33,.42);z-index:900;display:flex;align-items:flex-start;justify-content:center;padding-top:8vh}
+    #ap{width:min(820px,94vw);max-height:82vh;display:flex;flex-direction:column;background:#fff;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.28);overflow:hidden;font-family:'Hanken Grotesk',Helvetica,Arial,sans-serif;color:#1C2821}
+    .ap-top{display:flex;align-items:center;gap:.5rem;padding:.7rem .8rem;border-bottom:1px solid #e6e6e2;background:#F7F7F4}
+    #ap-q{flex:1;font:1rem/1.3 'Hanken Grotesk',sans-serif;padding:.5rem .65rem;border:1px solid #d9d6cd;border-radius:5px;background:#fff;outline:none}
+    #ap-q:focus{border-color:#2D6B50;box-shadow:0 0 0 3px rgba(45,107,80,.12)}
+    .ap-btn{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.5rem .6rem;border:1px solid #d9d6cd;background:#fff;border-radius:4px;cursor:pointer;color:#1C2821}
+    .ap-btn:hover{background:#F0EFEA}
+    #ap-list{overflow:auto;flex:1;padding:.3rem 0 .5rem}
+    .ap-h{font:600 .58rem/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9A7B2E;padding:.75rem .9rem .3rem;position:sticky;top:0;background:#fff}
+    .ap-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.42rem .9rem;cursor:pointer;border-left:3px solid transparent}
+    .ap-row:hover,.ap-row.sel{background:#F3F6F4;border-left-color:#2D6B50}
+    .ap-main{min-width:0}.ap-title{font-size:.92rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ap-path{font:.62rem/1.3 'DM Mono',monospace;color:#8a9790;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
+    .ap-meta{display:flex;align-items:center;gap:.35rem;flex-shrink:0;white-space:nowrap}
+    .ap-chip{font:600 .52rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .4rem;border-radius:999px;background:#EEEDE7;color:#5c665f}
+    .ap-chip.live{background:#E3F0E8;color:#2D6B50}.ap-chip.draft{background:#FBEFC2;color:#5c4a12}
+    .ap-b{font:600 .55rem/1 'Hanken Grotesk',sans-serif;padding:.25rem .4rem;border-radius:3px;background:#E8EEF7;color:#2f4b78}
+    .ap-b.task{background:#FBEDE6;color:#B4553C}.ap-b.cm{background:#F1EFE8;color:#6b6250}
+    .ap-dim{font-size:.68rem;color:#8a9790;min-width:3.2em;text-align:right}
+    .ap-empty{padding:2rem;text-align:center;color:#8a9790}
+    .ap-foot{font:.62rem/1 'Hanken Grotesk',sans-serif;color:#8a9790;padding:.5rem .9rem;border-top:1px solid #e6e6e2;background:#F7F7F4}
     .article-list {
       overflow-y: auto;
       flex: 1;
@@ -1150,10 +1171,24 @@ main{overflow-y:auto;padding:1rem}
     <button class="btn btn-open" id="btn-photos" onclick="togglePhotoPanel()">Photos</button>
     <button class="btn btn-open" id="btn-review" onclick="window.review && review.toggle()" title="Track changes and comments for the open article">Review</button>
     <button class="btn btn-open" id="btn-preview" onclick="openPreview()" title="See this article as a phone, tablet or desktop page, unsaved edits included">Preview</button>
-    <button class="btn btn-open" id="btn-open">Open Article</button>
+    <button class="btn btn-open" id="btn-open" title="Every article in the Travel Blog folder (Ctrl+O)">Open Article</button>
     <button class="btn btn-save" id="btn-save" disabled>Save</button>
   </div>
 </header>
+
+<!-- Articles panel: every page in the Travel Blog folder, recent first, then by country -->
+<div id="ap-backdrop" style="display:none">
+  <div id="ap" role="dialog" aria-label="Open an article">
+    <div class="ap-top">
+      <input id="ap-q" type="search" placeholder="Type a country, a title, or a word from the file name…" autocomplete="off" spellcheck="false">
+      <span id="ap-count" class="ap-dim"></span>
+      <button id="ap-browse" class="ap-btn" title="The system file picker, for a page outside the list">Browse files…</button>
+      <button class="ap-btn" onclick="closeArticles()" title="Close (Esc)">&times;</button>
+    </div>
+    <div id="ap-list"></div>
+    <div class="ap-foot">&uarr;&darr; move · Enter opens · Esc closes · Ctrl+O from anywhere</div>
+  </div>
+</div>
 
 <!-- Full-window photo editor: opens when a photo is dropped into the article
      (crop precisely, THEN insert) and via ✂ Crop / double-click for existing
@@ -1263,7 +1298,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=07638138" defer></script>
+<script src="review.js?v=fb17051c" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1587,6 +1622,115 @@ main{overflow-y:auto;padding:1rem}
   // The sidebar article list was replaced by the to-do list; keep this a
   // no-op so legacy callers (connectFolder) don't error.
   async function refreshArticleList() {}
+
+  // ================= ARTICLES PANEL =================
+  // Everything under the Travel Blog folder, from the photo server (/api/articles): title,
+  // country, live or draft, words, when it was last opened here, open comments, a pending
+  // review round. Click opens it through the connected folder handle, so Save works as it
+  // always has; nothing is fetched over HTTP into the editor.
+  const AP = { rows: [], q: '', sel: 0, open: false, loading: false, justOpened: {} };
+  const escHtml = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function apEl() { return document.getElementById('ap-backdrop'); }
+  async function openArticles() {
+    const b = apEl(); b.style.display = 'flex'; AP.open = true; AP.sel = 0;
+    const inp = document.getElementById('ap-q'); inp.value = AP.q = ''; setTimeout(() => inp.focus(), 0);
+    apRender();
+    AP.loading = true; apRender();
+    try { const r = await (await fetch(API + '/api/articles', { cache: 'no-store' })).json(); AP.rows = r.articles || []; AP.root = r.root || '';
+          for (const row of AP.rows) if (AP.justOpened[row.rel] > (row.opened || 0)) row.opened = AP.justOpened[row.rel]; }   // opened here a moment ago, before the server heard
+    catch (e) { AP.rows = []; AP.error = 'The photo server is not answering, so the list is empty. Browse files still works.'; }
+    AP.loading = false; apRender();
+  }
+  function closeArticles() { apEl().style.display = 'none'; AP.open = false; }
+  const apWhen = t => { if (!t) return ''; const d = (Date.now() / 1000 - t) / 86400; return d < 1 ? 'today' : d < 2 ? 'yesterday' : d < 30 ? Math.round(d) + ' d ago' : new Date(t * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); };
+  const apName = c => c.replace(/-/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+  function apMatches() {
+    const q = AP.q.trim().toLowerCase();
+    if (!q) return AP.rows;
+    const words = q.split(/\s+/);
+    return AP.rows.filter(r => { const hay = (r.title + ' ' + r.rel + ' ' + r.country + ' ' + r.kind + ' ' + r.status).toLowerCase(); return words.every(w => hay.includes(w)); });
+  }
+  function apVisible() {                       // the rows in the order they are drawn, for the keyboard
+    const m = apMatches();
+    if (AP.q.trim()) return m.slice().sort((a, b) => (b.opened || 0) - (a.opened || 0) || a.rel.localeCompare(b.rel));
+    const recent = m.filter(r => r.opened).sort((a, b) => b.opened - a.opened).slice(0, 8);
+    const rest = m.slice().sort((a, b) => a.country.localeCompare(b.country) || (a.status === b.status ? 0 : a.status === 'live' ? -1 : 1) || a.rel.localeCompare(b.rel));
+    return recent.concat(rest);
+  }
+  function apRow(r, i) {
+    const badges = [];
+    if (r.round) badges.push(`<span class="ap-b round" title="${escHtml(r.round.title || '')}">${r.round.changes} to review</span>`);
+    if (r.tasks) badges.push(`<span class="ap-b task">${r.tasks} for Claude</span>`);
+    if (r.comments) badges.push(`<span class="ap-b cm">${r.comments} comment${r.comments === 1 ? '' : 's'}</span>`);
+    return `<div class="ap-row${i === AP.sel ? ' sel' : ''}" data-rel="${escHtml(r.rel)}" data-i="${i}">
+      <div class="ap-main"><div class="ap-title">${escHtml(r.title)}</div>
+        <div class="ap-path">${escHtml(r.rel)}</div></div>
+      <div class="ap-meta"><span class="ap-chip ${r.status}">${r.status}</span><span class="ap-chip kind">${escHtml(r.kind)}</span>${badges.join('')}
+        <span class="ap-dim">${r.words.toLocaleString()} w</span><span class="ap-dim" title="last opened here">${r.opened ? apWhen(r.opened) : ''}</span></div></div>`;
+  }
+  function apRender() {
+    const host = document.getElementById('ap-list'); if (!host) return;
+    if (AP.loading && !AP.rows.length) { host.innerHTML = '<div class="ap-empty">Reading the folder…</div>'; return; }
+    const vis = apVisible();
+    if (AP.sel >= vis.length) AP.sel = Math.max(0, vis.length - 1);
+    if (!vis.length) { host.innerHTML = `<div class="ap-empty">${AP.error ? escHtml(AP.error) : 'Nothing matches.'}</div>`; return; }
+    let h = '', i = 0;
+    if (!AP.q.trim()) {
+      const nRecent = Math.min(8, vis.filter(r => r.opened).length);
+      if (nRecent) { h += '<div class="ap-h">Recent</div>'; for (; i < nRecent; i++) h += apRow(vis[i], i); }
+      let country = null;
+      for (; i < vis.length; i++) { if (vis[i].country !== country) { country = vis[i].country; h += `<div class="ap-h">${escHtml(apName(country))}</div>`; } h += apRow(vis[i], i); }
+    } else {
+      for (; i < vis.length; i++) h += apRow(vis[i], i);
+    }
+    host.innerHTML = h;
+    host.querySelectorAll('.ap-row').forEach(el => { el.onclick = () => apOpen(el.dataset.rel); el.onmousemove = () => { const k = +el.dataset.i; if (k !== AP.sel) { AP.sel = k; host.querySelectorAll('.ap-row').forEach(x => x.classList.toggle('sel', +x.dataset.i === k)); } }; });
+    const sel = host.querySelector('.ap-row.sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
+    document.getElementById('ap-count').textContent = vis.length + ' of ' + AP.rows.length;
+  }
+  // The connected folder has to be the Travel Blog root for a repo path to resolve. A folder
+  // connected for images may be something else; then one click connects the right one.
+  async function apEnsureRoot() {
+    if (folderHandle) {
+      try {
+        if (await ensureFolderHandle()) { await folderHandle.getDirectoryHandle('tools'); return true; }
+      } catch (e) { /* not the root, or no permission */ }
+    }
+    if (!confirm('To open pages by name the editor needs the Travel Blog folder connected once. Pick it now?')) return false;
+    try {
+      const h = await window.showDirectoryPicker({ id: 'travel-blog', mode: 'readwrite', startIn: 'documents' });
+      await h.getDirectoryHandle('tools');
+      folderHandle = h; await saveFolderHandle(h); updateFolderUI();
+      return true;
+    } catch (e) { alert('That folder is not the Travel Blog folder (it has no tools/ inside). Browse files still opens any page.'); return false; }
+  }
+  async function apOpen(rel) {
+    if (!(await apEnsureRoot())) return;
+    try {
+      const parts = rel.split('/'); let d = folderHandle;
+      for (const seg of parts.slice(0, -1)) d = await d.getDirectoryHandle(seg);
+      const fh = await d.getFileHandle(parts[parts.length - 1]);
+      closeArticles();
+      await loadFile(fh);
+      AP.justOpened[rel] = Date.now() / 1000; const row = AP.rows.find(r => r.rel === rel); if (row) row.opened = AP.justOpened[rel];
+    } catch (e) { alert('Could not open ' + rel + ': ' + e.message); }
+  }
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); if (AP.open) closeArticles(); else openArticles(); return; }
+    if (!AP.open) return;
+    const vis = apVisible();
+    if (e.key === 'Escape') { e.preventDefault(); closeArticles(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); AP.sel = Math.min(vis.length - 1, AP.sel + 1); apRender(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); AP.sel = Math.max(0, AP.sel - 1); apRender(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (vis[AP.sel]) apOpen(vis[AP.sel].rel); }
+  });
+  window.openArticles = openArticles; window.closeArticles = closeArticles; window.__ap = AP; window.__apOpen = apOpen;
+  document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('ap-q'); if (!inp) return;
+    inp.oninput = () => { AP.q = inp.value; AP.sel = 0; apRender(); };
+    document.getElementById('ap-browse').onclick = () => { closeArticles(); openWithPicker(); };
+    apEl().onclick = e => { if (e.target === apEl()) closeArticles(); };
+  });
 
   // ================= TO-DO LIST =================
   const TODO_KEY = 'editor-todo-v1';
@@ -1955,8 +2099,10 @@ main{overflow-y:auto;padding:1rem}
   }
 
 
-  // Open article button — single file picker, no folder access required
-  document.getElementById('btn-open').onclick = async () => {
+  // Open article: the Articles panel (every page in the Travel Blog folder, no OS picker).
+  // The picker survives as "Browse files" inside the panel and as openWithPicker().
+  document.getElementById('btn-open').onclick = () => openArticles();
+  window.openWithPicker = async () => {
     try {
       const [fh] = await window.showOpenFilePicker({ multiple: false });
       await loadFile(fh);

@@ -2641,7 +2641,131 @@ def api_editor_open():
             _cq_open.pop(page, None)
         elif page:
             _cq_open[page] = time.time()
+            _note_recent(page)
     return jsonify({"ok": True, "compressing": _cq_state["running"] == page})
+
+
+# ---------------------------------------------------------------- the Articles panel
+RECENT = Path(ROOT) / ".tmp" / "recent_articles.json"
+_recent_lock = threading.Lock()
+
+
+def _note_recent(rel):
+    """the heartbeat's first beat after an article opens; keeps the last 40 with a time"""
+    rel = rel.replace("\\", "/")
+    with _recent_lock:
+        try:
+            rec = json.loads(RECENT.read_text(encoding="utf-8")) if RECENT.exists() else {}
+        except Exception:
+            rec = {}
+        if rec.get(rel, 0) > time.time() - 60:
+            return                                   # the 30 s heartbeat, not a new open
+        rec[rel] = time.time()
+        _articles_cache["at"] = 0                # the Recent list must show this open at once
+        keep = dict(sorted(rec.items(), key=lambda kv: -kv[1])[:40])
+        RECENT.parent.mkdir(exist_ok=True)
+        RECENT.write_text(json.dumps(keep, indent=1), encoding="utf-8")
+
+
+_SKIP_TOP = {"archive", "Images", "tools", "workflows", "_content", "assets", "fonts", ".tmp", "node_modules", ".git", ".claude"}
+_TITLE_RE = re.compile(r"<title>(.*?)</title>", re.S | re.I)
+_H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.S | re.I)
+_TAG_RE = re.compile(r"<[^>]+>")
+_BLOCK_RE = re.compile(r"<(script|style|svg|nav|header|footer)\b.*?</\1>", re.S | re.I)
+
+
+def _article_kind(rel):
+    name = rel.rsplit("/", 1)[-1]
+    if name == "field-notes.html":
+        return "field notes"
+    if name == "index.html":
+        return "country page"
+    if "itinerary" in name:
+        return "itinerary"
+    if name.startswith("top-10"):
+        return "top 10"
+    return "guide"
+
+
+def _article_row(path, rel, status):
+    try:
+        html = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return None
+    t = _TITLE_RE.search(html); h = _H1_RE.search(html)
+    title = _TAG_RE.sub("", (h.group(1) if h else (t.group(1) if t else rel))).strip()
+    title = re.sub(r"\s+", " ", title.replace("&mdash;", "\u2014").replace("&amp;", "&"))
+    if not title and t:
+        title = t.group(1)
+    body = _BLOCK_RE.sub(" ", html)
+    words = len(re.findall(r"\b\w+\b", _TAG_RE.sub(" ", body)))
+    parts = rel.split("/")
+    country = parts[-2] if len(parts) >= 2 else ""
+    return {"rel": rel, "title": title[:120] or rel, "country": country, "kind": _article_kind(rel), "status": status,
+            "words": words, "modified": path.stat().st_mtime}
+
+
+def _articles_inventory():
+    root = Path(ROOT)
+    rows = []
+    for p in sorted(root.glob("*/*.html")):
+        top = p.parts[len(root.parts)]
+        if top in _SKIP_TOP or top.startswith("."):
+            continue
+        r = _article_row(p, p.relative_to(root).as_posix(), "live")
+        if r:
+            rows.append(r)
+    for p in sorted((root / "Drafts").glob("*/*.html")):
+        if p.parts[len(root.parts) + 1].startswith("."):
+            continue
+        r = _article_row(p, p.relative_to(root).as_posix(), "draft")
+        if r:
+            rows.append(r)
+    for p in sorted((root / "Drafts" / ".Full Articles").glob("*/*.html")):
+        r = _article_row(p, p.relative_to(root).as_posix(), "draft")
+        if r:
+            rows.append(r)
+    # the review state: open comments and a pending round, per article
+    comments = {}
+    for f in (_redline.COMMENTS.glob("*.json") if _redline.COMMENTS.exists() else []):
+        try:
+            th = json.loads(f.read_text(encoding="utf-8")).get("threads", [])
+        except Exception:
+            continue
+        comments[f.stem] = {"open": sum(1 for t in th if not t.get("resolved")),
+                            "tasks": sum(1 for t in th if t.get("kind") in ("task", "rewrite") and not t.get("resolved") and not t.get("edit"))}
+    rounds = {}
+    try:
+        for pr in _redline.pending():
+            if pr.get("applied"):
+                continue
+            pp = _redline.load(pr["slug"])
+            rounds[(pp["article_dir"] + "/" + pp["article"]).replace("\\", "/")] = {"slug": pr["slug"], "changes": pr["changes"], "title": pr["title"]}
+    except Exception:
+        pass
+    try:
+        recent = json.loads(RECENT.read_text(encoding="utf-8")) if RECENT.exists() else {}
+    except Exception:
+        recent = {}
+    for r in rows:
+        c = comments.get(_redline.comments_key(r["rel"]), {})
+        r["comments"] = c.get("open", 0); r["tasks"] = c.get("tasks", 0)
+        r["round"] = rounds.get(r["rel"])
+        r["opened"] = recent.get(r["rel"], 0)
+    return rows
+
+
+@app.route("/api/articles")
+def api_articles():
+    """Every article under the Travel Blog folder, live and draft, for the editor's Articles
+    panel: no more walking the Windows folder tree to find a page (Kevin, 2026-09-26)."""
+    now = time.time()
+    if now - _articles_cache["at"] > 20:
+        _articles_cache.update(rows=_articles_inventory(), at=now)
+    return jsonify({"articles": _articles_cache["rows"], "root": str(ROOT)})
+
+
+_articles_cache = {"at": 0, "rows": []}
 
 
 def _compress_status():
