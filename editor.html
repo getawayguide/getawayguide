@@ -2066,6 +2066,7 @@ main{overflow-y:auto;padding:1rem}
   })();
   window.__siteCss = siteCss;   // test seam: the headless checks open an article without the file picker
   window.__setOriginalHTML = h => { originalHTML = h; };   // same seam: the Preview needs the page the body came from
+  window.__getOriginalHTML = () => originalHTML;          // the hero picker reads the headline and lead from it
 
   async function loadFile(fh) {
     fileHandle = fh;
@@ -6286,6 +6287,24 @@ main{overflow-y:auto;padding:1rem}
       // what made the 2026-09-26 fix invisible: the control was enabled and display:none.
       // Show the box, hide only the rotate/flip row (those still need a fresh insert).
       orientRows('edit');
+      // A photo that was straightened before opens at its tilt, not at 0, and Apply with
+      // a new tilt re-bakes from the file it was cut from (Kevin, 2026-09-26: "resets the
+      // angle setting when I edit the photo showing 0 degrees change").
+      CM.straighten = null;
+      (async () => {
+        try {
+          const ref = img.getAttribute('data-path') || img.getAttribute('src') || '';
+          if (!/Images\//.test(ref)) return;
+          const o = await (await fetch(API + '/api/resolve_original?path=' + encodeURIComponent(ref))).json();
+          if (!o.ok || !o.straighten || CM.img !== img) return;
+          CM.straighten = o.straighten;                 // {angle, src:{root,path}}
+          CM.angleDeg = o.straighten.angle || 0;
+          CM.angleBaked = true;                         // the pixels already carry it
+          const a = $('#crop-angle'); if (a) a.value = CM.angleDeg;
+          $('#crop-angle-val').textContent = CM.angleDeg + '\u00b0';
+          goLabel();
+        } catch (e) { /* no record: the slider stays at 0 */ }
+      })();
       $('#crop-dropmode').style.display = 'none';
       $('#crop-go').textContent = 'Apply';
       // Straighten, rotate and flip all need the SOURCE pixels, and this mode
@@ -6590,7 +6609,7 @@ void main(){
       // straighten: radians + largest same-aspect inscribed-rect scale.
       // After an erase the token pixels are ALREADY straightened server-side —
       // applying the angle again double-rotated the preview (QA finding M3).
-      const deg = CM.angleBaked ? 0 : (CM.angleDeg || 0);
+      const deg = CM.angleBaked ? 0 : (CM.straighten ? (CM.previewOffset || 0) : (CM.angleDeg || 0));
       const rad = Math.abs(deg) * Math.PI / 180;
       const ar = Math.max(CM.natW, CM.natH) / Math.min(CM.natW, CM.natH);
       gl.uniform1f(GL.uf.angle, deg * Math.PI / 180);
@@ -6612,8 +6631,11 @@ void main(){
       // no WebGL: approximate with a CSS filter on the stage image, and show the
       // straighten as a CSS rotation so the slider still visibly does something
       $('#crop-img').style.filter = devCssFilter();
-      const fdeg = CM.angleBaked ? 0 : (CM.angleDeg || 0);
-      $('#crop-img').style.transform = Math.abs(fdeg) > 0.01 ? 'rotate(' + fdeg + 'deg)' : '';
+      const fdeg = CM.angleBaked ? 0 : (CM.straighten ? (CM.previewOffset || 0) : (CM.angleDeg || 0));
+      // CSS rotate() is clockwise for a positive angle; the bake (PIL rotate) and the WebGL
+      // preview are counter-clockwise. Without the sign flip this preview turned the photo
+      // one way and Apply baked it the other (Kevin, 2026-09-26: "rotating the wrong way").
+      $('#crop-img').style.transform = Math.abs(fdeg) > 0.01 ? 'rotate(' + (-fdeg) + 'deg)' : '';
       drawMaskGuides();
     }
     if (withHist !== false) {      // both paths get a histogram
@@ -7068,6 +7090,8 @@ void main(){
   $('#crop-angle').addEventListener('input', function () {
     if (!CM) return;
     CM.angleDeg = +this.value;
+    // the placed pixels already carry the recorded tilt: preview only what changes
+    if (CM.straighten) { CM.angleBaked = false; CM.previewOffset = CM.angleDeg - (CM.straighten.angle || 0); }
     $('#crop-angle-val').textContent = this.value + '°';
     devRender();
     goLabel();
@@ -7764,17 +7788,21 @@ void main(){
     // original with the angle (the server names the new file next to the old one, keeps
     // the ICC profile and EXIF) and point this <img> at it, exactly as ⇄ Swap does.
     const angle = CM.angleDeg || 0;
-    if (Math.abs(angle) > 0.01) {
+    const recorded = CM.straighten ? (CM.straighten.angle || 0) : 0;
+    if (Math.abs(angle - recorded) > 0.01) {
       const go = $('#crop-go'); go.disabled = true;
       try {
         const ref = img.getAttribute('data-path') || img.getAttribute('src') || '';
         const o = await (await fetch(API + '/api/resolve_original?path=' + encodeURIComponent(ref))).json();
         if (!o.ok) throw new Error('no archive original for this photo');
+        // a photo straightened before is re-cut from the file it came from, at the new
+        // absolute angle; otherwise from this photo's archive original
+        const from = (CM.straighten && CM.straighten.src) ? CM.straighten.src : { root: o.root, path: o.path };
         // the archive folders ARE the country and city: Images/<Country>/<City>/<file>
         const parts = ref.replace(/\\/g, '/').replace(/^(\.\.\/)+/, '').replace(/^Images\//, '').split('/');
         const r = await (await fetch(API + '/api/import', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ root: o.root, path: o.path, country: parts[0] || '',
+          body: JSON.stringify({ root: from.root, path: from.path, country: parts[0] || '',
             city: parts.length > 2 ? parts[1] : '', angle: angle, dev: {}, masks: [] })
         })).json();
         if (!r.ok) throw new Error('re-import failed');
@@ -9023,6 +9051,32 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   });
   document.addEventListener('click', ev => {
     if (ev.target.id === 'heroes-retry') loadHeroes(true);
+  });
+
+  // What is open in the editor rides down into the picker, so the stage previews THIS
+  // article's headline and lead over the photo instead of a country default.
+  function heroesContext() {
+    const src = typeof window.__getOriginalHTML === 'function' ? window.__getOriginalHTML() : '';
+    const doc = src ? new DOMParser().parseFromString(src, 'text/html') : null;
+    const h1 = doc && (doc.querySelector('.article-hero h1, .article-title, h1'));
+    const lead = doc && doc.querySelector('.article-lead');
+    const rel = (window.__articleRel || '');
+    const m = /^(?:Drafts\/\.Full Articles\/)?([^/]+)\//.exec(rel);
+    const folder = m ? m[1] : '';
+    const country = folder.split('-').map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
+    return { type: 'article-context', rel, country,
+             h1: h1 ? h1.textContent.trim() : '', lead: lead ? lead.textContent.trim() : '' };
+  }
+  async function sendHeroesContext() {
+    const frame = document.getElementById('heroes-frame');
+    if (!frame || !frame.contentWindow || !fileHandle) return;
+    try { window.__articleRel = typeof window.articleRelPath === 'function' ? await window.articleRelPath() : ''; } catch (e) {}
+    frame.contentWindow.postMessage(heroesContext(), '*');
+  }
+  document.addEventListener('article-loaded', () => setTimeout(sendHeroesContext, 400));
+  window.addEventListener('message', ev => {
+    // the picker asks on its own load, since the article may already be open
+    if (ev.origin === HEROES && ev.data && ev.data.type === 'heroes-ready') sendHeroesContext();
   });
 
   function showView(v) {

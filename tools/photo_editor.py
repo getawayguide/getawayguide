@@ -2022,8 +2022,45 @@ def api_resolve_original():
             break
     if root is None:
         return jsonify({"ok": False, "error": "Images/ is not a photo source"}), 500
-    return jsonify({"ok": True, "root": root,
-                    "path": hit.relative_to(IMAGES).as_posix(), "name": hit.name})
+    out = {"ok": True, "root": root, "path": hit.relative_to(IMAGES).as_posix(), "name": hit.name}
+    # a photo that was straightened remembers its angle and the file it was cut from, so the
+    # crop window can show the tilt instead of 0 and a new tilt replaces rather than stacks
+    rec = straighten_records().get(hit.relative_to(ROOT).as_posix())
+    if rec:
+        out["straighten"] = rec
+    return jsonify(out)
+
+
+STRAIGHTEN_FILE = ROOT / ".tmp" / "straighten.json"
+
+
+def straighten_records():
+    try:
+        return json.loads(STRAIGHTEN_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def straighten_record(dest, src_root, src_path, angle):
+    """dest is the Images/ file just written; src is the {root, path} it was cut from.
+    A source that is itself a recorded straighten passes its own source through, so the
+    chain always points at the unrotated file."""
+    recs = straighten_records()
+    key = dest.relative_to(ROOT).as_posix()
+    base = {"root": src_root, "path": src_path}
+    try:
+        src_file = source_path(src_root, src_path)
+        prior = recs.get(src_file.relative_to(ROOT).as_posix())
+        if prior and prior.get("src"):
+            base = prior["src"]
+    except Exception:
+        pass
+    recs[key] = {"angle": float(angle), "src": base}
+    try:
+        STRAIGHTEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+        STRAIGHTEN_FILE.write_text(json.dumps(recs, indent=1), encoding="utf-8")
+    except OSError:
+        pass
 
 
 @app.route("/api/pick_root")
@@ -2163,6 +2200,8 @@ def api_import():
         dest = import_photo(src, country_dir(d["country"]), d.get("city", "").strip(),
                             rot=d.get("rot", 0), flip=d.get("flip"), dev=d.get("dev"),
                             angle=d.get("angle", 0), masks=d.get("masks"))
+        if abs(float(d.get("angle", 0) or 0)) > 1e-3:
+            straighten_record(dest, d["root"], d["path"], d.get("angle", 0))
     with Image.open(dest) as im:
         im = ImageOps.exif_transpose(im)
         w, h = im.size

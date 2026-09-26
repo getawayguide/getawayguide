@@ -518,6 +518,10 @@ PAGE = r"""<!doctype html>
   .cpy h1 { font-family:Newsreader,Georgia,serif; font-weight:300; margin:0;
     font-size:var(--ch1,54px); line-height:var(--clh,1.06); letter-spacing:-.018em;
     color:#fff; max-width:22ch; }
+  .cpy .lead { font-family:'Hanken Grotesk',Helvetica,Arial,sans-serif; font-weight:300;
+    color:rgba(255,255,255,.92); font-size:calc(var(--ch1,54px) * .3); line-height:1.5;
+    margin:.9em 0 0; max-width:44ch; }
+  .cpy .lead[hidden] { display:none; }
   .cpy .cta { display:inline-block; margin-top:1.5em; font-size:var(--ccta,10px);
     letter-spacing:.16em; text-transform:uppercase; color:#fff;
     border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:.35em; }
@@ -647,6 +651,7 @@ with the window.">
       <div class="cpy">
         <div class="eb" id="eb">Country &middot; Field notes</div>
         <h1 id="h1">Pick a photo from the strip</h1>
+        <p class="lead" id="lead" hidden></p>
         <span class="cta">Read the guide &rarr;</span>
       </div>
     </div>
@@ -698,6 +703,37 @@ async function loadAlbums() {
   $('tally').innerHTML = `<b>${done}</b> of ${rows.length} picked`;
   $('album').onchange = loadStrip;
   await loadStrip();
+  if (ARTICLE) articleAlbum();          // the editor may have spoken before the list existed
+}
+
+// The article open in the editor, when embedded there: its headline and lead go on the
+// stage in place of the country default, so the crop is judged under the real copy.
+let ARTICLE = null;
+window.addEventListener('message', ev => {
+  const d = ev.data;
+  if (!d || d.type !== 'article-context') return;
+  ARTICLE = d.h1 ? d : null;
+  articleAlbum();
+});
+// switch to the open article's album; if the album list is not in yet, loadAlbums() calls
+// this again when it is
+function articleAlbum() {
+  const d = ARTICLE;
+  if (!d || !$('album').options.length) { applyArticle(); return; }
+  const opt = d.country && [...$('album').options].find(o => (o.dataset.country || '').toLowerCase() === d.country.toLowerCase());
+  if (opt && $('album').value !== opt.value) { $('album').value = opt.value; loadStrip(); }
+  else applyArticle();
+}
+function applyArticle() {
+  if (ARTICLE) {
+    $('eb').textContent = country + ' · ' + (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '').replace(/-/g, ' ');
+    $('title').value = ARTICLE.h1;
+    $('h1').textContent = ARTICLE.h1;
+    $('lead').textContent = ARTICLE.lead || '';
+    $('lead').hidden = !ARTICLE.lead;
+  } else {
+    $('lead').hidden = true;
+  }
 }
 
 async function loadStrip() {
@@ -708,6 +744,7 @@ async function loadStrip() {
   // B9: a title edited at save time comes back next visit instead of the default
   $('title').value = sel.dataset.pickTitle || TITLES[country] || (country + ' Travel Guide');
   $('h1').textContent = $('title').value;
+  applyArticle();
   $('strip').textContent = 'Loading…';
   STARS = (sel.dataset.stars || '').split('|').filter(Boolean);
   ALL = await (await fetch('/photos?album=' + encodeURIComponent(album))).json();
@@ -1067,6 +1104,12 @@ $('hero').addEventListener('pointerdown', e => {
 $('hero').addEventListener('pointermove', e => {
   if (!drag) { return; }
   const img = $('pic'), box = $('hero').getBoundingClientRect();
+  // A drag that starts while the stage photo is still decoding (a 5712px HEIC takes a
+  // few seconds at 2000px) saw naturalWidth 0, computed NaN, and wrote NaN into the crop:
+  // the photo then sat frozen even after it loaded, until another one was picked. That is
+  // the "some photos don't move when dragged" Kevin saw on IMG_0596 and IMG_1043, the two
+  // biggest in the album (2026-09-26). Until the pixels are in, the drag does nothing.
+  if (!img.complete || !img.naturalWidth) { return; }
   const src = img.naturalWidth / img.naturalHeight;
   // travel measured on the RENDERED frame, on whichever axis is free. The old
   // version always used height and clamped the spare to 1, so a photo wider
@@ -1076,7 +1119,9 @@ $('hero').addEventListener('pointermove', e => {
     : box.width / src - box.height;
   if (spare <= 0.5) { return; }
   const now = drag.axis === 'x' ? e.clientX : e.clientY;
-  crops[BP[bpi].key] = drag.from - (now - drag.at) / spare * 100;
+  const v = drag.from - (now - drag.at) / spare * 100;
+  if (!Number.isFinite(v)) { return; }
+  crops[BP[bpi].key] = Math.max(0, Math.min(100, v));
   applyCrop();
 });
 ['pointerup', 'pointercancel'].forEach(ev => $('hero').addEventListener(ev, () => {
@@ -1164,6 +1209,7 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
   new MutationObserver(send).observe($('tally'), { childList: true, subtree: true, characterData: true });
   new MutationObserver(send).observe($('count'), { childList: true, subtree: true, characterData: true });
   send();
+  parent.postMessage({ type: 'heroes-ready' }, '*');     // ask for the open article
 }
 </script>
 </body></html>
