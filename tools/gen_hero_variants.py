@@ -32,6 +32,12 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
+try:                                    # the archive originals are iPhone HEICs
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except ImportError:
+    pass
+
 ROOT = Path(__file__).resolve().parent.parent
 # long edge, suffix
 SIZES = [(2000, ""), (2561, "-2x"), (1206, "-mob"), (603, "-mob-1x")]

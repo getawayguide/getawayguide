@@ -255,7 +255,15 @@ def build(src, w, crop, ratio=None, angle=0.0):
     im = ImageOps.exif_transpose(im)
     icc = im.info.get("icc_profile")      # Display P3, must survive the convert
     if abs(float(angle or 0)) > 1e-3:
-        im = straighten(im.convert("RGB"), angle)
+        # Rotate a cached, already-scaled JPEG of the photo, not the 5712px HEIC: decoding
+        # the HEIC and rotating it full size took 7 s per drag step, and the stage sat
+        # untilted until it arrived, which read as the slider doing nothing (Kevin,
+        # 2026-09-26). The un-rotated variant at 1.25x the served width is built once and
+        # cached like every other render; each angle then costs a JPEG decode and a
+        # rotate at that size.
+        base = Image.open(build(src, int(w * 1.25), False, ratio))
+        base.load()
+        im = straighten(base.convert("RGB"), angle)
     if crop:
         im = ImageOps.fit(im, (w, round(w / ratio)), Image.LANCZOS,
                           centering=(0.5, 0.5))
@@ -945,12 +953,18 @@ function setAngle(v, reload) {
 }
 let angleT = null;
 $('angle').addEventListener('input', e => {
-  // preview the tilt at once with CSS, and fetch the real cut once the drag settles
+  // preview the tilt at once with CSS, and fetch the real cut once the drag settles. The
+  // CSS tilt stays on until the cut has LOADED, so the photo never snaps back untilted
+  // while the server is working.
   const v = +e.target.value;
   angle = Math.round(v * 10) / 10; $('anglev').textContent = angle.toFixed(1) + '\u00b0';
   $('pic').style.transform = 'rotate(' + (-angle) + 'deg) scale(1.08)';
   clearTimeout(angleT);
-  angleT = setTimeout(() => { $('pic').style.transform = ''; setAngle(angle); }, 350);
+  angleT = setTimeout(() => {
+    const img = $('pic');
+    img.addEventListener('load', () => { img.style.transform = ''; }, { once: true });
+    setAngle(angle);
+  }, 400);
 });
 $('anglename').addEventListener('dblclick', () => setAngle(0));
 let resizeT = null;

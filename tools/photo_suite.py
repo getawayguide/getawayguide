@@ -166,7 +166,10 @@ CHROME = next((p for p in (
 # The editor keeps opening from file:// (not the :5003 copy): its settings and
 # presets live in that origin's localStorage, and Kevin has always used it
 # that way. Same URL to bookmark in Chrome.
-EDITOR_URL = (ROOT / "editor.html").as_uri()
+# #editor on the end: the page remembers the last view in localStorage, so a session that
+# ended in the Photo Library reopened there from the shortcut. The hash outranks the
+# memory, and the shortcut is the article editor (Kevin, 2026-09-26).
+EDITOR_URL = (ROOT / "editor.html").as_uri() + "#editor"
 
 
 def open_editor():
