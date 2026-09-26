@@ -14,6 +14,12 @@ lint_prose.py or a word added to americanize.py is picked up here on the next ru
   em dash in body prose       CLAUDE.md: body prose only; the <b>Term</b> — bullet separator is
                               site convention and is skipped, as are titles and meta
   leftovers                   [ ], [PHOTO] and other bracketed notes; Maps search placeholders
+  repetition                  two paragraphs in a row opening with the same words, three
+                              sentences starting the same way, a notable word twice in a
+                              breath, the same link twice in one sentence: what his review
+                              comments catch by hand ("The next stop is" twice, "up here" twice)
+  voice_check                 words he never writes, "genuinely" past the first; check_full()
+                              returns the register score beside the findings
 
     python tools/prose_check.py "Drafts/.Full Articles/armenia/yerevan.html"
 """
@@ -29,12 +35,79 @@ import lint_prose            # noqa: E402
 import americanize           # noqa: E402
 import strip_paste_artifacts # noqa: E402
 import prose_rules           # noqa: E402  the em-dash judgement, shared with lint_site
+import voice_check           # noqa: E402  the register score and the words he doesn't use
 
 TAG = re.compile(r"<[^>]+>")
 BLOCK = re.compile(r"<(script|style|svg|noscript|figure)\b.*?</\1>", re.S | re.I)
 PROSE = re.compile(r"<(p|li|h1|h2|h3|h4|figcaption|blockquote)\b[^>]*>(.*?)</\1>", re.S | re.I)
 MAPS_SEARCH = re.compile(r'href="https://www\.google\.com/maps/search/\?api=1&(?:amp;)?query=([^"]+)"')
 BRACKET = re.compile(r"\[(?!\d+\])[^\[\]\n]{0,120}\]")     # [ ], [PHOTO], [fill this in]; not [1] footnotes
+
+
+SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z\"“(])")
+WORDS = re.compile(r"[A-Za-z][A-Za-z'’-]*")
+# long words that carry no meaning of their own, so a repeat of one is not a repetition
+COMMON = set("""through because another between without around before against however
+whether although several something anything everything nothing during towards toward
+throughout despite instead perhaps already usually especially actually probably
+different similar various certain whatever whenever wherever themselves yourself
+himself herself ourselves including together sometimes somewhere everyone anywhere
+morning evening minutes""".split())
+
+
+def _repetition(blocks, add):
+    """The repeats a reader notices and a spell-checker never does."""
+    prev_open = None
+    for kind, text in blocks:
+        ws = WORDS.findall(text)
+        # 1. two paragraphs in a row that open with the same three words
+        opener = " ".join(w.lower() for w in ws[:3])
+        if kind == "p" and opener and opener == prev_open and len(ws) >= 6:
+            head = " ".join(ws[:3])
+            add("repetition", "Opens with the same words as the paragraph before (\u201c%s\u201d)." % head,
+                text, 0, len(head), None, "low")
+        prev_open = opener if kind == "p" else None
+        # 2. three sentences in a row that start the same way
+        sents = SENT_SPLIT.split(text)
+        run = 1
+        for i in range(1, len(sents)):
+            a = " ".join(w.lower() for w in WORDS.findall(sents[i - 1])[:2])
+            b = " ".join(w.lower() for w in WORDS.findall(sents[i])[:2])
+            if a and a == b:
+                run += 1
+                if run == 3:
+                    at = text.find(sents[i])
+                    add("repetition", "Three sentences in a row start with \u201c%s\u201d." % b, text, at, at + min(len(sents[i]), 24), None, "low")
+            else:
+                run = 1
+        # 3. a notable word used twice within a breath (15 words); proper nouns excluded
+        last = {}
+        for m in WORDS.finditer(text):
+            w = m.group(0); lw = w.lower()
+            if len(lw) < 7 or lw in COMMON:
+                continue
+            if w[0].isupper() and not (m.start() == 0 or text[max(0, m.start() - 2):m.start()].strip() in (".", "!", "?", ":")):
+                continue
+            n = len(WORDS.findall(text[:m.start()]))
+            if lw in last and n - last[lw] <= 7:      # 15 flagged the deliberate ones ("favorite monastery ... favorite monasteries")
+                add("repetition", "\u201c%s\u201d twice within a few words." % w, text, m.start(), m.end(), None, "low")
+            last[lw] = n
+
+
+def _links_twice(inner, text, add):
+    """the same href twice inside one sentence of a block (the second Yerevan in 'the drive
+    home since the evening traffic into Yerevan'); the second can be plain text"""
+    seen = set()
+    for m in re.finditer(r'<a href="([^"]+)"[^>]*>(.*?)</a>', inner, re.S):
+        href, label = m.group(1), _visible(m.group(2)).strip()
+        if href.startswith("#") or not label:
+            continue
+        vis_before = _visible(inner[:m.start()])
+        key = (href, len(SENT_SPLIT.split(vis_before)))
+        if key in seen:
+            at = len(vis_before)
+            add("repetition", "Linked twice in one sentence; the second can be plain text.", text, at, at + len(label), None, "low")
+        seen.add(key)
 
 
 def _anchor(text, start, end):
@@ -62,6 +135,7 @@ def check(html):
         out.append(f)
 
     masked = BLOCK.sub(lambda m: " " * len(m.group(0)), html)
+    blocks = []
 
     # ---- prose spans: the tools' own regexes, on the visible text of each prose element
     for m in PROSE.finditer(masked):
@@ -71,6 +145,8 @@ def check(html):
         text = _visible(inner)
         if not text.strip():
             continue
+        blocks.append((m.group(1).lower(), text))
+        _links_twice(inner, text, add)
         for name, rx, repl in lint_prose.MECHANICAL:
             for h in rx.finditer(text):
                 fix = rx.sub(repl, h.group(0)) if repl is not None else None
@@ -125,6 +201,12 @@ def check(html):
             else:
                 add("placeholder", "Bracketed note still in the text.", text, h.start(), h.end(), None, "error")
 
+    _repetition(blocks, add)
+
+    # ---- the words he doesn't write, from the register check
+    for f in voice_check.score(html)["findings"]:
+        n += 1; f["id"] = "ln%03d" % n; out.append(f)
+
     # ---- British spellings: americanize's own pass, with its guards, on the whole document
     for s, e, new, old in sorted(americanize.find(html)):
         # locate the visible text around it for the anchor: the word itself is unique enough
@@ -152,6 +234,14 @@ def check(html):
         out.append({"id": "ln%03d" % (n + 1), "kind": "maps", "severity": "info", "anchor": None, "count": len(q),
                     "message": "%d Google Maps link(s) still point at a search instead of the place. Resolve maps turns them into pins." % len(q)})
     return out
+
+
+def check_full(html):
+    """the findings plus the register score, for the margin's Voice line"""
+    v = voice_check.score(html)
+    v.pop("findings", None)
+    v["summary"] = voice_check.summary(v)
+    return {"findings": check(html), "voice": v}
 
 
 if __name__ == "__main__":

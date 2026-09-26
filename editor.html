@@ -1263,7 +1263,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=a6403833" defer></script>
+<script src="review.js?v=07638138" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -8785,6 +8785,26 @@ async function rate(p, r) {
 // used to fire the heaviest route on the server for a view nobody was looking at
 if (!document.getElementById('app-library').hidden) loadAlbums();
 refreshPickCount();
+// A pick made in ANOTHER tab (the library open beside the editor): the server counts every
+// pick write, and when the count moves this tab refreshes whatever is showing picks: the
+// badge, the picks panel, the photo picker, the library grid. Server-side because the editor
+// runs from file://, where cross-tab messages don't reliably arrive.
+let _picksV = null;
+async function pollPicksVersion() {
+  try {
+    const d = await (await fetch(API + '/api/picks_version', { cache: 'no-store' })).json();
+    if (_picksV !== null && d.v !== _picksV) {
+      refreshPickCount();
+      if ($('#picks').classList.contains('open')) renderPicks();
+      const pk = document.getElementById('pk-panel');
+      if (pk && pk.style.display === 'block' && typeof pkLoad === 'function') pkLoad();
+      if (!document.getElementById('app-library').hidden && CUR) loadPhotos();
+    }
+    _picksV = d.v;
+  } catch (e) {}
+}
+pollPicksVersion();                       // the first reading now, so the next 5 s tick can already compare
+setInterval(pollPicksVersion, 5000);
 setInterval(() => {
   if (document.getElementById('app-library').hidden) return;   // view not showing
   loadAlbums();

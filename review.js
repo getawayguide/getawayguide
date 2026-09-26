@@ -55,6 +55,7 @@
       <div id="rv-banner" style="display:none"></div>
       <div class="rv-tools">
         <button id="rv-new" class="rv-btn primary" title="Comment on the selected text (Ctrl+Alt+M)">+ Comment</button>
+        <button id="rv-rewrite" class="rv-btn" title="Rewrite the selected sentence in your voice: three alternatives to pick from">&#8635; Rewrite</button>
         <div class="rv-seg"><button id="rv-prev" title="Previous change">&#8593;</button><button id="rv-next" title="Next change">&#8595;</button></div>
         <div class="rv-seg"><button id="rv-markup" aria-pressed="true" title="All markup: every change shown on the page">Markup</button><button id="rv-final" title="No markup: the page as it reads with the decisions so far">Clean</button></div>
         <div class="rv-seg"><button id="rv-v-ctx" aria-pressed="true" title="Cards level with the text they belong to">Beside</button><button id="rv-v-list" title="Every card as a list, unplaced ones too">List</button></div>
@@ -65,12 +66,15 @@
           <div class="rv-dd"><button id="rv-all-yes">Accept all changes</button><button id="rv-all-no">Reject all changes</button></div></span>
       </div>
       <div class="rv-status" id="rv-status"></div>
+      <div class="rv-voice" id="rv-voice" style="display:none" title="How this article measures against your live pages. Click for the numbers."></div>
       <div class="rv-body" id="rv-body"><div class="rv-list" id="rv-list"></div><div class="rv-canvas" id="rv-canvas"></div></div>
       <div id="rv-toast"></div>`;
     side.appendChild(pane);
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.id = 'rv-lines'; document.body.appendChild(svg);
     $('rv-close').onclick = () => toggle(false);
     $('rv-lint').onclick = runLint;
+    $('rv-rewrite').onclick = requestRewrite;
+    $('rv-voice').onclick = () => { state.voiceOpen = !state.voiceOpen; renderVoice(); };
     $('rv-maps').onclick = resolveMaps;
     $('rv-refresh').onclick = () => refresh();
     hashOpen();                                   // /browser?review=<path>: opened from Claude's pass
@@ -86,6 +90,7 @@
     $('rv-all-yes').onclick = () => decideAll(true);
     $('rv-all-no').onclick = () => decideAll(false);
     $('rv-new').onmousedown = e => { e.preventDefault(); captureSelection(); };
+    $('rv-rewrite').onmousedown = e => { e.preventDefault(); captureSelection(); };   // same as + Comment: the click must not drop the selection
     $('rv-new').onclick = () => newComment();
     $('rv-v-ctx').onclick = () => setView('contextual');
     $('rv-v-list').onclick = () => setView('list');
@@ -114,7 +119,7 @@
     const want = on === undefined ? !document.body.classList.contains('review-open') : on;
     if (want) document.body.classList.remove('photos-open');        // one sidebar: the review takes the photo library's place
     document.body.classList.toggle('review-open', want);
-    if (want) { renderAll(); } else drawLines();
+    if (want) { renderAll(); startPolling(); pollTasks(); } else drawLines();
   }
   function setFilter(f) {
     state.filter = f;
@@ -441,12 +446,107 @@
     return first;
   }
   function unwrapMark(id) { ed().querySelectorAll(`mark.cm[data-cm="${id}"]`).forEach(unwrap); }
-  function postDraft(text) {
+  function postDraft(text, toClaude) {
     const d = state.draft; if (!d || !text.trim()) return;
     const m = ed().querySelector(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
-    state.comments.threads.push({ id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] });
+    const t = { id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] };
+    if (toClaude) { t.kind = 'task'; t.status = 'sent'; }
+    state.comments.threads.push(t);
     state.draft = null; _range = null; state.active = d.id;
-    saveComments(); renderAll();
+    saveComments().then(() => { if (toClaude) { toast('Sent. The edit lands here when Claude answers.', 4000); pollTasks(); } }); renderAll();
+  }
+  // ---- tasks: comments sent to Claude come back with an edit that goes into this text ----
+  const isTask = t => t.kind === 'task' || t.kind === 'rewrite';
+  const CLAUDE_MARK = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2l1.7 6.3 5.8-3.3-3.3 5.8L22 12l-5.8 1.2 3.3 5.8-5.8-3.3L12 22l-1.7-6.3-5.8 3.3 3.3-5.8L2 12l5.8-1.2L4.5 5l5.8 3.3z"/></svg>';
+  function sendToClaude(id) {
+    const t = state.comments.threads.find(x => x.id === id); if (!t) return;
+    t.kind = 'task'; t.status = 'sent'; t.resolved = false; delete t.edit;
+    saveComments().then(pollTasks); renderAll(); toast('Sent to Claude.');
+  }
+  let _pollT = null;
+  function startPolling() { if (_pollT) return; _pollT = setInterval(() => { if (document.body.classList.contains('review-open')) pollTasks(); }, 8000); }
+  async function pollTasks() {
+    if (!state.key || state._polling) return;
+    if (!state.comments.threads.some(t => isTask(t) && !t.resolved && t.status !== 'applied')) return;
+    state._polling = true;
+    let r; try { r = await (await fetch(API + `/comments/${state.key}`, { cache: 'no-store' })).json(); } catch (e) { state._polling = false; return; }
+    state._polling = false;
+    let touched = false;
+    for (const st of (r.threads || [])) {
+      const t = state.comments.threads.find(x => x.id === st.id);
+      if (!t) { if (isTask(st)) { state.comments.threads.push(st); touched = true; } continue; }
+      if (!isTask(t)) continue;
+      // Claude's replies and status arrive; Kevin's own edits to the thread stay
+      const seen = new Set((t.replies || []).map(x => x.id));
+      for (const rp of (st.replies || [])) if (!seen.has(rp.id)) { (t.replies = t.replies || []).push(rp); touched = true; }
+      if (st.edit && t.status !== 'applied' && t.status !== 'offered') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
+      else if (st.status && st.status !== t.status && t.status !== 'applied' && t.status !== 'offered') { t.status = st.status; touched = true; }
+      if (st.resolved && !t.resolved && t.status !== 'applied') { t.resolved = true; touched = true; }
+    }
+    if (touched) {
+      anchorComments(); saveComments();
+      // never rebuild the cards under a comment or reply being written: the box would be
+      // re-created mid-click. The next render (post, decide, resolve) shows the new state.
+      const writing = state.draft || (document.activeElement && document.activeElement.closest('#review-pane textarea'));
+      if (writing) queueLayout(); else renderAll();
+    }
+  }
+  // the edit goes into the editor's copy (never the file): undoable, and the article is unsaved
+  let _typedAt = 0;
+  document.addEventListener('input', e => { if (ed() && ed().contains(e.target)) _typedAt = Date.now(); }, true);
+  function applyTaskEdit(t) {
+    // never while Kevin is typing: the swap resets the caret. The next poll tries again.
+    if (Date.now() - _typedAt < 2500) return false;
+    const e = ed();
+    // comment and lint highlights are <mark>s inside the text; a find wider than one quote
+    // would never match through them. They are derived from anchors, so drop them, match on
+    // the bare text, and put them back after.
+    e.querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap);
+    e.normalize();
+    const h = e.innerHTML.replace(/ class=""/g, '');
+    const key = locate(h, t.edit.find);
+    const relint = () => { for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); } };
+    if (key) {
+      if (H()) H().checkpoint();
+      e.innerHTML = h.replace(key, () => t.edit.replace);
+      if (window.adoptPlaceholders) window.adoptPlaceholders(e);
+      if (window.restoreSlotButtons) window.restoreSlotButtons(e);
+      if (window.restoreMapButtons) window.restoreMapButtons(e);
+      relint();
+      // the card stays, beside the NEW text, with Claude's reply and a "Claude edited" chip,
+      // until Kevin resolves it himself: he should see what changed, not just that it did
+      t.status = 'applied'; t.appliedAt = new Date().toISOString();
+      t.anchor = { before: '', quote: plain(t.edit.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' };
+      dirty(); if (H()) H().touch();
+      toast('Claude edited: ' + t.text.slice(0, 70), 5000);
+      return true;
+    }
+    relint();
+    t.status = 'offered';                    // the text moved on; the card offers the replacement instead
+    // its quote may be what moved: re-anchor on the text either side of it, so the card
+    // with the Use button still has a place beside the passage instead of only in the List
+    if (!findRange(t.anchor)) {
+      const a = t.anchor || {};
+      for (const q of [(a.after || '').trim().slice(0, 40), (a.before || '').trim().slice(-40)]) {
+        if (q.length > 8 && findRange({ quote: q })) { t.anchor = { before: '', quote: q, after: '' }; break; }
+      }
+    }
+    return true;
+  }
+  function useTaskEdit(t) {
+    const marks = [...ed().querySelectorAll(`mark.cm[data-cm="${t.id}"]`)];
+    if (H()) H().checkpoint();
+    if (marks.length) {
+      marks[0].innerHTML = t.edit.replace; marks.slice(1).forEach(m => { m.textContent = ''; }); marks.forEach(unwrap);
+    } else {
+      const key = locate(ed().innerHTML.replace(/ class=""/g, ''), t.edit.find);
+      if (!key) { toast('The passage is no longer in the text; paste it by hand from the card.'); return; }
+      ed().innerHTML = ed().innerHTML.replace(/ class=""/g, '').replace(key, () => t.edit.replace);
+    }
+    if (window.adoptPlaceholders) window.adoptPlaceholders(ed());
+    if (window.restoreSlotButtons) window.restoreSlotButtons(ed());
+    t.status = 'applied'; t.anchor = { before: '', quote: plain(t.edit.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' };
+    dirty(); if (H()) H().touch(); anchorComments(); saveComments(); renderAll();
   }
   function cancelDraft() { if (!state.draft) return; unwrapMark(state.draft.id); state.draft = null; renderAll(); }
   async function saveComments() {
@@ -484,7 +584,7 @@
   function thread(id) { return state.comments.threads.find(t => t.id === id); }
   function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); unwrapMark(id); saveComments(); renderAll(); }
-  function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); saveComments(); renderAll(); }
+  function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
   function editText(id, rid, text) { const t = thread(id); if (!t) return; if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
   function editInPlace(tx, text, save) {    // swap the comment text for a box, in the card, no dialog
     if (!tx || tx.querySelector('textarea')) return;
@@ -652,30 +752,37 @@
     d.className = 'rv-card rv-cm' + (t.draft ? ' draft' : '') + (t.resolved ? ' resolved' : '') + (state.active === t.id ? ' active' : '') + (t.author && t.author !== AUTHOR ? ' other' : '');
     d.dataset.cm = t.id;
     if (t.draft) {
-      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)"></textarea>
-        <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
+      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
+        <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
       d.querySelector('[data-a="post"]').onclick = () => postDraft(d.querySelector('textarea').value);
+      d.querySelector('[data-a="send"]').onclick = () => postDraft(d.querySelector('textarea').value, true);
       d.querySelector('[data-a="cancel"]').onclick = cancelDraft;
-      d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') postDraft(e.target.value); if (e.key === 'Escape') cancelDraft(); };
+      d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') postDraft(e.target.value, e.shiftKey); if (e.key === 'Escape') cancelDraft(); };
+      // typed text lives in state too: a re-render (the task poll, a decision) rebuilds the card
+      d.querySelector('textarea').oninput = e => { if (state.draft) state.draft.text = e.target.value; queueLayout(); };
       return d;
     }
     const av = a => `<span class="av${a === AUTHOR ? ' me' : ''}">${esc((a || '?')[0])}</span>`;
     const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${esc(r.text)}</div></div>`).join('');
-    d.innerHTML = `<div class="who">${av(t.author)}<b>${esc(t.author)}</b><span class="tm">${when(t.created)}${t.edited ? ' · edited' : ''}</span>
-        <span class="acts">${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
+    const chip = !isTask(t) ? '' : t.status === 'applied' ? '<span class="chip done">Claude edited</span>' : t.status === 'offered' ? '<span class="chip wait">edit ready</span>'
+               : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>' : '<span class="chip sent">&#10148; sent to Claude</span>';
+    d.innerHTML = `<div class="who">${av(t.author)}<b>${esc(t.author)}</b><span class="tm">${when(t.created)}${t.edited ? ' · edited' : ''}</span>${chip}
+        <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
           <span class="menu"><button class="ico" data-a="more" title="More thread actions">&#8943;</button>
           <div class="dd">${t.resolved ? '<button data-a="reopen">Reopen</button>' : '<button data-a="resolve2">Resolve thread</button>'}${t.author === AUTHOR ? '<button data-a="edit">Edit</button>' : ''}<button data-a="del">Delete thread</button></div></span></span></div>
       ${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}
       <div class="tx">${esc(t.text)}</div>${replies}
-      ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)"></textarea><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
+      ${t.status === 'offered' && t.edit ? `<div class="alt"><button class="use" data-a="use" title="Put Claude's version in the text">Use</button><span>${esc(plain(t.edit.replace)).slice(0, 700)}</span></div>` : ''}
+      ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
     d.onclick = e => { if (!e.target.closest('button,textarea,.dd')) focusThread(t.id, false); };
     d.querySelector('[data-a="more"]').onclick = e => { e.stopPropagation(); d.querySelector('.dd').classList.toggle('open'); };
     const on = (a, f) => { const b = d.querySelector(`[data-a="${a}"]`); if (b) b.onclick = e => { e.stopPropagation(); f(); }; };
     on('resolve', () => resolve(t.id, true)); on('resolve2', () => resolve(t.id, true)); on('reopen', () => resolve(t.id, false)); on('del', () => delThread(t.id));
+    on('send', () => sendToClaude(t.id)); on('use', () => useTaskEdit(t));
     on('edit', () => editInPlace(d.querySelector(':scope > .tx'), t.text, nt => editText(t.id, null, nt)));
     d.querySelectorAll('[data-a="edit-r"]').forEach(b => b.onclick = e => { e.stopPropagation(); const rp = b.closest('.rp'); const r = t.replies.find(x => x.id === rp.dataset.rid); editInPlace(rp.querySelector('.tx'), r.text, nt => editText(t.id, r.id, nt)); });
     const ta = d.querySelector('.reply textarea');
-    if (ta) { on('reply', () => reply(t.id, ta.value)); ta.onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') reply(t.id, ta.value); }; ta.oninput = () => queueLayout(); }
+    if (ta) { on('reply', () => reply(t.id, ta.value)); ta.onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') reply(t.id, ta.value); }; ta.oninput = () => { (state.replyDrafts = state.replyDrafts || {})[t.id] = ta.value; queueLayout(); }; }
     d.onmouseenter = () => { state.hover = t.id; const m = ed().querySelector(`mark.cm[data-cm="${t.id}"]`); if (m) m.classList.add('cm-hover'); drawLines(); };
     d.onmouseleave = () => { state.hover = null; ed().querySelectorAll('mark.cm.cm-hover').forEach(m => m.classList.remove('cm-hover')); drawLines(); };
     return d;
@@ -812,10 +919,66 @@
     catch (e) { toast('Server not reachable'); b.disabled = false; b.textContent = 'Check prose'; return; }
     state.lint = r.findings || [];
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); else f.anchor = null; }
+    state.voice = r.voice || null; renderVoice();
     b.disabled = false; b.textContent = 'Check prose';
     if (state.filter === 'changes') setFilter('all');
     toggle(true); renderAll();
     toast(state.lint.length ? `${state.lint.length} prose finding(s).` : 'Prose: clean.');
+  }
+  // One line: "Voice 84 · 21-word sentences (his 16) · ...". Only the signals that are off are
+  // listed; click to see all of them. The score is arithmetic against his live pages
+  // (tools/voice_check.py), not an opinion.
+  function renderVoice() {
+    const el = $('rv-voice'); if (!el) return;
+    const v = state.voice;
+    if (!v || v.score == null) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    const cls = v.score >= 85 ? 'good' : v.score >= 70 ? 'ok' : 'off';
+    let h = `<span class="sc ${cls}">Voice ${v.score}</span>`;
+    const off = v.lines.filter(l => !l.ok);
+    if (!state.voiceOpen) {
+      h += off.length ? off.map(l => `<span class="sg">${esc(l.label)} <b>${l.value}</b> <i>(his ${l.base})</i></span>`).join('')
+                      : `<span class="sg">reads like you · ${v.words} words</span>`;
+    } else {
+      h += `<span class="sg">${v.words} words · vs ${v.baseline_pages || ''} live pages</span>` +
+           v.lines.map(l => `<span class="sg ${l.ok ? '' : 'off'}">${esc(l.label)} <b>${l.value}</b> <i>(his ${l.base})</i></span>`).join('');
+    }
+    el.innerHTML = h;
+  }
+  // Rewrite the selected sentence. The server answers with three alternatives when it can
+  // reach Claude (a key in .env); otherwise the ask becomes a comment thread on the article
+  // and the next review round answers it with a proposed change.
+  async function requestRewrite() {
+    if (!_range || !_range.toString().trim()) { toast('Select the sentence to rewrite first.'); return; }
+    if (_range.toString().trim().split(/\s+/).length > 80) { toast('Select one sentence or two, not a paragraph.'); return; }
+    const note = prompt('What should the rewrite do? (optional: shorter, clearer, less formal, lead with the view...)', '') ;
+    if (note === null) return;
+    const a = textAround(_range), range = _range;
+    if (state.filter === 'changes') setFilter('all'); toggle(true);
+    const b = $('rv-rewrite'); b.disabled = true; b.textContent = 'Rewriting…';
+    let r; try { r = await (await fetch(API + '/review/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ rel: state.rel, quote: a.quote, before: a.before, after: a.after, note }) })).json(); }
+    catch (e) { toast('Server not reachable'); b.disabled = false; b.innerHTML = '&#8635; Rewrite'; return; }
+    b.disabled = false; b.innerHTML = '&#8635; Rewrite';
+    if (r.queued) {
+      state.comments.threads.push(r.thread); anchorComments(); renderAll();
+      toast('Queued: the next review round answers it as a proposed change.', 5000);
+      return;
+    }
+    if (r.error || !(r.alternatives || []).length) { toast('No rewrite: ' + (r.error || 'empty answer')); return; }
+    const id = 'rw' + Date.now().toString(36);
+    wrapRange(range, id, false, 'lint');
+    state.lint.push({ id, kind: 'rewrite', severity: 'info', anchor: a, alternatives: r.alternatives,
+                      message: note ? 'Asked for: ' + note : 'Three ways to say it; pick one or keep yours.' });
+    state.active = id; renderAll();
+  }
+  function useRewrite(f, text) {
+    const marks = [...ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`)];
+    if (!marks.length) return;
+    marks[0].textContent = text; marks.slice(1).forEach(m => { m.textContent = ''; });
+    marks.forEach(unwrap);
+    state.lint = state.lint.filter(x => x.id !== f.id);
+    dirty(); if (H()) H().touch(); renderAll();
   }
   function lintFix(f) {
     const marks = [...ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`)];
@@ -832,6 +995,17 @@
   function lintCard(f) {
     const d = document.createElement('div');
     d.className = 'rv-card rv-lint ' + (f.severity || 'warn') + (state.active === f.id ? ' active' : ''); d.dataset.lint = f.id;
+    if (f.alternatives) {
+      d.innerHTML = `<div class="who"><span class="av lint">&#8635;</span><b>rewrite</b><span class="tm"></span>
+          <span class="acts"><button class="no" data-a="drop" title="Keep the sentence as it is">&#10005;</button></span></div>
+        <div class="t"><del>${esc(f.anchor.quote)}</del></div>
+        ${f.alternatives.map((t, i) => `<div class="alt"><button class="use" data-i="${i}" title="Put this one in the text">Use</button><span>${esc(t)}</span></div>`).join('')}
+        <div class="m">${esc(f.message)}</div>`;
+      d.onclick = e => { if (!e.target.closest('button')) { state.active = f.id; const m = ed().querySelector(`mark.lint[data-lint="${f.id}"]`); if (m) reveal(m); renderAll(); } };
+      d.querySelectorAll('.use').forEach(b => { b.onclick = e => { e.stopPropagation(); useRewrite(f, f.alternatives[+b.dataset.i]); }; });
+      d.querySelector('[data-a="drop"]').onclick = e => { e.stopPropagation(); lintDrop(f); };
+      return d;
+    }
     const q = f.anchor ? `<div class="t">&ldquo;${esc(f.anchor.quote)}&rdquo;${f.fix != null ? ` &rarr; <ins>${esc(f.fix)}</ins>` : ''}</div>` : '';
     d.innerHTML = `<div class="who"><span class="av lint">!</span><b>${esc(f.kind)}</b><span class="tm">${esc(f.severity || '')}</span>
         <span class="acts">${f.fix != null ? '<button class="yes" data-a="fix" title="Apply this fix">&#10003;</button>' : ''}<button class="no" data-a="drop" title="Dismiss">&#10005;</button></span></div>
@@ -879,7 +1053,7 @@
     toast(fresh.length ? `${fresh.length} new change(s) added.` : 'Up to date.');
   }
   window.review = {
-    toggle, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags,
+    toggle, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
     // test seam: open an article body under a given repo path without a folder handle
     loadFor(rel, html) { state.relOverride = rel; const e = ed(); e.style.display = ''; e.contentEditable = 'true'; e.innerHTML = html; return boot(rel); }
   };
@@ -902,6 +1076,19 @@ body.review-open #review-pane{display:flex}
 .rv-dd{display:none;position:absolute;right:0;top:1.5rem;background:#fff;border:1px solid #e0ded8;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:6;min-width:170px}
 .rv-more.open .rv-dd{display:block}.rv-dd button{display:block;width:100%;text-align:left;border:0!important;border-radius:0!important;text-transform:none!important;letter-spacing:0!important;font-size:.78rem!important;padding:.45rem .7rem!important}
 .rv-dd button:hover{background:#F5F5F2}
+.rv-voice{display:flex;flex-wrap:wrap;gap:.25rem .5rem;align-items:center;font:.7rem/1.4 'Hanken Grotesk',sans-serif;color:#4c5a52;padding:.35rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff;cursor:pointer}
+.rv-voice .sc{font:700 .62rem/1 'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .4rem;border-radius:3px;color:#fff;background:#6b7a70}
+.rv-voice .sc.good{background:#2D6B50}.rv-voice .sc.ok{background:#9A7B2E}.rv-voice .sc.off{background:#B4553C}
+.rv-voice .sg{white-space:nowrap}.rv-voice .sg.off{color:#B4553C}.rv-voice .sg i{color:#8a9790;font-style:normal}
+.rv-card .acts .claude{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;color:#D97757;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.rv-card .acts .claude:hover{background:#FBEDE6;border-color:#eec3b3}
+.rv-card .act .send svg{vertical-align:-3px;margin-right:.15rem;color:#D97757}
+.rv-card .chip{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .4rem;border-radius:999px;margin-left:.35rem;white-space:nowrap}
+.rv-card .chip.sent{background:#FBEFC2;color:#5c4a12}.rv-card .chip.done{background:#E3F0E8;color:#2D6B50}.rv-card .chip.wait{background:#E8EEF7;color:#2f4b78}.rv-card .chip.fail{background:#F8E5E0;color:#B4553C}
+.rv-card .act .send{border-color:#b9d4c5;color:#2D6B50}
+.rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4}
+.rv-card .alt .use{flex-shrink:0;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #b9d4c5;background:#E3F0E8;color:#2D6B50;border-radius:3px;cursor:pointer}
+.rv-card .alt .use:hover{background:#2D6B50;color:#fff}
 .rv-status{font:600 .58rem/1.4 'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#6b7a70;padding:.4rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
 .rv-body{flex:1;overflow:hidden;position:relative}.rv-body.list{overflow:auto}.rv-list{padding:.5rem}.rv-canvas{position:relative;height:100%}
 #rv-banner{background:#FBEFC2;color:#5c4a12;font-size:.78rem;padding:.5rem .6rem;border-bottom:1px solid #E8C86A}#rv-banner button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;margin-left:.3rem;border:1px solid #E8C86A;background:#fff;border-radius:3px;padding:.25rem .4rem;cursor:pointer}

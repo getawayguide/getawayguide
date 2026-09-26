@@ -560,6 +560,18 @@ def comments_load(key):
     return json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"threads": []}
 
 
+def task_lines():
+    """every thread Kevin sent to Claude (kind rewrite / task) that has no answer yet"""
+    out = []
+    for f in sorted(COMMENTS.glob("*.json")):
+        for t in json.loads(f.read_text(encoding="utf-8")).get("threads", []):
+            if t.get("kind") in ("rewrite", "task") and not t.get("resolved") and not t.get("edit"):
+                q = (t.get("anchor") or {}).get("quote", "")[:160]
+                out.append("  %-40s %s  %s" % (f.stem, t["id"], t.get("text", "")))
+                out.append("      “%s”" % q)
+    return out
+
+
 def comments_save(key, data):
     COMMENTS.mkdir(parents=True, exist_ok=True)
     (COMMENTS / f"{key}.json").write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -670,6 +682,9 @@ if __name__ == "__main__":
     elif cmd == "list":
         for p in pending():
             print(f"  {p['slug']:<30} {p['changes']:>4} changes  {'APPLIED' if p['applied'] else 'pending'}   {p['title']}")
+    elif cmd in ("tasks", "rewrites"):    # what Kevin sent to Claude from the margin, still unanswered
+        for line in task_lines():
+            print(line)
     elif cmd == "apply":
         dry = "--dry-run" in rest
         r = apply(rest[0], dry=dry)

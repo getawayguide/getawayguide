@@ -1346,7 +1346,88 @@ def review_lint():
         return "", 204
     import prose_check
     d = request.get_json(force=True) or {}
-    return jsonify({"findings": prose_check.check(d.get("html") or "")})
+    return jsonify(prose_check.check_full(d.get("html") or ""))
+
+
+def _env_key(name):
+    """a key from the repo's .env (the only place secrets live) or the environment"""
+    if os.environ.get(name):
+        return os.environ[name]
+    f = Path(ROOT) / ".env"
+    if f.exists():
+        for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.strip().startswith(name + "="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+VOICE_GUIDE = Path.home() / ".claude/projects/c--Users-kevin-OneDrive-Documents-Travel-Blog/memory/user_writing_style.md"
+
+
+def _rewrite_prompt(quote, before, after, note):
+    guide = VOICE_GUIDE.read_text(encoding="utf-8", errors="replace") if VOICE_GUIDE.exists() else ""
+    return (
+        "You edit sentences for Kevin's travel blog. Rewrite the SENTENCE below three ways, each clearer or "
+        "tighter, in Kevin's voice: first person, direct, specific, American spelling, no em dashes, no travel "
+        "cliches. Keep every fact and every link text; do not add facts. Return ONLY a JSON array of three strings.\n\n"
+        + ("VOICE GUIDE:\n" + guide[:6000] + "\n\n" if guide else "")
+        + ("WHAT KEVIN WANTS: " + note + "\n\n" if note else "")
+        + "CONTEXT BEFORE: " + before + "\nSENTENCE: " + quote + "\nCONTEXT AFTER: " + after)
+
+
+def _claude_rewrites(prompt, key):
+    """Python's TLS is broken on this box (see the memory note), so the call goes through
+    PowerShell's Invoke-RestMethod like every other outbound request the tools make."""
+    body = json.dumps({"model": "claude-sonnet-5", "max_tokens": 800,
+                       "messages": [{"role": "user", "content": prompt}]})
+    tmp = Path(ROOT) / ".tmp" / "rewrite_req.json"
+    tmp.write_text(body, encoding="utf-8")
+    ps = ("$b = Get-Content -Raw -Encoding UTF8 '%s'; "
+          "$r = Invoke-RestMethod -Uri 'https://api.anthropic.com/v1/messages' -Method Post -TimeoutSec 60 "
+          "-Headers @{'x-api-key'='%s';'anthropic-version'='2023-06-01';'content-type'='application/json'} -Body $b; "
+          "$r.content[0].text" % (str(tmp).replace("'", "''"), key))
+    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+                       capture_output=True, text=True, timeout=90, encoding="utf-8", errors="replace")
+    if r.returncode != 0:
+        raise RuntimeError((r.stderr or r.stdout).strip()[-300:])
+    txt = r.stdout.strip()
+    m = re.search(r"\[.*\]", txt, re.S)
+    alts = json.loads(m.group(0) if m else txt)
+    return [a for a in alts if isinstance(a, str) and a.strip()][:3]
+
+
+@app.route("/review/rewrite", methods=["POST", "OPTIONS"])
+def review_rewrite():
+    """Rewrite the selected sentence in Kevin's voice. With ANTHROPIC_API_KEY in .env the
+    answer comes back at once (three alternatives, the editor offers each with a Use button).
+    Without one the ask is queued as a comment thread on the article, which the next review
+    round answers with a proposed change; `python tools/redline.py rewrites` lists the queue."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True) or {}
+    quote = (d.get("quote") or "").strip()
+    if not quote:
+        abort(400)
+    before, after, note = (d.get("before") or "")[-160:], (d.get("after") or "")[:160], (d.get("note") or "").strip()
+    key = _env_key("ANTHROPIC_API_KEY")
+    if key:
+        try:
+            return jsonify({"live": True, "alternatives": _claude_rewrites(_rewrite_prompt(quote, before, after, note), key)})
+        except Exception as e:
+            return jsonify({"live": True, "error": str(e)[:300]})
+    rel = d.get("rel") or ""
+    if not rel:
+        return jsonify({"live": False, "queued": False, "error": "no article path"})
+    key_ = _redline.comments_key(rel)
+    data = _redline.comments_load(key_)
+    tid = "rw" + format(int(time.time() * 1000), "x")
+    data.setdefault("threads", []).append({
+        "id": tid, "author": "Kevin", "created": time.strftime("%Y-%m-%dT%H:%M:%S"), "kind": "rewrite",
+        "text": "Rewrite: " + (note or "clearer, in my voice"), "status": "sent",
+        "resolved": False, "unanchored": False,
+        "anchor": {"before": before[-60:], "quote": quote, "after": after[:60]}, "replies": []})
+    _redline.comments_save(key_, data)
+    return jsonify({"live": False, "queued": True, "thread": data["threads"][-1]})
 
 
 @app.route("/review/resolve-maps", methods=["POST", "OPTIONS"])
@@ -1414,9 +1495,28 @@ def comments(key):
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,120}", key):
         abort(400)
     if request.method == "POST":
-        _redline.comments_save(key, request.get_json(force=True) or {"threads": []})
+        data = request.get_json(force=True) or {"threads": []}
+        _redline.comments_save(key, data)
+        _answer_tasks(key, data)
         return jsonify({"ok": True})
     return jsonify(_redline.comments_load(key))
+
+
+_answering = set()
+
+
+def _answer_tasks(key, data):
+    """A thread sent to Claude gets answered by tools/claude_answer.py --ask when the repo's
+    .env holds ANTHROPIC_API_KEY: one process per thread, in the background, writing the
+    edit back onto the thread for the editor's poll to apply. Without a key the thread
+    waits for the session: `python tools/redline.py tasks` lists it."""
+    if not _env_key("ANTHROPIC_API_KEY"):
+        return
+    for t in data.get("threads", []):
+        if t.get("kind") in ("task", "rewrite") and t.get("status") == "sent" and not t.get("edit") and t["id"] not in _answering:
+            _answering.add(t["id"])
+            subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], "--ask"],
+                             cwd=str(ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 # Live Activity polls this every 2 s while the panel is open, and the scan below walks
@@ -1979,7 +2079,17 @@ def api_rate():
     return jsonify({"ok": True, "rating": r})
 
 
+_PICKS_VERSION = [int(time.time())]
+
+
+@app.route("/api/picks_version")
+def api_picks_version():
+    """bumped on every pick write; the editor polls it so a pick made in another tab shows"""
+    return jsonify({"v": _PICKS_VERSION[0]})
+
+
 def _save_picks(picks):
+    _PICKS_VERSION[0] += 1
     save_json(PICKS, picks, indent=0)    # atomic: never a half-written shortlist
 
 
@@ -2839,4 +2949,4 @@ if __name__ == "__main__":
     # box (Bonjour) and every request pays a ~2s IPv6 timeout
     print(f"Photo editor: http://127.0.0.1:5003   sources: {[s['label'] for s in SOURCES]}")
     # threaded: thumbnail generation must not block imports/saves behind it
-    app.run(port=5003, debug=False, threaded=True)
+    app.run(port=int(os.environ.get("PHOTO_EDITOR_PORT", 5003)), debug=False, threaded=True)   # a test instance runs beside the live one
