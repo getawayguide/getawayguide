@@ -101,6 +101,7 @@
     ed().addEventListener('input', () => { clearTimeout(state._lt); state._lt = setTimeout(layout, 120); });
     ed().addEventListener('load', () => queueLayout(), true);          // images arriving shift the text
     if (window.ResizeObserver) new ResizeObserver(() => queueLayout()).observe(ed());
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => queueLayout());   // cards measured in the fallback font
     ed().addEventListener('click', e => {
       const m = e.target.closest('[data-id]'); if (m && (m.classList.contains('rl') || m.classList.contains('rl-n'))) { jump(m.dataset.id, true); return; }
       const c = e.target.closest('mark.cm'); if (c) { focusThread(c.dataset.cm, true); }
@@ -276,6 +277,7 @@
     if (!marks.length) { state.st[id] = accept; post(id, accept); if (!silent) renderAll(); return; }
     if (H()) H().checkpoint();
     const holder = marks[0].closest('p,li,div.copy,div');
+    const ref = marks[0].previousElementSibling || marks[0].parentElement;   // where the change was, once its marks are gone
     for (const m of marks) {
       if (m.tagName === 'SUP') { m.remove(); continue; }
       if (m.tagName === 'DEL') { accept ? m.remove() : unwrap(m); }
@@ -307,7 +309,7 @@
     post(posted);
     if (H()) H().touch(); dirty();
     previewDecision(null);
-    if (!silent) { renderAll(); advanceFrom(id); }
+    if (!silent) { renderAll(); advanceFrom(id, holder && holder.isConnected ? holder : ref); }
   }
   function reinject(ids) {                   // a rejected cut keeps its sentence, so its grammar fixes are offered again
     const e = ed(); let html = e.innerHTML;
@@ -345,19 +347,40 @@
     ed().querySelectorAll('.rl-hit').forEach(x => x.classList.remove('rl-hit'));
     const marks = [...ed().querySelectorAll(`[data-id="${id}"]`)];
     marks.forEach(m => (m.closest('p,li,div.copy') || m).classList.add('rl-hit'));
-    if (marks[0] && !fromDoc) marks[0].scrollIntoView({ block: 'center', behavior: 'auto' });
+    // scroll only when the change is out of view: centering it on every jump made the
+    // article leap on each Accept, even when the next change was already on screen
+    if (marks[0] && !fromDoc) reveal(marks[0]);
     renderAll();
     const card = document.querySelector(`.rv-card[data-id="${id}"]`); if (card && state.view === 'list') card.scrollIntoView({ block: 'nearest' });
+  }
+  function reveal(el) {                      // the smallest scroll that brings the change into view, with some context
+    const sc = document.querySelector('.editor-scroll'); if (!sc) { el.scrollIntoView({ block: 'center' }); return; }
+    const r = el.getBoundingClientRect(), s = sc.getBoundingClientRect(), M = 120;
+    if (r.top >= s.top + 24 && r.bottom <= s.bottom - 24) return;                 // already on screen: leave the page alone
+    if (r.top < s.top + 24) sc.scrollTop -= (s.top + M) - r.top;
+    else sc.scrollTop += r.bottom - (s.bottom - M);
   }
   function step(dir) {
     const order = pending().map(c => c.id); if (!order.length) return;
     const i = order.indexOf(state.active); jump(order[(i + dir + order.length) % order.length]);
   }
-  function advanceFrom(id) {                 // Word moves to the next change after Accept / Reject
+  function advanceFrom(id, from) {           // Word moves to the next change after Accept / Reject
     const order = pending(); if (!order.length) { state.active = null; renderAll(); return; }
-    const idx = state.changes.findIndex(c => c.id === id);
-    const next = order.find(c => state.changes.indexOf(c) > idx) || order[0];
-    jump(next.id);
+    let next = null;
+    if (from && from.isConnected) {
+      const placed = order.map(c => [c, ed().querySelector(`[data-id="${c.id}"]`)]).filter(x => x[1]);
+      placed.sort((a, b) => (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+      const below = placed.filter(x => from.compareDocumentPosition(x[1]) & Node.DOCUMENT_POSITION_FOLLOWING);
+      // the next change down the page, or, after the last one, the nearest above it
+      next = below.length ? below[0][0] : (placed.length ? placed[placed.length - 1][0] : null);
+    }
+    if (!next) {
+      const idx = state.changes.findIndex(c => c.id === id);
+      next = order.find(c => state.changes.indexOf(c) > idx) || order[0];
+    }
+    // the next card lights up; the article itself stays where Kevin left it (a scroll on
+    // every Accept was "disruptive", 2026-09-26). Clicking the card still reveals its text.
+    jump(next.id, true);
   }
 
   // ------------------------------------------------------------------ save
@@ -571,6 +594,11 @@
       host.appendChild(e);
     }
     layout();
+    if (window.ResizeObserver) {
+      if (state._ro) state._ro.disconnect();
+      state._ro = new ResizeObserver(() => queueLayout());
+      host.querySelectorAll(':scope > .rv-card').forEach(c => state._ro.observe(c));
+    }
   }
   // Word's Track Changes card: who, when, what, and a tick or a cross that previews its result
   function changeCard(c, dim, threads) {
