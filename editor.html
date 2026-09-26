@@ -2312,6 +2312,59 @@ main{overflow-y:auto;padding:1rem}
   });
 
   // List keyboard behavior: Tab=indent, Shift+Tab=outdent, Enter on empty item=exit list
+  // ---- Enter right above an object opens a blank line ABOVE it --------------------------
+  // Kevin, 2026-09-25: "when I hit enter above a line object, a new space line should appear
+  // above the line object. same for a photo placeholder." Word does this: Enter with nothing
+  // but a picture after the caret gives you an empty paragraph above the picture.
+  // Here it did not. In an entry holding text and then a photo slot, the slot's "×" button
+  // counted as text after the caret, the list handler below stepped aside, and the browser's
+  // own Enter split the entry; a second Enter on the empty half then split the whole list,
+  // which is how the Mayrig photo ended up in a list of its own below the line.
+  // Now: if everything between the caret and the next object is empty (editor chrome such as
+  // the "×" does not count), a blank line is opened directly above that object, inside the
+  // same entry or paragraph, and nothing is split.
+  const ENTER_OBJ = '.img-landscape, .img-pair, .img-slot-empty, .photo-ph, picture, img, hr, ' +
+                    'span[style*="aspect-ratio"], .map-embed, iframe';
+  function textBetween(r, el) {
+    const b = document.createRange();
+    b.setStart(r.startContainer, r.startOffset);
+    b.setEndBefore(el);
+    const f = b.cloneContents();
+    f.querySelectorAll('[contenteditable="false"], button').forEach(x => x.remove());
+    return f.textContent.replace(/\u200b/g, '').trim();
+  }
+  window.__textBetween = textBetween;
+  document.getElementById('editor').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return;
+    const r = sel.getRangeAt(0);
+    const edEl = this;
+    const at = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
+    if (!at || !edEl.contains(at)) return;
+    // the unit the caret is in: its list entry, else its top-level block
+    let box = at.closest('li');
+    if (!box) { box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement; }
+    if (!box || box === edEl || box.matches(ENTER_OBJ)) return;
+    // the first object that starts after the caret, taken at its outermost frame
+    let obj = [...box.querySelectorAll(ENTER_OBJ)].find(o => r.comparePoint(o, 0) === 1);
+    if (!obj) return;
+    while (obj.parentElement && obj.parentElement !== box && obj.parentElement.matches(ENTER_OBJ)) obj = obj.parentElement;
+    if (obj.closest('li') !== box.closest('li')) return;           // a nested entry's object is its own business
+    if (textBetween(r, obj)) return;                                // text after the caret: an ordinary split
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (window.__History) window.__History.checkpoint();
+    // a bare <div> inside an entry; the save turns it into a <p>, the site's own idiom
+    const blank = document.createElement(obj.parentElement === edEl ? 'p' : 'div');
+    blank.innerHTML = '<br>';
+    obj.before(blank);
+    const c = document.createRange(); c.setStart(blank, 0); c.collapse(true);
+    sel.removeAllRanges(); sel.addRange(c);
+    setDirty(true);
+    if (window.__History) window.__History.touch();
+  }, true);
+
   document.getElementById('editor').addEventListener('keydown', function(e) {
     const sel = window.getSelection();
     if (!sel || !sel.anchorNode) return;
@@ -2358,7 +2411,11 @@ main{overflow-y:auto;padding:1rem}
         // was not empty, so the "Enter on an empty item leaves the list" escape stopped
         // working and there was no way out.
         if (sub) after.setEndBefore(sub);
-        if (after.toString().trim() !== '') return;
+        {
+          const f = after.cloneContents();
+          f.querySelectorAll('[contenteditable="false"], button').forEach(x => x.remove());
+          if (f.textContent.replace(/\u200b/g, '').trim() !== '') return;
+        }
         e.preventDefault();
         if (window.__History) window.__History.checkpoint();
         const wasLast = !li.nextElementSibling;
@@ -2368,12 +2425,23 @@ main{overflow-y:auto;padding:1rem}
         // back on the first keystroke, in the input handler below.
         // A ruled list hands the new bullet its style without the rule; an unruled one
         // (the nested case) just gets a clean sibling.
-        if (ruled) { nli.setAttribute('style', noRule(ruled)); nli.dataset.liStyle = ruled; }
+        // The line under an entry stays at the bottom when you press Enter at its end: the new
+        // blank line opens ABOVE the line and the line moves down with it, as a paragraph
+        // border does in Word (Kevin, 2026-09-25: "when I hit enter above a line object, a new
+        // space line should appear above the line object"). So an entry that HAS a line hands
+        // it to the new line and keeps its own style without it; the count of lines on the
+        // page does not change, so no stray divider appears either.
+        const ownsLine = /border-bottom/i.test(style) && !/border-bottom\s*:\s*none/i.test(style);
+        if (ownsLine) {
+          nli.setAttribute('style', style);
+          li.setAttribute('style', noRule(style));
+          if (!li.getAttribute('style')) li.removeAttribute('style');
+        } else if (ruled) { nli.setAttribute('style', noRule(ruled)); nli.dataset.liStyle = ruled; }
         else if (style) nli.setAttribute('style', style);
         nli.innerHTML = '<br>';
         li.insertAdjacentElement('afterend', nli);
-        // ...and the item it follows gains one, because it is no longer last.
-        if (wasLast && ruled) li.setAttribute('style', ruled);
+        // ...and the last item, which has no line, gains one, because it is no longer last.
+        if (!ownsLine && wasLast && ruled) li.setAttribute('style', ruled);
         const caret = document.createRange();
         caret.setStart(nli, 0);
         caret.collapse(true);
