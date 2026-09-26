@@ -6290,14 +6290,21 @@ main{overflow-y:auto;padding:1rem}
       // were sitting there live and doing nothing at all. Turn them off and
       // say where the working one is (✎ Edit re-imports from the archive
       // original in bake mode, where the angle really is applied).
-      ['#rot-ccw', '#rot-cw', '#flip-h', '#crop-angle'].forEach(q => {
+      // Rotate and flip need a fresh insert (✎ Edit). Straighten used to be switched off
+      // here too, and Kevin dragged it on the Cascade photo, saw nothing happen, and the
+      // tilt never reached the server (2026-09-26). Now the control is live: Apply with a
+      // tilt re-bakes the photo from its archive original with the angle and swaps the new
+      // file in, then the framing is written as usual (see applyCropModal).
+      ['#rot-ccw', '#rot-cw', '#flip-h'].forEach(q => {
         const el = $(q); if (!el) return;
         el.disabled = true;
-        el.title = 'Straighten and rotate re-encode the photo, so they only run '
-                 + 'on insert. Use ✎ Edit to reopen this photo\'s original.';
+        el.title = 'Rotate and flip re-encode the photo, so they only run on insert. '
+                 + 'Use ✎ Edit to reopen this photo\'s original.';
       });
-      $('#crop-angle-name').title = $('#crop-angle').title;
-      $('#crop-angle-name').style.opacity = '.45';
+      const ang = $('#crop-angle'); if (ang) { ang.disabled = false; ang.title = 'Straighten: applied to the photo when you press Apply'; }
+      $('#crop-angle-name').title = 'Double-click to reset';
+      $('#crop-angle-name').style.opacity = '';
+      CM.angleDeg = 0;
       resetLockUI(false);
       const cap = captionOf(blockRootOf(img));
       $('#crop-caption').value = cap ? cap.textContent : '';
@@ -7067,8 +7074,8 @@ void main(){
     const base = go.dataset.base || go.textContent.replace(/\s*·.*$/, '');
     go.dataset.base = base;
     const a = CM.angleDeg || 0;
-    // only in bake mode: 'css' (edit-existing) cannot straighten at all
-    const canBake = CM.devMode !== 'css';
+    // in bake mode the angle is part of the insert; on a placed photo it triggers a re-bake
+    const canBake = true;
     go.textContent = (canBake && Math.abs(a) > 0.01) ? base + ' · ' + (a > 0 ? '+' : '') + a + '°' : base;
   };
   $('#crop-angle-name').addEventListener('dblclick', () => {
@@ -7730,11 +7737,41 @@ void main(){
     else closeCropModal();
   });
 
-  window.applyCropModal = function () {
+  window.applyCropModal = async function () {
     if (!CM) return;
     const { posX, posY, zoom } = rectState();
     const img = CM.img;
     History.checkpoint();
+    // A straighten cannot be CSS: it needs the source pixels. Re-import the archive
+    // original with the angle (the server names the new file next to the old one, keeps
+    // the ICC profile and EXIF) and point this <img> at it, exactly as ⇄ Swap does.
+    const angle = CM.angleDeg || 0;
+    if (Math.abs(angle) > 0.01) {
+      const go = $('#crop-go'); go.disabled = true;
+      try {
+        const ref = img.getAttribute('data-path') || img.getAttribute('src') || '';
+        const o = await (await fetch(API + '/api/resolve_original?path=' + encodeURIComponent(ref))).json();
+        if (!o.ok) throw new Error('no archive original for this photo');
+        // the archive folders ARE the country and city: Images/<Country>/<City>/<file>
+        const parts = ref.replace(/\\/g, '/').replace(/^(\.\.\/)+/, '').replace(/^Images\//, '').split('/');
+        const r = await (await fetch(API + '/api/import', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ root: o.root, path: o.path, country: parts[0] || '',
+            city: parts.length > 2 ? parts[1] : '', angle: angle, dev: {}, masks: [] })
+        })).json();
+        if (!r.ok) throw new Error('re-import failed');
+        // the same two lines a fresh insert uses (performInsert), so the file is displayed
+        // and saved exactly as one that came in through the sidebar
+        const depth = await articleDepth();
+        img.setAttribute('data-path', '../'.repeat(depth) + r.src.replace(/ /g, '%20'));
+        img.src = API + '/site/' + r.src.split('/').map(encodeURIComponent).join('/');
+        delete img.dataset.srcset; delete img.dataset.sizes;    // the old file's variants
+        stripStaleSources(img);
+      } catch (e) {
+        alert('The straighten could not be applied: ' + (e.message || e) + '. The framing below is saved without it.');
+      }
+      go.disabled = false;
+    }
     img.style.filter = adjFilter();
     setCaption(blockRootOf(img), $('#crop-caption').value.trim());
     if (CM.mode === 'wrapped') {
