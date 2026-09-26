@@ -6282,7 +6282,10 @@ main{overflow-y:auto;padding:1rem}
       CM = { img, wrap, mode, natW, natH, dispW, dispH, aspect, locked, pending: null };
       $('#crop-title').textContent = 'Edit photo';
       $('#crop-insert-fields').style.display = 'none';
-      $('#crop-orient').style.display = 'none';
+      // The straighten slider lives in the orient box, and hiding the whole box here is
+      // what made the 2026-09-26 fix invisible: the control was enabled and display:none.
+      // Show the box, hide only the rotate/flip row (those still need a fresh insert).
+      orientRows('edit');
       $('#crop-dropmode').style.display = 'none';
       $('#crop-go').textContent = 'Apply';
       // Straighten, rotate and flip all need the SOURCE pixels, and this mode
@@ -7069,6 +7072,18 @@ void main(){
   // The Insert/Apply button names the tilt it is about to bake ("Insert · +5°"),
   // so whether a straighten was accepted is visible before the click rather
   // than something to go and check in the file afterwards (Kevin, 2026-09-24).
+  // The orient box holds the rotate/flip chips AND the straighten slider. A placed photo
+  // can straighten (it re-bakes on Apply) but not rotate or flip, so in edit mode the box
+  // shows with only the slider; an insert shows all of it. Hiding the whole box for edits
+  // is what made the 2026-09-26 straighten fix invisible.
+  window.orientRows = function orientRows(mode) {
+    const box = $('#crop-orient'); if (!box) return;
+    box.style.display = 'block';
+    const chips = box.querySelector('#rot-ccw') && box.querySelector('#rot-ccw').parentElement;
+    if (chips) chips.style.display = mode === 'edit' ? 'none' : '';
+    const lbl = box.querySelector('.lbl');
+    if (lbl) lbl.textContent = mode === 'edit' ? 'Straighten' : 'Rotate / flip / straighten';
+  };
   window.goLabel = function goLabel() {
     const go = $('#crop-go'); if (!go || !CM) return;
     const base = go.dataset.base || go.textContent.replace(/\s*·.*$/, '');
@@ -7407,7 +7422,7 @@ void main(){
              rot: rot, flip: flip, dropMode };
       $('#crop-title').textContent = 'Add photo';
       $('#crop-insert-fields').style.display = 'block';
-      $('#crop-orient').style.display = 'block';
+      orientRows('insert');
       CM.eraseToken = prevToken || null;           // erases survive a re-render
       CM.angleDeg = prevAngle;
       CM.angleBaked = prevAngleBaked;
