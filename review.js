@@ -283,7 +283,10 @@
     }
     if (accept && c.struct) {
       // the fragment was never wrapped, so it is still intact in the serialised canvas
-      const e = ed(), h = e.innerHTML, key = locate(h, c.find);
+      // Deciding another change in the same paragraph can leave an empty class="" on the <p>
+      // (classList.remove of the hit highlight), and a find that opens with the tag then stops
+      // matching. An empty class means nothing, so it is dropped before matching.
+      const e = ed(), h = e.innerHTML.replace(/ class=""/g, ''), key = locate(h, c.find);
       if (key) e.innerHTML = h.replace(key, () => c.replace);   // a function: "$" in the text is literal
       else console.warn('review: layout change', id, 'no longer matches; nothing applied');
     } else if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture,.photo-ph')) holder.remove();
