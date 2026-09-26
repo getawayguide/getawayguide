@@ -50,6 +50,9 @@ def main():
     ap.add_argument("--slug", required=True, help="hero-<slug>.jpg etc")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="rewrite files that already exist")
+    ap.add_argument("--angle", type=float, default=0.0,
+                    help="straighten first: degrees, counter-clockwise for positive, cut to the largest "
+                         "frame with no blank corners (what the hero picker's Straighten slider shows)")
     a = ap.parse_args()
 
     src_path = (ROOT / a.original) if not Path(a.original).is_absolute() else Path(a.original)
@@ -61,6 +64,18 @@ def main():
 
     src = ImageOps.exif_transpose(Image.open(src_path))
     icc = src.info.get("icc_profile")          # grab BEFORE convert()
+    if abs(a.angle) > 1e-3:
+        # the same rotate-and-inscribe the photo editor and the hero picker use, so the
+        # slider's preview and this cut agree to the pixel
+        import math
+        w0, h0 = src.size
+        rad = math.radians(abs(a.angle))
+        scale = 1.0 / (math.cos(rad) + (max(w0, h0) / min(w0, h0)) * math.sin(rad))
+        rot = src.convert("RGB").rotate(a.angle, resample=Image.BICUBIC, expand=True)
+        cw, ch = int(w0 * scale), int(h0 * scale)
+        cx, cy = rot.width / 2, rot.height / 2
+        src = rot.crop((int(cx - cw / 2), int(cy - ch / 2), int(cx - cw / 2) + cw, int(cy - ch / 2) + ch))
+        src.info["icc_profile"] = icc
     if not icc:
         out("  ! the original carries no ICC profile; colours may already be sRGB")
     rgb = src.convert("RGB")

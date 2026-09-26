@@ -6612,7 +6612,11 @@ void main(){
       const deg = CM.angleBaked ? 0 : (CM.straighten ? (CM.previewOffset || 0) : (CM.angleDeg || 0));
       const rad = Math.abs(deg) * Math.PI / 180;
       const ar = Math.max(CM.natW, CM.natH) / Math.min(CM.natW, CM.natH);
-      gl.uniform1f(GL.uf.angle, deg * Math.PI / 180);
+      // The texture is uploaded y-down, so the shader's rotation runs clockwise for a
+      // positive angle, and the bake (PIL) runs counter-clockwise. Measured on a grid
+      // (2026-09-26): +6 on the slider drew -5.9 on screen. The sign is flipped here so
+      // the preview turns the way the file will.
+      gl.uniform1f(GL.uf.angle, -deg * Math.PI / 180);
       gl.uniform1f(GL.uf.ascale, 1 / (Math.cos(rad) + ar * Math.sin(rad)));
       // local masks
       const ms = CM.masks || [];
@@ -6841,7 +6845,7 @@ void main(){
         const rad2 = Math.abs(deg) * Math.PI / 180;
         const ar = Math.max(CM.natW, CM.natH) / Math.min(CM.natW, CM.natH);
         const asc = 1 / (Math.cos(rad2) + ar * Math.sin(rad2));
-        const a2 = deg * Math.PI / 180, ca = Math.cos(a2), sa = Math.sin(a2);
+        const a2 = -deg * Math.PI / 180, ca = Math.cos(a2), sa = Math.sin(a2);   // the shader gets -deg (see devRender)
         const px2 = (p.x - .5) * CM.natW * asc, py2 = (p.y - .5) * CM.natH * asc;
         p = { x: (ca * px2 + sa * py2) / CM.natW + .5,
               y: (-sa * px2 + ca * py2) / CM.natH + .5 };
@@ -7779,6 +7783,13 @@ void main(){
     else closeCropModal();
   });
 
+  // test seam: the crop window's state, for the headless straighten checks (CM and GL are
+  // closure-scoped on purpose; this is the one read-only window into them)
+  window.__cropDebug = () => ({ glOk: !!(GL && GL.ok), mode: CM && CM.devMode, angle: CM && CM.angleDeg,
+    baked: !!(CM && CM.angleBaked), offset: CM && CM.previewOffset, straighten: CM && CM.straighten,
+    canvasShown: !!(GL && GL.gl && GL.gl.canvas && GL.gl.canvas.offsetParent),
+    imgShown: !!$('#crop-img').offsetParent, imgTransform: $('#crop-img').style.transform,
+    warn: ($('#dev-glwarn').textContent || '').slice(0, 80) });
   window.applyCropModal = async function () {
     if (!CM) return;
     const { posX, posY, zoom } = rectState();

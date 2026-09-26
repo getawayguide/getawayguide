@@ -212,20 +212,39 @@ def albums():
                     "pickCrops": pick_crops(pick),
                     "pickScrim": pick.get("scrim", 100) if pick else 100,
                     "pickTitle": pick.get("title", "") if pick else "",
+                    "pickAngle": pick.get("angle", 0) if pick else 0,
                     "stars": starred.get(country, [])})
     return out
 
 
-def cache_path(src, w, crop, ratio):
+def cache_path(src, w, crop, ratio, angle=0.0):
     key = (f"{src}|{src.stat().st_mtime_ns}|{w}|"
-           f"{('c%.4f' % ratio) if crop else 'f'}")
+           f"{('c%.4f' % ratio) if crop else 'f'}|a{angle:.2f}")
     return CACHE / (hashlib.md5(key.encode()).hexdigest() + ".jpg")
 
 
-def build(src, w, crop, ratio=None):
+def straighten(im, angle):
+    """Rotate by `angle` degrees (counter-clockwise for positive, as PIL and the photo
+    editor's bake do) and crop to the largest inscribed rectangle of the original aspect,
+    so no blank corner survives. The same formula tools/photo_editor.py bakes with, so the
+    stage shows the exact frame gen_hero_variants --angle will cut."""
+    import math
+    angle = float(angle or 0)
+    if abs(angle) < 1e-3:
+        return im
+    w, h = im.size
+    rad = math.radians(abs(angle))
+    scale = 1.0 / (math.cos(rad) + (max(w, h) / min(w, h)) * math.sin(rad))
+    rot = im.rotate(angle, resample=Image.BICUBIC, expand=True)
+    cw, ch = int(w * scale), int(h * scale)
+    cx, cy = rot.width / 2, rot.height / 2
+    return rot.crop((int(cx - cw / 2), int(cy - ch / 2), int(cx - cw / 2) + cw, int(cy - ch / 2) + ch))
+
+
+def build(src, w, crop, ratio=None, angle=0.0):
     """Render one cached variant. `crop` cuts the same shape the hero uses."""
     ratio = ratio or HERO_RATIO
-    cp = cache_path(src, w, crop, ratio)
+    cp = cache_path(src, w, crop, ratio, angle)
     if cp.exists():
         return cp
     im = Image.open(src)
@@ -235,6 +254,8 @@ def build(src, w, crop, ratio=None):
         pass
     im = ImageOps.exif_transpose(im)
     icc = im.info.get("icc_profile")      # Display P3, must survive the convert
+    if abs(float(angle or 0)) > 1e-3:
+        im = straighten(im.convert("RGB"), angle)
     if crop:
         im = ImageOps.fit(im, (w, round(w / ratio)), Image.LANCZOS,
                           centering=(0.5, 0.5))
@@ -391,7 +412,11 @@ def img():
     crop = request.args.get("crop") == "1"
     ratio = shape_ratio(request.args.get("shape", "home"),
                         request.args.get("vw", DEFAULT_VW))
-    r = send_file(build(src, w, crop, ratio), mimetype="image/jpeg")
+    try:
+        angle = max(-10.0, min(10.0, float(request.args.get("a", 0) or 0)))
+    except ValueError:
+        angle = 0.0
+    r = send_file(build(src, w, crop, ratio, angle), mimetype="image/jpeg")
     r.headers["Cache-Control"] = "public, max-age=604800"
     return r
 
@@ -633,6 +658,10 @@ PAGE = r"""<!doctype html>
 Each keeps its own crop, because the hero is a fixed height and changes shape
 with the window.">
   </select>
+  <span class="scrim-ctl" title="Straighten: degrees of rotation, counter-clockwise for positive. Cut to the largest frame with no blank corners, the same way the photo editor bakes it. Double-click the word to reset.">
+    <span id="anglename" style="cursor:pointer">Straighten</span>
+    <input type="range" id="angle" min="-5" max="5" step="0.1" value="0"><b id="anglev">0.0&deg;</b>
+  </span>
   <span class="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
@@ -697,6 +726,7 @@ async function loadAlbums() {
              data-picked="${r.picked ? 1 : 0}" data-pick="${r.pickPath}"
              data-crops='${JSON.stringify(r.pickCrops)}' data-scrim="${r.pickScrim}"
              data-pick-title="${(r.pickTitle || '').replace(/"/g, '&quot;')}"
+             data-pick-angle="${r.pickAngle || 0}"
              data-stars="${(r.stars || []).join('|')}">${r.picked ? '✓ ' : '· '}${albumLabel(r)}</option>`
   ).join('');
   const done = rows.filter(r => r.picked).length;
@@ -789,6 +819,7 @@ function render(restore) {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
     if (t) { pick(t); crops = readCrops(sel); applyCrop();
              setScrim(+sel.dataset.scrim || 100);
+             setAngle(+sel.dataset.pickAngle || 0);
              t.scrollIntoView({block:'center'}); }
   } else if (keep) {
     // keep the selection visible without touching the crop in progress
@@ -903,8 +934,25 @@ function loadPic(force) {
     applyCrop();
     if (full && wantW() > picW) { loadPic(); }   // the first guess used a stand-in ratio
   };
-  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(cur.path);
+  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(cur.path) + (angle ? '&a=' + angle : '');
 }
+let angle = 0;
+function setAngle(v, reload) {
+  angle = Math.max(-5, Math.min(5, Math.round(v * 10) / 10));
+  $('angle').value = angle;
+  $('anglev').textContent = angle.toFixed(1) + '\u00b0';
+  if (reload !== false) { picW = 0; loadPic(true); }     // a new cut of the photo
+}
+let angleT = null;
+$('angle').addEventListener('input', e => {
+  // preview the tilt at once with CSS, and fetch the real cut once the drag settles
+  const v = +e.target.value;
+  angle = Math.round(v * 10) / 10; $('anglev').textContent = angle.toFixed(1) + '\u00b0';
+  $('pic').style.transform = 'rotate(' + (-angle) + 'deg) scale(1.08)';
+  clearTimeout(angleT);
+  angleT = setTimeout(() => { $('pic').style.transform = ''; setAngle(angle); }, 350);
+});
+$('anglename').addEventListener('dblclick', () => setAngle(0));
 let resizeT = null;
 window.addEventListener('resize', () => {
   clearTimeout(resizeT);
@@ -1050,6 +1098,7 @@ function applyCrop() {
     : 'Drag the photo to set the crop.';
 
   const cls = '.hero .slide img.hp-' + slug(country);
+  const bake = angle ? '<i>/* cut with: python tools/gen_hero_variants.py &lt;original&gt; --angle ' + angle + ' ... */</i>\n' : '';
   const line = i => cls + ' { object-position:' + posFor(i).replace(
     /([\d.]+%)(?!\s*})/, m => m) + '; }';
   const mark = i => {
@@ -1140,6 +1189,7 @@ $('save').onclick = async () => {
                  objectPosition: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) },
                  objectPositionY: legacy,
                  scrim: scrim,
+                 angle: angle,
                  title: $('title').value };
   const r = await (await fetch('/save', { method: 'POST',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
