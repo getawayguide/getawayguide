@@ -112,7 +112,10 @@
 /* ---------- ARTICLE HERO OPTIONS ---------- */
 .ah { display:none; }
 .frame[data-ahero="banner"] .ah-banner, .frame[data-ahero="quiet"]  .ah-quiet, .frame[data-ahero="split"]  .ah-split { display:block; }
-.ah-banner .band { position:relative; height:560px; overflow:hidden; }
+.ah-banner .band { position:relative; height:auto; aspect-ratio:1440/560; min-height:420px; overflow:hidden; }
+/* the same frame the article banner (.article-hero.gg-banner) uses, so an itinerary hero and
+   a guide hero are the same height at every width. It was a fixed 560px, which matched the
+   guides only at 1440 and stood 62px taller on a laptop (Kevin, 2026-09-26). */
 .phone .ah-banner .band { height:420px; }
 .ah-banner .band img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .ah-banner .band .veil { position:absolute; inset:0;
@@ -138,7 +141,11 @@
 .ah-split h1 { font-size:46px; line-height:1.12; margin:16px 0 0; font-weight:var(--dw); }
 .ah-split .pic { position:relative; overflow:hidden; min-height:420px; }
 .ah-split .pic img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.artsub { font-size:18px; line-height:1.62; color:var(--muted); font-weight:400; max-width:620px; margin:20px auto 0; }
+.artsub { font-size:18px; line-height:1.62; color:var(--muted); font-weight:400; max-width:760px; margin:20px auto 0; }
+/* subtitles hold to two lines on desktop and laptop: 620px wrapped a 27-word itinerary
+   lead to three. The article banner's inline min(600px,90%) is overridden below for the
+   same reason. */
+.article-hero.gg-banner .article-lead { max-width:min(760px, 90%) !important; }
 .ah-banner .artsub { color:rgba(255,255,255,.82); margin-left:0; }
 .ah-split .artsub { margin-left:0; }
 .phone .artsub { font-size:16px; margin-left:0; }

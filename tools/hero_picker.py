@@ -436,7 +436,26 @@ def save():
     body["path"] = _posix(body.get("path", ""))
     picks[body["country"]] = body
     PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
-    return jsonify(ok=True, saved=str(PICKS))
+    out = {"ok": True, "saved": str(PICKS)}
+    # With an article open in the editor, Save also BUILDS the hero: the eight files under
+    # Images/web/<Country>/ cut from the archive original at the chosen angle. The editor
+    # then rewrites the page's hero block from the result; nothing here touches an article.
+    article, slug = body.get("article") or "", body.get("slug") or ""
+    if article and slug:
+        import re as _re, subprocess, sys as _sys
+        slug = _re.sub(r"[^a-z0-9-]", "", slug.lower())
+        web = SITE / "Images" / "web" / body["country"]
+        src = (BACKUP / body["path"]).resolve()
+        if BACKUP in src.parents and src.is_file() and slug:
+            args = [_sys.executable, str(SITE / "tools" / "gen_hero_variants.py"), str(src),
+                    "--out", str(web), "--slug", slug, "--force"]
+            if abs(float(body.get("angle") or 0)) > 1e-3:
+                args += ["--angle", str(float(body["angle"]))]
+            r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=600)
+            out.update({"built": r.returncode == 0, "slug": slug,
+                        "web": "Images/web/" + body["country"],
+                        "log": "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-4:])})
+    return jsonify(out)
 
 
 @app.get("/picks")
@@ -750,7 +769,7 @@ let ARTICLE = null;
 window.addEventListener('message', ev => {
   const d = ev.data;
   if (!d || d.type !== 'article-context') return;
-  ARTICLE = d.h1 ? d : null;
+  ARTICLE = d.h1 ? d : null;             // {rel, country, h1, lead, heroSlug}
   articleAlbum();
 });
 // switch to the open article's album; if the album list is not in yet, loadAlbums() calls
@@ -1204,9 +1223,19 @@ $('save').onclick = async () => {
                  objectPositionY: legacy,
                  scrim: scrim,
                  angle: angle,
-                 title: $('title').value };
+                 title: $('title').value,
+                 article: ARTICLE ? ARTICLE.rel : '',
+                 slug: ARTICLE ? (ARTICLE.heroSlug || (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '')) : '' };
   const r = await (await fetch('/save', { method: 'POST',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+  if (r && r.built !== undefined) {
+    if (!r.built) { toast('Pick saved, but the hero files did not build: ' + (r.log || '').slice(-120)); }
+    else if (window.parent !== window) {
+      parent.postMessage({ type: 'heroes-saved', slug: r.slug, web: r.web, country: country,
+        positions: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) }, angle: angle }, '*');
+      toast('Hero built. The article editor has the new hero; save the article to keep it.');
+    }
+  }
   toast('Saved to ' + r.saved);
   const keep = $('album').value;
   await loadAlbums.reload(keep);

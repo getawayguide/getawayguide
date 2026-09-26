@@ -9075,7 +9075,9 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     const m = /^(?:Drafts\/\.Full Articles\/)?([^/]+)\//.exec(rel);
     const folder = m ? m[1] : '';
     const country = folder.split('-').map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
-    return { type: 'article-context', rel, country,
+    // the page's current hero files are hero-<slug>.*; the picker rebuilds under that name
+    const hm = /hero-([a-z0-9-]+?)(?:-2x|-mob|-mob-1x)?\.(?:jpg|webp)/i.exec(src || '');
+    return { type: 'article-context', rel, country, heroSlug: hm ? hm[1] : '',
              h1: h1 ? h1.textContent.trim() : '', lead: lead ? lead.textContent.trim() : '' };
   }
   async function sendHeroesContext() {
@@ -9088,6 +9090,47 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   window.addEventListener('message', ev => {
     // the picker asks on its own load, since the article may already be open
     if (ev.origin === HEROES && ev.data && ev.data.type === 'heroes-ready') sendHeroesContext();
+  });
+
+  // The picker built a hero: rewrite this page's hero to use it. The hero lives outside the
+  // editable body, in the page the body came from, so the change goes into originalHTML and
+  // the article is marked unsaved; Save writes it like any other edit.
+  window.addEventListener('message', ev => {
+    if (ev.origin !== HEROES || !ev.data || ev.data.type !== 'heroes-saved') return;
+    const d = ev.data;
+    let html = window.__getOriginalHTML ? window.__getOriginalHTML() : '';
+    if (!html) return;                        // no page open: nothing to rewrite
+    const rel = window.__articleRel || '';
+    const depth = rel.split('/').length - 1;
+    const base = '../'.repeat(depth) + d.web + '/hero-' + d.slug;
+    const before = html;
+    // 1. a guide banner: background url + the hero-tiers image-set
+    html = html.replace(/(class="article-hero gg-banner"[^>]*?background:url\(')[^']+('\))\s*[^/;]*\/cover/,
+                        (m, a, b) => a + base + '.jpg' + b + ' ' + d.positions.desktop + '/cover');
+    html = html.replace(/(url\(')[^']*hero-[a-z0-9-]+?(-2x|-mob|-mob-1x)?\.(jpg|webp)('\))/g,
+                        (m, a, sfx, ext, z) => a + base + (sfx || '') + '.' + ext + z);
+    // 2. an itinerary banner: the <picture> sources and the fallback img
+    html = html.replace(/(srcset|src)="([^"]*hero-)[a-z0-9-]+?(-2x|-mob|-mob-1x)?\.(jpg|webp)( \d+w)?"/g,
+                        (m, attr, pre, sfx, ext, w) => attr + '="' + base + (sfx || '') + '.' + ext + (w || '') + '"');
+    // 3. the crop positions, one rule per breakpoint, replacing any earlier set
+    const rules = '/* crop positions from the hero picker */\n' +
+      '.article-hero.gg-banner { background-position:' + d.positions.desktop + ' !important; }\n' +
+      '@media (max-width:1400px) { .article-hero.gg-banner { background-position:' + d.positions.laptop + ' !important; } }\n' +
+      '@media (max-width:768px) { .article-hero.gg-banner { background-position:' + d.positions.phone + ' !important; } }\n' +
+      '.ah-banner .band img { object-position:' + d.positions.desktop + ' !important; }\n' +
+      '@media (max-width:1400px) { .ah-banner .band img { object-position:' + d.positions.laptop + ' !important; } }\n' +
+      '@media (max-width:768px) { .ah-banner .band img { object-position:' + d.positions.phone + ' !important; } }\n';
+    html = html.replace(/\/\* crop positions from the hero picker[^*]*\*\/[\s\S]*?(?=<\/style>)/, '');
+    if (/<style id="hero-tiers">[\s\S]*?<\/style>/.test(html))
+      html = html.replace(/(<style id="hero-tiers">[\s\S]*?)(<\/style>)/, (m, a, b) => a + rules + b);
+    else
+      html = html.replace(/<\/head>/, '<style id="hero-tiers">\n' + rules + '</style>\n</head>');
+    if (html === before) { alert('The picker built the hero files, but this page has no hero block I recognise; nothing changed.'); return; }
+    window.__setOriginalHTML(html);
+    setDirty(true);
+    const status = document.getElementById('save-status');
+    status.textContent = '● Unsaved · hero updated from the picker';
+    status.className = 'save-status unsaved';
   });
 
   function showView(v) {
