@@ -1419,8 +1419,35 @@ def comments(key):
     return jsonify(_redline.comments_load(key))
 
 
+# Live Activity polls this every 2 s while the panel is open, and the scan below walks
+# every album folder under ~/Backup and every placeholder under iCloudPhotos/Shared, which
+# takes 6 to 8 s on this box. Answered on the request thread, each poll outlasted the next,
+# the threads piled up, and the photo library stopped loading ("photo editor is having
+# trouble loading", 2026-09-26). The same fix backup_status got: one daemon thread scans
+# every 3 s, and a request only ever returns the last snapshot.
+_act_cache = {"v": None}
+
+
+def _backup_activity_refresh():
+    while True:
+        try:
+            _act_cache["v"] = _backup_activity_compute()
+        except Exception as e:
+            print("backup_activity compute failed:", e)
+        time.sleep(3)
+
+
 @app.route("/api/backup_activity")
 def api_backup_activity():
+    v = _act_cache["v"]
+    if v is None:
+        return jsonify({"todo": 0, "throttled": False, "throttleLeftSec": 0, "throttleTrips": 0, "running": False,
+                        "watcherAlive": True, "album": None, "stage": None, "pass": {}, "inFlight": [],
+                        "activeCount": 0, "orphanCutoffMin": 30, "warming": True})
+    return jsonify(v)
+
+
+def _backup_activity_compute():
     """What the backup is doing RIGHT NOW: which album, which files, how fast.
 
     api_backup_status only reports settled totals - it can't show a transfer
@@ -1580,7 +1607,7 @@ def api_backup_activity():
 
     thr = st.get("throttle") or {}
     thr_left = max(0, round((thr.get("until") or 0) - now))
-    return jsonify({
+    return {
         "todo": todo,
         "throttled": thr_left > 0, "throttleLeftSec": thr_left,
         "throttleTrips": thr.get("trips", 0),
@@ -1589,7 +1616,7 @@ def api_backup_activity():
         "album": running_album, "stage": stage, "pass": pass_info,
         "inFlight": in_flight, "activeCount": active,
         "orphanCutoffMin": 30,       # sweep_parts() threshold, for the UI's benefit
-    })
+    }
 
 
 def _compute_backup_status():
@@ -1805,12 +1832,30 @@ _suite_cache = {"t": 0, "v": None}
 
 
 def _suite_status():
-    # the watcher check shells out to PowerShell (~0.5 s); cache it briefly
-    now = time.time()
-    if _suite_cache["v"] is None or now - _suite_cache["t"] > 3:
-        _suite_cache["v"] = photo_suite.status()
-        _suite_cache["t"] = now
+    """Never computed on a request. photo_suite.status() shells out to PowerShell for the
+    watcher pids, and on this box that takes 5 to 8 s, not the 0.5 it once did. The
+    editor polls /api/suite every 2 s while Live Activity is open, so every request thread
+    was sitting in PowerShell and the photo library stopped answering ("photo editor is
+    having trouble loading", 2026-09-26). The status is refreshed by one daemon thread
+    every 15 s; a request only ever reads the last value."""
+    if _suite_cache["v"] is None:
+        _suite_cache["v"] = {"server": True, "heroes": photo_suite.port_open(5004),
+                             "maps": photo_suite.port_open(5002), "watcher": True, "watcherPids": []}
     return _suite_cache["v"]
+
+
+def _suite_refresh():
+    while True:
+        try:
+            _suite_cache["v"] = photo_suite.status()
+            _suite_cache["t"] = time.time()
+        except Exception:
+            pass
+        time.sleep(15)
+
+
+threading.Thread(target=_suite_refresh, daemon=True, name="suite-status").start()
+threading.Thread(target=_backup_activity_refresh, daemon=True, name="backup-activity").start()
 
 
 def _suite_run(action):
@@ -1833,7 +1878,10 @@ def _suite_run(action):
     except Exception as e:                      # the panel must always hear back
         log.append(f"failed: {e}")
         code = 1
-    _suite_cache["v"] = None
+    try:                                        # an action changed the state; show it now
+        _suite_cache["v"] = photo_suite.status()
+    except Exception:
+        pass
     _suite_job["code"] = code
     _suite_job["done"] = True
 
