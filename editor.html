@@ -1299,7 +1299,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=56dee956" defer></script>
+<script src="review.js?v=6b68b880" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1356,26 +1356,22 @@ main{overflow-y:auto;padding:1rem}
     <div class="toolbar" id="toolbar">
       <!-- bold / italic / underline / strikethrough buttons removed 2026-09-26: Ctrl+B, Ctrl+I, Ctrl+U still work -->
       <!-- highlight picker removed 2026-09-27 -->
-      <div class="tool-divider"></div>
+      <!-- Link button removed 2026-09-27: Ctrl+K still inserts a link -->
+      <!-- indent / outdent buttons removed 2026-09-26: Tab and Shift+Tab do it in a list -->
       <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
       <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
       <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
+      <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
+      <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
+      <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
+      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
       <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="textAlign('center')" title="Align center">≡</button>
-      <div class="tool-divider"></div>
-      <!-- Link button removed 2026-09-27: Ctrl+K still inserts a link -->
       <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
       <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it.">―</button>
-      <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
-      <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
-      <!-- indent / outdent buttons removed 2026-09-26: Tab and Shift+Tab do it in a list -->
-      <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
       <div class="tool-divider"></div>
       <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
         <option value="">Font</option>
