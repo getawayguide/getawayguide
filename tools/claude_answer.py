@@ -96,7 +96,13 @@ RULES = (
     "Always return ONLY JSON: {\"reply\": \"what you did, one or two sentences\", \"find\": \"an exact substring of the ARTICLE HTML "
     "covering the whole passage to change (include the tags inside it exactly as they are)\", "
     "\"replace\": \"the new HTML for that passage\"}. The find must occur exactly once. Keep the find as short as the "
-    "change allows (one sentence when one sentence changes).")
+    "change allows (one sentence when one sentence changes).\n"
+    "When one instruction needs changes in several places (\"link every place in this section\"), return "
+    "{\"reply\": ..., \"edits\": [{\"find\": ..., \"replace\": ...}, ...]} instead, each find exact and unique.\n"
+    "Link to a section of this article with href=\"#<id>\" using the OUTLINE ids; link to another of his articles with "
+    "its file name from ARTICLES (for example href=\"yerevan.html\"), and name that file in the reply.\n"
+    "A photo placeholder you add is <span class=\"photo-ph\" data-hint=\"what the photo should show\">[PHOTO]</span> "
+    "(pairs: two of them inside <div class=\"img-pair\">).")
 
 
 def guide_text():
@@ -122,7 +128,18 @@ def task_text(key, tid):
         lo, hi = max(0, i - 3000), min(len(body), i + len(q) + 3000)
         j = body.rfind("<p", 0, lo)
         body = body[(j if j >= 0 else lo):hi]
-    return t, html, ("INSTRUCTION: " + t.get("text", "") + "\nON THE PASSAGE: " + q +
+    # the whole article is too long to send each time; its outline and its siblings are not,
+    # and they answer the asks an excerpt can't ("link to the last section", "link my Yerevan guide")
+    outline = "; ".join("%s #%s" % (re.sub(r"<[^>]+>", "", m.group(3)).strip(), m.group(2))
+                        for m in re.finditer(r'<(h2|h3)[^>]*\bid="([^"]+)"[^>]*>(.*?)</\1>', html, re.S))
+    sib = []
+    for f in sorted(path.parent.glob("*.html")):
+        if f.name == path.name:
+            continue
+        mt = re.search(r"<h1[^>]*>(.*?)</h1>", f.read_text(encoding="utf-8", errors="replace"), re.S)
+        sib.append("%s = %s" % (f.name, re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", mt.group(1))).strip() if mt else f.stem))
+    return t, html, ("OUTLINE: " + (outline or "(no ids)") + "\nARTICLES: " + "; ".join(sib) +
+                     "\n\nINSTRUCTION: " + t.get("text", "") + "\nON THE PASSAGE: " + q +
                      "\n(context before: " + a.get("before", "") + " | after: " + a.get("after", "") + ")\n\nARTICLE HTML:\n" + body[:60000])
 
 
@@ -169,7 +186,15 @@ def finish(key, tid, t, html, txt):
         ans = json.loads(m.group(0) if m else txt)
     except Exception:
         return write_answer(key, tid, "The answer wasn't valid JSON; nothing applied. Raw: " + txt[:300], status="failed")
-    find, rep, reply = ans.get("find") or "", ans.get("replace") or "", ans.get("reply") or "Done."
+    reply = ans.get("reply") or "Done."
+    edits = [e for e in (ans.get("edits") or []) if isinstance(e, dict) and e.get("find") and e.get("replace") is not None]
+    if edits:
+        good = [e for e in edits if html.count(e["find"]) == 1]
+        if not good:
+            return write_answer(key, tid, reply + " (None of the passages matched the article exactly, so nothing was applied.)", status="failed")
+        note = "" if len(good) == len(edits) else " (%d of %d passages didn't match exactly and were left out.)" % (len(edits) - len(good), len(edits))
+        return write_answer(key, tid, reply + note, extra={"edits": [{"find": e["find"], "replace": e["replace"]} for e in good]})
+    find, rep = ans.get("find") or "", ans.get("replace") or ""
     if not find or html.count(find) != 1:
         return write_answer(key, tid, reply + " (The passage to replace didn't match the article exactly, so it is offered "
                             "on the card instead of applied.)", find=a.get("quote", ""), replace=rep, status="answered")

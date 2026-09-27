@@ -61,9 +61,10 @@
         <button id="rv-lint" class="rv-btn" title="Every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes, repeats, words you don't use">Prose</button>
         <button id="rv-maps" class="rv-btn" title="Turn Google Maps search links into real place pins" style="display:none">Resolve maps <span id="rv-n-maps">0</span></button>
         <span class="rv-more"><button id="rv-more" class="rv-ico" title="More">&#8943;</button>
-          <div class="rv-dd"><button id="rv-all-yes">Accept all changes</button><button id="rv-all-no">Reject all changes</button></div></span>
+          <div class="rv-dd"><button id="rv-all-yes">Accept all changes</button><button id="rv-all-no">Reject all changes</button><button id="rv-history">History… (Ctrl+Alt+H)</button></div></span>
       </div>
       <div class="rv-status" id="rv-status"></div>
+      <div class="rv-check" id="rv-check"></div>
       <div class="rv-voice" id="rv-voice" style="display:none" title="How this article measures against your live pages. Click for the numbers."></div>
       <div class="rv-body" id="rv-body"><div class="rv-list" id="rv-list"></div><div class="rv-canvas" id="rv-canvas"></div></div>
       <div id="rv-toast"></div>`;
@@ -85,6 +86,7 @@
     $('rv-more').onclick = e => { e.stopPropagation(); $('rv-more').parentElement.classList.toggle('open'); };
     document.addEventListener('click', () => { const m = $('rv-more'); if (m) m.parentElement.classList.remove('open'); });
     $('rv-all-yes').onclick = () => decideAll(true);
+    $('rv-history').onclick = () => { $('rv-more').parentElement.classList.remove('open'); if (window.openHistory) window.openHistory(); };
     $('rv-all-no').onclick = () => decideAll(false);
     $('rv-new').onmousedown = e => { e.preventDefault(); captureSelection(); };
     if ($('rv-rewrite')) $('rv-rewrite').onmousedown = e => { e.preventDefault(); captureSelection(); };
@@ -299,9 +301,13 @@
       // Deciding another change in the same paragraph can leave an empty class="" on the <p>
       // (classList.remove of the hit highlight), and a find that opens with the tag then stops
       // matching. An empty class means nothing, so it is dropped before matching.
+      // comment and lint highlights inside the fragment (the thread that asked for it is one)
+      // would stop the find matching; they are drawn from anchors, so drop them and redraw after
+      ed().querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap); ed().normalize();
       const e = ed(), h = e.innerHTML.replace(/ class=""/g, ''), key = locate(h, c.find);
       if (key) e.innerHTML = h.replace(key, () => c.replace);   // a function: "$" in the text is literal
       else console.warn('review: layout change', id, 'no longer matches; nothing applied');
+      anchorComments();
     } else if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture,.photo-ph')) holder.remove();
     if (accept) {
       // an accepted change can carry a [PHOTO] marker; make it the same live, clickable slot
@@ -315,8 +321,17 @@
     if (c.task) {                              // an answer from Claude: the thread follows the decision
       const th = state.comments.threads.find(t => t.id === c.task);
       // the tick applies the edit AND clears the comment it answered (Kevin, 2026-09-27); a cross leaves it open, marked rejected
-      if (th) { th.status = accept ? 'applied' : 'rejected'; if (accept) { th.resolved = true; th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; } anchorComments(); saveComments(); }
+      const open = state.changes.some(x => x.task === c.task && x.id !== id && state.st[x.id] === undefined);
+      if (th && !open) {
+        const any = accept || state.changes.some(x => x.task === c.task && state.st[x.id] === true);
+        th.status = any ? 'applied' : 'rejected';
+        if (any) { th.resolved = true; th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; }
+        anchorComments(); saveComments();
+      }
+      // a Claude edit you accepted is saved at once: no "did that land?", no stale copy on reload
+      if (accept && window.saveFile) setTimeout(() => { try { if (typeof fileHandle !== 'undefined' && fileHandle) window.saveFile({ auto: true }); } catch (e) {} }, 400);
     }
+    if (H() && H().label) H().label((accept ? 'Accepted' : 'Rejected') + (c.task ? ' Claude: ' : ': ') + plain(c.replace || c.sentence || '').replace(/\s+/g, ' ').slice(0, 48));
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
       if (accept) c.inner.forEach(i => { state.st[i] = true; state.last[i] = true; posted[i] = true; });
@@ -468,6 +483,54 @@
   }
   // ---- tasks: comments sent to Claude come back with an edit that goes into this text ----
   const isTask = t => t.kind === 'task' || t.kind === 'rewrite';
+  // "moved it to gyumri.html" in a reply: the file name opens that article, "#more-stops" jumps here
+  const linkFiles = s => s.replace(/\b([a-z0-9-]+\.html)(#[a-z0-9-]+)?\b/g, (m, f, h) => `<button class="rp-open" data-file="${f}" data-hash="${h || ''}" title="Open ${f}">${m}</button>`)
+                          .replace(/(^|[\s(])#([a-z][a-z0-9-]+)\b/g, (m, pre, id) => `${pre}<button class="rp-open" data-hash="#${id}" title="Go to #${id}">#${id}</button>`);
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.rp-open'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    const f = b.dataset.file, h = b.dataset.hash;
+    if (f && state.rel && !state.rel.endsWith('/' + f)) {
+      const rel = state.rel.replace(/[^/]+$/, '') + f;
+      if (window.__apOpen) window.__apOpen(rel);
+      return;
+    }
+    const el = h && ed().querySelector(h); if (el) el.scrollIntoView({ block: 'center' });
+  }, true);
+  // 5: right-click on a selection sends one of the common asks straight to Claude
+  const QUICK = [['Rewrite', 'rewrite'], ['Shorter', 'make this shorter'], ['Less formal', 'less formal, more like me'],
+                 ['Synonym', 'synonym'], ['Link this', 'link this (Maps pin for a place, my article if I have one)'],
+                 ['Look this up', 'look this up and fill it in, with the source in the reply']];
+  function quickTask(text, range) {
+    const a = textAround(range), id = 'c' + Date.now().toString(36);
+    wrapRange(range, id, false);
+    state.comments.threads.push({ id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [],
+                                  kind: 'task', status: 'sent', sentAt: new Date().toISOString() });
+    state.active = id; if (state.filter === 'changes') setFilter('all');
+    saveComments().then(() => pollTasks()); renderAll();
+    toast('Sent to Claude: ' + text, 3000);
+  }
+  function quickMenu(x, y, range) {
+    let m = document.getElementById('rv-quick'); if (m) m.remove();
+    m = document.createElement('div'); m.id = 'rv-quick';
+    m.innerHTML = `<div class="qh">${CLAUDE_MARK} Send to Claude</div>` + QUICK.map(([l], i) => `<button data-i="${i}">${l}</button>`).join('') +
+                  '<button data-i="c" class="qc">Comment…</button>';
+    m.style.left = Math.min(x, innerWidth - 190) + 'px'; m.style.top = Math.min(y, innerHeight - 260) + 'px';
+    document.body.appendChild(m);
+    m.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      m.remove();
+      if (b.dataset.i === 'c') { _range = range; newComment(); return; }
+      quickTask(QUICK[+b.dataset.i][1], range);
+    };
+    setTimeout(() => document.addEventListener('mousedown', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('mousedown', off); } }), 0);
+  }
+  document.addEventListener('contextmenu', e => {
+    if (!ed() || !ed().contains(e.target) || !state.rel) return;
+    const s = getSelection(); if (!s.rangeCount || s.isCollapsed || !ed().contains(s.anchorNode)) return;
+    e.preventDefault();
+    quickMenu(e.clientX, e.clientY, s.getRangeAt(0).cloneRange());
+  });
   // the Claude app icon itself (Images/web/ui/claude-icon.png), served by the photo server
   const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
   function sendToClaude(id) {
@@ -488,7 +551,17 @@
   }
   function startPolling() {
     if (_pollT) return;
-    _pollT = setInterval(pollTasks, 1000);       // 1 s while something is waiting (pollTasks returns at once otherwise); margin open or not
+    // the server pushes 'changed' the moment the comment store is written; the poll stays as a
+    // slow fallback for when the stream drops (sleep, a server restart)
+    let pushed = false;
+    try {
+      const es = new EventSource(API + '/api/tasks/stream');
+      es.onopen = () => { pushed = true; };
+      es.onmessage = () => pollTasks();
+      es.onerror = () => { pushed = false; };
+    } catch (e) {}
+    _pollT = setInterval(() => { if (!pushed) pollTasks(); }, 1000);
+    setInterval(() => { if (pushed) pollTasks(); }, 5000);
     setInterval(tickAges, 1000);
   }
   async function pollTasks() {
@@ -505,7 +578,8 @@
       // Claude's replies and status arrive; Kevin's own edits to the thread stay
       const seen = new Set((t.replies || []).map(x => x.id));
       for (const rp of (st.replies || [])) if (!seen.has(rp.id)) { (t.replies = t.replies || []).push(rp); touched = true; }
-      if (st.edit && t.status !== 'applied' && t.status !== 'offered' && t.status !== 'proposed' && t.status !== 'rejected') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
+      if (st.edits && st.edits.length && !['applied', 'offered', 'proposed', 'rejected'].includes(t.status)) { t.edits = st.edits; touched = applyTaskEdits(t) || touched; }
+      else if (st.edit && t.status !== 'applied' && t.status !== 'offered' && t.status !== 'proposed' && t.status !== 'rejected') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
       // an edit that was applied but never saved: the article was reopened and the old sentence is
       // back. If its find is in the text again, apply it again rather than showing a done chip over undone text.
       else if (st.edit && t.status === 'applied' && !t.resolved && locate(ed().innerHTML.replace(/<\/?mark[^>]*>/g, '').replace(/ class=""/g, ''), st.edit.find)) { t.edit = st.edit; t.status = 'sent'; touched = applyTaskEdit(t) || touched; }
@@ -523,6 +597,28 @@
   // the edit goes into the editor's copy (never the file): undoable, and the article is unsaved
   let _typedAt = 0;
   document.addEventListener('input', e => { if (ed() && ed().contains(e.target)) _typedAt = Date.now(); }, true);
+  // one instruction, several places ("link every place in this section"): one tracked change each
+  function applyTaskEdits(t) {
+    if (Date.now() - _typedAt < 2500) return false;
+    const e = ed();
+    e.querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap);
+    e.normalize();
+    let h = e.innerHTML.replace(/ class=""/g, ''); e.innerHTML = h;
+    const fresh = [];
+    t.edits.forEach((x, i) => {
+      const cid = 'tk' + t.id + '-' + i;
+      if (state.changes.some(c => c.id === cid)) return;
+      const key = locate(h, x.find); if (!key) return;
+      fresh.push({ id: cid, kind: 'grammar', section: 'Claude', find: key, replace: x.replace, count: 1, task: t.id,
+                   note: i ? '' : ((t.replies || []).filter(r => r.author === 'Claude').map(r => r.text).pop() || '') });
+    });
+    for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); }
+    if (!fresh.length) { t.status = 'offered'; t.edit = t.edits[0]; return true; }
+    state.changes.push(...fresh); injectMarks(fresh);
+    t.status = 'proposed'; t.proposedAt = new Date().toISOString(); state.active = fresh[0].id;
+    toast('Claude proposed ' + fresh.length + ' change' + (fresh.length === 1 ? '' : 's') + ': ' + t.text.slice(0, 50), 5000);
+    return true;
+  }
   function applyTaskEdit(t) {
     // never while Kevin is typing: the swap resets the caret. The next poll tries again.
     if (Date.now() - _typedAt < 2500) return false;
@@ -689,8 +785,38 @@
       return (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1; });
     return out;
   }
+  // what is still to fill in this article, as chips; a click goes to the first one
+  function blanks() {
+    const out = [], w = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT);
+    let n; while ((n = w.nextNode())) {
+      if (n.parentElement.closest('.rv-card, sup.rl-n, ins.rl, del.rl')) continue;
+      for (const m of n.nodeValue.matchAll(/\[\s*\]|\[(?!PHOTO\])[^\[\]\n]{1,120}\]/g)) out.push([n, m.index, m[0].length]);
+    }
+    return out;
+  }
+  function renderChecklist() {
+    const el = $('rv-check'); if (!el) return;
+    if (!state.rel || state.awaitingFile) { el.innerHTML = ''; return; }
+    const b = blanks(), slots = [...ed().querySelectorAll('.img-slot-empty')], maps = typeof mapsPlaceholders === 'function' ? mapsPlaceholders() : [];
+    const waiting = state.comments.threads.filter(t => isTask(t) && !t.resolved && (t.status === 'sent' || !t.status));
+    const items = [];
+    if (b.length) items.push(['blank', b.length + (b.length === 1 ? ' blank' : ' blanks')]);
+    if (slots.length) items.push(['photo', slots.length + ' empty photo' + (slots.length === 1 ? '' : 's')]);
+    if (maps.length) items.push(['maps', maps.length + ' map link' + (maps.length === 1 ? '' : 's') + ' to resolve']);
+    if (waiting.length) items.push(['wait', waiting.length + ' with Claude']);
+    el.innerHTML = items.length ? items.map(([k, l]) => `<button data-k="${k}">${l}</button>`).join('') : '<span class="ok">&#10003; nothing left to fill</span>';
+    el.querySelectorAll('button').forEach(x => x.onclick = () => {
+      const k = x.dataset.k;
+      if (k === 'blank') { const [n, i, len] = blanks()[0]; const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + len);
+                           const s = getSelection(); s.removeAllRanges(); s.addRange(r); n.parentElement.scrollIntoView({ block: 'center' }); }
+      else if (k === 'photo') ed().querySelector('.img-slot-empty').scrollIntoView({ block: 'center' });
+      else if (k === 'maps') mapsPlaceholders()[0].scrollIntoView({ block: 'center' });
+      else if (k === 'wait') { const t = waiting[0]; const m = ed().querySelector(`mark.cm[data-cm="${t.id}"]`); if (m) m.scrollIntoView({ block: 'center' }); }
+    });
+  }
   function renderAll() {
     if (!$('review-pane')) return;
+    try { renderChecklist(); } catch (e) {}
     mapsCount();
     const pend = pending(), open = state.comments.threads.filter(t => !t.resolved).length + (state.draft ? 1 : 0);
     $('rv-n-ch').textContent = pend.length; $('rv-n-cm').textContent = open;
@@ -806,7 +932,7 @@
       return d;
     }
     const av = a => `<span class="av${a === AUTHOR ? ' me' : ''}">${esc((a || '?')[0])}</span>`;
-    const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${esc(r.text)}</div></div>`).join('');
+    const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${linkFiles(esc(r.text))}</div></div>`).join('');
     const chip = !isTask(t) ? '' : t.status === 'applied' ? '<span class="chip done">Claude edited</span>' : t.status === 'offered' ? '<span class="chip wait">edit ready</span>'
                : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>'
                : t.status === 'proposed' ? '<span class="chip wait">Claude proposed · tick to accept</span>' : t.status === 'rejected' ? '<span class="chip fail">rejected</span>'
@@ -1151,6 +1277,17 @@ body.review-open #review-pane{display:flex}
 @media (prefers-reduced-motion: reduce){.rv-card .chip .spin{animation:none;border-top-color:#c9a94a;opacity:.6}}
 .rv-card .wait-note{color:#5c4a12;background:#FFF8E1;border:1px solid #F1E2A8;border-radius:4px;padding:.35rem .5rem;margin:.35rem 0 0;font-size:.72rem;line-height:1.4}.rv-card .chip.done{background:#E3F0E8;color:#2D6B50}.rv-card .chip.wait{background:#E8EEF7;color:#2f4b78}.rv-card .chip.fail{background:#F8E5E0;color:#B4553C}
 .rv-card .act .send{border-color:#b9d4c5;color:#2D6B50}
+.rv-check{display:flex;flex-wrap:wrap;gap:.25rem;padding:.3rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff;min-height:0}
+.rv-check:empty{display:none}
+.rv-check button{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #F1E2A8;background:#FFF8E1;color:#5c4a12;border-radius:999px;cursor:pointer}
+.rv-check button:hover{background:#FBEFC2}
+.rv-check .ok{font:600 .55rem/1.6 'Hanken Grotesk',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2D6B50}
+.rv-card .rp-open{font:inherit;color:#2D6B50;background:none;border:0;border-bottom:1px dotted #2D6B50;padding:0;cursor:pointer}
+#rv-quick{position:fixed;z-index:9999;background:#fff;border:1px solid #e0ded8;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:.3rem;min-width:170px;font:13px/1.3 'Hanken Grotesk',sans-serif}
+#rv-quick .qh{display:flex;align-items:center;gap:.35rem;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8a9790;padding:.35rem .45rem .45rem}
+#rv-quick button{display:block;width:100%;text-align:left;border:0;background:none;padding:.42rem .55rem;border-radius:4px;cursor:pointer;color:#1C2821;font:inherit}
+#rv-quick button:hover{background:#F3F6F4}
+#rv-quick .qc{border-top:1px solid #eee;border-radius:0 0 4px 4px;color:#6b7a70}
 .rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4}
 .rv-card .alt .use{flex-shrink:0;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #b9d4c5;background:#E3F0E8;color:#2D6B50;border-radius:3px;cursor:pointer}
 .rv-card .alt .use:hover{background:#2D6B50;color:#fff}

@@ -1483,6 +1483,14 @@ def preview_get(rel):
     base = "/site/" + rel.rsplit("/", 1)[0] + "/" if "/" in rel else "/site/"
     tag = '<base href="%s">' % base
     html = re.sub(r"(<head[^>]*>)", r"\1" + tag, html, count=1) if "<head" in html else tag + html
+    # the editor tells the preview which paragraph the caret is in; the preview scrolls to it
+    follow = ("<script>addEventListener('message',function(e){var d=e.data||{};if(d.type!=='pv-scroll'||!d.text)return;"
+              "var t=d.text.slice(0,60),els=document.querySelectorAll('.article-body p,.article-body li,.article-body h2,.article-body h3,.artbody p,.artbody li');"
+              "for(var i=0;i<els.length;i++){if(els[i].textContent.indexOf(t)>=0){els[i].scrollIntoView({block:'center'});"
+              "els[i].style.transition='background .6s';els[i].style.background='rgba(255,243,176,.7)';"
+              "(function(el){setTimeout(function(){el.style.background=''},900)})(els[i]);break;}}});"
+              "if(parent!==window)parent.postMessage({type:'pv-ready'},'*');</script>")
+    html = html.replace("</body>", follow + "</body>") if "</body>" in html else html + follow
     resp = Response(html, mimetype="text/html")
     resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -1503,6 +1511,54 @@ def comments(key):
 
 
 _answering = set()
+
+
+@app.route("/api/tasks/stream")
+def api_tasks_stream():
+    """Server-sent events: one 'changed' whenever the comment store is written, so an answer
+    reaches the editor the moment it lands instead of on the next 1 s poll. A heartbeat every
+    15 s keeps the connection open through proxies and sleep."""
+    def gen():
+        last, beat = None, time.time()
+        yield "retry: 2000\n\n"
+        while True:
+            try:
+                m = max((f.stat().st_mtime_ns for f in _redline.COMMENTS.glob("*.json")), default=0)
+            except Exception:
+                m = 0
+            if last is not None and m != last:
+                yield "data: changed\n\n"
+            last = m
+            if time.time() - beat > 15:
+                beat = time.time(); yield ": beat\n\n"
+            time.sleep(0.3)
+    resp = Response(gen(), mimetype="text/event-stream")
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers["X-Accel-Buffering"] = "no"
+    return resp
+
+
+@app.route("/api/publish", methods=["POST", "OPTIONS"])
+def api_publish():
+    """Publish a Drafts/<country>/field-notes.html with tools/publish_country.py. dry=true
+    (the default) only reports what would change; the editor shows that log before it lets
+    the real run happen. Nothing is pushed: publishing ends in the working tree."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True) or {}
+    slug = re.sub(r"[^a-z0-9-]", "", (d.get("slug") or "").lower())
+    name, iso2, cont = (d.get("name") or "").strip(), re.sub(r"[^a-z]", "", (d.get("iso2") or "").lower()), d.get("continent") or ""
+    if not slug or not name or len(iso2) != 2 or cont not in ("europe", "americas", "asia", "africa", "oceania"):
+        return jsonify({"ok": False, "log": "Needs the country's name, its two-letter code and a continent."}), 400
+    if not (Path(ROOT) / "Drafts" / slug / "field-notes.html").exists():
+        return jsonify({"ok": False, "log": "No Drafts/%s/field-notes.html to publish." % slug}), 400
+    args = [sys.executable, str(Path(ROOT) / "tools" / "publish_country.py"), slug, "--name", name, "--iso2", iso2, "--continent", cont]
+    if d.get("dry", True):
+        args.append("--dry-run")
+    r = subprocess.run(args, cwd=str(ROOT), capture_output=True, text=True, timeout=900, encoding="utf-8", errors="replace",
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    _articles_cache["at"] = 0
+    return jsonify({"ok": r.returncode == 0, "dry": bool(d.get("dry", True)), "log": ((r.stdout or "") + (r.stderr or ""))[-6000:]})
 
 
 class _ClaudeWorker:

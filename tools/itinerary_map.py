@@ -233,6 +233,14 @@ def build(cfg):
             polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
             rings = [[(lon * K, -lat) for lon, lat in poly[0]] for poly in polys]
             B.append(f'<path d="{path_d(rings)}" fill="{P.get("water", "#A9CBD6")}"/>')
+    # water labels: "water_labels": [{"name": "Lake Sevan", "lat": .., "lon": .., "size": 13}]
+    # set on the water in a light blue, spaced caps like the stop labels but lighter
+    for wl in cfg.get("water_labels", []):
+        wx, wy = T(wl["lat"], wl["lon"])
+        fs = wl.get("size", 12)
+        B.append(f'<g transform="{stamp_tf(wx, wy)}"><text x="0" y="0" text-anchor="middle" font-size="{fs}" '
+                 f'font-weight="500" font-style="italic" letter-spacing="2" fill="{P.get("water_ink", "#5F93A8")}">'
+                 f'{wl["name"].upper()}</text></g>')
     # In "focus" mode the viewBox crops to the stops/labels only (the country
     # outline extends beyond, giving a zoomed regional view) — for trips that
     # cluster in one part of a big country. Otherwise crop includes the whole country.
