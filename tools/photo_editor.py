@@ -2705,8 +2705,21 @@ def _article_row(path, rel, status):
             "words": words, "modified": path.stat().st_mtime}
 
 
+_FLAG_RE = re.compile(r'href="([a-z-]+)/field-notes\.html"[^>]*>(?:(?!</a>).)*?flags/([a-z]{2})\.png', re.S)
+
+
+def _country_flags():
+    """country folder -> ISO code, read off the nav in index.html (the published pairing)"""
+    try:
+        html = (Path(ROOT) / "index.html").read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return {}
+    return {m.group(1): m.group(2) for m in _FLAG_RE.finditer(html)}
+
+
 def _articles_inventory():
     root = Path(ROOT)
+    flags = _country_flags()
     rows = []
     for p in sorted(root.glob("*/*.html")):
         top = p.parts[len(root.parts)]
@@ -2748,6 +2761,7 @@ def _articles_inventory():
     except Exception:
         recent = {}
     for r in rows:
+        r["flag"] = flags.get(r["country"], "")
         c = comments.get(_redline.comments_key(r["rel"]), {})
         r["comments"] = c.get("open", 0); r["tasks"] = c.get("tasks", 0)
         r["round"] = rounds.get(r["rel"])

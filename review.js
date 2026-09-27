@@ -153,7 +153,11 @@
     anchorComments();
     if (H()) H().reset();
     renderAll();
-    if (state.changes.length || state.comments.threads.length) toggle(true);
+    // something to review opens the margin; otherwise the photo sidebar is the default
+    // (Kevin, 2026-09-26: "default to photos bar open unless there are any comments to review")
+    const pendingReview = state.changes.some(c => state.last[c.id] === undefined) || state.comments.threads.some(t => !t.resolved);
+    if (pendingReview) toggle(true);
+    else if (!document.body.classList.contains('photos-open') && typeof window.togglePhotoPanel === 'function') { toggle(false); window.togglePhotoPanel(); }
     if (state.changes.length) toast(`${state.changes.length} proposed changes to review`, 4000);
   }
 
@@ -698,7 +702,7 @@
     const its = items(); let lost = 0;
     for (const it of its) {
       if (!listMode && !it.el) { lost++; continue; }                  // the margin holds only what has a place in the text
-      host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card({ id: it.id, draft: true }) : it.kind === 'lint' ? lintCard(it.f) : card(it.t));
+      host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card(Object.assign({}, state.draft, { draft: true })) : it.kind === 'lint' ? lintCard(it.f) : card(it.t));
     }
     if (lost) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${lost} more not found in the open text · see List`; host.appendChild(n); }
     if (!host.children.length) {
@@ -765,6 +769,17 @@
     const d = document.createElement('div');
     d.className = 'rv-card rv-cm' + (t.draft ? ' draft' : '') + (t.resolved ? ' resolved' : '') + (state.active === t.id ? ' active' : '') + (t.author && t.author !== AUTHOR ? ' other' : '');
     d.dataset.cm = t.id;
+    if (t.draft && t.rewrite) {
+      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">rewrite</span></div>
+        <div class="t"><del>${esc(t.anchor.quote)}</del></div>
+        <textarea placeholder="What should the rewrite do? (optional: shorter, clearer, less formal, lead with the view…) Ctrl+Enter sends">${esc(t.text || '')}</textarea>
+        <div class="act"><button class="primary" data-a="send" title="Send (Ctrl+Enter)">${CLAUDE_MARK} Rewrite</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
+      d.querySelector('[data-a="send"]').onclick = () => submitRewrite(d.querySelector('textarea').value);
+      d.querySelector('[data-a="cancel"]').onclick = cancelDraft;
+      d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') submitRewrite(e.target.value); if (e.key === 'Escape') cancelDraft(); };
+      d.querySelector('textarea').oninput = e => { if (state.draft) state.draft.text = e.target.value; queueLayout(); };
+      return d;
+    }
     if (t.draft) {
       d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
         <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
@@ -965,13 +980,21 @@
   // Rewrite the selected sentence. The server answers with three alternatives when it can
   // reach Claude (a key in .env); otherwise the ask becomes a comment thread on the article
   // and the next review round answers it with a proposed change.
-  async function requestRewrite() {
+  function requestRewrite() {
+    if (state.draft) { toast('Another comment is in progress.'); return; }
     if (!_range || !_range.toString().trim()) { toast('Select the sentence to rewrite first.'); return; }
     if (_range.toString().trim().split(/\s+/).length > 80) { toast('Select one sentence or two, not a paragraph.'); return; }
-    const note = prompt('What should the rewrite do? (optional: shorter, clearer, less formal, lead with the view...)', '') ;
-    if (note === null) return;
-    const a = textAround(_range), range = _range;
     if (state.filter === 'changes') setFilter('all'); toggle(true);
+    state.draft = { range: _range, anchor: textAround(_range), id: 'c' + Date.now().toString(36), rewrite: true, text: '' };
+    wrapRange(_range, state.draft.id, true);
+    renderAll();
+    setTimeout(() => { const ta = document.querySelector('.rv-cm.draft textarea'); if (ta) ta.focus(); }, 0);
+  }
+  async function submitRewrite(note) {
+    const d = state.draft; if (!d || !d.rewrite) return;
+    note = (note || '').trim();
+    const a = d.anchor, range = d.range;
+    unwrapMark(d.id); state.draft = null; _range = null; renderAll();
     const b = $('rv-rewrite'); b.disabled = true; b.textContent = 'Rewriting…';
     let r; try { r = await (await fetch(API + '/review/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ rel: state.rel, quote: a.quote, before: a.before, after: a.after, note }) })).json(); }
@@ -984,7 +1007,9 @@
     }
     if (r.error || !(r.alternatives || []).length) { toast('No rewrite: ' + (r.error || 'empty answer')); return; }
     const id = 'rw' + Date.now().toString(36);
-    wrapRange(range, id, false, 'lint');
+    // the draft's range died with its mark; find the sentence again from the anchor
+    const rg = findRange(a); if (!rg) { toast('The sentence moved before the rewrite came back; here it is: ' + r.alternatives[0]); return; }
+    wrapRange(rg, id, false, 'lint');
     state.lint.push({ id, kind: 'rewrite', severity: 'info', anchor: a, alternatives: r.alternatives,
                       message: note ? 'Asked for: ' + note : 'Three ways to say it; pick one or keep yours.' });
     state.active = id; renderAll();

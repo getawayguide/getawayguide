@@ -174,7 +174,8 @@
     .ap-h{font:600 .58rem/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9A7B2E;padding:.75rem .9rem .3rem;position:sticky;top:0;background:#fff}
     .ap-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.42rem .9rem;cursor:pointer;border-left:3px solid transparent}
     .ap-row:hover,.ap-row.sel{background:#F3F6F4;border-left-color:#2D6B50}
-    .ap-main{min-width:0}.ap-title{font-size:.92rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ap-main{min-width:0;display:flex;align-items:center;gap:.6rem}.ap-title{font-size:.92rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ap-flag{width:20px;height:15px;flex-shrink:0;border-radius:2px;box-shadow:0 0 0 1px rgba(28,40,33,.12);object-fit:cover;display:inline-block}
     .ap-path{font:.62rem/1.3 'DM Mono',monospace;color:#8a9790;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
     .ap-meta{display:flex;align-items:center;gap:.35rem;flex-shrink:0;white-space:nowrap}
     .ap-chip{font:600 .52rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .4rem;border-radius:999px;background:#EEEDE7;color:#5c665f}
@@ -1298,7 +1299,7 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=fb17051c" defer></script>
+<script src="review.js?v=56dee956" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1353,10 +1354,7 @@ main{overflow-y:auto;padding:1rem}
 
   <div class="editor-wrap">
     <div class="toolbar" id="toolbar">
-      <button class="tool-btn" onclick="fmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
-      <button class="tool-btn" onclick="fmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
-      <button class="tool-btn" onclick="fmt('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
-      <button class="tool-btn" onclick="fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
+      <!-- bold / italic / underline / strikethrough buttons removed 2026-09-26: Ctrl+B, Ctrl+I, Ctrl+U still work -->
       <div class="color-picker-wrap" id="hilite-wrap" style="position:relative">
         <button class="tool-btn" onclick="toggleHilitePicker()" title="Highlight"><span style="background:#FFF3B0;padding:0 .3rem">H</span></button>
         <div class="color-dropdown" id="hilite-dropdown" style="min-width:130px">
@@ -1375,9 +1373,7 @@ main{overflow-y:auto;padding:1rem}
       <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
       <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
       <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="textAlign('left')" title="Align left">≡←</button>
       <button class="tool-btn" onclick="textAlign('center')" title="Align center">≡</button>
-      <button class="tool-btn" onclick="textAlign('right')" title="Align right">≡→</button>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="insertLink()" title="Insert Link (Ctrl+K)">Link</button>
       <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
@@ -1388,8 +1384,7 @@ main{overflow-y:auto;padding:1rem}
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
       <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
-      <button class="tool-btn" onclick="fmt('indent')" title="Indent / sub-bullet (Tab)">⇥ In</button>
-      <button class="tool-btn" onclick="fmt('outdent')" title="Outdent (Shift+Tab)">⇤ Out</button>
+      <!-- indent / outdent buttons removed 2026-09-26: Tab and Shift+Tab do it in a list -->
       <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
@@ -1660,13 +1655,12 @@ main{overflow-y:auto;padding:1rem}
   function apRow(r, i) {
     const badges = [];
     if (r.round) badges.push(`<span class="ap-b round" title="${escHtml(r.round.title || '')}">${r.round.changes} to review</span>`);
-    if (r.tasks) badges.push(`<span class="ap-b task">${r.tasks} for Claude</span>`);
-    if (r.comments) badges.push(`<span class="ap-b cm">${r.comments} comment${r.comments === 1 ? '' : 's'}</span>`);
-    return `<div class="ap-row${i === AP.sel ? ' sel' : ''}" data-rel="${escHtml(r.rel)}" data-i="${i}">
-      <div class="ap-main"><div class="ap-title">${escHtml(r.title)}</div>
-        <div class="ap-path">${escHtml(r.rel)}</div></div>
-      <div class="ap-meta"><span class="ap-chip ${r.status}">${r.status}</span><span class="ap-chip kind">${escHtml(r.kind)}</span>${badges.join('')}
-        <span class="ap-dim">${r.words.toLocaleString()} w</span><span class="ap-dim" title="last opened here">${r.opened ? apWhen(r.opened) : ''}</span></div></div>`;
+    const n = (r.comments || 0);                       // Claude tasks are open comments too; one count
+    if (n) badges.push(`<span class="ap-b cm">${n} comment${n === 1 ? '' : 's'}</span>`);
+    const flag = r.flag ? `<img class="ap-flag" src="${API}/site/Images/web/flags/${r.flag}.png" alt="" width="20" height="15" loading="lazy">` : '<span class="ap-flag"></span>';
+    return `<div class="ap-row${i === AP.sel ? ' sel' : ''}" data-rel="${escHtml(r.rel)}" data-i="${i}" title="${escHtml(r.rel)}">
+      <div class="ap-main">${flag}<div class="ap-title">${escHtml(r.title)}</div></div>
+      <div class="ap-meta"><span class="ap-chip ${r.status}">${r.status}</span>${badges.join('')}</div></div>`;
   }
   function apRender() {
     const host = document.getElementById('ap-list'); if (!host) return;
@@ -2010,7 +2004,8 @@ main{overflow-y:auto;padding:1rem}
         // requestPermission needs a user gesture -- so the on-load mirror
         // silently skips and the synced to-do list quietly goes stale. Ask
         // for the one click instead of failing silently.
-        else if (perm === 'prompt') showReconnectBanner();
+        // else if (perm === 'prompt') showReconnectBanner();   off: the phone sync it served
+        // isn't in use (Kevin, 2026-09-26); the Articles panel asks for the folder on a click
       }
     } catch(e) {}
   })();
@@ -4382,6 +4377,7 @@ main{overflow-y:auto;padding:1rem}
       paint();
     };
     paint();
+    btn.style.display = 'none';           // hidden 2026-09-26: autosave is never turned off; the feature stays
     const actions = document.querySelector('.header-actions');
     actions.insertBefore(btn, document.getElementById('btn-open'));
   })();
