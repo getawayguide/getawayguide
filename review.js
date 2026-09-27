@@ -311,6 +311,10 @@
       if (window.restoreMapButtons) window.restoreMapButtons(e);
     }
     state.st[id] = accept; state.last[id] = accept;
+    if (c.task) {                              // an answer from Claude: the thread follows the decision
+      const th = state.comments.threads.find(t => t.id === c.task);
+      if (th) { th.status = accept ? 'applied' : 'rejected'; if (accept) th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; anchorComments(); saveComments(); }
+    }
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
       if (accept) c.inner.forEach(i => { state.st[i] = true; state.last[i] = true; posted[i] = true; });
@@ -481,12 +485,12 @@
   }
   function startPolling() {
     if (_pollT) return;
-    _pollT = setInterval(pollTasks, 8000);       // with the margin closed too: an answer lands while Kevin looks at photos
+    _pollT = setInterval(pollTasks, 3000);       // with the margin closed too: an answer lands while Kevin looks at photos
     setInterval(tickAges, 1000);
   }
   async function pollTasks() {
     if (!state.key || state._polling) return;
-    if (!state.comments.threads.some(t => isTask(t) && !t.resolved && t.status !== 'applied')) return;
+    if (!state.comments.threads.some(t => isTask(t) && !t.resolved && !['applied', 'proposed', 'rejected', 'offered'].includes(t.status))) return;
     state._polling = true;
     let r; try { r = await (await fetch(API + `/comments/${state.key}`, { cache: 'no-store' })).json(); } catch (e) { state._polling = false; return; }
     state._polling = false;
@@ -498,7 +502,7 @@
       // Claude's replies and status arrive; Kevin's own edits to the thread stay
       const seen = new Set((t.replies || []).map(x => x.id));
       for (const rp of (st.replies || [])) if (!seen.has(rp.id)) { (t.replies = t.replies || []).push(rp); touched = true; }
-      if (st.edit && t.status !== 'applied' && t.status !== 'offered') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
+      if (st.edit && t.status !== 'applied' && t.status !== 'offered' && t.status !== 'proposed' && t.status !== 'rejected') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
       // an edit that was applied but never saved: the article was reopened and the old sentence is
       // back. If its find is in the text again, apply it again rather than showing a done chip over undone text.
       else if (st.edit && t.status === 'applied' && !t.resolved && locate(ed().innerHTML.replace(/<\/?mark[^>]*>/g, '').replace(/ class=""/g, ''), st.edit.find)) { t.edit = st.edit; t.status = 'sent'; touched = applyTaskEdit(t) || touched; }
@@ -529,18 +533,21 @@
     const key = locate(h, t.edit.find);
     const relint = () => { for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); } };
     if (key) {
-      if (H()) H().checkpoint();
-      e.innerHTML = h.replace(key, () => t.edit.replace);
-      if (window.adoptPlaceholders) window.adoptPlaceholders(e);
-      if (window.restoreSlotButtons) window.restoreSlotButtons(e);
-      if (window.restoreMapButtons) window.restoreMapButtons(e);
+      // the answer goes in as a TRACKED CHANGE: old text struck, new text underlined, a tick
+      // and a cross on its card, exactly like a review round. Nothing is applied until
+      // Kevin accepts it; the thread card keeps the reply and says "Claude proposed".
+      const cid = 'tk' + t.id;
+      if (!state.changes.some(c => c.id === cid)) {
+        const c = { id: cid, kind: 'grammar', section: 'Claude', find: key, replace: t.edit.replace, count: 1, task: t.id,
+                    note: (t.replies || []).filter(r => r.author === 'Claude').map(r => r.text).pop() || '' };
+        state.changes.push(c);
+        e.innerHTML = h;
+        injectMarks([c]);
+      }
       relint();
-      // the card stays, beside the NEW text, with Claude's reply and a "Claude edited" chip,
-      // until Kevin resolves it himself: he should see what changed, not just that it did
-      t.status = 'applied'; t.appliedAt = new Date().toISOString();
-      t.anchor = { before: '', quote: plain(t.edit.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' };
-      dirty(); if (H()) H().touch();
-      toast('Claude edited: ' + t.text.slice(0, 70), 5000);
+      t.status = 'proposed'; t.proposedAt = new Date().toISOString();
+      state.active = cid;
+      toast('Claude proposed: ' + t.text.slice(0, 70) + ' (tick to accept)', 5000);
       return true;
     }
     relint();
@@ -799,8 +806,9 @@
     const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${esc(r.text)}</div></div>`).join('');
     const chip = !isTask(t) ? '' : t.status === 'applied' ? '<span class="chip done">Claude edited</span>' : t.status === 'offered' ? '<span class="chip wait">edit ready</span>'
                : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>'
+               : t.status === 'proposed' ? '<span class="chip wait">Claude proposed · tick to accept</span>' : t.status === 'rejected' ? '<span class="chip fail">rejected</span>'
                : `<span class="chip sent"><span class="spin"></span>waiting for Claude<span class="age" data-since="${esc(t.sentAt || t.created || '')}"></span></span>`;
-    const waitNote = isTask(t) && !t.resolved && (t.status === 'sent' || !t.status) && ageSec(t.sentAt || t.created) > 90
+    const waitNote = isTask(t) && !t.resolved && (t.status === 'sent' || !t.status) && ageSec(t.sentAt || t.created) > 120
       ? '<div class="lbl wait-note">Nothing has picked this up yet. Claude answers from the Claude Code session (say <b>answer my tasks</b>, or run <b>/loop answer my editor tasks</b> to have it checked every minute), or on its own with an API key in .env.</div>' : '';
     d.innerHTML = `<div class="who">${av(t.author)}<b>${esc(t.author)}</b><span class="tm">${when(t.created)}${t.edited ? ' · edited' : ''}</span>${chip}
         <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}

@@ -1378,7 +1378,7 @@ def _rewrite_prompt(quote, before, after, note):
 def _claude_rewrites(prompt, key):
     """Python's TLS is broken on this box (see the memory note), so the call goes through
     PowerShell's Invoke-RestMethod like every other outbound request the tools make."""
-    body = json.dumps({"model": "claude-sonnet-5", "max_tokens": 800,
+    body = json.dumps({"model": (_env_key("ANSWER_MODEL") or "claude-haiku-4-5-20251001"), "max_tokens": 800,
                        "messages": [{"role": "user", "content": prompt}]})
     tmp = Path(ROOT) / ".tmp" / "rewrite_req.json"
     tmp.write_text(body, encoding="utf-8")
@@ -1506,17 +1506,40 @@ _answering = set()
 
 
 def _answer_tasks(key, data):
-    """A thread sent to Claude gets answered by tools/claude_answer.py --ask when the repo's
-    .env holds ANTHROPIC_API_KEY: one process per thread, in the background, writing the
-    edit back onto the thread for the editor's poll to apply. Without a key the thread
-    waits for the session: `python tools/redline.py tasks` lists it."""
-    if not _env_key("ANTHROPIC_API_KEY"):
-        return
+    """A thread sent to Claude is answered by tools/claude_answer.py: --ask through the API
+    when .env holds ANTHROPIC_API_KEY, else --cli through the Claude Code CLI the VS Code
+    extension bundles (Kevin's own login). One process per thread, in the background; the
+    edit lands on the thread for the editor's poll to show as a tracked change."""
+    mode = "--ask" if _env_key("ANTHROPIC_API_KEY") else "--cli"
     for t in data.get("threads", []):
         if t.get("kind") in ("task", "rewrite") and t.get("status") == "sent" and not t.get("edit") and t["id"] not in _answering:
             _answering.add(t["id"])
-            subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], "--ask"],
-                             cwd=str(ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            log = open(Path(ROOT) / ".tmp" / "claude_answer.log", "a", encoding="utf-8")
+            subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], mode],
+                             cwd=str(ROOT), stdout=log, stderr=log)
+
+
+def _task_watch():
+    """Armed with the server, so it is armed when the editor starts (Kevin, 2026-09-27): every
+    2 s, any task sent from the margin that nobody has answered is handed to _answer_tasks.
+    Test stores (test__*) are left alone."""
+    while True:
+        try:
+            for f in (_redline.COMMENTS.glob("*.json") if _redline.COMMENTS.exists() else []):
+                if f.stem.startswith("test__") or f.stem == "x":
+                    continue
+                try:
+                    data = json.loads(f.read_text(encoding="utf-8"))
+                except Exception:
+                    continue
+                _answer_tasks(f.stem, data)
+        except Exception:
+            pass
+        time.sleep(2)
+
+
+if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
+    threading.Thread(target=_task_watch, daemon=True, name="task-watch").start()
 
 
 # Live Activity polls this every 2 s while the panel is open, and the scan below walks

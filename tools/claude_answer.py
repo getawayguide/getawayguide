@@ -77,10 +77,16 @@ def body_html(html):
     return html[i:j] if i >= 0 and j > i else html
 
 
-def ask_claude(key, tid):
-    api = env_key("ANTHROPIC_API_KEY")
-    if not api:
-        raise SystemExit("no ANTHROPIC_API_KEY in .env")
+def cli_path():
+    """the Claude Code CLI the VS Code extension bundles, newest version; or one on PATH"""
+    import glob, shutil
+    hits = sorted(glob.glob(str(Path.home() / ".vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude.exe")))
+    if hits:
+        return hits[-1]
+    return shutil.which("claude") or ""
+
+
+def build_prompt(key, tid):
     data = redline.comments_load(key)
     t = next((x for x in data.get("threads", []) if x["id"] == tid), None)
     if not t:
@@ -88,10 +94,18 @@ def ask_claude(key, tid):
     path = article_for(key)
     html = path.read_text(encoding="utf-8")
     body = body_html(html)
+    a0 = t.get("anchor") or {}
+    q = a0.get("quote") or ""
+    i = body.find(q) if q else -1
+    if i >= 0:
+        lo, hi = max(0, i - 3000), min(len(body), i + len(q) + 3000)
+        j = body.rfind("<p", 0, lo)
+        lo = j if j >= 0 else lo                                   # start on a block
+        body = body[lo:hi]
     guide = GUIDE.read_text(encoding="utf-8", errors="replace") if GUIDE.exists() else ""
     patterns = PATTERNS.read_text(encoding="utf-8", errors="replace") if PATTERNS.exists() else ""
     a = t.get("anchor") or {}
-    prompt = (
+    return t, html, (
         "You are editing Kevin's travel-blog article in place. He left an instruction on a passage; carry it out.\n"
         "Rules: first person, direct, specific, American spelling, no em dashes in prose, keep every existing link, "
         "link every place name to Google Maps (https://www.google.com/maps/search/?api=1&query=Name works as a "
@@ -99,24 +113,17 @@ def ask_claude(key, tid):
         "For a lookup, put the answer in the text and the source in the reply.\n"
         "Return ONLY JSON: {\"reply\": \"what you did, one or two sentences\", \"find\": \"an exact substring of the ARTICLE HTML "
         "below, covering the whole passage to change (include the tags inside it exactly as they are)\", "
-        "\"replace\": \"the new HTML for that passage\"}. The find must occur exactly once.\n\n"
+        "\"replace\": \"the new HTML for that passage\"}. The find must occur exactly once. Keep the find as short as the "
+        "change allows (one sentence when one sentence changes).\n\n"
         "VOICE GUIDE:\n" + guide[:7000] + "\n\nWHAT HIS REVIEWS ASK FOR:\n" + patterns[:3000] + "\n\n"
         "INSTRUCTION: " + t.get("text", "") + "\nON THE PASSAGE: " + a.get("quote", "") +
         "\n(context before: " + a.get("before", "") + " | after: " + a.get("after", "") + ")\n\n"
         "ARTICLE HTML:\n" + body[:60000])
-    req = ROOT / ".tmp" / ("claude_task_%s.json" % tid)
-    req.write_text(json.dumps({"model": "claude-sonnet-5", "max_tokens": 4000,
-                               "messages": [{"role": "user", "content": prompt}]}), encoding="utf-8")
-    # Python's TLS is broken on this box; PowerShell's is not (see the memory note)
-    ps = ("$b = Get-Content -Raw -Encoding UTF8 '%s'; "
-          "$r = Invoke-RestMethod -Uri 'https://api.anthropic.com/v1/messages' -Method Post -TimeoutSec 120 "
-          "-Headers @{'x-api-key'='%s';'anthropic-version'='2023-06-01';'content-type'='application/json'} -Body $b; "
-          "$r.content[0].text" % (str(req).replace("'", "''"), api))
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
-                       capture_output=True, text=True, timeout=180, encoding="utf-8", errors="replace")
-    if r.returncode != 0:
-        return write_answer(key, tid, "I couldn't reach Claude: " + (r.stderr or r.stdout).strip()[-200:], status="failed")
-    txt = r.stdout.strip()
+
+
+def finish(key, tid, t, html, txt):
+    """parse the model's JSON and write it onto the thread, validating the find"""
+    a = t.get("anchor") or {}
     m = re.search(r"\{.*\}", txt, re.S)
     try:
         ans = json.loads(m.group(0) if m else txt)
@@ -129,17 +136,73 @@ def ask_claude(key, tid):
     return write_answer(key, tid, reply, find=find, replace=rep)
 
 
+def ask_cli(key, tid):
+    """the bundled Claude Code CLI, with Kevin's login. Run from an empty folder so the repo's
+    CLAUDE.md and memory (40k tokens) are not loaded into every answer."""
+    import os
+    exe = cli_path()
+    if not exe:
+        return write_answer(key, tid, "No Claude Code CLI found on this machine (the VS Code extension's claude.exe).", status="failed")
+    t, html, prompt = build_prompt(key, tid)
+    model = env_key("ANSWER_MODEL") or "haiku"          # speed first (Kevin, 2026-09-27); ANSWER_MODEL=sonnet in .env for heavier tasks
+    work = ROOT / ".tmp" / "claude_cli"
+    work.mkdir(parents=True, exist_ok=True)
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}     # a nested session refuses to start
+    try:
+        # no MCP servers: the CLI otherwise boots every claude.ai connector for a one-shot answer
+        nomcp = work / "no-mcp.json"
+        if not nomcp.exists():
+            nomcp.write_text('{"mcpServers": {}}', encoding="utf-8")
+        r = subprocess.run([exe, "-p", "--output-format", "json", "--model", model, "--max-turns", "1",
+                            "--strict-mcp-config", "--mcp-config", str(nomcp)], input=prompt,
+                           capture_output=True, text=True, timeout=240, encoding="utf-8", errors="replace", cwd=str(work), env=env)
+    except subprocess.TimeoutExpired:
+        return write_answer(key, tid, "Claude took more than four minutes; try again.", status="failed")
+    out = (r.stdout or "").strip()
+    try:
+        res = json.loads(out[out.index("{"):]) if "{" in out else {}
+        txt = res.get("result") or ""
+    except Exception:
+        txt = out
+    if r.returncode != 0 and not txt:
+        return write_answer(key, tid, "Claude CLI failed: " + (r.stderr or out).strip()[-300:], status="failed")
+    return finish(key, tid, t, html, txt)
+
+
+def ask_claude(key, tid):
+    api = env_key("ANTHROPIC_API_KEY")
+    if not api:
+        raise SystemExit("no ANTHROPIC_API_KEY in .env")
+    t, html, prompt = build_prompt(key, tid)
+    req = ROOT / ".tmp" / ("claude_task_%s.json" % tid)
+    req.write_text(json.dumps({"model": (env_key("ANSWER_MODEL") or "claude-sonnet-5"), "max_tokens": 4000,
+                               "messages": [{"role": "user", "content": prompt}]}), encoding="utf-8")
+    # Python's TLS is broken on this box; PowerShell's is not (see the memory note)
+    ps = ("$b = Get-Content -Raw -Encoding UTF8 '%s'; "
+          "$r = Invoke-RestMethod -Uri 'https://api.anthropic.com/v1/messages' -Method Post -TimeoutSec 120 "
+          "-Headers @{'x-api-key'='%s';'anthropic-version'='2023-06-01';'content-type'='application/json'} -Body $b; "
+          "$r.content[0].text" % (str(req).replace("'", "''"), api))
+    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+                       capture_output=True, text=True, timeout=180, encoding="utf-8", errors="replace")
+    if r.returncode != 0:
+        return write_answer(key, tid, "I couldn't reach Claude: " + (r.stderr or r.stdout).strip()[-200:], status="failed")
+    return finish(key, tid, t, html, r.stdout.strip())
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("key"); ap.add_argument("thread")
     ap.add_argument("--reply", default=""); ap.add_argument("--find-file"); ap.add_argument("--replace-file")
     ap.add_argument("--ask", action="store_true", help="ask the Claude API (needs ANTHROPIC_API_KEY in .env)")
+    ap.add_argument("--cli", action="store_true", help="ask through the bundled Claude Code CLI (Kevin's login)")
     a = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
-    if a.ask:
+    if a.cli:
+        t = ask_cli(a.key, a.thread)
+    elif a.ask:
         t = ask_claude(a.key, a.thread)
     else:
         f = Path(a.find_file).read_text(encoding="utf-8") if a.find_file else None
