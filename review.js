@@ -55,7 +55,7 @@
       <div id="rv-banner" style="display:none"></div>
       <div class="rv-tools">
         <button id="rv-new" class="rv-btn primary" title="Comment on the selected text (Ctrl+Alt+M)">+ Comment</button>
-        <button id="rv-rewrite" class="rv-btn" title="Rewrite the selected sentence in your voice: three alternatives to pick from">&#8635; Rewrite</button>
+        <button id="rv-rewrite" class="rv-btn" title="Rewrite the selected sentence in your voice"><img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="14" height="14"> Rewrite</button>
         <div class="rv-seg"><button id="rv-prev" title="Previous change">&#8593;</button><button id="rv-next" title="Next change">&#8595;</button></div>
         <div class="rv-seg"><button id="rv-markup" aria-pressed="true" title="All markup: every change shown on the page">Markup</button><button id="rv-final" title="No markup: the page as it reads with the decisions so far">Clean</button></div>
         <div class="rv-seg"><button id="rv-v-ctx" aria-pressed="true" title="Cards level with the text they belong to">Beside</button><button id="rv-v-list" title="Every card as a list, unplaced ones too">List</button></div>
@@ -466,7 +466,8 @@
   }
   // ---- tasks: comments sent to Claude come back with an edit that goes into this text ----
   const isTask = t => t.kind === 'task' || t.kind === 'rewrite';
-  const CLAUDE_MARK = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2l1.7 6.3 5.8-3.3-3.3 5.8L22 12l-5.8 1.2 3.3 5.8-5.8-3.3L12 22l-1.7-6.3-5.8 3.3 3.3-5.8L2 12l5.8-1.2L4.5 5l5.8 3.3z"/></svg>';
+  // the Claude app icon itself (Images/web/ui/claude-icon.png), served by the photo server
+  const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
     t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit;
@@ -485,7 +486,7 @@
   }
   function startPolling() {
     if (_pollT) return;
-    _pollT = setInterval(pollTasks, 3000);       // with the margin closed too: an answer lands while Kevin looks at photos
+    _pollT = setInterval(pollTasks, 1000);       // 1 s while something is waiting (pollTasks returns at once otherwise); margin open or not
     setInterval(tickAges, 1000);
   }
   async function pollTasks() {
@@ -963,7 +964,7 @@
     catch (e) { toast('Server not reachable'); b.disabled = false; b.textContent = 'Check prose'; return; }
     state.lint = r.findings || [];
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); else f.anchor = null; }
-    state.voice = r.voice || null; renderVoice();
+    state.voice = null;                       // the Voice line is off (2026-09-27); the word cards stay
     b.disabled = false; b.textContent = 'Check prose';
     if (state.filter === 'changes') setFilter('all');
     toggle(true); renderAll();
@@ -1010,8 +1011,8 @@
     const b = $('rv-rewrite'); b.disabled = true; b.textContent = 'Rewriting…';
     let r; try { r = await (await fetch(API + '/review/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ rel: state.rel, quote: a.quote, before: a.before, after: a.after, note }) })).json(); }
-    catch (e) { toast('Server not reachable'); b.disabled = false; b.innerHTML = '&#8635; Rewrite'; return; }
-    b.disabled = false; b.innerHTML = '&#8635; Rewrite';
+    catch (e) { toast('Server not reachable'); b.disabled = false; b.innerHTML = CLAUDE_MARK + ' Rewrite'; return; }
+    b.disabled = false; b.innerHTML = CLAUDE_MARK + ' Rewrite';
     if (r.queued) {
       state.comments.threads.push(r.thread); anchorComments(); renderAll();
       toast('Queued: the next review round answers it as a proposed change.', 5000);
@@ -1050,7 +1051,7 @@
     const d = document.createElement('div');
     d.className = 'rv-card rv-lint ' + (f.severity || 'warn') + (state.active === f.id ? ' active' : ''); d.dataset.lint = f.id;
     if (f.alternatives) {
-      d.innerHTML = `<div class="who"><span class="av lint">&#8635;</span><b>rewrite</b><span class="tm"></span>
+      d.innerHTML = `<div class="who">${CLAUDE_MARK}<b>rewrite</b><span class="tm"></span>
           <span class="acts"><button class="no" data-a="drop" title="Keep the sentence as it is">&#10005;</button></span></div>
         <div class="t"><del>${esc(f.anchor.quote)}</del></div>
         ${f.alternatives.map((t, i) => `<div class="alt"><button class="use" data-i="${i}" title="Put this one in the text">Use</button><span>${esc(t)}</span></div>`).join('')}
@@ -1135,6 +1136,9 @@ body.review-open #review-pane{display:flex}
 .rv-voice .sc.good{background:#2D6B50}.rv-voice .sc.ok{background:#9A7B2E}.rv-voice .sc.off{background:#B4553C}
 .rv-voice .sg{white-space:nowrap}.rv-voice .sg.off{color:#B4553C}.rv-voice .sg i{color:#8a9790;font-style:normal}
 .rv-card .acts .claude{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;color:#D97757;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.claude-mark{width:16px;height:16px;border-radius:4px;vertical-align:-3px;display:inline-block}
+#rv-rewrite .claude-mark{width:14px;height:14px;margin-right:.15rem}
+.rv-card .who .claude-mark{width:22px;height:22px;border-radius:50%;flex-shrink:0}
 .rv-card .acts .claude:hover{background:#FBEDE6;border-color:#eec3b3}
 .rv-card .act .send svg{vertical-align:-3px;margin-right:.15rem;color:#D97757}
 .rv-card .chip{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .4rem;border-radius:999px;margin-left:.35rem;white-space:nowrap}

@@ -1505,19 +1505,104 @@ def comments(key):
 _answering = set()
 
 
+class _ClaudeWorker:
+    """One warm Claude Code CLI (the VS Code extension's claude.exe, Kevin's login) kept
+    alive in stream-json mode. A fresh process per task cost ~10 s of boot for ~2 s of model
+    time; a warm one answers in about a second. The standing brief (rules, voice guide) goes
+    in once; each task is a short message. The worker is restarted after 15 answers or 25 min
+    idle so the conversation never grows into a slow, expensive one."""
+    MAX_ANSWERS, MAX_IDLE = 15, 25 * 60
+
+    def __init__(self):
+        self.p = None; self.n = 0; self.last = 0; self.lock = threading.Lock()
+
+    def _start(self):
+        import claude_answer
+        exe = claude_answer.cli_path()
+        if not exe:
+            return False
+        work = Path(ROOT) / ".tmp" / "claude_cli"; work.mkdir(parents=True, exist_ok=True)
+        nomcp = work / "no-mcp.json"
+        if not nomcp.exists():
+            nomcp.write_text('{"mcpServers": {}}', encoding="utf-8")
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        model = _env_key("ANSWER_MODEL") or "sonnet"     # measured 2026-09-27: Sonnet 1.5-3.5 s per answer, Haiku 8-15 s (it thinks for 1k tokens)
+        self.p = subprocess.Popen([exe, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
+                                   "--model", model, "--strict-mcp-config", "--mcp-config", str(nomcp)],
+                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                                  encoding="utf-8", errors="replace", cwd=str(work), env=env, bufsize=1,
+                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        self.n = 0; self.last = time.time()
+        # the brief, once; its reply is discarded
+        self._ask(claude_answer.guide_text() + "\n\nReply with the single word READY.", 120)
+        return True
+
+    def _ask(self, text, timeout):
+        self.p.stdin.write(json.dumps({"type": "user", "message": {"role": "user", "content": text}}) + "\n"); self.p.stdin.flush()
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            line = self.p.stdout.readline()
+            if not line:
+                raise RuntimeError("worker exited")
+            try:
+                j = json.loads(line)
+            except Exception:
+                continue
+            if j.get("type") == "result":
+                return j.get("result") or ""
+        raise RuntimeError("worker timed out")
+
+    def stop(self):
+        try:
+            if self.p: self.p.stdin.close(); self.p.terminate()
+        except Exception:
+            pass
+        self.p = None
+
+    def alive(self):
+        return self.p is not None and self.p.poll() is None
+
+    def warm(self):
+        with self.lock:
+            if not self.alive():
+                try: self._start()
+                except Exception: self.stop()
+
+    def answer(self, key, tid):
+        import claude_answer
+        with self.lock:
+            if self.alive() and (self.n >= self.MAX_ANSWERS or time.time() - self.last > self.MAX_IDLE):
+                self.stop()
+            if not self.alive() and not self._start():
+                return False
+            t, html, text = claude_answer.task_text(key, tid)
+            try:
+                txt = self._ask(text, 180)
+            except Exception as e:
+                self.stop()
+                claude_answer.write_answer(key, tid, "Claude's worker dropped mid-answer (%s); send it again." % str(e)[:80], status="failed")
+                return True
+            self.n += 1; self.last = time.time()
+            claude_answer.finish(key, tid, t, html, txt)
+            return True
+
+
+_worker = _ClaudeWorker()
+
+
 def _answer_tasks(key, data):
-    """A thread sent to Claude is answered by tools/claude_answer.py: --ask through the API
-    when .env holds ANTHROPIC_API_KEY, else --cli through the Claude Code CLI the VS Code
-    extension bundles (Kevin's own login). One process per thread, in the background; the
-    edit lands on the thread for the editor's poll to show as a tracked change."""
-    mode = "--ask" if _env_key("ANTHROPIC_API_KEY") else "--cli"
+    """A thread sent to Claude is answered here: through the API when .env holds
+    ANTHROPIC_API_KEY (tools/claude_answer.py --ask), else by the warm Claude Code worker.
+    The edit lands on the thread for the editor's poll to show as a tracked change."""
     for t in data.get("threads", []):
         if t.get("kind") in ("task", "rewrite") and t.get("status") == "sent" and not t.get("edit") and t["id"] not in _answering:
             _answering.add(t["id"])
-            log = open(Path(ROOT) / ".tmp" / "claude_answer.log", "a", encoding="utf-8")
-            subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], mode],
-                             cwd=str(ROOT), stdout=log, stderr=log,
-                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))   # no console flashing up per answer
+            if _env_key("ANTHROPIC_API_KEY"):
+                log = open(Path(ROOT) / ".tmp" / "claude_answer.log", "a", encoding="utf-8")
+                subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], "--ask"],
+                                 cwd=str(ROOT), stdout=log, stderr=log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            else:
+                threading.Thread(target=_worker.answer, args=(key, t["id"]), daemon=True).start()
 
 
 def _task_watch():
@@ -1541,6 +1626,8 @@ def _task_watch():
 
 if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
     threading.Thread(target=_task_watch, daemon=True, name="task-watch").start()
+    if not _env_key("ANTHROPIC_API_KEY"):
+        threading.Thread(target=_worker.warm, daemon=True, name="claude-warm").start()   # boot the worker with the editor
 
 
 # Live Activity polls this every 2 s while the panel is open, and the scan below walks

@@ -86,6 +86,46 @@ def cli_path():
     return shutil.which("claude") or ""
 
 
+RULES = (
+    "You are editing Kevin's travel-blog articles in place, one instruction at a time. Each message gives an INSTRUCTION "
+    "left on a passage and the surrounding ARTICLE HTML.\n"
+    "Rules: first person, direct, specific, American spelling, no em dashes in prose, keep every existing link, "
+    "link every place name to Google Maps (https://www.google.com/maps/search/?api=1&query=Name works as a "
+    "placeholder), never invent facts: a date, price or name you are not sure of stays out and you say so in the reply. "
+    "For a lookup, put the answer in the text and the source in the reply.\n"
+    "Always return ONLY JSON: {\"reply\": \"what you did, one or two sentences\", \"find\": \"an exact substring of the ARTICLE HTML "
+    "covering the whole passage to change (include the tags inside it exactly as they are)\", "
+    "\"replace\": \"the new HTML for that passage\"}. The find must occur exactly once. Keep the find as short as the "
+    "change allows (one sentence when one sentence changes).")
+
+
+def guide_text():
+    """the standing brief: rules, voice guide, what his reviews ask for. Sent once per worker."""
+    guide = GUIDE.read_text(encoding="utf-8", errors="replace") if GUIDE.exists() else ""
+    patterns = PATTERNS.read_text(encoding="utf-8", errors="replace") if PATTERNS.exists() else ""
+    return RULES + "\n\nVOICE GUIDE:\n" + guide[:7000] + "\n\nWHAT HIS REVIEWS ASK FOR:\n" + patterns[:3000]
+
+
+def task_text(key, tid):
+    """(thread, article html, the per-task message): instruction, passage, excerpt only"""
+    data = redline.comments_load(key)
+    t = next((x for x in data.get("threads", []) if x["id"] == tid), None)
+    if not t:
+        raise SystemExit("no thread")
+    path = article_for(key)
+    html = path.read_text(encoding="utf-8")
+    body = body_html(html)
+    a = t.get("anchor") or {}
+    q = a.get("quote") or ""
+    i = body.find(q) if q else -1
+    if i >= 0:
+        lo, hi = max(0, i - 3000), min(len(body), i + len(q) + 3000)
+        j = body.rfind("<p", 0, lo)
+        body = body[(j if j >= 0 else lo):hi]
+    return t, html, ("INSTRUCTION: " + t.get("text", "") + "\nON THE PASSAGE: " + q +
+                     "\n(context before: " + a.get("before", "") + " | after: " + a.get("after", "") + ")\n\nARTICLE HTML:\n" + body[:60000])
+
+
 def build_prompt(key, tid):
     data = redline.comments_load(key)
     t = next((x for x in data.get("threads", []) if x["id"] == tid), None)
@@ -144,7 +184,7 @@ def ask_cli(key, tid):
     if not exe:
         return write_answer(key, tid, "No Claude Code CLI found on this machine (the VS Code extension's claude.exe).", status="failed")
     t, html, prompt = build_prompt(key, tid)
-    model = env_key("ANSWER_MODEL") or "haiku"          # speed first (Kevin, 2026-09-27); ANSWER_MODEL=sonnet in .env for heavier tasks
+    model = env_key("ANSWER_MODEL") or "sonnet"         # Sonnet answers in 1.5-3.5 s warm; Haiku thinks for 8-15 s (measured 2026-09-27)
     work = ROOT / ".tmp" / "claude_cli"
     work.mkdir(parents=True, exist_ok=True)
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}     # a nested session refuses to start
