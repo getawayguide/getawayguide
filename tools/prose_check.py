@@ -151,7 +151,8 @@ def check(html, drafting=False):
         if not text.strip():
             continue
         blocks.append((m.group(1).lower(), text))
-        _links_twice(inner, text, add)
+        if drafting:
+            _links_twice(inner, text, add)
         for name, rx, repl in lint_prose.MECHANICAL:
             for h in rx.finditer(text):
                 fix = rx.sub(repl, h.group(0)) if repl is not None else None
