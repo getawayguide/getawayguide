@@ -499,6 +499,9 @@
       const seen = new Set((t.replies || []).map(x => x.id));
       for (const rp of (st.replies || [])) if (!seen.has(rp.id)) { (t.replies = t.replies || []).push(rp); touched = true; }
       if (st.edit && t.status !== 'applied' && t.status !== 'offered') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
+      // an edit that was applied but never saved: the article was reopened and the old sentence is
+      // back. If its find is in the text again, apply it again rather than showing a done chip over undone text.
+      else if (st.edit && t.status === 'applied' && !t.resolved && locate(ed().innerHTML.replace(/<\/?mark[^>]*>/g, '').replace(/ class=""/g, ''), st.edit.find)) { t.edit = st.edit; t.status = 'sent'; touched = applyTaskEdit(t) || touched; }
       else if (st.status && st.status !== t.status && t.status !== 'applied' && t.status !== 'offered') { t.status = st.status; touched = true; }
       if (st.resolved && !t.resolved && t.status !== 'applied') { t.resolved = true; touched = true; }
     }
