@@ -303,7 +303,10 @@ def build(cfg):
         STAR = ('<path d="M 0 -9.5 L 2.24 -2.94 L 9.03 -2.94 L 3.54 1.12 L 5.59 7.69 L 0 3.65 '
                 'L -5.59 7.69 L -3.54 1.12 L -9.03 -2.94 L -2.24 -2.94 Z" '
                 f'fill="{P["pin"]}" stroke="{P["bg"]}" stroke-width="1.4" stroke-linejoin="round"/>')
-        inner = f'<g class="imap-pin">{STAR if s.get("marker") == "star" else pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
+        # pin_scale (config, default 1): bigger pins for a short loop with few stops
+        psc = cfg.get("pin_scale", 1)
+        ptf = f' transform="scale({psc})"' if psc != 1 else ""
+        inner = f'<g class="imap-pin"{ptf}>{STAR if s.get("marker") == "star" else pin_body(num)}</g>'   # hovering the stop lifts this (see styles.css)
         if s.get("name"):
             dx, dy = s.get("dx", 16), s.get("dy", 4)
             anc = s.get("anchor", "start")
@@ -315,6 +318,10 @@ def build(cfg):
                 lbl += (f'<text x="{dx}" y="{dy+15}" text-anchor="{anc}" font-size="10" '
                         f'font-weight="500" letter-spacing="1.5" fill="{P["pin"]}">'
                         f'{s["days"].upper()}</text>')
+            if s.get("days2"):                    # a second line under days ("end · 6 p.m.")
+                lbl += (f'<text x="{dx}" y="{dy+27}" text-anchor="{anc}" font-size="10" '
+                        f'font-weight="500" letter-spacing="1.5" fill="{P["pin"]}">'
+                        f'{s["days2"].upper()}</text>')
             # optional link: the stop label jumps to a section on the article page.
             # class "imap-link" is enabled on desktop but pointer-events:none on mobile
             # (styles.css) so a tap can't interfere with scrolling/zooming the map.
@@ -326,6 +333,8 @@ def build(cfg):
             ex_text(x + dx * AFS, y + dy * AFS, name, 14 * AFS, anc, 1.5 * AFS)
             if s.get("days"):
                 ex_text(x + dx * AFS, y + (dy + 15) * AFS, s["days"].upper(), 10 * AFS, anc, 1.5 * AFS)
+            if s.get("days2"):
+                ex_text(x + dx * AFS, y + (dy + 27) * AFS, s["days2"].upper(), 10 * AFS, anc, 1.5 * AFS)
         B.append(f'<g class="imap-stop" transform="{stamp_tf(x, y)}"><g class="imap-lift">{inner}</g></g>')
         exa(x - 9 * AFS, y - 28 * AFS); exa(x + 9 * AFS, y + 2 * AFS)
 

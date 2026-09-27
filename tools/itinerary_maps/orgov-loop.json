@@ -18,7 +18,8 @@
       "days": "start · 10 a.m.",
       "anchor": "end",
       "dx": -14,
-      "dy": 6
+      "dy": 8,
+      "days2": "end · 6 p.m."
     },
     {
       "n": 2,
@@ -66,41 +67,41 @@
     {
       "a": 0,
       "b": 1,
-      "label": "car · 40 min",
+      "label": "",
       "chip_off": 18,
       "chip_side": 1
     },
     {
       "a": 1,
       "b": 2,
-      "label": "car · 20 min",
+      "label": "",
       "chip_off": 14,
       "chip_side": -1
     },
     {
       "a": 2,
       "b": 3,
-      "label": "car · 30 min",
+      "label": "",
       "chip_off": 12,
       "chip_side": 1
     },
     {
       "a": 3,
       "b": 4,
-      "label": "car · 1 hr 45",
+      "label": "",
       "chip_off": 16,
       "chip_side": 1
     },
     {
       "a": 4,
       "b": 0,
-      "label": "car · 1 hr",
-      "dash": true,
+      "label": "",
       "chip_off": 14,
       "chip_side": -1
     }
   ],
   "focus": true,
   "focus_span": 360,
-  "crop_pad": 56
+  "crop_pad": 56,
+  "pin_scale": 1.4
 }
