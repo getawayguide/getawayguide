@@ -3769,9 +3769,8 @@ main{overflow-y:auto;padding:1rem}
     if (!document.getElementById('color-picker-wrap').contains(e.target)) {
       closeColorPicker();
     }
-    if (!document.getElementById('hilite-wrap').contains(e.target)) {
-      document.getElementById('hilite-dropdown').classList.remove('open');
-    }
+    const hw = document.getElementById('hilite-wrap');      // the picker left the toolbar 2026-09-27
+    if (hw && !hw.contains(e.target)) document.getElementById('hilite-dropdown').classList.remove('open');
   });
 
   // ================= PASTE SANITIZER =================
