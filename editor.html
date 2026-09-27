@@ -9264,8 +9264,11 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       '@media (max-width:768px) { .article-hero.gg-banner { background-position:' + d.positions.phone + ' !important; } }\n' +
       '.ah-banner .band img { object-position:' + d.positions.desktop + ' !important; }\n' +
       '@media (max-width:1400px) { .ah-banner .band img { object-position:' + d.positions.laptop + ' !important; } }\n' +
-      '@media (max-width:768px) { .ah-banner .band img { object-position:' + d.positions.phone + ' !important; } }\n';
+      '@media (max-width:768px) { .ah-banner .band img { object-position:' + d.positions.phone + ' !important; } }\n' +
+      // the scrim: the picker's overlay weight (100 = the site's default) as an opacity on the hero overlay
+      (d.scrim != null && +d.scrim !== 100 ? '/* scrim from the hero picker */\n.article-hero.gg-banner::before { opacity:' + (Math.round(+d.scrim) / 100) + ' !important; }\n' : '');
     html = html.replace(/\/\* crop positions from the hero picker[^*]*\*\/[\s\S]*?(?=<\/style>)/, '');
+    html = html.replace(/\/\* scrim from the hero picker \*\/\n[^\n]*\n/, '');
     if (/<style id="hero-tiers">[\s\S]*?<\/style>/.test(html))
       html = html.replace(/(<style id="hero-tiers">[\s\S]*?)(<\/style>)/, (m, a, b) => a + rules + b);
     else

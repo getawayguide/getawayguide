@@ -1231,7 +1231,7 @@ $('save').onclick = async () => {
   if (r && r.built !== undefined) {
     if (!r.built) { toast('Pick saved, but the hero files did not build: ' + (r.log || '').slice(-120)); }
     else if (window.parent !== window) {
-      parent.postMessage({ type: 'heroes-saved', slug: r.slug, web: r.web, country: country,
+      parent.postMessage({ type: 'heroes-saved', slug: r.slug, web: r.web, country: country, scrim: scrim,
         positions: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) }, angle: angle }, '*');
       toast('Hero built. The article editor has the new hero; save the article to keep it.');
     }
