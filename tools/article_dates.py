@@ -23,6 +23,7 @@ commit in the Drafts repo that changed the page's prose, and from today if there
     python tools/article_dates.py --drafts        # include Drafts/
     python tools/article_dates.py --drafts --fix
 """
+import io
 import argparse
 import datetime
 import glob
@@ -108,7 +109,7 @@ def main():
     for path, rel, is_draft in pages(a.drafts):
         if a.match and a.match.lower() not in rel.lower():
             continue
-        s = path.read_text(encoding="utf-8", newline="")
+        s = io.open(path, encoding="utf-8", newline="").read()
         b = BYLINE.search(s)
         if not b:
             continue
@@ -139,7 +140,7 @@ def main():
             if pm and pm.group(2) > want:
                 s2 = PUBLISHED.sub(lambda m: m.group(1) + want + m.group(3), s2, count=1)
         if s2 != s:
-            path.write_text(s2, encoding="utf-8", newline="")
+            io.open(path, "w", encoding="utf-8", newline="").write(s2)
             fixed += 1
 
     out("%d page(s) where the byline a reader sees is not the date the page claims\n" % len(bad))

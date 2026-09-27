@@ -18,6 +18,7 @@ Usage:
     python tools/draft_images.py "Drafts/.Full Articles/armenia/armenia-itinerary.html"
     python tools/draft_images.py <draft> --dry-run      # show what the tools would do
 """
+import io
 import re
 import subprocess
 import sys
@@ -54,7 +55,7 @@ def main():
         sys.exit(f"! no published folder {country}/ to stage the draft in")
     tmp = live_dir / f"_draft-{draft.stem}.html"
 
-    src = draft.read_text(encoding="utf-8", newline="")
+    src = io.open(draft, encoding="utf-8", newline="").read()
     # the country the tier tool works on is whichever Images/<Country>/ the body draws from
     m_c = re.search(r'Images/(?!web/)([^/"]+)/', src)
     country_name = m_c.group(1) if m_c else None
@@ -85,7 +86,7 @@ def main():
             if r.returncode:
                 print(r.stdout[-1500:], r.stderr[-1500:]); sys.exit(f"! {tool[0]} failed")
         if not dry:
-            out = tmp.read_text(encoding="utf-8", newline="")
+            out = io.open(tmp, encoding="utf-8", newline="").read()
             out = out.replace("../Images/", f"{up}Images/").replace(MARK, "", 1)
             draft.write_text(out, encoding="utf-8", newline="")
             pics = len(re.findall(r"<picture>", out))

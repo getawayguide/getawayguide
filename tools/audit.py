@@ -47,6 +47,7 @@ findings that never reached an inbox.
 
 Exit code is 1 when anything HIGH was found, so a routine can gate on it.
 """
+import io
 import argparse
 import hashlib
 import html as htmlmod
@@ -440,7 +441,8 @@ def check_seo():
 # ---------------------------------------------------------------- 6. selfcheck
 ROUTINE_TOOLS = ["tools/lint_site.py", "tools/lint_prose.py", "tools/americanize.py",
                  "tools/prose_check.py", "tools/prose_rules.py", "tools/report_email.py",
-                 "tools/audit.py", "tools/strip_paste_artifacts.py", "tools/check_links.py"]
+                 "tools/audit.py", "tools/strip_paste_artifacts.py", "tools/check_links.py",
+                 "tools/article_dates.py", "tools/voice_check.py"]      # imported by check_dates and prose_check
 ROUTINE_FILES = ["review.js", "tools/redline.py", "CLAUDE.md", "tools/prose_allowlist.txt"]
 
 
@@ -464,6 +466,24 @@ def check_selfcheck():
         err = (r.stderr or "")
         if "Traceback" in err and "SystemExit" not in err:
             probs.append(finding("high", "import-error", "This tool fails to load.", err.strip().splitlines()[-1][:160]))
+    # Importing a tool proves nothing about the code paths a run takes. check_dates() crashed
+    # under the routine's Python 3.11 (Path.read_text(newline=) exists only from 3.13) while
+    # selfcheck passed, because selfcheck never called it (2026-09-27). Anything a routine or
+    # GitHub Actions (3.12) runs must not lean on 3.13-only calls; the known ones are listed.
+    NEWER_THAN_312 = [(re.compile(r"\.read_text\([^)]*newline="), "Path.read_text(newline=) needs Python 3.13; use io.open(path, encoding='utf-8', newline='').read()"),
+                      (re.compile(r"\.write_text\([^)]*newline="), "Path.write_text(newline=) needs Python 3.13; use io.open(..., 'w', newline='').write()")]
+    for t in ROUTINE_TOOLS:
+        try:
+            src = io.open(ROOT / t, encoding="utf-8", errors="replace").read()
+        except Exception:
+            continue
+        for rx, msg in NEWER_THAN_312:
+            for m in rx.finditer(src):
+                head = src[src.rfind(chr(10), 0, m.start()) + 1:m.start()]
+                if "re.compile(" in head or head.lstrip().startswith("#"):
+                    continue                     # the guard's own pattern text, or a comment about it
+                line = src[:m.start()].count(chr(10)) + 1
+                probs.append(finding("high", "python-version", msg + " The routines run 3.11 and GitHub Actions 3.12.", "%s line %d" % (t, line)))
     return [{"name": "Routine dependencies",
              "note": "Checked against the git index, which is what a cloud clone gets.",
              "findings": probs}] if probs else []
@@ -480,7 +500,7 @@ def check_dates():
     import article_dates as ad
     groups = []
     for path, rel, _ in ad.pages(False):
-        s = path.read_text(encoding="utf-8", newline="")
+        s = io.open(path, encoding="utf-8", newline="").read()
         b, j = ad.BYLINE.search(s), ad.JSONLD.search(s)
         if not (b and j):
             continue

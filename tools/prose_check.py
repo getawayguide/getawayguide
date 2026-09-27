@@ -120,8 +120,13 @@ def _visible(inner):
     return htmlmod.unescape(TAG.sub("", inner))
 
 
-def check(html):
-    """-> [ {id, kind, message, anchor:{quote,before,after}, fix?: replacement} ]"""
+def check(html, drafting=False):
+    """-> [ {id, kind, message, anchor:{quote,before,after}, fix?: replacement} ]
+
+    drafting=True adds the writing aids (repetition, the words he doesn't use): they are for
+    the editor margin while a piece is being written. The routine that mails Kevin every two
+    days runs the plain check: over the 50 live pages those aids raised 197 findings, and a
+    report that long is one nobody reads (2026-09-27)."""
     out = []
     n = 0
 
@@ -201,11 +206,11 @@ def check(html):
             else:
                 add("placeholder", "Bracketed note still in the text.", text, h.start(), h.end(), None, "error")
 
-    _repetition(blocks, add)
-
-    # ---- the words he doesn't write, from the register check
-    for f in voice_check.score(html)["findings"]:
-        n += 1; f["id"] = "ln%03d" % n; out.append(f)
+    if drafting:
+        _repetition(blocks, add)
+        # ---- the words he doesn't write, from the register check
+        for f in voice_check.score(html)["findings"]:
+            n += 1; f["id"] = "ln%03d" % n; out.append(f)
 
     # ---- British spellings: americanize's own pass, with its guards, on the whole document
     for s, e, new, old in sorted(americanize.find(html)):
@@ -241,7 +246,7 @@ def check_full(html):
     v = voice_check.score(html)
     v.pop("findings", None)
     v["summary"] = voice_check.summary(v)
-    return {"findings": check(html), "voice": v}
+    return {"findings": check(html, drafting=True), "voice": v}
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ still comes from cache.
 photo_suite.start_all() runs this before opening the editor, so the double-click path is
 always current. Run it by hand after editing review.js if the editor is already open.
 """
+import io
 import hashlib
 import re
 import sys
@@ -31,7 +32,7 @@ def digest(p):
 
 def main():
     check = "--check" in sys.argv
-    html = PAGE.read_text(encoding="utf-8", newline="")
+    html = io.open(PAGE, encoding="utf-8", newline="").read()
     before, stale = html, []
 
     for name in ASSETS:
