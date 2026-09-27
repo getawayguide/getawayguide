@@ -1355,18 +1355,7 @@ main{overflow-y:auto;padding:1rem}
   <div class="editor-wrap">
     <div class="toolbar" id="toolbar">
       <!-- bold / italic / underline / strikethrough buttons removed 2026-09-26: Ctrl+B, Ctrl+I, Ctrl+U still work -->
-      <div class="color-picker-wrap" id="hilite-wrap" style="position:relative">
-        <button class="tool-btn" onclick="toggleHilitePicker()" title="Highlight"><span style="background:#FFF3B0;padding:0 .3rem">H</span></button>
-        <div class="color-dropdown" id="hilite-dropdown" style="min-width:130px">
-          <span class="color-dropdown-label">Highlight</span>
-          <div class="color-swatches-grid">
-            <div class="color-dot" style="background:#FFF3B0" title="Yellow" onclick="applyHilite('#FFF3B0')"></div>
-            <div class="color-dot" style="background:#DFF2E4" title="Green" onclick="applyHilite('#DFF2E4')"></div>
-            <div class="color-dot" style="background:#DBEAFE" title="Blue" onclick="applyHilite('#DBEAFE')"></div>
-            <div class="color-dot" style="background:#FDE2E2" title="Red" onclick="applyHilite('#FDE2E2')"></div>
-            <div class="color-dot" style="background:#fff;border:1.5px solid #d1d5db;position:relative" title="Remove highlight" onclick="applyHilite('transparent')"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#c00">✕</span></div>
-          </div>
-        </div>
+      <!-- highlight picker removed 2026-09-27 -->
       </div>
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
@@ -1375,7 +1364,7 @@ main{overflow-y:auto;padding:1rem}
       <div class="tool-divider"></div>
       <button class="tool-btn" onclick="textAlign('center')" title="Align center">≡</button>
       <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="insertLink()" title="Insert Link (Ctrl+K)">Link</button>
+      <!-- Link button removed 2026-09-27: Ctrl+K still inserts a link -->
       <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
       <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>

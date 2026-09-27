@@ -153,6 +153,7 @@
     anchorComments();
     if (H()) H().reset();
     renderAll();
+    if (state.comments.threads.some(isTask)) { startPolling(); pollTasks(); }
     // something to review opens the margin; otherwise the photo sidebar is the default
     // (Kevin, 2026-09-26: "default to photos bar open unless there are any comments to review")
     const pendingReview = state.changes.some(c => state.last[c.id] === undefined) || state.comments.threads.some(t => !t.resolved);
@@ -480,7 +481,7 @@
   }
   function startPolling() {
     if (_pollT) return;
-    _pollT = setInterval(() => { if (document.body.classList.contains('review-open')) pollTasks(); }, 8000);
+    _pollT = setInterval(pollTasks, 8000);       // with the margin closed too: an answer lands while Kevin looks at photos
     setInterval(tickAges, 1000);
   }
   async function pollTasks() {
