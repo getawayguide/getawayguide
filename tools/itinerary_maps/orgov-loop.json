@@ -1,0 +1,106 @@
+{
+  "iso3": "ARM",
+  "slug": "orgov-loop",
+  "margins": {
+    "l": 260,
+    "r": 340,
+    "t": 200,
+    "b": 200
+  },
+  "simplify": 110,
+  "smooth": true,
+  "stops": [
+    {
+      "n": 1,
+      "name": "Yerevan",
+      "lat": 40.1792,
+      "lon": 44.4991,
+      "days": "start · 10 a.m.",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6
+    },
+    {
+      "n": 2,
+      "name": "The Black Wall",
+      "lat": 40.3754,
+      "lon": 44.7021,
+      "days": "20 min",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 12
+    },
+    {
+      "n": 3,
+      "name": "Abandoned plane",
+      "lat": 40.5058,
+      "lon": 44.7433,
+      "days": "20 min",
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6
+    },
+    {
+      "n": 4,
+      "name": "Sevanavank",
+      "lat": 40.5639,
+      "lon": 45.011,
+      "days": "lunch at Tsovagyugh",
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4
+    },
+    {
+      "n": 5,
+      "name": "Orgov Observatory",
+      "lat": 40.3509,
+      "lon": 44.2418,
+      "days": "2–3 hrs",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 2
+    }
+  ],
+  "dots": [],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "car · 40 min",
+      "chip_off": 18,
+      "chip_side": 1
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "car · 20 min",
+      "chip_off": 14,
+      "chip_side": -1
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "car · 30 min",
+      "chip_off": 12,
+      "chip_side": 1
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "car · 1 hr 45",
+      "chip_off": 16,
+      "chip_side": 1
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "car · 1 hr",
+      "dash": true,
+      "chip_off": 14,
+      "chip_side": -1
+    }
+  ],
+  "focus": true,
+  "focus_span": 360,
+  "crop_pad": 56
+}

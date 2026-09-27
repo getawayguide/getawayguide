@@ -184,7 +184,11 @@
       }
       const key = locate(html, c.kind === 'grammar' ? c.find : c.sentence);
       if (!key) { state.hidden.push(c.id); continue; }
-      const i = html.indexOf(key); spans.push([i, i + key.length, c, key]);
+      const i = html.indexOf(key);
+      // a find that starts inside a tag (an href, an alt) cannot be wrapped in <del>/<ins>:
+      // the marks would land inside the tag and mangle it. It is applied whole instead.
+      if (html.lastIndexOf('<', i) > html.lastIndexOf('>', i)) c.struct = true;
+      spans.push([i, i + key.length, c, key]);
     }
     spans.sort((a, b) => a[0] - b[0] || (b[1] - b[0]) - (a[1] - a[0]));
     const outer = [];
