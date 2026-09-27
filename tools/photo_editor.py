@@ -1516,7 +1516,8 @@ def _answer_tasks(key, data):
             _answering.add(t["id"])
             log = open(Path(ROOT) / ".tmp" / "claude_answer.log", "a", encoding="utf-8")
             subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], mode],
-                             cwd=str(ROOT), stdout=log, stderr=log)
+                             cwd=str(ROOT), stdout=log, stderr=log,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))   # no console flashing up per answer
 
 
 def _task_watch():

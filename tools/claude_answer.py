@@ -155,7 +155,8 @@ def ask_cli(key, tid):
             nomcp.write_text('{"mcpServers": {}}', encoding="utf-8")
         r = subprocess.run([exe, "-p", "--output-format", "json", "--model", model, "--max-turns", "1",
                             "--strict-mcp-config", "--mcp-config", str(nomcp)], input=prompt,
-                           capture_output=True, text=True, timeout=240, encoding="utf-8", errors="replace", cwd=str(work), env=env)
+                           capture_output=True, text=True, timeout=240, encoding="utf-8", errors="replace", cwd=str(work), env=env,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except subprocess.TimeoutExpired:
         return write_answer(key, tid, "Claude took more than four minutes; try again.", status="failed")
     out = (r.stdout or "").strip()
@@ -183,7 +184,8 @@ def ask_claude(key, tid):
           "-Headers @{'x-api-key'='%s';'anthropic-version'='2023-06-01';'content-type'='application/json'} -Body $b; "
           "$r.content[0].text" % (str(req).replace("'", "''"), api))
     r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
-                       capture_output=True, text=True, timeout=180, encoding="utf-8", errors="replace")
+                       capture_output=True, text=True, timeout=180, encoding="utf-8", errors="replace",
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if r.returncode != 0:
         return write_answer(key, tid, "I couldn't reach Claude: " + (r.stderr or r.stdout).strip()[-200:], status="failed")
     return finish(key, tid, t, html, r.stdout.strip())
