@@ -55,12 +55,10 @@
       <div id="rv-banner" style="display:none"></div>
       <div class="rv-tools">
         <button id="rv-new" class="rv-btn primary" title="Comment on the selected text (Ctrl+Alt+M)">+ Comment</button>
-        <button id="rv-rewrite" class="rv-btn" title="Rewrite the selected sentence in your voice"><img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="14" height="14"> Rewrite</button>
-        <div class="rv-seg"><button id="rv-prev" title="Previous change">&#8593;</button><button id="rv-next" title="Next change">&#8595;</button></div>
-        <div class="rv-seg"><button id="rv-markup" aria-pressed="true" title="All markup: every change shown on the page">Markup</button><button id="rv-final" title="No markup: the page as it reads with the decisions so far">Clean</button></div>
-        <div class="rv-seg"><button id="rv-v-ctx" aria-pressed="true" title="Cards level with the text they belong to">Beside</button><button id="rv-v-list" title="Every card as a list, unplaced ones too">List</button></div>
+        <button id="rv-final" class="rv-btn" aria-pressed="false" title="Clean: the page as it reads with the decisions so far (press again for the markup)">Clean</button>
+        <button id="rv-v-list" class="rv-btn" aria-pressed="false" title="List: every card as a list, unplaced ones too (press again for cards beside the text)">List</button>
         <button id="rv-resolved" class="rv-btn" aria-pressed="false" title="Show resolved comment threads in the list" style="display:none">Resolved <span id="rv-n-res">0</span></button>
-        <button id="rv-lint" class="rv-btn" title="Run every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes">Check prose</button>
+        <button id="rv-lint" class="rv-btn" title="Every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes, repeats, words you don't use">Prose</button>
         <button id="rv-maps" class="rv-btn" title="Turn Google Maps search links into real place pins" style="display:none">Resolve maps <span id="rv-n-maps">0</span></button>
         <span class="rv-more"><button id="rv-more" class="rv-ico" title="More">&#8943;</button>
           <div class="rv-dd"><button id="rv-all-yes">Accept all changes</button><button id="rv-all-no">Reject all changes</button></div></span>
@@ -73,7 +71,7 @@
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.id = 'rv-lines'; document.body.appendChild(svg);
     $('rv-close').onclick = () => toggle(false);
     $('rv-lint').onclick = runLint;
-    $('rv-rewrite').onclick = requestRewrite;
+    if ($('rv-rewrite')) $('rv-rewrite').onclick = requestRewrite;      // button removed 2026-09-27; a "rewrite" comment does the same
     $('rv-voice').onclick = () => { state.voiceOpen = !state.voiceOpen; renderVoice(); };
     $('rv-maps').onclick = resolveMaps;
     $('rv-refresh').onclick = () => refresh();
@@ -81,19 +79,17 @@
     $('rv-f-all').onclick = () => setFilter('all');
     $('rv-f-changes').onclick = () => setFilter('changes');
     $('rv-f-comments').onclick = () => setFilter('comments');
-    $('rv-markup').onclick = () => setMarkup(true);
-    $('rv-final').onclick = () => setMarkup(false);
-    $('rv-prev').onclick = () => step(-1);
-    $('rv-next').onclick = () => step(1);
+    $('rv-final').onclick = () => setMarkup(ed().classList.contains('rl-final'));      // toggles: Clean <-> markup
+    if ($('rv-prev')) $('rv-prev').onclick = () => step(-1);
+    if ($('rv-next')) $('rv-next').onclick = () => step(1);
     $('rv-more').onclick = e => { e.stopPropagation(); $('rv-more').parentElement.classList.toggle('open'); };
     document.addEventListener('click', () => { const m = $('rv-more'); if (m) m.parentElement.classList.remove('open'); });
     $('rv-all-yes').onclick = () => decideAll(true);
     $('rv-all-no').onclick = () => decideAll(false);
     $('rv-new').onmousedown = e => { e.preventDefault(); captureSelection(); };
-    $('rv-rewrite').onmousedown = e => { e.preventDefault(); captureSelection(); };   // same as + Comment: the click must not drop the selection
+    if ($('rv-rewrite')) $('rv-rewrite').onmousedown = e => { e.preventDefault(); captureSelection(); };
     $('rv-new').onclick = () => newComment();
-    $('rv-v-ctx').onclick = () => setView('contextual');
-    $('rv-v-list').onclick = () => setView('list');
+    $('rv-v-list').onclick = () => setView(state.view === 'list' ? 'contextual' : 'list');   // toggles: List <-> beside
     $('rv-resolved').onclick = () => { state.showResolved = !state.showResolved; $('rv-resolved').setAttribute('aria-pressed', state.showResolved); renderAll(); };
     // the margin follows the document: re-place the cards whenever anything moves
     const scroller = document.querySelector('.editor-scroll');
@@ -126,8 +122,9 @@
     for (const k of ['all', 'changes', 'comments']) $('rv-f-' + k).setAttribute('aria-pressed', f === k);
     renderAll();
   }
-  function setView(v) { state.view = v; $('rv-v-ctx').setAttribute('aria-pressed', v === 'contextual'); $('rv-v-list').setAttribute('aria-pressed', v === 'list'); renderAll(); }
-  function setMarkup(all) { ed().classList.toggle('rl-final', !all); $('rv-markup').setAttribute('aria-pressed', all); $('rv-final').setAttribute('aria-pressed', !all); renderAll(); }
+  const press = (id, on) => { const b = $(id); if (b) b.setAttribute('aria-pressed', !!on); };
+  function setView(v) { state.view = v; press('rv-v-ctx', v === 'contextual'); press('rv-v-list', v === 'list'); renderAll(); }
+  function setMarkup(all) { ed().classList.toggle('rl-final', !all); press('rv-markup', all); press('rv-final', !all); renderAll(); }
   function toast(msg, ms) { const t = $('rv-toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms || 3500); }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
   function plain(h) { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent; }
@@ -142,7 +139,7 @@
     catch (e) { console.warn('review: server not reachable', e); return; }
     state.slug = r.slug; state.key = r.comments_key; state.comments = r.comments || { threads: [] };
     state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
-    if (state.awaitingFile) { state.view = 'contextual'; $('rv-v-ctx').setAttribute('aria-pressed', true); $('rv-v-list').setAttribute('aria-pressed', false); }
+    if (state.awaitingFile) { state.view = 'contextual'; press('rv-v-ctx', true); press('rv-v-list', false); }
     state.awaitingFile = false;
     snapshotDisk(rel);                                   // so a later change on disk can be noticed
     if (r.slug) {
@@ -313,7 +310,8 @@
     state.st[id] = accept; state.last[id] = accept;
     if (c.task) {                              // an answer from Claude: the thread follows the decision
       const th = state.comments.threads.find(t => t.id === c.task);
-      if (th) { th.status = accept ? 'applied' : 'rejected'; if (accept) th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; anchorComments(); saveComments(); }
+      // the tick applies the edit AND clears the comment it answered (Kevin, 2026-09-27); a cross leaves it open, marked rejected
+      if (th) { th.status = accept ? 'applied' : 'rejected'; if (accept) { th.resolved = true; th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; } anchorComments(); saveComments(); }
     }
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
@@ -961,11 +959,11 @@
     const b = $('rv-lint'); b.disabled = true; b.textContent = 'Checking…';
     ed().querySelectorAll('mark.lint').forEach(unwrap); state.lint = [];
     let r; try { r = await (await fetch(API + '/review/lint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: ed().innerHTML }) })).json(); }
-    catch (e) { toast('Server not reachable'); b.disabled = false; b.textContent = 'Check prose'; return; }
+    catch (e) { toast('Server not reachable'); b.disabled = false; b.textContent = 'Prose'; return; }
     state.lint = r.findings || [];
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); else f.anchor = null; }
     state.voice = null;                       // the Voice line is off (2026-09-27); the word cards stay
-    b.disabled = false; b.textContent = 'Check prose';
+    b.disabled = false; b.textContent = 'Prose';
     if (state.filter === 'changes') setFilter('all');
     toggle(true); renderAll();
     toast(state.lint.length ? `${state.lint.length} prose finding(s).` : 'Prose: clean.');
@@ -1008,7 +1006,7 @@
     note = (note || '').trim();
     const a = d.anchor, range = d.range;
     unwrapMark(d.id); state.draft = null; _range = null; renderAll();
-    const b = $('rv-rewrite'); b.disabled = true; b.textContent = 'Rewriting…';
+    const b = $('rv-rewrite') || document.createElement('button'); b.disabled = true; b.textContent = 'Rewriting…';
     let r; try { r = await (await fetch(API + '/review/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ rel: state.rel, quote: a.quote, before: a.before, after: a.after, note }) })).json(); }
     catch (e) { toast('Server not reachable'); b.disabled = false; b.innerHTML = CLAUDE_MARK + ' Rewrite'; return; }
@@ -1124,7 +1122,8 @@ body.review-open #review-pane{display:flex}
 .rv-chips button span{opacity:.6;margin-left:.2rem}
 #review-pane .rv-ico{border:0;background:none;font-size:1.05rem;line-height:1;cursor:pointer;color:#6b7a70;padding:.1rem .3rem}
 #review-pane .rv-ico:hover{color:#1C2821}
-.rv-tools{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;padding:.45rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
+.rv-tools{display:flex;gap:.25rem;flex-wrap:wrap;align-items:center;padding:.45rem .5rem;border-bottom:1px solid #e6e6e2;background:#fff}
+.rv-tools .rv-btn,.rv-tools .rv-seg button{padding:.38rem .42rem;letter-spacing:.04em}   /* one row at the pane's 371px (2026-09-27) */
 .rv-seg{display:inline-flex;border:1px solid #e0ded8;border-radius:3px;overflow:hidden}.rv-seg button{border:0!important;border-radius:0!important;border-right:1px solid #e0ded8!important}.rv-seg button:last-child{border-right:0!important}
 #review-pane .primary{background:#2D6B50;color:#fff;border-color:#2D6B50}
 .rv-more{margin-left:auto;position:relative}
