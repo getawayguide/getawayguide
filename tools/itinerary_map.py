@@ -221,6 +221,18 @@ def build(cfg):
         exa(x0, y - fs * 0.85); exa(x1, y + fs * 0.25)
 
     B = [f'<path d="{path_d(pr)}" fill="{P["land"]}"/>']
+    # lakes: named Natural Earth 10m lakes drawn on the land ("lakes": ["Lake Sevan"]).
+    # The outline is a country, so a big inland lake was simply absent (Kevin, 2026-09-27).
+    LAKES = os.path.join(ROOT, ".tmp", "ne_10m_lakes.geojson")
+    if cfg.get("lakes") and os.path.exists(LAKES):
+        want = {n.lower() for n in cfg["lakes"]}
+        for f in json.load(open(LAKES, encoding="utf-8"))["features"]:
+            if (f["properties"].get("name") or "").lower() not in want:
+                continue
+            g = f["geometry"]
+            polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+            rings = [[(lon * K, -lat) for lon, lat in poly[0]] for poly in polys]
+            B.append(f'<path d="{path_d(rings)}" fill="{P.get("water", "#A9CBD6")}"/>')
     # In "focus" mode the viewBox crops to the stops/labels only (the country
     # outline extends beyond, giving a zoomed regional view) — for trips that
     # cluster in one part of a big country. Otherwise crop includes the whole country.

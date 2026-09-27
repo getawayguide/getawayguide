@@ -103,5 +103,14 @@
   "focus": true,
   "focus_span": 360,
   "crop_pad": 56,
-  "pin_scale": 1.4
+  "pin_scale": 1.4,
+  "lakes": [
+    "Lake Sevan"
+  ],
+  "crop_bounds": [
+    44.12,
+    39.98,
+    45.66,
+    40.66
+  ]
 }
