@@ -10240,7 +10240,8 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
 #sb-light{position:fixed;inset:0;z-index:900;background:rgba(18,24,20,.92);display:grid;grid-template-columns:64px 1fr 64px;grid-template-rows:1fr auto;align-items:center}
 #sb-light[hidden]{display:none}
 #sb-light figure{grid-column:2;grid-row:1;margin:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;padding:24px 0 0}
-#sb-light img{max-width:100%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:4px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+#sb-light img{max-width:100%;max-height:calc(100vh - 150px);min-height:min(60vh, 600px);object-fit:contain;border-radius:4px;box-shadow:0 12px 40px rgba(0,0,0,.4);transition:filter .2s}
+#sb-light.soft img{filter:blur(6px)}   /* the small tile image, blurred on purpose until the sharp one lands */
 #sb-light figcaption{display:flex;gap:14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;color:rgba(247,247,243,.75)}
 #sb-light .sbl-pos{font-variant-numeric:tabular-nums;color:rgba(247,247,243,.5)}
 #sb-light .sbl-nav{height:64px;width:44px;justify-self:center;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:34px;line-height:1;cursor:pointer}
@@ -10266,10 +10267,26 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     const t = tiles[i], m = info(t), my = ++gen;
     const small = t.classList.contains('pk-ph') ? m.thumb : `${API}/thumb?root=${m.root}&path=${encodeURIComponent(m.path)}`;
     img.src = small;                                             // the cached tile image, at once
-    const big = small.replace(/([?&])s=\d+/, '$1') + (small.includes('?') ? '&' : '?') + 's=1600';
-    const pre = new Image(); pre.onload = () => { if (my === gen) img.src = big; }; pre.src = big;   // then the sharp one
+    box.classList.add('soft');
+    const big = bigUrl(t);
+    const pre = new Image(); pre.onload = () => { if (my === gen) { img.src = big; box.classList.remove('soft'); } }; pre.src = big;   // then the sharp one
+    [i - 1, i + 1].forEach(k => { const n = tiles[(k + tiles.length) % tiles.length]; if (n) new Image().src = bigUrl(n); });   // the neighbors, so the arrows land on sharp photos
     box.querySelector('.sbl-name').textContent = m.name || '';
     box.querySelector('.sbl-pos').textContent = (i + 1) + ' of ' + tiles.length;
+  }
+  // the large image the Photo Library's viewer shows: a backup photo ("Album (2026)/IMG.HEIC") comes from
+  // the same 2000px route and cache the library uses; anything else from /thumb at the same size
+  function bigUrl(t) {
+    if (t.classList.contains('pk-ph')) {
+      const u = t.querySelector('img') && t.querySelector('img').src || '';
+      const path = decodeURIComponent((u.split('path=')[1] || '').split('&')[0]);
+      const k = path.indexOf('/');
+      if (k > 0 && path.indexOf('/', k + 1) < 0) return `${API}/bthumb?album=${encodeURIComponent(path.slice(0, k))}&name=${encodeURIComponent(path.slice(k + 1))}&s=2000`;
+      return u.replace(/([?&])s=\d+&?/, '$1') + (u.includes('?') ? '&' : '?') + 's=2000';
+    }
+    const rel = t.dataset.rel || '', k = rel.indexOf('/');
+    if (k > 0 && rel.indexOf('/', k + 1) < 0) return `${API}/bthumb?album=${encodeURIComponent(rel.slice(0, k))}&name=${encodeURIComponent(rel.slice(k + 1))}&s=2000`;
+    return `${API}/thumb?root=${t.dataset.root}&path=${encodeURIComponent(rel)}&s=2000`;
   }
   function open(t) { tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
   function close() { box.hidden = true; img.removeAttribute('src'); }

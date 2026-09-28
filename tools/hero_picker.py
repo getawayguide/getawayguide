@@ -387,15 +387,46 @@ def photos():
             _PHOTO_CACHE[folder.name] = (stamp, saved["rows"])
             warm(folder.name, saved["rows"])
             return jsonify(saved["rows"])
+    rows = scan_album(folder, stamp, idx)
+    warm(folder.name, rows)
+    return jsonify(rows)
+
+
+def scan_album(folder, stamp, idx, mapper=None):
+    """The album's photos with their sizes. Incremental (2026-09-28): a folder that is still
+    syncing changes its timestamp with every new file, and a full re-measure of 1,100 headers off
+    a synced folder took 16 s each time; only files not measured before are read now."""
+    known = {}
+    if idx.exists():
+        try:
+            known = {r["path"]: r for r in json.loads(idx.read_text(encoding="utf-8")).get("rows", [])}
+        except (OSError, ValueError):
+            known = {}
     files = [f for f in sorted(folder.rglob("*"))
              if f.suffix.lower() in EXT and f.is_file()
              and not is_stray_thumb(f.name)]
-    rows = [r for r in POOL.map(measure, files) if r]
-    rows.sort(key=lambda r: r["name"])
+    fresh = [f for f in files if f.relative_to(BACKUP).as_posix() not in known]
+    new = {r["path"]: r for r in (mapper or POOL.map)(measure, fresh) if r}
+    rows = [known.get(p) or new.get(p) for p in (f.relative_to(BACKUP).as_posix() for f in files)]
+    rows = sorted((r for r in rows if r), key=lambda r: r["name"])
     _PHOTO_CACHE[folder.name] = (stamp, rows)
-    idx.write_text(json.dumps({"stamp": stamp, "rows": rows}), encoding="utf-8")
-    warm(folder.name, rows)
-    return jsonify(rows)
+    try:
+        idx.write_text(json.dumps({"stamp": stamp, "rows": rows}), encoding="utf-8")
+    except OSError:
+        pass
+    return rows
+
+
+def prescan_all():
+    """At startup, in the background: every album's photo list ready before it is asked for."""
+    for d in sorted(p for p in BACKUP.iterdir() if p.is_dir() and not p.name.startswith("_")):
+        try:
+            if d.name in _PHOTO_CACHE:
+                continue
+            # one file at a time: this is background work and must not slow what you are doing
+            scan_album(d, d.stat().st_mtime_ns, CACHE / (hashlib.md5(d.name.encode()).hexdigest() + ".index.json"), mapper=map)
+        except Exception:
+            pass
 
 
 @app.get("/quality")
@@ -909,9 +940,13 @@ const articlePick = () => ARTICLE && PICKS[ARTICLE.rel] && (PICKS[ARTICLE.rel].c
 window.addEventListener('message', async ev => {
   const d = ev.data;
   if (!d || d.type !== 'article-context') return;
+  const before = ARTICLE && ARTICLE.rel;
   ARTICLE = d.h1 ? d : null;             // {rel, country, h1, lead, heroSlug}
+  // the editor re-sends the linked article whenever you come back to this tab; only a DIFFERENT
+  // article moves the album, so a country you picked by hand is not switched back under you.
+  // Switch first, then fetch the saved picks: waiting on them made the switch feel stuck.
+  if ((ARTICLE && ARTICLE.rel) !== before) articleAlbum(); else applyArticle();
   try { PICKS = await (await fetch('/picks')).json(); } catch (e) {}
-  articleAlbum();
   if (ARTICLE && $('album').options.length) render(true);   // restore this article's pick
 });
 // switch to the open article's album; if the album list is not in yet, loadAlbums() calls
@@ -953,12 +988,24 @@ async function loadStrip() {
   $('title').value = sel.dataset.pickTitle || TITLES[country] || (country + ' Travel Guide');
   $('h1').textContent = $('title').value;
   applyArticle();
-  $('strip').textContent = 'Loading…';
   STARS = (sel.dataset.stars || '').split('|').filter(Boolean);
-  ALL = await (await fetch('/photos?album=' + encodeURIComponent(album))).json();
-  render(true);          // a fresh album restores whatever was saved for it
+  // (2026-09-28) the last album CHOSEN wins: a slow answer for an album you have already left
+  // used to arrive late and draw that country's photos over the one you picked. An album seen
+  // before is drawn from memory at once and refreshed behind it.
+  if (!STRIP_CACHE) { STRIP_CACHE = new Map(); STRIP_GEN = 0; }
+  const my = ++STRIP_GEN, want = album;
+  if (STRIP_CACHE.has(want)) { ALL = STRIP_CACHE.get(want); render(true); }
+  else $('strip').textContent = 'Loading…';
+  let rows;
+  try { rows = await (await fetch('/photos?album=' + encodeURIComponent(want))).json(); } catch (e) { return; }
+  STRIP_CACHE.set(want, rows);
+  if (my !== STRIP_GEN || album !== want) return;          // you have moved on
+  const changed = ALL !== rows && JSON.stringify(ALL) !== JSON.stringify(rows);
+  ALL = rows;
+  if (changed || !document.querySelector('.strip .t')) render(true);   // a fresh album restores whatever was saved for it
   pollQuality();
 }
+var STRIP_GEN = STRIP_GEN || 0; var STRIP_CACHE = STRIP_CACHE || new Map();   // var: loadStrip can run before this line does
 
 /* the strip is for choosing, so by default it hides what could never be a hero */
 function render(restore) {
@@ -1539,4 +1586,6 @@ if __name__ == "__main__":
     if "--warm-all" in _sys.argv:
         warm_all()
     else:
+        import threading as _th
+        _th.Thread(target=prescan_all, daemon=True, name="prescan").start()
         app.run(host="127.0.0.1", port=5004, debug=False, threaded=True)
