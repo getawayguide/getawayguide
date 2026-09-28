@@ -719,7 +719,8 @@ PAGE = r"""<!doctype html>
   .main{grid-template-columns:400px minmax(0,1fr) !important}
   .main > .strip{grid-column:1;grid-row:1;border-left:0 !important;border-right:1px solid var(--line)}
   .main > .stage{grid-column:2;grid-row:1}
-  #bleed{display:none !important}   /* the sidebar arrow does this now (2026-09-28); F still toggles full bleed */
+  #bleed{display:none !important}
+  .embed #linkchip{display:none !important}   /* the suite bar's file box names the linked article now (2026-09-28) */   /* the sidebar arrow does this now (2026-09-28); F still toggles full bleed */
   .main > .side-handle{grid-column:1;grid-row:1;align-self:start;justify-self:end;margin:10px -12px 0 0}
   /* the picker's own button rules (padding, uppercase, dark fill) would win on specificity */
   .main > button.side-handle, .embed .main > button.side-handle{padding:0;width:24px;height:24px;border-radius:50%;background:#fff;color:#4f5c54;border:1px solid rgba(28,40,33,.16);letter-spacing:0;font-size:0}

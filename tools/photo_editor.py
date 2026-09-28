@@ -979,6 +979,7 @@ def api_geo():
     return jsonify(photo_geo.folder_geo(files))
 
 
+_preview_gate = threading.Semaphore(2)   # the 2000px viewer images: their own lane (2026-09-28)
 _thumb_gate = threading.Semaphore(4)   # decode a few at a time; a burst of iCloud
                                        # HEICs must not starve browse/import calls
 
@@ -1709,7 +1710,7 @@ def _backup_activity_compute():
     # instead of rendering an empty card when there is simply nothing to do.
     todo = 0
     hold = set(load_json(BACKUP / "_meta" / "hold.json", []))
-    skip = {"Houston Trip", "New Zealand", "tomorrowland x bvi"}
+    skip = {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}
     try:
         import re as _re2
         shared = Path.home() / "iCloudPhotos" / "Shared"
@@ -1775,9 +1776,9 @@ def _compute_backup_status():
     if shared.is_dir():
         names |= {d.name for d in shared.iterdir()
                   if d.is_dir() and d.name not in
-                  {"Houston Trip", "New Zealand", "tomorrowland x bvi"}}
+                  {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}}
     import re as _re
-    SKIP_ALBUMS = {"Houston Trip", "New Zealand", "tomorrowland x bvi"}
+    SKIP_ALBUMS = {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}
 
     def _base(n):
         m = _re.match(r"^(.+)_\d+$", n)
@@ -2315,12 +2316,26 @@ def _build_bthumb(p, size):
     cache = bthumb_path(p, size)
     if cache.exists():
         return cache
-    with _thumb_gate:
+    # large previews (the viewers) get their own lane, so they never queue behind a burst of
+    # grid thumbnails; and the photo is shrunk BEFORE it is turned upright, which spares a full
+    # 24-megapixel rotate and cut a first preview from ~14 s to a few (2026-09-28)
+    gate = _preview_gate if size >= 1000 else _thumb_gate
+    with gate:
         if cache.exists():
             return cache
-        im = ImageOps.exif_transpose(Image.open(p))
-        icc = im.info.get("icc_profile")
-        im.thumbnail((size, size))
+        src = Image.open(p)
+        icc = src.info.get("icc_profile")
+        try:
+            orient = int(src.getexif().get(0x0112, 1) or 1)
+        except Exception:
+            orient = 1
+        src.thumbnail((size, size), reducing_gap=2.0)
+        T = Image.Transpose
+        ops = {2: [T.FLIP_LEFT_RIGHT], 3: [T.ROTATE_180], 4: [T.FLIP_TOP_BOTTOM], 5: [T.TRANSPOSE],
+               6: [T.ROTATE_270], 7: [T.TRANSVERSE], 8: [T.ROTATE_90]}.get(orient, [])
+        im = src
+        for op in ops:
+            im = im.transpose(op)
         kw = {"quality": 82}
         if icc:
             kw["icc_profile"] = icc
@@ -2351,6 +2366,28 @@ def warm_library(album, paths):
     missing = [p for p in paths if not bthumb_path(p, 400).exists()]
     if missing:
         _lib_warm_pool.submit(_warm_library_album, album, missing)
+
+
+_preview_warm_pool = ThreadPoolExecutor(max_workers=1)   # one: background work, never in your way
+_preview_queued = set()
+
+
+@app.route("/api/warm_previews", methods=["POST", "OPTIONS"])
+def api_warm_previews():
+    """The editor's photo sidebar sends the photos it is showing; their 2000px viewer images are
+    built in the background, so opening one is instant (2026-09-28)."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    body = request.get_json(silent=True) or {}
+    album = clean_dirname(body.get("album", ""))
+    queued = 0
+    for n in (body.get("names") or [])[:400]:
+        p = (BACKUP / album / os.path.basename(n)).resolve()
+        if BACKUP.resolve() not in p.parents or not p.is_file() or p in _preview_queued or bthumb_path(p, 2000).exists():
+            continue
+        _preview_queued.add(p); queued += 1
+        _preview_warm_pool.submit(lambda q=p: (_build_bthumb(q, 2000) if not bthumb_path(q, 2000).exists() else None))
+    return jsonify(ok=True, queued=queued)
 
 
 @app.route("/bthumb")

@@ -79,6 +79,10 @@
       padding: .3rem 0;
     }
 
+    #heroes-file { font-family:'Hanken Grotesk',sans-serif; font-size:.62rem; letter-spacing:.1em; color:rgba(237,232,220,.92);
+      background:rgba(255,255,255,.06); padding:.3rem .8rem; border-radius:4px; cursor:pointer; transition:background .15s; white-space:nowrap; }
+    #heroes-file:hover { background:rgba(255,255,255,.14); }
+    #app-heroes header [hidden] { display:none !important; }
     #file-name {
       font-family: 'Hanken Grotesk', sans-serif;
       font-size: .62rem;
@@ -192,7 +196,7 @@
     #seo-panel .gprev .gd { font-size:13px; line-height:1.55; color:#4d5156; }
     #seo-panel dl { display:grid; grid-template-columns:auto 1fr; gap:6px 12px; margin:0; font-size:12px; }
     #seo-panel dt { color:#6b7a70; } #seo-panel dd { margin:0; min-width:0; overflow-wrap:anywhere; }
-    #seo-panel .sec { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#6b7a70; margin-bottom:8px; }
+    #seo-panel .sec { font-size:12px; font-weight:600; letter-spacing:0; text-transform:none; color:var(--ink); margin-bottom:6px; }   /* = the field labels */
     .sidebar-head { display:none; }   /* the To Do tab names it now */
     .sidebar-label {
       font-family: 'Hanken Grotesk', sans-serif;
@@ -1888,8 +1892,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 <div id="app-heroes" hidden>
   <header>
     <button class="suite-logo" data-switcher aria-haspopup="true">Hero&nbsp;<b>Picker</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-    <span class="stat" id="heroes-tally"></span>
-    <span class="stat" id="heroes-count"></span>
+    <span class="stat" id="heroes-tally" hidden></span>
+    <span class="stat" id="heroes-count" hidden></span>
+    <!-- the article the picker is linked to, in the editor's own file box (2026-09-28) -->
+    <span id="heroes-file" role="button" tabindex="0" title="The article this hero is for. Click to open another."></span>
     <span class="spacer"></span>
   </header>
   <iframe id="heroes-frame" title="Hero picker" allow="clipboard-write"></iframe>
@@ -6091,6 +6097,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       plObserver.observe(div);
     });
     PL.rendered += slice.length;
+    // have the server prepare these photos' large viewer images in the background (2026-09-28)
+    if (PL.path && !PL.path.includes('/') && slice.length)
+      fetch(API + '/api/warm_previews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ album: PL.path, names: slice.slice(0, 120) }) }).catch(() => {});
     const remaining = (PL.total || PL.items.length) - PL.rendered;
     if (remaining > 0) {
       const btn = document.createElement('button');
@@ -10072,7 +10082,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     heroes.hidden = v !== 'heroes';
     document.getElementById('app-maps').hidden = v !== 'maps';
     ed.style.display = v === 'editor' ? '' : 'none';
-    if (v === 'heroes') loadHeroes();
+    if (v === 'heroes') { loadHeroes(); const hf = document.getElementById('heroes-file'); if (hf) hf.textContent = document.getElementById('file-name').textContent || 'no file open'; }
     if (v === 'maps') loadMaps();
     try { localStorage.setItem('tb:view', v); } catch (e) {}
     if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
@@ -10082,6 +10092,9 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     if (toLib && window.__libRefresh) __libRefresh();
   }
   window.showView = showView;
+  { const hf = document.getElementById('heroes-file');      // the file box opens the article list, like the editor's
+    const go = () => { showView('editor'); if (window.openArticles) openArticles(); };
+    if (hf) { hf.onclick = go; hf.onkeydown = e => { if (e.key === 'Enter') go(); }; } }
   // ---- hide-the-sidebar arrows: the editor's sidebar and the library's album list ----
   (function sideHandles() {
     const set = (key, on, apply) => { apply(on); try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) {} };
@@ -10218,6 +10231,15 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     el.addEventListener('input', () => { paint(); if (typeof setDirty === 'function') setDirty(true); });
     el.addEventListener('keydown', e => { if (e.key === 'Enter' && el === T) e.preventDefault(); });   // a title is one line
   });
+  // no article open: the same fields, empty (2026-09-28)
+  function empty() {
+    orig = null; T.value = ''; D.value = ''; h1 = '';
+    $('seo-g-url').textContent = 'getawayguide.io';
+    $('seo-facts').innerHTML = ['Address', 'Page type', 'Published', 'Last updated', 'Share image'].map(k => `<dt>${k}</dt><dd>—</dd>`).join('');
+    paint();
+    $('seo-g-title').textContent = ''; $('seo-g-desc').textContent = '';
+  }
+  empty();
   $('seo-use-h1').onclick = () => {
     if (!h1) return;
     const suffix = (/ - getawayguide$/i.exec(T.value) || [''])[0];
@@ -10225,14 +10247,13 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   };
   // the headline edited on the canvas is what "Use headline" copies
   document.addEventListener('input', e => { const h = e.target.closest && e.target.closest('#ed-masthead [data-mh="title"]'); if (h) h1 = clean(h.textContent); });
-  paint();
 })();
 </script>
 <div id="sb-light" hidden role="dialog" aria-label="Photo preview">
   <button class="sbl-nav prev" type="button" aria-label="Previous photo">&#8249;</button>
   <figure><img alt=""><figcaption><span class="sbl-name"></span><span class="sbl-pos"></span></figcaption></figure>
   <button class="sbl-nav next" type="button" aria-label="Next photo">&#8250;</button>
-  <div class="sbl-bar"><button type="button" class="sbl-use">Use this photo</button><button type="button" class="sbl-close">Close</button></div>
+  <div class="sbl-bar"><button type="button" class="sbl-use">Use this photo</button><button type="button" class="sbl-pick" aria-pressed="false">&#9733; Add to blog picks</button><button type="button" class="sbl-close">Close</button></div>
 </div>
 <style>
 /* ============== SIDEBAR PHOTO PREVIEW (2026-09-28) ==============
@@ -10250,6 +10271,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
 #sb-light .sbl-bar{grid-column:1/-1;grid-row:2;display:flex;gap:10px;justify-content:center;padding:14px 0 22px}
 #sb-light .sbl-bar button{font-family:'Hanken Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;height:36px;padding:0 18px;border-radius:999px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:transparent;color:#F7F7F3}
 #sb-light .sbl-bar .sbl-use{background:#2D6B50;border-color:#2D6B50;color:#fff}
+#sb-light .sbl-bar .sbl-pick[aria-pressed="true"]{background:#F7F7F3;border-color:#F7F7F3;color:#1C2821}
 #sb-light .sbl-bar button:hover{filter:brightness(1.1)}
 </style>
 <script>
@@ -10272,6 +10294,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     const pre = new Image(); pre.onload = () => { if (my === gen) { img.src = big; box.classList.remove('soft'); } }; pre.src = big;   // then the sharp one
     [i - 1, i + 1].forEach(k => { const n = tiles[(k + tiles.length) % tiles.length]; if (n) new Image().src = bigUrl(n); });   // the neighbors, so the arrows land on sharp photos
     box.querySelector('.sbl-name').textContent = m.name || '';
+    paintPick();
     box.querySelector('.sbl-pos').textContent = (i + 1) + ' of ' + tiles.length;
   }
   // the large image the Photo Library's viewer shows: a backup photo ("Album (2026)/IMG.HEIC") comes from
@@ -10288,8 +10311,36 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     if (k > 0 && rel.indexOf('/', k + 1) < 0) return `${API}/bthumb?album=${encodeURIComponent(rel.slice(0, k))}&name=${encodeURIComponent(rel.slice(k + 1))}&s=2000`;
     return `${API}/thumb?root=${t.dataset.root}&path=${encodeURIComponent(rel)}&s=2000`;
   }
-  function open(t) { tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
-  function close() { box.hidden = true; img.removeAttribute('src'); }
+  // ---- Add to blog picks, from the preview (2026-09-28): the same /api/pick the library uses ----
+  let PICKED = null;                       // "album/name" -> true, loaded once per preview session
+  const albumName = t => {
+    let rel = t.dataset.rel || '';
+    if (t.classList.contains('pk-ph')) { const u = (t.querySelector('img') || {}).src || ''; rel = decodeURIComponent((u.split('path=')[1] || '').split('&')[0]); }
+    const k = rel.indexOf('/'); return k > 0 && rel.indexOf('/', k + 1) < 0 ? [rel.slice(0, k), rel.slice(k + 1)] : null;
+  };
+  async function loadPicked() {
+    if (PICKED) return;
+    PICKED = {};
+    try { const d = await (await fetch(`${API}/api/picks`)).json(); (d.picks || []).forEach(p => { PICKED[p.album + '/' + p.n] = true; }); } catch (e) {}
+    paintPick();
+  }
+  function paintPick() {
+    const b = box.querySelector('.sbl-pick'), t = tiles[i], an = t && albumName(t);
+    b.hidden = !an;
+    if (!an) return;
+    const on = !!(PICKED && PICKED[an.join('/')]);
+    b.setAttribute('aria-pressed', String(on)); b.innerHTML = on ? '&#9733; In blog picks' : '&#9733; Add to blog picks';
+  }
+  box.querySelector('.sbl-pick').onclick = async () => {
+    const an = albumName(tiles[i]); if (!an) return;
+    const key = an.join('/'), on = !(PICKED && PICKED[key]);
+    PICKED[key] = on; paintPick();
+    let ok = false;
+    try { ok = (await fetch(`${API}/api/pick`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ album: an[0], name: an[1], picked: on }) })).ok; } catch (e) {}
+    if (!ok) { PICKED[key] = !on; paintPick(); alert("Couldn't save the pick: the photo server didn't answer."); }
+  };
+  function open(t) { loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
+  function close() { box.hidden = true; img.removeAttribute('src'); PICKED = null; if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {} }   // picks may have changed
   function use() {
     const t = tiles[i]; close();
     if (t.classList.contains('pk-ph')) { if (t.onclick) t.onclick(); return; }           // the Blog Picks path, unchanged
