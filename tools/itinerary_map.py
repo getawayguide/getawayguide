@@ -224,6 +224,7 @@ def build(cfg):
     # lakes: named Natural Earth 10m lakes drawn on the land ("lakes": ["Lake Sevan"]).
     # The outline is a country, so a big inland lake was simply absent (Kevin, 2026-09-27).
     LAKES = os.path.join(ROOT, ".tmp", "ne_10m_lakes.geojson")
+    _lake_rings = {}
     if cfg.get("lakes") and os.path.exists(LAKES):
         want = {n.lower() for n in cfg["lakes"]}
         for f in json.load(open(LAKES, encoding="utf-8"))["features"]:
@@ -232,15 +233,26 @@ def build(cfg):
             g = f["geometry"]
             polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
             rings = [[(lon * K, -lat) for lon, lat in poly[0]] for poly in polys]
+            _lake_rings[f["properties"]["name"].lower()] = rings
             B.append(f'<path d="{path_d(rings)}" fill="{P.get("water", "#A9CBD6")}"/>')
     # water labels: "water_labels": [{"name": "Lake Sevan", "lat": .., "lon": .., "size": 13}]
     # set on the water in a light blue, spaced caps like the stop labels but lighter
     for wl in cfg.get("water_labels", []):
-        wx, wy = T(wl["lat"], wl["lon"])
+        if "lat" in wl:
+            wx, wy = T(wl["lat"], wl["lon"])
+        else:                                   # the centroid of the lake's largest ring (shoelace)
+            ring = max(_lake_rings.get(wl["name"].lower(), [[(0, 0)]]), key=len)
+            pts = to_canvas(ring); A = cx = cy = 0.0
+            for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]):
+                c = x1 * y2 - x2 * y1; A += c; cx += (x1 + x2) * c; cy += (y1 + y2) * c
+            wx, wy = cx / (3 * A), cy / (3 * A)
+        wx += wl.get("dx", 0) * AFS; wy += wl.get("dy", 0) * AFS
         fs = wl.get("size", 12)
         B.append(f'<g transform="{stamp_tf(wx, wy)}"><text x="0" y="0" text-anchor="middle" font-size="{fs}" '
                  f'font-weight="500" font-style="italic" letter-spacing="2" fill="{P.get("water_ink", "#5F93A8")}">'
                  f'{wl["name"].upper()}</text></g>')
+        if wl.get("href") and not EDIT:
+            B[-1] = f'<a class="imap-link" href="{wl["href"]}">{B[-1]}</a>'
     # In "focus" mode the viewBox crops to the stops/labels only (the country
     # outline extends beyond, giving a zoomed regional view) — for trips that
     # cluster in one part of a big country. Otherwise crop includes the whole country.
@@ -331,15 +343,18 @@ def build(cfg):
             dx, dy = s.get("dx", 16), s.get("dy", 4)
             anc = s.get("anchor", "start")
             prefix = "" if no_num else f'{s["n"]}. '
-            name = f'{prefix}{s["name"].upper()}'
-            lbl = (f'<text x="{dx}" y="{dy}" text-anchor="{anc}" font-size="14" '
-                   f'font-weight="600" letter-spacing="1.5" fill="{P["ink"]}">{name}</text>')
+            lines = s["name"].upper().split("|")        # "Sevanavank|Monastery" wraps onto two lines
+            lines[0] = prefix + lines[0]
+            name = max(lines, key=len)
+            lbl = "".join(f'<text x="{dx}" y="{dy + 16*k}" text-anchor="{anc}" font-size="14" '
+                          f'font-weight="600" letter-spacing="1.5" fill="{P["ink"]}">{ln}</text>' for k, ln in enumerate(lines))
+            dd = 16 * (len(lines) - 1)                  # the days lines sit under the last name line
             if s.get("days"):
-                lbl += (f'<text x="{dx}" y="{dy+15}" text-anchor="{anc}" font-size="10" '
+                lbl += (f'<text x="{dx}" y="{dy+dd+15}" text-anchor="{anc}" font-size="10" '
                         f'font-weight="500" letter-spacing="1.5" fill="{P["pin"]}">'
                         f'{s["days"].upper()}</text>')
             if s.get("days2"):                    # a second line under days ("end · 6 p.m.")
-                lbl += (f'<text x="{dx}" y="{dy+27}" text-anchor="{anc}" font-size="10" '
+                lbl += (f'<text x="{dx}" y="{dy+dd+27}" text-anchor="{anc}" font-size="10" '
                         f'font-weight="500" letter-spacing="1.5" fill="{P["pin"]}">'
                         f'{s["days2"].upper()}</text>')
             # optional link: the stop label jumps to a section on the article page.
@@ -350,9 +365,10 @@ def build(cfg):
             if href and not EDIT:
                 lbl = f'<a class="imap-link" href="{href}">{lbl}</a>'
             inner += wrap(lbl, kind="stop", idx=i, dx=dx, dy=dy)
-            ex_text(x + dx * AFS, y + dy * AFS, name, 14 * AFS, anc, 1.5 * AFS)
+            for k, ln in enumerate(lines):
+                ex_text(x + dx * AFS, y + (dy + 16 * k) * AFS, ln, 14 * AFS, anc, 1.5 * AFS)
             if s.get("days"):
-                ex_text(x + dx * AFS, y + (dy + 15) * AFS, s["days"].upper(), 10 * AFS, anc, 1.5 * AFS)
+                ex_text(x + dx * AFS, y + (dy + dd + 15) * AFS, s["days"].upper(), 10 * AFS, anc, 1.5 * AFS)
             if s.get("days2"):
                 ex_text(x + dx * AFS, y + (dy + 27) * AFS, s["days2"].upper(), 10 * AFS, anc, 1.5 * AFS)
         B.append(f'<g class="imap-stop" transform="{stamp_tf(x, y)}"><g class="imap-lift">{inner}</g></g>')
