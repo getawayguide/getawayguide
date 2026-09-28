@@ -8939,6 +8939,11 @@ async function loadAlbums() {
     const gb = ((a.mb + (a.videosMb || 0)) / 1000).toFixed(1);
     const totals = ver && ver.albumPhotos != null
       ? `${ver.albumPhotos} photos · ${ver.albumVideos} videos · ${gb} GB`
+      : ver && ver.albumItems
+      // album folder already gone (deleted on the phone): split the last
+      // verified album count, so the two numbers on the card still agree
+      ? `${ver.albumItems - Math.min(a.videos || 0, ver.albumItems)} photos · ` +
+        `${Math.min(a.videos || 0, ver.albumItems)} videos · ${gb} GB`
       : `${a.onDisk || 0} photos · ${a.videos || 0} videos · ${gb} GB`;
 
     // the bar tracks files (photos AND videos) against the goal, so it only
@@ -9032,7 +9037,7 @@ async function loadAlbums() {
     const CHECK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
     const count = archived
       ? `<span class="ck" title="Backed up and ticked off">${CHECK}${items}</span>`
-      : a.held ? `<span class="cnt">${items}</span>`
+      : a.held ? `<span class="cnt" title="In the album (not backed up)">${inAlbum}</span>`
       : `<span class="cnt" title="In the album / the count on your iPhone">${items}<span>/</span>` +
         `<input class="exp" type="number" min="1" step="1" placeholder="iPhone" value="${a.expected || ''}" ` +
         `aria-label="The item count your iPhone shows for this album"></span>`;
@@ -10094,6 +10099,79 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   let v = VIEWS.includes(h) ? h : null;
   if (!v) { try { v = localStorage.getItem('tb:view'); } catch (e) {} }
   showView(VIEWS.includes(v) ? v : 'editor');
+})();
+</script>
+<div id="sb-light" hidden role="dialog" aria-label="Photo preview">
+  <button class="sbl-nav prev" type="button" aria-label="Previous photo">&#8249;</button>
+  <figure><img alt=""><figcaption><span class="sbl-name"></span><span class="sbl-pos"></span></figcaption></figure>
+  <button class="sbl-nav next" type="button" aria-label="Next photo">&#8250;</button>
+  <div class="sbl-bar"><button type="button" class="sbl-use">Use this photo</button><button type="button" class="sbl-close">Close</button></div>
+</div>
+<style>
+/* ============== SIDEBAR PHOTO PREVIEW (2026-09-28) ==============
+   a click shows the photo like the Photo Library's viewer; the crop editor only opens on "Use this photo" */
+#sb-light{position:fixed;inset:0;z-index:900;background:rgba(18,24,20,.92);display:grid;grid-template-columns:64px 1fr 64px;grid-template-rows:1fr auto;align-items:center}
+#sb-light[hidden]{display:none}
+#sb-light figure{grid-column:2;grid-row:1;margin:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;padding:24px 0 0}
+#sb-light img{max-width:100%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:4px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+#sb-light figcaption{display:flex;gap:14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;color:rgba(247,247,243,.75)}
+#sb-light .sbl-pos{font-variant-numeric:tabular-nums;color:rgba(247,247,243,.5)}
+#sb-light .sbl-nav{height:64px;width:44px;justify-self:center;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:34px;line-height:1;cursor:pointer}
+#sb-light .sbl-nav:hover{background:rgba(255,255,255,.16)}
+#sb-light .sbl-nav.prev{grid-column:1}#sb-light .sbl-nav.next{grid-column:3}
+#sb-light .sbl-bar{grid-column:1/-1;grid-row:2;display:flex;gap:10px;justify-content:center;padding:14px 0 22px}
+#sb-light .sbl-bar button{font-family:'Hanken Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;height:36px;padding:0 18px;border-radius:999px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:transparent;color:#F7F7F3}
+#sb-light .sbl-bar .sbl-use{background:#2D6B50;border-color:#2D6B50;color:#fff}
+#sb-light .sbl-bar button:hover{filter:brightness(1.1)}
+</style>
+<script>
+(function sidebarPreview() {
+  const API = 'http://127.0.0.1:5003';
+  const box = document.getElementById('sb-light'), img = box.querySelector('img');
+  let tiles = [], i = 0, gen = 0;
+  const TILE = '#pl-grid .pl-ph, #pk-grid .pk-ph';
+  const info = t => t.classList.contains('pk-ph')
+    ? { thumb: t.querySelector('img') && t.querySelector('img').src, name: (t.querySelector('img') && decodeURIComponent((t.querySelector('img').src.split('path=')[1] || '').split('&')[0]).split('/').pop()) || '' }
+    : { root: t.dataset.root, path: t.dataset.rel, name: t.dataset.name };
+  function show(k) {
+    if (!tiles.length) return;
+    i = (k + tiles.length) % tiles.length;
+    const t = tiles[i], m = info(t), my = ++gen;
+    const small = t.classList.contains('pk-ph') ? m.thumb : `${API}/thumb?root=${m.root}&path=${encodeURIComponent(m.path)}`;
+    img.src = small;                                             // the cached tile image, at once
+    const big = small.replace(/([?&])s=\d+/, '$1') + (small.includes('?') ? '&' : '?') + 's=1600';
+    const pre = new Image(); pre.onload = () => { if (my === gen) img.src = big; }; pre.src = big;   // then the sharp one
+    box.querySelector('.sbl-name').textContent = m.name || '';
+    box.querySelector('.sbl-pos').textContent = (i + 1) + ' of ' + tiles.length;
+  }
+  function open(t) { tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
+  function close() { box.hidden = true; img.removeAttribute('src'); }
+  function use() {
+    const t = tiles[i]; close();
+    if (t.classList.contains('pk-ph')) { if (t.onclick) t.onclick(); return; }           // the Blog Picks path, unchanged
+    const slot = window.takePendingSlot ? takePendingSlot() : null;
+    const target = !slot ? dropAtCaret() : slot.tagName === 'IMG' ? { el: slot, where: 'image', swap: true } : { el: slot, where: 'slot' };
+    openCropForPhoto({ root: +t.dataset.root, path: t.dataset.rel, name: t.dataset.name }, target);
+  }
+  // capture phase: the preview comes first, a tile's own click (the crop editor) only via "Use this photo"
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest(TILE);
+    if (!t || e.target.closest('.pl-cloud, .pick, .fav')) return;      // an iCloud download click stays what it was
+    e.preventDefault(); e.stopPropagation(); open(t);
+  }, true);
+  box.querySelector('.prev').onclick = () => show(i - 1);
+  box.querySelector('.next').onclick = () => show(i + 1);
+  box.querySelector('.sbl-use').onclick = use;
+  box.querySelector('.sbl-close').onclick = close;
+  box.addEventListener('click', e => { if (e.target === box || e.target.tagName === 'FIGURE') close(); });
+  img.ondblclick = use;
+  document.addEventListener('keydown', e => {
+    if (box.hidden) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'Enter') { e.preventDefault(); use(); }
+  }, true);
 })();
 </script>
 <script>
