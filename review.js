@@ -479,10 +479,31 @@
     if (toClaude) { t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); }
     state.comments.threads.push(t);
     state.draft = null; _range = null; state.active = d.id;
-    saveComments().then(() => { if (toClaude) { toast('Sent. The edit lands here when Claude answers.', 4000); pollTasks(); } }); renderAll();
+    (toClaude ? beforeSend(t) : Promise.resolve()).then(saveComments).then(() => { if (toClaude) { toast('Sent. The edit lands here when Claude answers.', 4000); pollTasks(); } }); renderAll();
   }
   // ---- tasks: comments sent to Claude come back with an edit that goes into this text ----
   const isTask = t => t.kind === 'task' || t.kind === 'rewrite';
+  // What Claude needs to answer against the text as it is NOW: the blocks the comment's
+  // highlight sits in (a whole list when it spans items), marks stripped. And the article is
+  // saved first, so the answerer's copy of the rest of the page matches the screen too.
+  function liveContext(id) {
+    const marks = [...ed().querySelectorAll(`mark.cm[data-cm="${id}"]`)];
+    if (!marks.length) return '';
+    const blocks = [];
+    for (const m of marks) {
+      let b = m.closest('li') ? (m.closest('ul, ol') || m.closest('li')) : m.closest('p, h2, h3, h4, blockquote, figcaption, .img-caption, div.fn-sub-hd');
+      if (b && ed().contains(b) && !blocks.includes(b)) blocks.push(b);
+    }
+    return blocks.map(b => b.outerHTML.replace(/<mark class="(?:cm|lint)\b[^>]*>([\s\S]*?)<\/mark>/g, '$1')
+                                       .replace(/<(del|ins) class="rl[^"]*"[^>]*>[\s\S]*?<\/\1>/g, m => /^<ins/.test(m) ? '' : m.replace(/<\/?del[^>]*>/g, ''))
+                                       .replace(/<sup class="rl-n[^>]*>[\s\S]*?<\/sup>/g, '')).join('\n');
+  }
+  async function beforeSend(t) {
+    try { t.live = liveContext(t.id); } catch (e) { t.live = ''; }
+    try {
+      if (typeof fileHandle !== 'undefined' && fileHandle && window.saveFile && typeof isDirty !== 'undefined' && isDirty) await window.saveFile({ auto: true });
+    } catch (e) {}
+  }
   // "moved it to gyumri.html" in a reply: the file name opens that article, "#more-stops" jumps here
   const linkFiles = s => s.replace(/\b([a-z0-9-]+\.html)(#[a-z0-9-]+)?\b/g, (m, f, h) => `<button class="rp-open" data-file="${f}" data-hash="${h || ''}" title="Open ${f}">${m}</button>`)
                           .replace(/(^|[\s(])#([a-z][a-z0-9-]+)\b/g, (m, pre, id) => `${pre}<button class="rp-open" data-hash="#${id}" title="Go to #${id}">#${id}</button>`);
@@ -504,10 +525,11 @@
   function quickTask(text, range) {
     const a = textAround(range), id = 'c' + Date.now().toString(36);
     wrapRange(range, id, false);
-    state.comments.threads.push({ id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [],
-                                  kind: 'task', status: 'sent', sentAt: new Date().toISOString() });
+    const t = { id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [],
+                kind: 'task', status: 'sent', sentAt: new Date().toISOString() };
+    state.comments.threads.push(t);
     state.active = id; if (state.filter === 'changes') setFilter('all');
-    saveComments().then(() => pollTasks()); renderAll();
+    beforeSend(t).then(saveComments).then(() => pollTasks()); renderAll();
     toast('Sent to Claude: ' + text, 3000);
   }
   function quickMenu(x, y, range) {
@@ -535,8 +557,8 @@
   const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
-    t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit;
-    saveComments().then(pollTasks); renderAll(); toast('Sent to Claude.');
+    t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit; delete t.edits;
+    beforeSend(t).then(saveComments).then(pollTasks); renderAll(); toast('Sent to Claude.');
   }
   let _pollT = null;
   const ageSec = iso => iso ? Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000) : 0;
@@ -621,7 +643,7 @@
                    note: i ? '' : ((t.replies || []).filter(r => r.author === 'Claude').map(r => r.text).pop() || '') });
     });
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); }
-    if (!fresh.length) { t.status = 'offered'; t.edit = t.edits[0]; return true; }
+    if (!fresh.length) { t.status = 'offered'; t.edit = t.edits[0]; toast("Claude's edit no longer matches the text here; it is on the card with a Use button.", 7000); return true; }
     if (H() && H().label) { H().label('Claude proposed: ' + t.text.slice(0, 48)); H().checkpoint(); }
     state.changes.push(...fresh); injectMarks(fresh);
     t.status = 'proposed'; t.proposedAt = new Date().toISOString(); state.active = fresh[0].id;
@@ -661,6 +683,7 @@
     }
     relint();
     t.status = 'offered';                    // the text moved on; the card offers the replacement instead
+    toast("Claude's edit no longer matches the text here; it is on the card with a Use button.", 7000);
     // its quote may be what moved: re-anchor on the text either side of it, so the card
     // with the Use button still has a place beside the passage instead of only in the List
     if (!findRange(t.anchor)) {

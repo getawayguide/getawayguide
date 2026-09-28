@@ -123,6 +123,9 @@ def task_text(key, tid):
     body = body_html(html)
     a = t.get("anchor") or {}
     q = a.get("quote") or ""
+    if t.get("live"):
+        # the editor sent the passage as it is on screen: answer against that, not the saved file
+        body = t["live"]
     i = body.find(q) if q else -1
     if i >= 0:
         lo, hi = max(0, i - 3000), min(len(body), i + len(q) + 3000)
@@ -180,6 +183,8 @@ def build_prompt(key, tid):
 
 def finish(key, tid, t, html, txt):
     """parse the model's JSON and write it onto the thread, validating the find"""
+    if t.get("live"):
+        html = t["live"] + "\n" + html        # a find quoted from the live text is valid; the editor places it
     a = t.get("anchor") or {}
     m = re.search(r"\{.*\}", txt, re.S)
     try:
@@ -189,13 +194,13 @@ def finish(key, tid, t, html, txt):
     reply = ans.get("reply") or "Done."
     edits = [e for e in (ans.get("edits") or []) if isinstance(e, dict) and e.get("find") and e.get("replace") is not None]
     if edits:
-        good = [e for e in edits if html.count(e["find"]) == 1]
+        good = [e for e in edits if html.count(e["find"]) >= 1]
         if not good:
             return write_answer(key, tid, reply + " (None of the passages matched the article exactly, so nothing was applied.)", status="failed")
         note = "" if len(good) == len(edits) else " (%d of %d passages didn't match exactly and were left out.)" % (len(edits) - len(good), len(edits))
         return write_answer(key, tid, reply + note, extra={"edits": [{"find": e["find"], "replace": e["replace"]} for e in good]})
     find, rep = ans.get("find") or "", ans.get("replace") or ""
-    if not find or html.count(find) != 1:
+    if not find or html.count(find) < 1:
         return write_answer(key, tid, reply + " (The passage to replace didn't match the article exactly, so it is offered "
                             "on the card instead of applied.)", find=a.get("quote", ""), replace=rep, status="answered")
     return write_answer(key, tid, reply, find=find, replace=rep)

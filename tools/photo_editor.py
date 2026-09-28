@@ -1326,7 +1326,13 @@ def review_decisions(slug):
         return "", 204
     if not (_redline.STORE / slug / "proposal.json").exists():
         abort(404)
-    return jsonify({"ok": True, "decisions": _redline.merge_decisions(slug, request.get_json(force=True) or {})})
+    # Accept all posts one decision per change at once; unserialized, two requests read the
+    # file while a third was writing it and got 500 (JSONDecodeError), 2026-09-27
+    with _decisions_lock:
+        return jsonify({"ok": True, "decisions": _redline.merge_decisions(slug, request.get_json(force=True) or {})})
+
+
+_decisions_lock = threading.Lock()
 
 
 @app.route("/review/<slug>/commit", methods=["POST", "OPTIONS"])
