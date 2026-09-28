@@ -858,7 +858,7 @@
     const yes = Object.values(state.st).filter(v => v === true).length, no = Object.values(state.st).filter(v => v === false).length;
     const words = state.meta && state.meta.before && state.meta.target ? ` ·${state.meta.before - cut} words (${state.meta.tlabel} ${state.meta.target})` : '';
     $('rv-status').textContent = state.slug ? `${pend.length} to review · ${yes} accepted · ${no} rejected${words}`
-                               : (state.rel ? `${open} open comment${open === 1 ? '' : 's'} · no proposed changes` : 'Open an article to review it.');
+                               : (state.rel ? `${open} open comment${open === 1 ? '' : 's'} · no proposed changes` : '');   // no article: say nothing
     const list = $('rv-list'), canvas = $('rv-canvas');
     list.innerHTML = ''; canvas.innerHTML = '';
     const listMode = state.view === 'list' || state.awaitingFile;
@@ -1251,7 +1251,7 @@ body.review-open #review-pane{display:flex}
 .rv-more.open .rv-dd{display:block}.rv-dd button{display:block;width:100%;text-align:left;border:0!important;border-radius:0!important;text-transform:none!important;letter-spacing:0!important;font-size:.78rem!important;padding:.45rem .7rem!important}
 .rv-dd button:hover{background:#F5F5F2}
 .rv-voice{display:flex;flex-wrap:wrap;gap:.25rem .5rem;align-items:center;font:.7rem/1.4 'Hanken Grotesk',sans-serif;color:#4c5a52;padding:.35rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff;cursor:pointer}
-.rv-voice .sc{font:700 .62rem/1 'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .4rem;border-radius:3px;color:#fff;background:#6b7a70}
+.rv-voice .sc{font:600 .74rem/1 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;padding:.25rem .4rem;border-radius:3px;color:#fff;background:#6b7a70}
 .rv-voice .sc.good{background:#2D6B50}.rv-voice .sc.ok{background:#9A7B2E}.rv-voice .sc.off{background:#B4553C}
 .rv-voice .sg{white-space:nowrap}.rv-voice .sg.off{color:#B4553C}.rv-voice .sg i{color:#8a9790;font-style:normal}
 .rv-card .acts .claude{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;color:#D97757;padding:0;display:inline-flex;align-items:center;justify-content:center}
@@ -1280,7 +1280,8 @@ body.review-open #review-pane{display:flex}
 .rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4}
 .rv-card .alt .use{flex-shrink:0;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #b9d4c5;background:#E3F0E8;color:#2D6B50;border-radius:3px;cursor:pointer}
 .rv-card .alt .use:hover{background:#2D6B50;color:#fff}
-.rv-status{font:600 .58rem/1.4 'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4f5c54;padding:.4rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
+.rv-status:empty{display:none}
+.rv-status{font:400 .78rem/1.4 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#6b7a70;padding:.4rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
 .rv-body{flex:1;overflow:hidden;position:relative}.rv-body.list{overflow:auto}.rv-list{padding:.5rem}.rv-canvas{position:relative;height:100%}
 #rv-banner{background:#FBEFC2;color:#5c4a12;font-size:.78rem;padding:.5rem .6rem;border-bottom:1px solid #E8C86A}#rv-banner button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;margin-left:.3rem;border:1px solid #E8C86A;background:#fff;border-radius:3px;padding:.25rem .4rem;cursor:pointer}
 .rv-empty,.rv-note{font-size:.8rem;color:#8a9790;padding:.9rem .6rem}.rv-canvas .rv-note{position:absolute;left:0;right:0;bottom:0;background:#F7F7F4;border-top:1px solid #e6e6e2;font-size:.7rem;padding:.4rem .6rem}
@@ -1296,7 +1297,7 @@ body.review-open #review-pane{display:flex}
 .rv-card .acts{margin-left:auto;display:flex;align-items:center;gap:.1rem}
 .rv-card .acts .yes,.rv-card .acts .no{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;font-size:.9rem;line-height:1;color:#6b7a70;padding:0}
 .rv-card .acts .yes:hover{background:#E3F0E8;color:#2D6B50;border-color:#b9d4c5}.rv-card .acts .no:hover{background:#F8E5E0;color:#B4553C;border-color:#e9c4ba}
-.rv-c .lbl{display:flex;align-items:center;gap:.35rem;font:600 .56rem/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6b7a70;margin-top:.35rem}
+.rv-c .lbl{display:flex;align-items:center;gap:.35rem;font:400 .74rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#6b7a70;margin-top:.35rem}
 .rv-c .lbl em{font-style:normal;color:#9A7B2E;text-transform:none;letter-spacing:0}
 .rv-c .num{background:#8a9790;color:#fff;border-radius:8px;padding:.15rem .4rem;font-size:.56rem}
 .rv-c.rm .num{background:#B4553C}.rv-c.ed .num{background:#2557A7}.rv-c.mv .num{background:#2D6B50}
@@ -1305,7 +1306,7 @@ body.review-open #review-pane{display:flex}
 .rv-cm .act{display:flex;gap:.3rem;margin-top:.45rem}
 .rv-cm button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .55rem;border:1px solid #e0ded8;background:#fff;border-radius:3px;cursor:pointer;color:#1C2821}
 .rv-c .rv-sub{margin:.55rem 0 0;padding:.45rem 0 0;border-top:1px dashed #e0ded8}
-.rv-c .rv-sub .lbl2{font:600 .56rem/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#8a9790;margin-bottom:.3rem}
+.rv-c .rv-sub .lbl2{font:400 .74rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#8a9790;margin-bottom:.3rem}
 .rv-canvas .rv-card.nested,.rv-list .rv-card.nested{position:static;left:auto;right:auto;margin:.3rem 0 0;border:0;border-left:2px solid #d9d6cd;border-radius:0;box-shadow:none;padding:.1rem 0 .1rem .5rem;background:transparent;transition:none}
 .rv-card.nested:hover{border-left-color:#9A7B2E}
 .rv-card.nested.active{box-shadow:none;border-left-color:#1C2821}
@@ -1322,7 +1323,7 @@ body.review-open #review-pane{display:flex}
 .rv-cm textarea{width:100%;min-height:54px;font:13px/1.45 'Hanken Grotesk',sans-serif;padding:.4rem;border:1px solid #e0ded8;border-radius:3px;margin-top:.4rem;resize:vertical}
 .rv-cm .reply{display:flex;gap:.3rem;align-items:flex-end;margin-top:.4rem}.rv-cm .reply textarea{min-height:32px;margin:0;flex:1}
 .rv-cm .reply button{padding:.4rem .5rem;font-size:.8rem;color:#2D6B50}
-.rv-cm .res{font:600 .58rem/1 'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#2D6B50;margin-top:.45rem}
+.rv-cm .res{font:400 .74rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#2D6B50;margin-top:.45rem}
 #rv-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10001;background:#1C2821;color:#fff;padding:.6rem 1rem;border-radius:4px;font:13px/1.4 'Hanken Grotesk',sans-serif;max-width:640px;display:none}
 /* connector lines from card to text */
 #rv-lines{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;display:none}
@@ -1341,8 +1342,8 @@ body.review-open #rv-lines{display:block}
 #editor del.mv{color:#2D6B50!important;text-decoration:line-through double!important;text-decoration-thickness:1px!important}
 #editor ins.mv{color:#2D6B50!important;text-decoration:underline double!important;text-decoration-thickness:1px!important;text-underline-offset:2px}
 #editor del.rl *,#editor ins.rl *{color:inherit!important}
-#editor ins.rl.struct{text-decoration:none!important;background:none}#editor ins.rl.struct::before{content:'\\00b6  layout change';font:600 .6rem/1 'DM Mono',monospace;letter-spacing:.04em;color:#6b5a1e;background:#FFF3B0;border:1px solid #e6d27a;border-radius:3px;padding:.12rem .35rem;margin-right:.2rem;vertical-align:middle}
-#editor sup.rl-n{font:600 .56rem/1 'DM Mono',monospace!important;color:#fff!important;background:#8a9790;border-radius:8px;padding:.15rem .3rem;margin-left:.15rem;vertical-align:super;cursor:pointer;user-select:none;text-decoration:none!important}
+#editor ins.rl.struct{text-decoration:none!important;background:none}#editor ins.rl.struct::before{content:'\\00b6  layout change';font:400 .72rem/1 'Hanken Grotesk',sans-serif;letter-spacing:0;color:#6b5a1e;background:#FFF3B0;border:1px solid #e6d27a;border-radius:3px;padding:.12rem .35rem;margin-right:.2rem;vertical-align:middle}
+#editor sup.rl-n{font:600 .62rem/1 'Hanken Grotesk',sans-serif!important;color:#fff!important;background:#8a9790;border-radius:8px;padding:.15rem .3rem;margin-left:.15rem;vertical-align:super;cursor:pointer;user-select:none;text-decoration:none!important}
 #editor .rl-hit del.rl,#editor .rl-hit ins.rl,#editor del.rl-hover,#editor ins.rl-hover{background:#FFF3B0}#editor .rl-hit sup.rl-n,#editor sup.rl-hover{background:#1C2821}
 #editor :is(p,li,div.copy):has(del.rl,ins.rl){box-shadow:-2px 0 0 0 #C9C3B4;padding-left:.5rem}
 #editor.rl-final del.rl,#editor.rl-final sup.rl-n{display:none}#editor.rl-final ins.rl{color:inherit!important;text-decoration:none!important;background:none}

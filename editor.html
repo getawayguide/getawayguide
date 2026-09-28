@@ -183,12 +183,12 @@
     .ap-btn{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.5rem .6rem;border:1px solid #d9d6cd;background:#fff;border-radius:4px;cursor:pointer;color:#1C2821}
     .ap-btn:hover{background:#F0EFEA}
     #ap-list{overflow:auto;flex:1;padding:.3rem 0 .5rem}
-    .ap-h{font:600 .58rem/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9A7B2E;padding:.75rem .9rem .3rem;position:sticky;top:0;background:#fff}
+    .ap-h{font:600 .78rem/1 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#6b7a70;padding:.75rem .9rem .3rem;position:sticky;top:0;background:#fff}
     .ap-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.42rem .9rem;cursor:pointer;border-left:3px solid transparent}
     .ap-row:hover,.ap-row.sel{background:#F3F6F4;border-left-color:#2D6B50}
     .ap-main{min-width:0;display:flex;align-items:center;gap:.6rem}.ap-title{font-size:.92rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .ap-flag{width:20px;height:15px;flex-shrink:0;border-radius:2px;object-fit:cover;display:inline-block}
-    .ap-path{font:.62rem/1.3 'DM Mono',monospace;color:#8a9790;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
+    .ap-path{font:.74rem/1.3 'Hanken Grotesk',sans-serif;color:#8a9790;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
     .ap-meta{display:flex;align-items:center;gap:.35rem;flex-shrink:0;white-space:nowrap}
     .ap-chip{font:600 .52rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .4rem;border-radius:999px;background:#EEEDE7;color:#5c665f}
     .ap-chip.live{background:#E3F0E8;color:#2D6B50}.ap-chip.draft{background:#FBEFC2;color:#5c4a12}
@@ -644,7 +644,7 @@
     #hist-modal .hl{overflow:auto;padding:.3rem 0}
     #hist-modal .hr{display:flex;align-items:center;gap:.7rem;width:100%;border:0;background:none;text-align:left;padding:.45rem 1rem;cursor:pointer;font:inherit;font-size:.85rem;color:#1C2821;border-left:3px solid transparent}
     #hist-modal .hr:hover{background:#F3F6F4}#hist-modal .hr.cur{border-left-color:#2D6B50;background:#F3F6F4}
-    #hist-modal .ht{font:.7rem/1 'DM Mono',monospace;color:#8a9790;min-width:5.5em}
+    #hist-modal .ht{font:.74rem/1 'Hanken Grotesk',sans-serif;font-variant-numeric:tabular-nums;color:#8a9790;min-width:5.5em}
     #hist-modal .hlab{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #hist-modal .hd{font-size:.7rem;color:#8a9790}
     #hist-modal .hs,#hist-modal .hc{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .4rem;border-radius:999px;background:#E3F0E8;color:#2D6B50}
@@ -1243,12 +1243,13 @@ header .prog.all b{color:#6EC99A}
 
 }
 #app-library[hidden] { display:none !important; }
-/* thin scrollbars everywhere (2026-09-27) */
-*{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+/* razor-thin scrollbars, Mac style (2026-09-28): 4px, invisible until you hover the area that
+   scrolls. No scrollbar-width here: Chrome ignores these -webkit rules whenever it is set. */
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:transparent;border-radius:2px}
+*:hover::-webkit-scrollbar-thumb{background:rgba(28,40,33,.3)}
+::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.5)}
 /* Follow: a pill toggle, white off, black on */
 #pl-placebar label.follow-tg{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;border:1px solid rgba(28,40,33,.2);
   background:#fff;color:#1C2821;font-family:'Hanken Grotesk',sans-serif;font-size:.62rem !important;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;user-select:none}
@@ -1265,7 +1266,11 @@ header .prog.all b{color:#6EC99A}
 #review-pane .rv-chips button,#review-pane .rv-switch button,#lib-toolbar button,#ed-masthead .mh-edit,#editor .map-edit,#crop-actions button,#ap .ap-btn,#pub-modal .pb button,.hold,.undo{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
 /* three tiles that fill the sidebar, spaced like the library (12px on 170px tiles, 2026-09-27) */
 #pl-grid{padding:0 8px 8px !important;gap:8px !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:auto !important;justify-content:stretch !important}
-#pl-grid > .pl-ph{aspect-ratio:1/1}
+/* square tiles from their own width: aspect-ratio alone let the grid size each row to nothing
+   (the images are absolutely positioned, so a tile had no content height) and the photos stacked */
+/* so the rows get an explicit height: the sidebar is one fixed width (372px) for every tab, which
+   makes three columns 112px wide after the 8px padding, two 8px gaps and the 4px scrollbar */
+#pl-grid{grid-auto-rows:112px !important}
 /* ============== FLAGGED DROPDOWN + ALBUM FLAGS (2026-09-27) ============== */
 .fsel-native{display:none !important}
 .fsel{position:relative;flex:1;min-width:0}
@@ -1618,7 +1623,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=0518c2b2" defer></script>
+<script src="review.js?v=157f989a" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -8910,6 +8915,10 @@ async function loadAlbums() {
     // Everything on this card counts PHOTOS + VIDEOS. A photos-only number
     // reads as complete while a hundred videos are still to come.
     const files = (a.onDisk || 0) + (a.videos || 0);
+    // What the card SHOWS: the album's items counted the way the iPhone counts
+    // them. Backup files can differ (an original + its edited copy share one
+    // file), and showing those read as short on albums that matched the phone.
+    const items = (ver && ver.albumItems) || files;
     const exp = a.expected || 0;
     // what the album is measured against: your iPhone first, then the album
     // folder, then the photo-only count as a last resort
@@ -8928,11 +8937,13 @@ async function loadAlbums() {
     const waiting = !archived && (!inAlbum || (a.state || '').startsWith('waiting'));
     const complete = a.state === 'done' && inAlbum > 0 && total >= inAlbum;
     const gb = ((a.mb + (a.videosMb || 0)) / 1000).toFixed(1);
-    const totals = `${a.onDisk || 0} photos · ${a.videos || 0} videos · ${gb} GB`;
+    const totals = ver && ver.albumPhotos != null
+      ? `${ver.albumPhotos} photos · ${ver.albumVideos} videos · ${gb} GB`
+      : `${a.onDisk || 0} photos · ${a.videos || 0} videos · ${gb} GB`;
 
     // the bar tracks files (photos AND videos) against the goal, so it only
     // fills when the whole album is down — not when the photo pass ends
-    let pct = goal ? Math.min(100, Math.round(100 * files / goal)) : 0;
+    let pct = goal ? Math.min(100, Math.round(100 * items / goal)) : 0;
     let sub;
     if (a.held) {
       // iCloud is syncing it, but we are not pulling full-res originals until
@@ -8965,15 +8976,15 @@ async function loadAlbums() {
     } else if (archived) {
       chk = '';
     } else if (!exp) {
-      chk = `<div class="chk wait"><b>${files}</b> backed up · enter your iPhone's ` +
+      chk = `<div class="chk wait"><b>${items}</b> backed up · enter your iPhone's ` +
             `count below to verify</div>`;
     } else if (ver && ver.ok && !(ver.shortOfPhone > 0)) {
       // shortOfPhone is checked here too: a status written before the verify
       // fix still carries ok:true for albums that are short of the phone
-      chk = `<div class="chk ok">✓ <b>${files} / ${exp}</b> · matches your iPhone — ` +
+      chk = `<div class="chk ok">✓ <b>${items} / ${exp}</b> · matches your iPhone — ` +
             `safe to delete</div>`;
     } else if (ver && !ver.covered) {
-      chk = `<div class="chk bad"><b>${files} / ${exp}</b> · still copying from the ` +
+      chk = `<div class="chk bad"><b>${items} / ${exp}</b> · still copying from the ` +
             `album (photos ${ver.photos}, videos ${ver.videos}) — DO NOT DELETE</div>`;
     } else if (ver && ver.shortOfPhone > 0) {
       // Measured against the album folder, not the backup: surplus files from
@@ -8997,17 +9008,17 @@ async function loadAlbums() {
         why = `${ver.shortOfPhone} still to arrive from iCloud`;
       chk = `<div class="chk bad"><b>${ver.albumItems} / ${exp}</b> in the album · ` +
             `${why} — DO NOT DELETE</div>`;
-    } else if (files < exp) {
-      chk = `<div class="chk bad"><b>${files} / ${exp}</b> · ${exp - files} still to ` +
+    } else if (items < exp) {
+      chk = `<div class="chk bad"><b>${items} / ${exp}</b> · ${exp - items} still to ` +
             `arrive from iCloud — DO NOT DELETE</div>`;
     } else {
-      chk = `<div class="chk wait"><b>${files} / ${exp}</b> · verifying…</div>`;
+      chk = `<div class="chk wait"><b>${items} / ${exp}</b> · verifying…</div>`;
     }
 
     const syncing = waiting;
     const barCls = syncing ? ' sync'
                  : (ver && ver.ok) || archived ? ' ok'
-                 : exp && files < exp ? ' short' : '';
+                 : exp && items < exp ? ' short' : '';
     // Tail of the card. Ticked off = one done line and an undo, nothing else.
     // Otherwise the count box stays, plus the tick-off once it's safe to use.
     const tail = a.held
@@ -9020,9 +9031,9 @@ async function loadAlbums() {
     // the count: backed up, then (until the album is ticked off) the iPhone's count to check it against
     const CHECK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
     const count = archived
-      ? `<span class="ck" title="Backed up and ticked off">${CHECK}${files}</span>`
-      : a.held ? `<span class="cnt">${files}</span>`
-      : `<span class="cnt" title="Backed up / the count on your iPhone">${files}<span>/</span>` +
+      ? `<span class="ck" title="Backed up and ticked off">${CHECK}${items}</span>`
+      : a.held ? `<span class="cnt">${items}</span>`
+      : `<span class="cnt" title="In the album / the count on your iPhone">${items}<span>/</span>` +
         `<input class="exp" type="number" min="1" step="1" placeholder="iPhone" value="${a.expected || ''}" ` +
         `aria-label="The item count your iPhone shows for this album"></span>`;
     if (archived) el.classList.add('fin');

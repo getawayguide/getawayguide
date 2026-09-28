@@ -395,11 +395,11 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   body.side-collapsed #bar{padding-left:44px}      /* clear of the arrow */
 
   /* thin scrollbars everywhere (2026-09-27) */
-  *{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+  ::-webkit-scrollbar{width:4px;height:4px}
   ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:transparent;border-radius:2px}
+  *:hover::-webkit-scrollbar-thumb{background:rgba(28,40,33,.3)}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.5)}
     .cfl{width:18px;height:13px;border-radius:2px;object-fit:cover;margin-right:9px;flex:none;display:inline-block}
   .cfl.none{background:#E8E7E1}
   /* one type standard for controls (2026-09-27) */

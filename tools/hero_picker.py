@@ -688,6 +688,7 @@ PAGE = r"""<!doctype html>
   .main{grid-template-columns:400px minmax(0,1fr) !important}
   .main > .strip{grid-column:1;grid-row:1;border-left:0 !important;border-right:1px solid var(--line)}
   .main > .stage{grid-column:2;grid-row:1}
+  #bleed{display:none !important}   /* the sidebar arrow does this now (2026-09-28); F still toggles full bleed */
   .main > .side-handle{grid-column:1;grid-row:1;align-self:start;justify-self:end;margin:10px -12px 0 0}
   /* the picker's own button rules (padding, uppercase, dark fill) would win on specificity */
   .main > button.side-handle, .embed .main > button.side-handle{padding:0;width:24px;height:24px;border-radius:50%;background:#fff;color:#4f5c54;border:1px solid rgba(28,40,33,.16);letter-spacing:0;font-size:0}
@@ -720,11 +721,11 @@ PAGE = r"""<!doctype html>
   .embed header .fsel-btn, header .fsel-btn{height:34px;text-transform:none;letter-spacing:0;font-size:.8rem;font-weight:400;padding:0 10px;border-radius:6px;background:#fff;color:#1C2821;border:1px solid rgba(28,40,33,.16)}
 
   /* thin scrollbars everywhere (2026-09-27) */
-  *{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+  ::-webkit-scrollbar{width:4px;height:4px}
   ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:transparent;border-radius:2px}
+  *:hover::-webkit-scrollbar-thumb{background:rgba(28,40,33,.3)}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.5)}
   
   /* LOW RES: the only badge, dark green with white text (2026-09-27) */
   .strip .flag.low, .meta .lowres { background:#2D6B50 !important; color:#fff !important; border:0 !important; font-style:normal;
