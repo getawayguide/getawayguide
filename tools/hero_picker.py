@@ -434,7 +434,8 @@ def save():
     picks = read_picks()
     body = dict(request.json)
     body["path"] = _posix(body.get("path", ""))
-    picks[body["country"]] = body
+    # one pick per ARTICLE when one is linked; explore mode (no article) keeps the country slot
+    picks[body.get("article") or body["country"]] = body
     PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
     out = {"ok": True, "saved": str(PICKS)}
     # With an article open in the editor, Save also BUILDS the hero: the eight files under
@@ -765,12 +766,17 @@ async function loadAlbums() {
 
 // The article open in the editor, when embedded there: its headline and lead go on the
 // stage in place of the country default, so the crop is judged under the real copy.
-let ARTICLE = null;
-window.addEventListener('message', ev => {
+let ARTICLE = null, PICKS = {};
+fetch('/picks').then(r => r.json()).then(p => { PICKS = p || {}; }).catch(() => {});
+// the linked article's own saved pick, if it has one (picks are stored per article)
+const articlePick = () => ARTICLE && PICKS[ARTICLE.rel] && (PICKS[ARTICLE.rel].country || '').toLowerCase() === (country || '').toLowerCase() ? PICKS[ARTICLE.rel] : null;
+window.addEventListener('message', async ev => {
   const d = ev.data;
   if (!d || d.type !== 'article-context') return;
   ARTICLE = d.h1 ? d : null;             // {rel, country, h1, lead, heroSlug}
+  try { PICKS = await (await fetch('/picks')).json(); } catch (e) {}
   articleAlbum();
+  if (ARTICLE && $('album').options.length) render(true);   // restore this article's pick
 });
 // switch to the open article's album; if the album list is not in yet, loadAlbums() calls
 // this again when it is
@@ -790,6 +796,7 @@ function applyArticle() {
     $('lead').hidden = !ARTICLE.lead;
   } else {
     $('lead').hidden = true;
+    $('eb').textContent = country + ' · Explore mode (no article linked: saves as the country hero)';
   }
 }
 
@@ -815,7 +822,8 @@ function render(restore) {
   const keep = cur;              // the innerHTML rebuild below drops .on
   const mode = $('filter').value;
   const shape = $('shape').value;
-  const saved0 = sel.dataset.pick;
+  const ap = articlePick();
+  const saved0 = ap ? ap.path : sel.dataset.pick;
   // whatever is already saved stays visible, even when the filter would hide it
   const rows = ALL.filter(r => r.path === saved0 || (
       mode === 'all'  ? true
@@ -823,7 +831,7 @@ function render(restore) {
     : mode === 'best' ? r.tier === 'good'
     :                   r.tier !== 'low'));
   const hidden = ALL.length - rows.length;
-  const saved = sel.dataset.pick;
+  const saved = ap ? ap.path : sel.dataset.pick;
   $('count').textContent = hidden
     ? `${rows.length} shown, ${hidden} hidden` : `${rows.length} photos`;
   $('strip').innerHTML = rows.map(r => `
@@ -844,9 +852,10 @@ function render(restore) {
   $('count').textContent += STARS.length ? ` · ${STARS.length} starred` : '';
   if (restore && saved) {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
-    if (t) { pick(t); crops = readCrops(sel); applyCrop();
-             setScrim(+sel.dataset.scrim || 100);
-             setAngle(+sel.dataset.pickAngle || 0);
+    const src = ap ? { dataset: { crops: JSON.stringify(ap.crops || {}), scrim: ap.scrim, pickAngle: ap.angle } } : sel;
+    if (t) { pick(t); crops = readCrops(src); applyCrop();
+             setScrim(+src.dataset.scrim || 100);
+             setAngle(+src.dataset.pickAngle || 0);
              t.scrollIntoView({block:'center'}); }
   } else if (keep) {
     // keep the selection visible without touching the crop in progress
@@ -1228,6 +1237,7 @@ $('save').onclick = async () => {
                  slug: ARTICLE ? (ARTICLE.heroSlug || (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '')) : '' };
   const r = await (await fetch('/save', { method: 'POST',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+  if (ARTICLE) PICKS[ARTICLE.rel] = body;
   if (r && r.built !== undefined) {
     if (!r.built) { toast('Pick saved, but the hero files did not build: ' + (r.log || '').slice(-120)); }
     else if (window.parent !== window) {
