@@ -1,0 +1,69 @@
+{
+  "airport": {
+    "anchor": "end",
+    "dx": -11.4,
+    "dy": 4.1,
+    "lat": 40.1473,
+    "lon": 44.3959,
+    "name": "EVN Airport"
+  },
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 9,
+      "dy": -7,
+      "lat": 40.1792,
+      "lon": 44.4991,
+      "name": "Yerevan",
+      "href": "yerevan.html"
+    },
+    {
+      "anchor": "end",
+      "dx": -11,
+      "dy": 4,
+      "lat": 40.5639,
+      "lon": 45.011,
+      "name": "Lake Sevan"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 12,
+      "lat": 40.1407,
+      "lon": 44.8178,
+      "name": "Garni & Geghard"
+    },
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 39.8784,
+      "lon": 44.5761,
+      "name": "Khor Virap"
+    }
+  ],
+  "iso3": "ARM",
+  "legs": [],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "simplify": 110,
+  "slug": "armenia-gyumri",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": -10,
+      "lat": 40.7894,
+      "lon": 43.8475,
+      "marker": "star",
+      "n": 1,
+      "name": "Gyumri"
+    }
+  ]
+}

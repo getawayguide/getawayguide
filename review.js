@@ -852,7 +852,7 @@
     const pend = pending(), open = state.comments.threads.filter(t => !t.resolved).length + (state.draft ? 1 : 0);
     $('rv-n-ch').textContent = pend.length; $('rv-n-cm').textContent = open;
     const nres = state.comments.threads.filter(t => t.resolved).length; $('rv-n-res').textContent = nres; $('rv-resolved').style.display = state.view === 'list' && nres ? '' : 'none';
-    const hb = $('btn-review'); if (hb) hb.textContent = pend.length + open ? `Review ${pend.length + open}` : 'Review';
+    const hb = $('btn-review-n'); if (hb) hb.textContent = pend.length + open ? String(pend.length + open) : '';
     const cut = state.changes.filter(c => c.kind === 'cut' && state.st[c.id] === true).reduce((s, c) => s + (c.words || 0), 0);
     const yes = Object.values(state.st).filter(v => v === true).length, no = Object.values(state.st).filter(v => v === false).length;
     const words = state.meta && state.meta.before ? ` · ${state.meta.before - cut} words (${state.meta.tlabel} ${state.meta.target})` : '';
@@ -1089,9 +1089,10 @@
   }
   async function snapshotDisk(rel) { state.disk = await fetchDisk(rel); state.diskWarned = false; }
   async function checkDisk() {
-    if (!state.rel || state.awaitingFile || state.disk == null) return;
+    if (!state.rel || state.awaitingFile || state.disk == null || window.__saving) return;
     const now = await fetchDisk(state.rel);
     if (now == null || now === state.disk || state.diskWarned) return;
+    if (window.__saving || now === window.__lastWritten) { state.disk = now; return; }   // this editor's own save
     state.diskWarned = true;
     const b = $('rv-banner'); b.innerHTML = 'This article changed on disk since you opened it, from a commit in another window or another editor. ' +
       'Reopen it before saving or your save will overwrite that. <button id="rv-banner-x">Dismiss</button>';
@@ -1219,6 +1220,7 @@
     toast(fresh.length ? `${fresh.length} new change(s) added.` : 'Up to date.');
   }
   window.review = {
+    resnapshot: () => state.rel && snapshotDisk(state.rel),
     toggle, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
     // test seam: open an article body under a given repo path without a folder handle
     loadFor(rel, html) { state.relOverride = rel; const e = ed(); e.style.display = ''; e.contentEditable = 'true'; e.innerHTML = html; return boot(rel); }

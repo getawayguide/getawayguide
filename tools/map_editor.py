@@ -360,6 +360,21 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   *{box-sizing:border-box}
   body{margin:0;font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--ink);background:#F7F7F3;display:flex;height:100vh;overflow:hidden}
   #side{width:240px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+
+  /* the hide-the-sidebar arrow, the same one the Article Editor and Photo Library use (2026-09-27) */
+  .side-handle{width:24px;height:24px;border-radius:50%;border:1px solid rgba(28,40,33,.16);background:#fff;
+    color:#4f5c54;box-shadow:0 1px 4px rgba(28,40,33,.12);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;padding:0;z-index:30;transition:margin .2s,right .2s,left .2s}
+  .side-handle:hover{color:#2D6B50;border-color:#2D6B50}
+  .side-handle:focus-visible{outline:2px solid #2D6B50;outline-offset:2px}
+  .side-handle svg{width:12px;height:12px;transition:transform .2s}
+  #side{position:relative;transition:width .2s}
+  #side > .side-handle{position:absolute;top:10px;right:-12px}
+  body.side-collapsed #side{width:0;border-right:0}
+  body.side-collapsed #side > :not(.side-handle){display:none}
+  body.side-collapsed #side > .side-handle{right:-30px}
+  body.side-collapsed #side > .side-handle svg{transform:rotate(180deg)}
+  body.side-collapsed #bar{padding-left:44px}      /* clear of the arrow */
   #side h1{display:none}
   #q{margin:12px 12px 8px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;outline:none}
   #q:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,107,80,.14)}
@@ -405,7 +420,7 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   #done{display:none}
 </style></head>
 <body>
-<div id="side"><h1>Maps</h1><input id="q" type="search" placeholder="Find a country or city" autocomplete="off"><div id="list"></div></div>
+<div id="side"><button class="side-handle" id="side-handle" type="button" title="Hide the map list" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Maps</h1><input id="q" type="search" placeholder="Find a country or city" autocomplete="off"><div id="list"></div></div>
 <div id="main">
   <div id="bar">
     <span class="title" id="ttl">Select a map</span>
@@ -418,6 +433,16 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   <div id="stage"><div id="empty"><b>Pick a map</b>Open a country on the left, then a route or city map.<br>Drag any label to move it, then Save &amp; embed.</div></div>
 </div>
 <script>
+(function sideHandle() {
+  const btn = document.getElementById('side-handle');
+  const apply = on => { document.body.classList.toggle('side-collapsed', on); btn.title = (on ? 'Show ' : 'Hide ') + 'the map list (Ctrl+\\)';
+    btn.setAttribute('aria-label', (on ? 'Show ' : 'Hide ') + 'the map list'); btn.setAttribute('aria-expanded', String(!on)); };
+  let on = false; try { on = localStorage.getItem('side:maps') === '1'; } catch (e) {}
+  apply(on);
+  btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:maps', on ? '1' : '0'); } catch (e) {} };
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
+})();
+
 const SVGNS="http://www.w3.org/2000/svg";
 let slug=null, cfg=null, afs=1, dirty=false;
 const listEl=document.getElementById('list'), stage=document.getElementById('stage');

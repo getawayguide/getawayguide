@@ -139,7 +139,7 @@
     /* LAYOUT */
     .workspace {
       display: grid;
-      grid-template-columns: 240px 1fr;
+      grid-template-columns: 372px 1fr;   /* one width for every tab (2026-09-27) */
       height: calc(100vh - 56px);
       overflow: hidden;
     }
@@ -153,12 +153,19 @@
       overflow: hidden;
     }
 
-    .side-tabs { display:flex; gap:1.3rem; padding:.8rem 1.1rem 0; border-bottom:1px solid var(--b-subtle); flex-shrink:0; background:#fff; }
-    .side-tabs button { font-family:'Hanken Grotesk',sans-serif; font-weight:500; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
-      color:var(--ink); opacity:.45; background:none; border:0; border-bottom:2px solid transparent; padding:0 0 .6rem; margin-bottom:-1px; cursor:pointer; transition:opacity .2s; }
-    .side-tabs button:hover { opacity:.85; }
-    .side-tabs button:focus-visible { outline:2px solid var(--terra); outline-offset:2px; }
-    body:not(.photos-open):not(.review-open) #btn-todo, body.photos-open #btn-photos, body.review-open #btn-review { opacity:1; border-bottom-color:var(--terra); }
+    /* settings-style tabs (2026-09-27, second pass): icon + label; the open tab is a soft green tab with a rule */
+    /* three equal tabs, and room on the right for the hide arrow so it never sits on To Do */
+    .side-tabs { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px; padding:10px 22px 0 10px; border-bottom:1px solid var(--b-medium); flex-shrink:0; background:#fff; }
+    .side-tabs button { display:flex; align-items:center; justify-content:center; min-width:0; gap:7px; font-family:'Hanken Grotesk',sans-serif; font-weight:500; font-size:13px;
+      letter-spacing:0; text-transform:none; color:#4f5c54; background:none; border:0; border-bottom:2px solid transparent;
+      border-radius:8px 8px 0 0; padding:8px 6px 9px; margin-bottom:-1px; cursor:pointer; transition:background .15s, color .15s; white-space:nowrap; }
+    .side-tabs button .ti { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+    .side-tabs button:hover { background:#F4F6F4; color:var(--ink); }
+    .side-tabs button:focus-visible { outline:2px solid var(--terra); outline-offset:-2px; }
+    .side-tabs .n { font-size:10px; font-weight:600; line-height:1; background:var(--terra); color:#fff; border-radius:999px; padding:3px 6px; }
+    .side-tabs .n:empty { display:none; }
+    body:not(.photos-open):not(.review-open) #btn-todo, body.photos-open #btn-photos, body.review-open #btn-review {
+      background:#EEF3EF; color:var(--terra); border-bottom-color:var(--terra); }
     .sidebar-head { display:none; }   /* the To Do tab names it now */
     .sidebar-label {
       font-family: 'Hanken Grotesk', sans-serif;
@@ -180,7 +187,7 @@
     .ap-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.42rem .9rem;cursor:pointer;border-left:3px solid transparent}
     .ap-row:hover,.ap-row.sel{background:#F3F6F4;border-left-color:#2D6B50}
     .ap-main{min-width:0;display:flex;align-items:center;gap:.6rem}.ap-title{font-size:.92rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .ap-flag{width:20px;height:15px;flex-shrink:0;border-radius:2px;box-shadow:0 0 0 1px rgba(28,40,33,.12);object-fit:cover;display:inline-block}
+    .ap-flag{width:20px;height:15px;flex-shrink:0;border-radius:2px;object-fit:cover;display:inline-block}
     .ap-path{font:.62rem/1.3 'DM Mono',monospace;color:#8a9790;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
     .ap-meta{display:flex;align-items:center;gap:.35rem;flex-shrink:0;white-space:nowrap}
     .ap-chip{font:600 .52rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .4rem;border-radius:999px;background:#EEEDE7;color:#5c665f}
@@ -293,6 +300,15 @@
     .toolbar .tool-btn { border-color: transparent; background: transparent; padding: .38rem .55rem; border-radius: 4px; }
     .toolbar .tool-btn:hover { background: var(--mist); }
     .tb-group { display: flex; align-items: center; gap: .1rem; }
+    .toolbar .tool-btn { display:inline-flex; align-items:center; gap:6px; }
+    .toolbar .tool-select { -webkit-appearance:none; appearance:none; height:28px; padding:0 1.5rem 0 .6rem; border:1px solid rgba(28,40,33,.14);
+      border-radius:6px; font-family:'Hanken Grotesk',sans-serif; font-size:12px; font-weight:500; letter-spacing:0; color:var(--ink); cursor:pointer; margin:0 2px;
+      background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231C2821' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .5rem center/9px 6px; }
+    .toolbar .tool-select:hover { border-color:rgba(28,40,33,.3); }
+    .toolbar .tool-select { width:74px; height:26px; font-size:.65rem; font-weight:600; }
+    .toolbar .color-swatch { height:26px; width:28px; }        /* a menu is as wide as its longest option; these read 'Font' and 'Size' */
+    .toolbar .color-swatch { height:28px; width:30px; border-radius:6px; margin:0 2px; }
+    .toolbar .tbi { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
     .tb-more { position: relative; margin-left: auto; }
     .tb-more-pop { display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 350; background: #fff;
       border: 1px solid var(--b-medium); border-radius: 8px; box-shadow: 0 10px 30px rgba(28,40,33,.14); padding: .6rem;
@@ -486,31 +502,32 @@
     #ed-masthead.plain h1 { color:var(--ink); max-width:none; }
     #ed-masthead.plain .mh-cpy { align-items:center; }
 
-    /* ---- table of contents: the site's #toc-b box, in the editor's faces (2026-09-27) ---- */
-    #editor #toc-b, #editor .ed-toc { border:1px solid var(--b-medium); border-radius:6px; padding:1.5rem 1.75rem; margin:0 0 2.5rem; background:var(--mist); }
-    #editor #toc-b .toc-label, #editor .ed-toc .tl { display:block; font-family:'Hanken Grotesk',sans-serif; font-size:.5rem; letter-spacing:.18em; text-transform:uppercase; color:var(--terra); opacity:.7; margin-bottom:.5rem; }
-    #editor #toc-b .toc-title, #editor .ed-toc .tt { display:block; font-family:'Newsreader',serif; font-size:1.1rem; font-weight:300; font-style:italic; color:var(--ink); margin-bottom:1.2rem; line-height:1.2; }
-    #editor #toc-b .toc-cols, #editor .ed-toc .tc { display:grid; grid-template-columns:1fr 1fr; gap:0 2.5rem; align-items:start; }
-    #editor #toc-b .toc-row, #editor .ed-toc .tr { display:flex; align-items:baseline; gap:.55rem; padding:.38rem 0; border-bottom:1px solid var(--b-subtle); }
-    #editor #toc-b .toc-row:last-child, #editor .ed-toc .tr:last-child { border-bottom:none; }
-    #editor #toc-b .toc-num, #editor .ed-toc .tr::before { font-family:'Hanken Grotesk',sans-serif; font-size:.65rem; font-weight:400; color:var(--terra); flex-shrink:0; line-height:1.6; }
-    #editor #toc-b a.toc-link, #editor .ed-toc .tr::after { font-family:'Hanken Grotesk',sans-serif; font-size:.85rem; font-weight:400; color:rgba(28,40,33,.85); text-decoration:none; line-height:1.5; }
+    /* ---- table of contents: the article's #toc-b box, measured from the rendered page (2026-09-27) ---- */
+    #editor #toc-b, #editor .ed-toc { background:transparent; border:1px solid rgba(28,40,33,.14); border-radius:0; padding:24px 28px; margin:22px 0 30px;
+      font-family:'Hanken Grotesk',sans-serif; font-weight:300; color:rgba(28,40,33,.86); }
+    #editor #toc-b .toc-label, #editor .ed-toc .tl { display:block; font-size:10px; font-weight:300; letter-spacing:1.6px; text-transform:uppercase; color:#2D6B50; opacity:1; margin:0 0 8px; }
+    #editor #toc-b .toc-title, #editor .ed-toc .tt { display:block; font-family:'Newsreader',serif; font-size:17.6px; line-height:21.12px; font-weight:300; font-style:italic; color:#1C2821; margin:0 0 19.2px; }
+    #editor #toc-b .toc-cols, #editor .ed-toc .tc { display:grid; grid-template-columns:1fr 1fr; gap:0 40px; align-items:start; }
+    #editor #toc-b .toc-row, #editor .ed-toc .tr { display:flex; align-items:baseline; gap:8.8px; padding:6.08px 0; border-bottom:1px solid rgba(28,40,33,.09); }
+    #editor #toc-b .toc-row:last-child, #editor .ed-toc .tk > :last-child { border-bottom:none; }
+    #editor #toc-b .toc-num, #editor .ed-toc .tr::before { font-size:10.4px; line-height:16.64px; font-weight:400; color:#2D6B50; flex-shrink:0; }
+    #editor #toc-b a.toc-link, #editor .ed-toc .tr::after { font-size:13.6px; line-height:20.4px; font-weight:400; color:rgba(28,40,33,.86); text-decoration:none; }
     #editor .ed-toc { user-select:none; cursor:default; }
     #editor .ed-toc .tl::before, #editor .ed-toc .tt::before { content:attr(data-t); }
+    #editor .ed-toc .tk { display:block; }
     #editor .ed-toc .tr { cursor:pointer; }
     #editor .ed-toc .tr::before { content:attr(data-n); }
-    #editor .ed-toc .tr::after { content:attr(data-t); }
-    #editor .ed-toc .tr:hover::after { color:var(--terra); }
-    #editor .ed-toc .tk { display:block; }
-    #editor .ed-toc .tr:has(+ .tsub) { border-bottom:none; }
-    #editor .ed-toc .tsub { display:block; padding:.2rem 0 .4rem; border-bottom:1px solid var(--b-subtle); }
-    #editor .ed-toc .tk > :last-child { border-bottom:none; }
-    #editor .ed-toc .tsa { display:block; cursor:pointer; padding:.28rem 0 .28rem 1.1rem; border-left:1.5px solid var(--b-medium); margin-left:.1rem; }
-    #editor .ed-toc .tsa::after { content:attr(data-t); font-family:'Hanken Grotesk',sans-serif; font-size:.78rem; font-weight:300; color:rgba(28,40,33,.7); }
-    #editor .ed-toc .tsa:hover { border-left-color:var(--terra); }
-    #editor .ed-toc .tsa:hover::after { color:var(--terra); }
-    #editor .ed-toc:not(.built)::after { display:none; }
-    #editor .ed-toc::after { content:'Built from your headings'; display:block; margin-top:.9rem; font-family:'Hanken Grotesk',sans-serif; font-size:.6rem; color:#6b7a70; }
+    #editor .ed-toc .tr::after { content:attr(data-t); flex:1; }
+    #editor .ed-toc .tr:hover::after, #editor .ed-toc .tsa:hover::after { color:#2D6B50; }
+    /* a heading with sub-sections: no rule under it, its arrow, then the rail of sub-links */
+    #editor .ed-toc .tr.has-sub { border-bottom:none; gap:7.2px; }
+    #editor .ed-toc .tr .ta { order:2; font-size:19.2px; line-height:0; color:#2D6B50; opacity:.6; padding-left:3.2px; transform:rotate(180deg); display:inline-block; align-self:center; }
+    #editor .ed-toc .tr .ta::before { content:'\25BE'; }
+    #editor .ed-toc .tsub { display:block; margin:6px 0 0; padding:3.2px 0 28.5px; border-bottom:1px solid rgba(28,40,33,.09); }   /* the page: 6.4 + 16 + 6.08 to the row's rule */
+    #editor .ed-toc .tsub.tcont { margin-top:6.08px; }
+    #editor .ed-toc .tsa { display:block; cursor:pointer; padding:4.48px 0 4.48px 17.6px; border-left:1px solid rgba(28,40,33,.14); margin-left:1.6px; }
+    #editor .ed-toc .tsa::after { content:attr(data-t); font-size:12.48px; line-height:15.6px; font-weight:300; color:rgba(28,40,33,.86); }
+    #editor .ed-toc .tsa:hover { border-left-color:#2D6B50; }
 
     #editor {
       /* Default canvas before a file opens. loadFile() overrides this with
@@ -598,14 +615,15 @@
     /* Empty slots in a pair, waiting for a photo. Same 2:3 frame the real
        photo will occupy, so the layout does not jump when it is filled. */
     #editor .img-slot-empty { display:block; position:relative; overflow:hidden; width:100%;
-      aspect-ratio:2/3; border-radius:2px; border:2px dashed #b9cfc2; background:#f2f5f3;
-      cursor:pointer; }
-    #editor .img-slot-empty:hover { border-color:var(--terra,#2D6B50); background:#e9f0eb; }
-    #editor .img-slot-empty::after { content:'+ add photo'; position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center; color:#7d9a8a;
-      font-family:Hanken Grotesk,sans-serif; font-size:.62rem; letter-spacing:.08em;
-      text-transform:uppercase; pointer-events:none; }
-    #editor .img-slot-empty[data-hint]::after { content:'+ ' attr(data-hint); padding:0 .6rem; text-align:center; line-height:1.4; }
+      aspect-ratio:2/3; border-radius:0; border:1px dashed #C9C3B4; background:#F2F0E9;
+      cursor:pointer; transition:background .15s, border-color .15s; }
+    /* the page's own [PHOTO] box (2026-09-27: no hint text), with the green hover */
+    #editor .img-slot-empty:hover { border:1px solid var(--terra,#2D6B50); background:#e9f0eb; }
+    #editor .img-slot-empty::after { content:'[PHOTO]'; position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center; color:#8C8676;
+      font-family:Hanken Grotesk,sans-serif; font-size:11px; font-weight:600; letter-spacing:.16em;
+      pointer-events:none; }
+    #editor .img-slot-empty:hover::after { content:'+ ADD PHOTO'; color:var(--terra,#2D6B50); }
     #hist-modal{position:fixed;inset:0;background:rgba(28,40,33,.35);z-index:950;display:flex;align-items:flex-start;justify-content:center;padding-top:9vh}
     #hist-modal .hm{width:min(560px,94vw);max-height:78vh;display:flex;flex-direction:column;background:#fff;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden;font-family:'Hanken Grotesk',sans-serif}
     #hist-modal .hh{display:flex;align-items:baseline;gap:.6rem;padding:.8rem 1rem;border-bottom:1px solid #e6e6e2}
@@ -681,7 +699,7 @@
     #photo-panel { display: none; flex-direction: column; flex: 1; min-height: 0; }
     body.photos-open #photo-panel { display: flex; }
     body.photos-open #todo-list, body.photos-open .sidebar-head { display: none; }
-    body.photos-open .workspace { grid-template-columns: 320px 1fr; }
+    body.photos-open .workspace { grid-template-columns: 372px 1fr; }
     /* the review margin (review.js) is the third thing that can live in the ONE left sidebar:
        it swaps in for the to-do list / photo library the way Photos does, so there is never a
        second sidebar. Wider than the to-do list because its cards hold sentences. */
@@ -1209,6 +1227,32 @@ header .prog.all b{color:#6EC99A}
 
 }
 #app-library[hidden] { display:none !important; }
+/* ============== HIDE-THE-SIDEBAR ARROW (2026-09-27) ==============
+   the same small round arrow on the sidebar's edge in every app; collapsed, the sidebar folds
+   away and the arrow waits at the window edge pointing back */
+.side-handle{width:24px;height:24px;border-radius:50%;border:1px solid rgba(28,40,33,.16);background:#fff;
+  color:#4f5c54;box-shadow:0 1px 4px rgba(28,40,33,.12);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;z-index:30;align-self:start;justify-self:end;margin:10px -12px 0 0;transition:margin .2s}
+.side-handle:hover{color:#2D6B50;border-color:#2D6B50}
+.side-handle:focus-visible{outline:2px solid #2D6B50;outline-offset:2px}
+.side-handle svg{width:12px;height:12px;transition:transform .2s}
+/* the editor: the sidebar and the page share one grid row, the arrow sits on their seam */
+.workspace > .sidebar{grid-column:1;grid-row:1}
+.workspace > .editor-wrap{grid-column:2;grid-row:1}
+.workspace > .side-handle{grid-column:1;grid-row:1}
+body.ed-side-collapsed .workspace{grid-template-columns:0 1fr !important}
+body.ed-side-collapsed .workspace > .sidebar{visibility:hidden}
+body.ed-side-collapsed .workspace > .side-handle{margin-right:-30px}
+body.ed-side-collapsed .workspace > .side-handle svg{transform:rotate(180deg)}
+body.ed-side-collapsed #rv-lines{display:none}
+/* the library: the album list */
+#app-library > aside{grid-row:2;grid-column:1}
+#app-library > main{grid-row:2;grid-column:2}
+#app-library > .side-handle{grid-row:2;grid-column:1;margin-right:-20px}   /* mostly past the edge: the album counts sit right against it */
+#app-library.side-collapsed{grid-template-columns:0 1fr}
+#app-library.side-collapsed > aside{visibility:hidden}
+#app-library.side-collapsed > .side-handle{margin-right:-30px}
+#app-library.side-collapsed > .side-handle svg{transform:rotate(180deg)}
 /* ============== ONE DROPDOWN STYLE (2026-09-27) ==============
    The native menus looked like Windows 95 next to the pill chips. Same face, a thin
    warm border, a drawn chevron; the list that opens is still the native one. */
@@ -1232,6 +1276,45 @@ input[type=checkbox]{accent-color:#2D6B50}
   padding:.4rem;background:#fff;border:1px solid #D8E5DC;border-radius:14px;
   box-shadow:0 14px 40px rgba(11,13,16,.16)}
 #applist[hidden]{display:none}
+/* ============== APP SWITCHER, pills (2026-09-27, second pass) ==============
+   wordmark | Editor Library Heroes Maps as pills, each with an icon disc; the open app is a tinted
+   pill with a mint disc. Everything sits on the bar's center line. */
+.suite-mark{font-family:'Newsreader',serif;font-style:italic;font-weight:400;font-size:21px;line-height:1;letter-spacing:-.01em;
+  color:#fff;white-space:nowrap;text-decoration:none;display:flex;align-items:center}
+.suite-mark em{font-style:italic;color:#fff}
+/* plain white type on the dark bar, no divider after it (Kevin 2026-09-27) */
+.suite-mark{margin-right:6px}
+.suite-sep{display:none}
+.suite-sep{width:1px;height:22px;background:rgba(255,255,255,.14);flex:none}
+.app-tabs{display:flex !important;align-items:center !important;gap:4px !important;height:auto !important;align-self:center !important}
+.app-tabs a{display:flex !important;align-items:center !important;gap:8px;height:34px;padding:0 13px 0 5px !important;border-radius:999px;
+  font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:500 !important;letter-spacing:0 !important;
+  text-transform:none !important;color:rgba(247,247,243,.66) !important;opacity:1 !important;text-decoration:none;white-space:nowrap;
+  border:1px solid transparent !important;transition:background .15s,color .15s,border-color .15s}
+.app-tabs a .ad{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.07);color:rgba(247,247,243,.8);transition:background .15s,color .15s}
+.app-tabs a .ad svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.app-tabs a:hover{color:#fff !important;background:rgba(255,255,255,.05)}
+/* the open app in white and grey, quieter than the mint it had (Kevin 2026-09-27) */
+.app-tabs a.on{background:rgba(255,255,255,.09) !important;border-color:rgba(255,255,255,.16) !important;color:#fff !important}
+.app-tabs a.on .ad{background:#F7F7F3;color:#1C2821}
+.app-tabs a:focus-visible{outline:2px solid #6EC99A;outline-offset:2px}
+/* one line: the pieces of every app bar are centered on it */
+header .header-left{gap:18px !important}
+header .file-label{display:none}
+/* the bar's buttons are pills too, like the app pills beside them */
+header .btn{border-radius:999px !important;padding:.62rem 1.15rem !important}
+header .btn-open{background:transparent !important;border:1px solid rgba(255,255,255,.2) !important}
+header .btn-open:hover{background:rgba(255,255,255,.08) !important}
+/* the apps as tabs in the dark bar (2026-09-27): one click to switch instead of open-then-pick.
+   Site-nav type, on the dark ground; the open app is full strength with a green rule under it. */
+.app-tabs{display:flex;align-items:stretch;gap:1.6rem;height:100%;align-self:stretch}
+.app-tabs a{display:flex;align-items:center;font-family:'Hanken Grotesk',sans-serif;font-weight:500;font-size:.62rem;
+  letter-spacing:.18em;text-transform:uppercase;color:#F7F7F3;opacity:.55;text-decoration:none;
+  border-bottom:2px solid transparent;border-top:2px solid transparent;transition:opacity .15s;white-space:nowrap}
+.app-tabs a:hover{opacity:.9}
+.app-tabs a.on{opacity:1;border-bottom-color:#6EC99A}
+.app-tabs a:focus-visible{outline:2px solid #6EC99A;outline-offset:3px}
 #applist a{display:flex;align-items:baseline;gap:.6rem;padding:.7rem .8rem;border-radius:10px;
   text-decoration:none;color:#1C2821;font-family:'Newsreader',serif;font-size:1.15rem}
 #applist a b{font-weight:400;color:#2D6B50}
@@ -1455,16 +1538,16 @@ input[type=checkbox]{accent-color:#2D6B50}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=15df3ad3" defer></script>
+<script src="review.js?v=e9545f89" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
     <!-- the sidebar's three faces as tabs (2026-09-27; they were header buttons). The active
          tab is pure CSS off the body classes the panels already set, so nothing can drift. -->
     <nav class="side-tabs" role="tablist">
-      <button id="btn-todo" role="tab" onclick="sideTab('todo')" title="Your to-do list">To Do</button>
-      <button id="btn-photos" role="tab" onclick="sideTab('photos')" title="The photo library, to drag photos into the article">Photos</button>
-      <button id="btn-review" role="tab" onclick="sideTab('review')" title="Track changes and comments for the open article">Review</button>
+      <button id="btn-photos" role="tab" onclick="sideTab('photos')" title="The photo library, to drag photos into the article"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Photos</button>
+      <button id="btn-review" role="tab" onclick="sideTab('review')" title="Track changes and comments for the open article"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>Review<span class="n" id="btn-review-n"></span></button>
+      <button id="btn-todo" role="tab" onclick="sideTab('todo')" title="Your to-do list"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 2 2 4-4"/><path d="m3 17 2 2 4-4"/><path d="M13 6h8M13 12h8M13 18h8"/></svg>To Do</button>
     </nav>
     <!-- Photo library (swaps with the to-do list via the Photos button) -->
     <div id="photo-panel">
@@ -1515,6 +1598,7 @@ input[type=checkbox]{accent-color:#2D6B50}
     </div>
   </aside>
 
+  <button class="side-handle" id="ed-side-handle" type="button" title="Hide the sidebar (Ctrl+\)" aria-label="Hide the sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
   <div class="editor-wrap">
     <div class="toolbar" id="toolbar">
       <!-- bold / italic / underline / strikethrough buttons removed 2026-09-26: Ctrl+B, Ctrl+I, Ctrl+U still work -->
@@ -1524,9 +1608,42 @@ input[type=checkbox]{accent-color:#2D6B50}
       <div class="tb-group" aria-label="Text">
         <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
         <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
-        <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
-        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
+      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
+        <option value="">Font</option>
+        <!-- Only the two faces the site actually serves. The old list offered
+             Jost, Fraunces, Lora and Source Sans 3, all retired by the
+             re-theme: picking one wrote a font into the article that the
+             published page has no @font-face for, so it fell back silently. -->
+        <option value="__body__">Body (Hanken Grotesk)</option>
+        <option value="__body-bold__">Body bold</option>
+        <option value="__display__">Display (Newsreader)</option>
+        <option value="__display-italic__">Display italic</option>
+      </select>
+      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
+        <option value="">Size</option>
+        <option value="t-sm">Small</option>
+        <option value="__reset__">Body (reset)</option>
+        <option value="t-lg">Large</option>
+        <option value="t-xl">XLarge</option>
+      </select>
+      <div class="color-picker-wrap" id="color-picker-wrap">
+        <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
+          <span class="color-swatch-letter">A</span>
+          <div class="color-swatch-bar" id="color-swatch-bar"></div>
+        </div>
+        <div class="color-dropdown" id="color-dropdown">
+          <span class="color-dropdown-label">Theme</span>
+          <div class="color-swatches-grid" id="color-theme-grid"></div>
+          <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
+          <div class="color-swatches-grid" id="color-swatches-grid"></div>
+          <div class="color-custom-row">
+            <span class="color-custom-label">Custom</span>
+            <input type="color" id="color-input" value="#e63946" title="Pick custom color">
+          </div>
+        </div>
+      </div>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/></svg></button>
       </div>
       <div class="tool-divider"></div>
       <div class="tb-group" aria-label="Lists">
@@ -1536,51 +1653,10 @@ input[type=checkbox]{accent-color:#2D6B50}
       </div>
       <div class="tool-divider"></div>
       <div class="tb-group" aria-label="Photos and layout">
-        <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
-        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
-        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
-        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
-        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it.">―</button>
-      </div>
-      <!-- font, size and color are rare, so they live behind the ⋯ (2026-09-27) -->
-      <div class="tb-more" id="tb-more">
-        <button class="tool-btn" id="tb-more-btn" onmousedown="saveSelection()" onclick="document.getElementById('tb-more').classList.toggle('open')" title="Font, size and color" aria-haspopup="true" style="font-size:1rem;padding:.2rem .6rem">&#8943;</button>
-        <div class="tb-more-pop">
-          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
-            <option value="">Font</option>
-            <!-- Only the two faces the site actually serves. The old list offered
-                 Jost, Fraunces, Lora and Source Sans 3, all retired by the
-                 re-theme: picking one wrote a font into the article that the
-                 published page has no @font-face for, so it fell back silently. -->
-            <option value="__body__">Body (Hanken Grotesk)</option>
-            <option value="__body-bold__">Body bold</option>
-            <option value="__display__">Display (Newsreader)</option>
-            <option value="__display-italic__">Display italic</option>
-          </select>
-          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
-            <option value="">Size</option>
-            <option value="t-sm">Small</option>
-            <option value="__reset__">Body (reset)</option>
-            <option value="t-lg">Large</option>
-            <option value="t-xl">XLarge</option>
-          </select>
-          <div class="color-picker-wrap" id="color-picker-wrap">
-            <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
-              <span class="color-swatch-letter">A</span>
-              <div class="color-swatch-bar" id="color-swatch-bar"></div>
-            </div>
-            <div class="color-dropdown" id="color-dropdown">
-              <span class="color-dropdown-label">Theme</span>
-              <div class="color-swatches-grid" id="color-theme-grid"></div>
-              <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
-              <div class="color-swatches-grid" id="color-swatches-grid"></div>
-              <div class="color-custom-row">
-                <span class="color-custom-label">Custom</span>
-                <input type="color" id="color-input" value="#e63946" title="Pick custom color">
-              </div>
-            </div>
-          </div>
-        </div>
+        <button class="tool-btn" onclick="insertImage()" title="Insert Image"><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m21 16-5-5-9 9"/></svg><span>Image</span></button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/></svg><span>Pair</span></button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="1.5"/></svg><span>Portrait</span></button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="1.5"/></svg><span>Wide</span></button>
       </div>
     </div>
 
@@ -1628,6 +1704,7 @@ input[type=checkbox]{accent-color:#2D6B50}
 </div>
 
 <aside id="albums"></aside>
+<button class="side-handle" id="lib-side-handle" type="button" title="Hide the album list (Ctrl+\)" aria-label="Hide the album list" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
 
 <main>
   <div id="lib-toolbar">
@@ -2508,10 +2585,20 @@ input[type=checkbox]{accent-color:#2D6B50}
     const t = sc.textContent;
     const T = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '';
     const go = a => (a.getAttribute('href') || '').replace(/^#/, '');
+    const decode = v => new DOMParser().parseFromString('<p>' + v + '</p>', 'text/html').body.textContent;   // &mdash; -> the dash
     // written out by hand: the box is exactly that markup
     const tpl = /\.innerHTML\s*=\s*`([\s\S]*?)`/.exec(t);
-    if (tpl && !tpl[1].includes('${')) {
-      const d = new DOMParser().parseFromString('<div>' + tpl[1] + '</div>', 'text/html');
+    // ...or as plain strings joined with + (Monastery, Meteora): nothing but string literals
+    let fixed = tpl && !tpl[1].includes('${') ? tpl[1] : null;
+    if (fixed == null) {
+      const ex = /\.innerHTML\s*=\s*([\s\S]*?);\s*\n/.exec(t);
+      const lits = ex && ex[1].match(/"(?:[^"\\]|\\.)*"/g);
+      if (lits && !ex[1].replace(/"(?:[^"\\]|\\.)*"/g, '').replace(/[\s+]/g, '')) {
+        try { fixed = lits.map(x => JSON.parse(x)).join(''); } catch (e) { fixed = null; }
+      }
+    }
+    if (fixed != null) {
+      const d = new DOMParser().parseFromString('<div>' + fixed + '</div>', 'text/html');
       const colEls = [...d.querySelectorAll('.toc-col')];
       const rowsOf = c => [...c.querySelectorAll('.toc-row')].map(r => {
         const a = r.querySelector('.toc-link, .toc-section-link');
@@ -2521,10 +2608,17 @@ input[type=checkbox]{accent-color:#2D6B50}
       return { label: T(d.querySelector('.toc-label')) || 'In this guide', title: T(d.querySelector('.toc-title')),
                cols: (colEls.length ? colEls : [d.body]).map(rowsOf) };
     }
-    // built from the headings: which headings, and the box's title
+    // built from the headings: which headings, the title, and whether it lists sub-sections
     const sels = [...t.matchAll(/querySelectorAll\(\s*(["'])([^"']+)\1\s*\)/g)].map(m => m[2]);
     const title = /toc-title\\?">([^<\\]*)/.exec(t);
-    return { label: 'In this guide', title: title ? title[1] : '', sel: sels.find(x => /h2/.test(x)) || 'h2[id]' };
+    return { label: 'In this guide', title: title ? decode(title[1]) : '', sel: sels.find(x => /h2/.test(x)) || 'h2[id]', subs: /toc-sub/.test(t) };
+  }
+  // the page's own split: fill the first column until it holds half the rows (a sub-section counts)
+  function tocSplit(rows) {
+    const w = r => 1 + r.subs.length, tot = rows.reduce((a, r) => a + w(r), 0);
+    let acc = 0, k = 0;
+    while (k < rows.length && acc < tot / 2) { acc += w(rows[k]); k++; }
+    return [rows.slice(0, k), rows.slice(k)];
   }
   function buildToc() {
     const ed = document.getElementById('editor'), spec = window.__tocSpec;
@@ -2532,25 +2626,32 @@ input[type=checkbox]{accent-color:#2D6B50}
     if (!spec) { if (old) old.remove(); return; }
     const first = ed.querySelector('h2');
     let cols, sig;
+    const txt = h => h.textContent.replace(/\s+/g, ' ').trim();
     if (spec.cols) { cols = spec.cols; sig = 'static'; }
     else {
       const hs = [...ed.querySelectorAll(spec.sel)];
-      cols = [hs.map((h, i) => ({ n: String(i + 1).padStart(2, '0'), t: h.textContent.replace(/\s+/g, ' ').trim(), go: h.id, subs: [] }))];
-      sig = hs.map(h => h.id + '|' + h.textContent.trim()).join('\n');
+      const rows = hs.map((h, i) => {
+        const subs = [];
+        if (spec.subs) for (let n = h.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling)
+          if (n.tagName === 'H3' && n.id) subs.push({ t: txt(n), go: n.id });
+        return { n: String(i + 1).padStart(2, '0'), t: txt(h), go: h.id, subs };
+      });
+      cols = spec.subs ? tocSplit(rows) : [rows];
+      sig = JSON.stringify(rows);
     }
     if (old && old.dataset.sig === sig && old.nextElementSibling === first) return;     // nothing moved
     if (old) old.remove();
     if (!first || !cols.some(c => c.length)) return;
     const esc = v => (v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    const row = r => `<span class="tr" data-n="${esc(r.n)}" data-t="${esc(r.t)}" data-go="${esc(r.go)}"></span>` +
+    const row = r => !r.t && r.subs.length       // a sub-list carried on into the next column, no heading of its own
+      ? '<span class="tsub tcont">' + r.subs.map(x => `<span class="tsa" data-t="${esc(x.t)}" data-go="${esc(x.go)}"></span>`).join('') + '</span>'
+      : `<span class="tr${r.subs.length ? ' has-sub' : ''}" data-n="${esc(r.n)}" data-t="${esc(r.t)}" data-go="${esc(r.go)}">${r.subs.length ? '<span class="ta"></span>' : ''}</span>` +
       (r.subs.length ? '<span class="tsub">' + r.subs.map(x => `<span class="tsa" data-t="${esc(x.t)}" data-go="${esc(x.go)}"></span>`).join('') + '</span>' : '');
     const box = document.createElement('div');
     box.className = 'ed-toc'; box.contentEditable = 'false'; box.dataset.chrome = 'toc'; box.dataset.sig = sig;
-    box.title = spec.cols ? "The page's table of contents, as it is written in the page. Click a row to jump to it."
-                          : 'The table of contents the page builds from your headings. Click a row to jump to it.';
+    box.title = 'The table of contents as the page shows it. Click a row to jump to it.';
     box.innerHTML = `<span class="tk tl" data-t="${esc(spec.label)}"></span>` + (spec.title ? `<span class="tk tt" data-t="${esc(spec.title)}"></span>` : '') +
       '<span class="tc">' + cols.map(c => '<span class="tk">' + c.map(row).join('') + '</span>').join('') + '</span>';
-    box.classList.toggle('built', !spec.cols);
     first.parentNode.insertBefore(box, first);
   }
   window.__buildToc = buildToc;
@@ -2558,7 +2659,7 @@ input[type=checkbox]{accent-color:#2D6B50}
   new MutationObserver(() => { clearTimeout(_tocT); _tocT = setTimeout(buildToc, 250); })
     .observe(document.getElementById('editor'), { childList: true, subtree: true, characterData: true });
   document.getElementById('editor').addEventListener('click', e => {
-    const r = e.target.closest && e.target.closest('.ed-toc .tr, .ed-toc .tsa');
+    const r = e.target.closest && e.target.closest('.ed-toc .tr, .ed-toc .tsa');   // (the arrow sits inside its row)
     if (!r) return;
     e.preventDefault();
     const h = document.getElementById('editor').querySelector('#' + CSS.escape(r.dataset.go));
@@ -2726,6 +2827,15 @@ input[type=checkbox]{accent-color:#2D6B50}
 
     // Force a full spellcheck pass so squiggles appear on the loaded content
     forceSpellcheckPass();
+    // An article opens at the top, on its hero (Kevin, 2026-09-27). The spellcheck pass, the
+    // review margin and the photo follow can all move the caret after this, so the top is held
+    // for a moment, until you scroll or click yourself.
+    const sc = document.querySelector('.editor-scroll');
+    let touched = false;
+    const mine = () => { touched = true; };
+    ['wheel', 'pointerdown', 'keydown', 'touchstart'].forEach(ev => sc.addEventListener(ev, mine, { once: true, passive: true }));
+    const top = () => { if (!touched) sc.scrollTop = 0; };
+    top(); requestAnimationFrame(top); setTimeout(top, 300); setTimeout(top, 1000);
   }
 
   function setDirty(dirty) {
@@ -3446,9 +3556,13 @@ input[type=checkbox]{accent-color:#2D6B50}
     const { newHTML, saveEl } = assembleDocument(editor, doc, originalBody);
 
     try {
+      // the disk check must not mistake this write for someone else's (it runs on a 30 s timer,
+      // the same as autosave, and used to catch the file between the write and the snapshot)
+      window.__saving = true; window.__lastWritten = newHTML;
       const writable = await fileHandle.createWritable();
       await writable.write(newHTML);
       await writable.close();
+      setTimeout(() => { window.__saving = false; }, 1500);
       originalHTML = newHTML;
       setDirty(false);
       { const m = document.getElementById('ed-masthead'); if (m && !m.hidden && window.__renderMasthead && !m.contains(document.activeElement)) __renderMasthead(newHTML); }
@@ -4946,6 +5060,14 @@ input[type=checkbox]{accent-color:#2D6B50}
   };
   // the sidebar tabs: To Do is what shows when neither panel is open. Clicking the tab
   // that is already open does nothing, the way a tab should.
+  // Photos is the tab the editor opens on (Kevin, 2026-09-27); an article with something to
+  // review still opens the margin (review.js decides that when the article loads)
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!document.body.classList.contains('photos-open') && !document.body.classList.contains('review-open')) window.togglePhotoPanel();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.altKey && e.key === '0' && document.getElementById('editor').contains(getSelection().anchorNode)) { e.preventDefault(); insertHeading('p'); }
+  });
   window.sideTab = function (t) {
     const B = document.body.classList;
     if (t === 'photos') { if (!B.contains('photos-open')) togglePhotoPanel(); }
@@ -6418,7 +6540,7 @@ input[type=checkbox]{accent-color:#2D6B50}
       ed().dispatchEvent(new Event('input', { bubbles: true }));
       if (window.__History && window.__History.touch) try { window.__History.touch(); } catch (e) {}
       if (typeof setDirty === 'function') try { setDirty(true); } catch (e) {}
-      if (window.review && review.checkDisk) review.checkDisk();
+      if (window.review && review.resnapshot) review.resnapshot();   // the map editor wrote the file: our write, not someone else's
       if (typeof toast === 'function') toast('City map updated in the article. Save to keep it with your other edits.');
       return;
     }
@@ -6428,7 +6550,7 @@ input[type=checkbox]{accent-color:#2D6B50}
       ed().dispatchEvent(new Event('input', { bubbles: true }));
       if (window.__History && window.__History.touch) try { window.__History.touch(); } catch (e) {}
       if (typeof setDirty === 'function') try { setDirty(true); } catch (e) {}
-      if (window.review && review.checkDisk) review.checkDisk();   // the file changed under us, by us
+      if (window.review && review.resnapshot) review.resnapshot();   // the map editor wrote the file: our write, not someone else's   // the file changed under us, by us
       if (typeof toast === 'function') toast('Map updated in the article. Save to keep it with your other edits.');
     }
   });
@@ -9765,9 +9887,51 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
     document.querySelectorAll('#applist a').forEach(a =>
       a.classList.toggle('on', a.dataset.view === v));
+    if (window.__paintTabs) __paintTabs(v);
     if (toLib && window.__libRefresh) __libRefresh();
   }
   window.showView = showView;
+  // ---- hide-the-sidebar arrows: the editor's sidebar and the library's album list ----
+  (function sideHandles() {
+    const set = (key, on, apply) => { apply(on); try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) {} };
+    const get = key => { try { return localStorage.getItem(key) === '1'; } catch (e) { return false; } };
+    const label = (btn, on, what) => { btn.title = (on ? 'Show ' : 'Hide ') + what + ' (Ctrl+\\)'; btn.setAttribute('aria-label', (on ? 'Show ' : 'Hide ') + what); btn.setAttribute('aria-expanded', String(!on)); };
+    const ed = on => { document.body.classList.toggle('ed-side-collapsed', on); label(document.getElementById('ed-side-handle'), on, 'the sidebar');
+                       window.dispatchEvent(new Event('resize')); };   // the review margin re-places its cards
+    const lib = on => { document.getElementById('app-library').classList.toggle('side-collapsed', on); label(document.getElementById('lib-side-handle'), on, 'the album list'); };
+    ed(get('side:editor')); lib(get('side:library'));
+    document.getElementById('ed-side-handle').onclick = () => set('side:editor', !document.body.classList.contains('ed-side-collapsed'), ed);
+    document.getElementById('lib-side-handle').onclick = () => set('side:library', !document.getElementById('app-library').classList.contains('side-collapsed'), lib);
+    document.addEventListener('keydown', e => {
+      if (!(e.ctrlKey || e.metaKey) || e.key !== '\\') return;
+      e.preventDefault();
+      if (!document.getElementById('app-library').hidden) document.getElementById('lib-side-handle').click();
+      else if (document.getElementById('app-editor').style.display !== 'none') document.getElementById('ed-side-handle').click();
+    });
+  })();
+  // every app's wordmark button becomes the same row of tabs
+  const TABS = [['editor', 'Editor', 'Write & lay out articles'], ['library', 'Library', 'Backups, ratings & blog picks'],
+                ['heroes', 'Heroes', 'Choose the banner for a page'], ['maps', 'Maps', 'Move labels on route & city maps']];
+  document.querySelectorAll('[data-switcher]').forEach(btn => {
+    const nav = document.createElement('nav');
+    nav.className = 'app-tabs'; nav.setAttribute('aria-label', 'Apps');
+    const ICONS = {"editor": "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z\"/>", "library": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-5-5L5 21\"/>", "heroes": "<rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M6 15h8M6 11.5h5\"/>", "maps": "<path d=\"M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z\"/><path d=\"M9 4v14M15 6v14\"/>"};
+    nav.innerHTML = TABS.map(([v, t, d], i) => `<a href="#${v}" data-view="${v}" title="${d} (Ctrl+Alt+${i + 1})"><span class="ad"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[v]}</svg></span>${t}</a>`).join('');
+    const mark = document.createElement('a');
+    mark.className = 'suite-mark'; mark.href = '#editor'; mark.title = 'getawayguide'; mark.innerHTML = 'getaway<em>guide</em>';
+    mark.onclick = e => { e.preventDefault(); showView('editor'); };
+    const sep = document.createElement('span'); sep.className = 'suite-sep';
+    btn.replaceWith(mark, sep, nav);
+  });
+  const paintTabs = v => document.querySelectorAll('.app-tabs a').forEach(a => a.classList.toggle('on', a.dataset.view === v));
+  document.addEventListener('click', ev => {
+    const a = ev.target.closest && ev.target.closest('.app-tabs a');
+    if (a) { ev.preventDefault(); showView(a.dataset.view); }
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.ctrlKey && ev.altKey && /^[1-4]$/.test(ev.key)) { ev.preventDefault(); showView(TABS[+ev.key - 1][0]); }
+  });
+  window.__paintTabs = paintTabs;
   document.addEventListener('click', ev => {
     const list = document.getElementById('applist');
     const row = ev.target.closest('#applist a');

@@ -82,7 +82,7 @@ for page in sorted(BASE.glob('*/*.html')):
                     print(f'  {page.parent.name}/{page.name}: MISSING original for {rel}')
                 skipped += 1
                 continue
-            orig_src = f'../Images/{country}/{sub.parent}/{orig}'.replace('\\', '/').replace('/./', '/')
+            orig_src = f'../Images/{country}/{sub.parent}/{orig}'.replace('\\', '/').replace('/./', '/').replace(' ', '%20')   # a space inside a srcset ends the URL
             replacement = wrap(full_tag, src, orig_src)
         else:
             # Case 2: src is the original -> desktop source is the web jpg
@@ -96,7 +96,7 @@ for page in sorted(BASE.glob('*/*.html')):
                       ' - run recompress_desktop.py first')
                 skipped += 1
                 continue
-            web_src = f'../Images/web/{country}/{sub.parent}/{sub.stem}.jpg'.replace('\\', '/').replace('/./', '/')
+            web_src = f'../Images/web/{country}/{sub.parent}/{sub.stem}.jpg'.replace('\\', '/').replace('/./', '/').replace(' ', '%20')   # a space inside a srcset ends the URL
             replacement = f'<picture><source media="(min-width:769px)" srcset="{web_src}">{full_tag}</picture>'
 
         result.append(html[prev:m.start()])

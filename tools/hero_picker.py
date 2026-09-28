@@ -653,6 +653,25 @@ PAGE = r"""<!doctype html>
     height:var(--fh, auto); aspect-ratio:var(--far, auto); min-height:var(--fmin, 0); }
   .full .meta, .full .hint, .full .key { margin-left:26px; margin-right:26px; }
   .full .cropcss { margin:.6rem 26px 0; }
+
+  /* the hide-the-sidebar arrow, the same one the Article Editor and Photo Library use (2026-09-27) */
+  .side-handle{width:24px;height:24px;border-radius:50%;border:1px solid rgba(28,40,33,.16);background:#fff;
+    color:#4f5c54;box-shadow:0 1px 4px rgba(28,40,33,.12);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;padding:0;z-index:30;transition:margin .2s,right .2s,left .2s}
+  .side-handle:hover{color:#2D6B50;border-color:#2D6B50}
+  .side-handle:focus-visible{outline:2px solid #2D6B50;outline-offset:2px}
+  .side-handle svg{width:12px;height:12px;transition:transform .2s}
+  .main > .stage{grid-column:1;grid-row:1}
+  .main > .strip{grid-column:2;grid-row:1}
+  .main > .side-handle{grid-column:2;grid-row:1;align-self:start;justify-self:start;margin:10px 0 0 -12px}
+  /* the picker's own button rules (padding, uppercase, dark fill) would win on specificity */
+  .main > button.side-handle, .embed .main > button.side-handle{padding:0;width:24px;height:24px;border-radius:50%;background:#fff;color:#4f5c54;border:1px solid rgba(28,40,33,.16);letter-spacing:0;font-size:0}
+  .main > button.side-handle:hover{color:#2D6B50;border-color:#2D6B50;background:#fff}
+  .strip-hidden .main{grid-template-columns:minmax(0,1fr) 0}
+  .strip-hidden .strip{visibility:hidden;padding:0;border:0}
+  .strip-hidden .main > .side-handle{margin-left:-30px}
+  .strip-hidden .main > .side-handle svg{transform:rotate(180deg)}
+  .full .main > .side-handle{display:none}       /* full bleed already hides the strip */
   .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; font-size:12px;
     letter-spacing:.06em; opacity:0; transition:opacity .25s; pointer-events:none; }
@@ -745,9 +764,20 @@ with the window.">
     </p>
   </div>
   <div class="strip" id="strip">Loading&hellip;</div>
+  <button class="side-handle" id="side-handle" type="button" title="Hide the photo strip" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
 </div>
 <div class="toast" id="toast"></div>
 <script>
+(function sideHandle() {
+  const btn = document.getElementById('side-handle');
+  const apply = on => { document.documentElement.classList.toggle('strip-hidden', on); btn.title = (on ? 'Show ' : 'Hide ') + 'the photo strip (Ctrl+\\)';
+    btn.setAttribute('aria-label', (on ? 'Show ' : 'Hide ') + 'the photo strip'); btn.setAttribute('aria-expanded', String(!on)); };
+  let on = false; try { on = localStorage.getItem('side:heroes') === '1'; } catch (e) {}
+  apply(on);
+  btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:heroes', on ? '1' : '0'); } catch (e) {} };
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
+})();
+
 const TITLES = %TITLES%;
 const SHAPES = %SHAPES%;
 let cur = null, country = '', album = '', qTimer = null;

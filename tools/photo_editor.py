@@ -2647,7 +2647,20 @@ def _country_flags():
         html = (Path(ROOT) / "index.html").read_text(encoding="utf-8", errors="replace")
     except Exception:
         return {}
-    return {m.group(1): m.group(2) for m in _FLAG_RE.finditer(html)}
+    found = {m.group(1): m.group(2) for m in _FLAG_RE.finditer(html)}
+    # a country that isn't in the nav yet (a draft, or a nav entry that doesn't link to field
+    # notes, like El Salvador's) still gets its flag: the nav wins where it has one
+    return {**ISO2, **found}
+
+
+ISO2 = {"albania": "al", "argentina": "ar", "armenia": "am", "australia": "au", "belgium": "be", "bosnia": "ba",
+        "brazil": "br", "chile": "cl", "colombia": "co", "croatia": "hr", "cuba": "cu", "denmark": "dk", "egypt": "eg",
+        "el-salvador": "sv", "estonia": "ee", "finland": "fi", "france": "fr", "georgia": "ge", "germany": "de",
+        "greece": "gr", "guatemala": "gt", "hungary": "hu", "india": "in", "indonesia": "id", "italy": "it",
+        "japan": "jp", "kosovo": "xk", "latvia": "lv", "mexico": "mx", "montenegro": "me", "morocco": "ma",
+        "netherlands": "nl", "new-zealand": "nz", "nicaragua": "ni", "north-macedonia": "mk", "peru": "pe",
+        "philippines": "ph", "portugal": "pt", "serbia": "rs", "slovenia": "si", "spain": "es", "sweden": "se",
+        "switzerland": "ch", "tanzania": "tz", "thailand": "th", "turkiye": "tr", "vietnam": "vn", "uk": "gb"}
 
 
 def _articles_inventory():

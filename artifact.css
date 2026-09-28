@@ -112,7 +112,9 @@
 /* ---------- ARTICLE HERO OPTIONS ---------- */
 .ah { display:none; }
 .frame[data-ahero="banner"] .ah-banner, .frame[data-ahero="quiet"]  .ah-quiet, .frame[data-ahero="split"]  .ah-split { display:block; }
-.ah-banner .band { position:relative; height:auto; aspect-ratio:1440/560; min-height:420px; overflow:hidden; }
+.ah-banner .band { position:relative; width:100%; height:auto; aspect-ratio:1440/560; min-height:420px; overflow:hidden; }
+/* width:100% (2026-09-27): below 1080px the 420px floor won, and with no set width Chrome grew the
+   band sideways to keep 1440/560, so the hero copy was cut off on tablets and phones scrolled sideways */
 /* the same frame the article banner (.article-hero.gg-banner) uses, so an itinerary hero and
    a guide hero are the same height at every width. It was a fixed 560px, which matched the
    guides only at 1440 and stood 62px taller on a laptop (Kevin, 2026-09-26). */
@@ -1185,7 +1187,7 @@
 .measure { max-width:none; padding:0 20px; }
 .foot { padding:32px 20px; display:block; margin-top:42px; }
 .foot .lk { margin-top:14px; gap:18px; }
-.ah-banner .band { height:420px; }
+.ah-banner .band { height:420px; aspect-ratio:auto; }   /* a fixed height plus the 1440/560 ratio made the band 1080px wide on phones and every itinerary scrolled sideways (2026-09-27) */
 .ah-banner .cpy { left:20px; right:20px; bottom:34px; }
 .ah-banner h1 { font-size:30px; }
 .ah-quiet .cpy { padding:32px 20px 24px; text-align:left; }

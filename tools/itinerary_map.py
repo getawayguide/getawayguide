@@ -320,6 +320,8 @@ def build(cfg):
         ddx, ddy, danc = dot.get("dx", 12), dot.get("dy", 4), dot.get("anchor", "start")
         dlabel = (f'<text x="{ddx}" y="{ddy}" text-anchor="{danc}" '
                   f'font-size="10.5" font-style="italic" fill="{P["muted"]}">{dot["name"]}</text>')
+        if dot.get("href") and not EDIT:          # a dot can link too (a city with its own guide)
+            dlabel = f'<a class="imap-link" href="{dot["href"]}">{dlabel}</a>'
         B.append(f'<g transform="{stamp_tf(x, y)}">'
                  f'<circle r="3" fill="{P["pin"]}" fill-opacity="0.55"/>'
                  f'{wrap(dlabel, kind="dot", idx=i, dx=ddx, dy=ddy)}</g>')
