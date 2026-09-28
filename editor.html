@@ -186,6 +186,7 @@
     .ap-empty{padding:2rem;text-align:center;color:#8a9790}
     .ap-pub{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .5rem;border:1px solid #2D6B50;color:#2D6B50;background:#fff;border-radius:3px;cursor:pointer}
     .ap-pub:hover{background:#2D6B50;color:#fff}
+    #pub-modal .pb button:disabled{opacity:.4;cursor:default}
     #pub-modal{position:fixed;inset:0;background:rgba(28,40,33,.4);z-index:990;display:flex;align-items:flex-start;justify-content:center;padding-top:10vh;font-family:'Hanken Grotesk',sans-serif}
     #pub-modal .pm{width:min(640px,94vw);background:#fff;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.28);overflow:hidden}
     #pub-modal .ph{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1rem;border-bottom:1px solid #e6e6e2}
@@ -4158,7 +4159,11 @@ main{overflow-y:auto;padding:1rem}
     const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|line-sel|line-hot|pl-swap-target|pl-pair-target|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
     function state() {
       const e = ed();
-      const html = e.innerHTML.replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
+      // comment and lint highlights are drawn from anchors (review.js redraws them after every
+      // restore via syncFromDom), so they are chrome too: with them in the snapshot, a save that
+      // redrew them made the next Ctrl+Z 'undo' only the redraw and look like it did nothing
+      const html = e.innerHTML.replace(/<mark class="(?:cm|lint)\b[^>]*>([\s\S]*?)<\/mark>/g, '$1')
+        .replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
       return { html, sel: captureSel(e) };
     }
     function commit() {
@@ -4208,6 +4213,7 @@ main{overflow-y:auto;padding:1rem}
         return true;
       },
       depth() { return { idx: idx, len: stack.length }; },
+      peek() { return { snap: stack[idx] && stack[idx].html, now: state().html }; },   // for tests: the current snapshot vs the live text
       // what caused the NEXT step ("Accepted Claude: …", "Saved"); typing needs no label
       label(t) { pendingLabel = t; },
       markSaved() { savedAt = idx; },

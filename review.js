@@ -557,23 +557,31 @@
     try {
       const es = new EventSource(API + '/api/tasks/stream');
       es.onopen = () => { pushed = true; };
-      es.onmessage = () => pollTasks();
+      es.onmessage = () => pollTasks(true);
       es.onerror = () => { pushed = false; };
     } catch (e) {}
     _pollT = setInterval(() => { if (!pushed) pollTasks(); }, 1000);
     setInterval(() => { if (pushed) pollTasks(); }, 5000);
     setInterval(tickAges, 1000);
   }
-  async function pollTasks() {
+  async function pollTasks(force) {
     if (!state.key || state._polling) return;
-    if (!state.comments.threads.some(t => isTask(t) && !t.resolved && !['applied', 'proposed', 'rejected', 'offered'].includes(t.status))) return;
+    // force: the server pushed a change, so fetch even with nothing waiting here (a task from
+    // another tab, or one Claude's session added); the idle poll still skips
+    if (!force && !state.comments.threads.some(t => isTask(t) && !t.resolved && !['applied', 'proposed', 'rejected', 'offered'].includes(t.status))) return;
     state._polling = true;
     let r; try { r = await (await fetch(API + `/comments/${state.key}`, { cache: 'no-store' })).json(); } catch (e) { state._polling = false; return; }
     state._polling = false;
     let touched = false;
     for (const st of (r.threads || [])) {
-      const t = state.comments.threads.find(x => x.id === st.id);
-      if (!t) { if (isTask(st)) { state.comments.threads.push(st); touched = true; } continue; }
+      let t = state.comments.threads.find(x => x.id === st.id);
+      // a task this tab has never seen (another tab, or added while it was closed) may arrive
+      // already answered: take it in and let the code below apply its edit in the same pass
+      if (!t) {
+        if (!isTask(st)) continue;
+        t = Object.assign({}, st, { status: (st.edit || st.edits) && !['applied', 'rejected', 'offered'].includes(st.status) ? 'sent' : st.status });
+        state.comments.threads.push(t); touched = true;
+      }
       if (!isTask(t)) continue;
       // Claude's replies and status arrive; Kevin's own edits to the thread stay
       const seen = new Set((t.replies || []).map(x => x.id));
@@ -614,6 +622,7 @@
     });
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); }
     if (!fresh.length) { t.status = 'offered'; t.edit = t.edits[0]; return true; }
+    if (H() && H().label) { H().label('Claude proposed: ' + t.text.slice(0, 48)); H().checkpoint(); }
     state.changes.push(...fresh); injectMarks(fresh);
     t.status = 'proposed'; t.proposedAt = new Date().toISOString(); state.active = fresh[0].id;
     toast('Claude proposed ' + fresh.length + ' change' + (fresh.length === 1 ? '' : 's') + ': ' + t.text.slice(0, 50), 5000);
@@ -639,6 +648,7 @@
       if (!state.changes.some(c => c.id === cid)) {
         const c = { id: cid, kind: 'grammar', section: 'Claude', find: key, replace: t.edit.replace, count: 1, task: t.id,
                     note: (t.replies || []).filter(r => r.author === 'Claude').map(r => r.text).pop() || '' };
+        if (H() && H().label) { H().label('Claude proposed: ' + t.text.slice(0, 48)); H().checkpoint(); }
         state.changes.push(c);
         e.innerHTML = h;
         injectMarks([c]);
