@@ -19,7 +19,7 @@ import sys
 import subprocess
 from pathlib import Path
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, send_file
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
@@ -134,6 +134,7 @@ PAGES = {
     "australia": "Drafts/australia/field-notes.html",
     "armenia": "Drafts/.Full Articles/armenia/armenia-itinerary.html",
     "armenia-yerevan": "Drafts/.Full Articles/armenia/yerevan.html",
+    "orgov-loop": "Drafts/.Full Articles/armenia/orgov-observatory.html",
 }
 
 app = Flask(__name__)
@@ -188,6 +189,59 @@ def edit_svg(cfg):
 def api_maps():
     slugs = sorted(p.stem for p in CFG_DIR.glob("*.json"))
     return jsonify(slugs)
+
+
+def _country_name(slug):
+    return {"uk": "UK", "el-salvador": "El Salvador", "north-macedonia": "North Macedonia"}.get(
+        slug, slug.replace("-", " ").title())
+
+
+@app.route("/api/catalog")
+def api_catalog():
+    """Every map grouped by country (2026-09-27): route maps by the country their iso3 belongs
+    to, city maps by the folder of the article they sit in."""
+    route = {p.stem: json.loads(p.read_text(encoding="utf-8")) for p in CFG_DIR.glob("*.json")}
+    plain = ("el-salvador", "north-macedonia")
+    by_iso = {c.get("iso3"): k for k, c in route.items() if "-" not in k or k in plain}
+    groups = {}
+    for k, c in route.items():
+        country = by_iso.get(c.get("iso3"), k)
+        if k == country:
+            label = "Route map"
+        elif k.startswith(country + "-"):
+            label = k[len(country) + 1:].replace("-", " ").capitalize()
+        else:
+            label = k.replace("-", " ").capitalize()
+        groups.setdefault(country, []).append({"kind": "route", "slug": k, "label": label})
+    if CITY_DIR.is_dir():
+        for p in CITY_DIR.glob("*.json"):
+            try:
+                c = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            parts = [x for x in (c.get("article") or "").split("/") if x and x not in ("Drafts", ".Full Articles")]
+            country = parts[0] if len(parts) > 1 else "other"
+            groups.setdefault(country, []).append({"kind": "city", "slug": p.stem, "label": c.get("city") or p.stem})
+    out = []
+    for k in sorted(groups):
+        maps = sorted(groups[k], key=lambda m: (m["kind"] != "route", m["label"] != "Route map", m["label"].lower()))
+        out.append({"country": _country_name(k), "maps": maps})
+    return jsonify(out)
+
+
+@app.get("/fonts.css")
+def fonts_css():
+    # the suite's self-hosted faces; the map's own labels are Hanken Grotesk too, so without
+    # this the editor measured and drew them in a fallback face
+    return send_file(ROOT / "fonts.css", mimetype="text/css")
+
+
+@app.get("/fonts/<path:name>")
+def font_file(name):
+    f = (ROOT / "fonts" / name).resolve()
+    if (ROOT / "fonts").resolve() not in f.parents or not f.is_file():
+        return ("", 404)
+    return send_file(f, mimetype="font/woff2")
 
 
 @app.route("/api/map/<slug>")
@@ -299,28 +353,43 @@ def index():
 
 
 PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
-<title>Map label editor</title>
+<title>Map editor</title>
+<link rel="stylesheet" href="/fonts.css">
 <style>
   :root{--green:#2D6B50;--ink:#1C2821;--line:#e3e0d8}
   *{box-sizing:border-box}
-  body{margin:0;font-family:'Montserrat',system-ui,sans-serif;color:var(--ink);background:#f4f2ec;display:flex;height:100vh;overflow:hidden}
-  #side{width:210px;flex:none;background:#fff;border-right:1px solid var(--line);overflow-y:auto;padding:14px 0}
-  #side h1{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a9;margin:0 16px 12px}
-  .mapbtn{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 16px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;text-transform:capitalize}
-  .mapbtn:hover{background:#f0efe8}
-  .mapbtn.active{background:#eaf1ec;color:var(--green);font-weight:600;box-shadow:inset 3px 0 var(--green)}
+  body{margin:0;font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--ink);background:#F7F7F3;display:flex;height:100vh;overflow:hidden}
+  #side{width:240px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  #side h1{display:none}
+  #q{margin:12px 12px 8px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;outline:none}
+  #q:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,107,80,.14)}
+  #list{overflow-y:auto;flex:1;padding:0 0 16px}
+  .cty{display:flex;align-items:center;width:100%;border:0;background:none;cursor:pointer;padding:9px 14px;font:inherit;font-size:13px;color:var(--ink);text-align:left}
+  .cty:hover{background:#F3F2EC}
+  .cty span{font-size:11px;color:#6b7a70;margin-left:auto}
+  .cty::after{content:'';width:6px;height:6px;border-right:1.5px solid #8a978f;border-bottom:1.5px solid #8a978f;transform:rotate(-45deg);margin-left:10px}
+  .grp.open .cty::after{transform:rotate(45deg)}
+  .grp.has .cty{font-weight:600}
+  .grp .maps{display:none;padding:0 0 6px}
+  .grp.open .maps{display:block}
+  .mapbtn{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;border-left:3px solid transparent;background:none;padding:6px 14px 6px 26px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+  .mapbtn i{font-style:normal;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6b7a70}
+  .mapbtn:hover{background:#F3F2EC}
+  .mapbtn.active{background:rgba(45,107,80,.08);color:var(--green);font-weight:600;border-left-color:var(--green)}
   #main{flex:1;display:flex;flex-direction:column;min-width:0}
   #bar{flex:none;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line)}
   #bar .title{font-weight:600;text-transform:capitalize;font-size:15px}
-  #bar button{font:inherit;font-size:13px;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:5px;padding:7px 16px;cursor:pointer}
-  #bar button.ghost{background:#fff;color:var(--green)}
+  #bar button{font:inherit;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:999px;padding:8px 16px;cursor:pointer}
+  #bar button.ghost{background:#fff;color:var(--ink);border-color:rgba(28,40,33,.16)}
+  #bar button.ghost:hover:not(:disabled){background:#F3F2EC}
   #bar button:disabled{opacity:.4;cursor:default}
   #status{font-size:12px;color:#7a8a7f;margin-left:auto}
-  #hint{font-size:12px;color:#98a}
-  #stage{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:28px}
-  #canvas{background:#F7F7F3;box-shadow:0 6px 30px rgba(0,0,0,.12);border-radius:4px;max-width:760px;width:100%}
-  #canvas svg{width:100%;height:auto;display:block}
-  #canvas.city{position:relative;max-width:900px}
+  #hint{font-size:12px;color:#6b7a70}
+  #stage{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px}
+  /* the map fills the window it has (2026-09-27): as wide as fits, never taller than the stage */
+  #canvas{background:#F7F7F3;box-shadow:0 6px 30px rgba(0,0,0,.12);border-radius:6px;width:min(100%,1200px)}
+  #canvas svg{width:100%;height:auto;max-height:calc(100vh - 110px);display:block}
+  #canvas.city{position:relative;width:min(100%,1200px)}
   #canvas.city img.cmbase{width:100%;height:auto;display:block}
   #canvas.city svg{position:absolute;inset:0;width:100%;height:100%}
   #canvas.city text.cmdl:hover,#canvas.city text.cmlab:hover{fill:#2D6B50}
@@ -329,23 +398,24 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   .eh.drag{cursor:grabbing}
   .eh.drag>.hit{stroke:var(--green);stroke-dasharray:none;stroke-width:1.4}
   .hit{fill:transparent;stroke:transparent;vector-effect:non-scaling-stroke}
-  #empty{margin:auto;color:#9a8;font-size:14px}
+  #empty{margin:auto;color:#4f5c54;font-size:14px;text-align:center;line-height:1.7}
+  #empty b{display:block;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:22px;color:var(--ink)}
   body.embed #side{display:none}
   body.embed #done{display:inline-block}
   #done{display:none}
 </style></head>
 <body>
-<div id="side"><h1>Maps</h1><div id="list"></div></div>
+<div id="side"><h1>Maps</h1><input id="q" type="search" placeholder="Find a country or city" autocomplete="off"><div id="list"></div></div>
 <div id="main">
   <div id="bar">
     <span class="title" id="ttl">Select a map</span>
-    <span id="hint">drag any label / pill · double-click a place label to flip its side</span>
+    <span id="hint">drag any label or pill · double-click a place label to flip its side</span>
     <button class="ghost" id="reset" disabled>Revert</button>
     <button id="save" disabled>Save &amp; embed</button>
     <button class="ghost" id="done" title="Back to the article">Done</button>
     <span id="status"></span>
   </div>
-  <div id="stage"><div id="empty">Pick a map on the left</div></div>
+  <div id="stage"><div id="empty"><b>Pick a map</b>Open a country on the left, then a route or city map.<br>Drag any label to move it, then Save &amp; embed.</div></div>
 </div>
 <script>
 const SVGNS="http://www.w3.org/2000/svg";
@@ -362,15 +432,35 @@ if(EMBED) document.body.classList.add('embed');
 const tell=(msg)=>{ if(window.parent!==window) window.parent.postMessage(Object.assign({source:'map-editor'},msg),'*'); };
 document.getElementById('done').onclick=()=>{ if(dirty && !confirm('Discard the unsaved label moves?')) return; dirty=false; tell({type:'map-done',slug}); };
 
-fetch('/api/maps').then(r=>r.json()).then(maps=>{
-  maps.forEach(m=>{
-    const b=document.createElement('button'); b.className='mapbtn'; b.textContent=m.replace(/-/g,' ');
-    b.onclick=()=>selectMap(m,b); listEl.appendChild(b);
-    if(WANT && m===WANT) selectMap(m,b);
+fetch('/api/catalog').then(r=>r.json()).then(cat=>{
+  cat.forEach(g=>{
+    const grp=document.createElement('div'); grp.className='grp';
+    grp.dataset.q=(g.country+' '+g.maps.map(m=>m.label+' '+m.slug).join(' ')).toLowerCase();
+    const h=document.createElement('button'); h.className='cty';
+    h.innerHTML=g.country.replace(/</g,'&lt;')+' <span>'+g.maps.length+'</span>';
+    h.onclick=()=>grp.classList.toggle('open');
+    const box=document.createElement('div'); box.className='maps';
+    g.maps.forEach(m=>{
+      const b=document.createElement('button'); b.className='mapbtn'; b.dataset.slug=m.kind+':'+m.slug;
+      b.innerHTML=m.label.replace(/</g,'&lt;')+'<i>'+(m.kind==='city'?'city':'route')+'</i>';
+      b.onclick=()=>{ if(dirty && !confirm('Discard the unsaved label moves?')) return; if(m.kind==='city'){ mark(b); selectCity(m.slug); } else selectMap(m.slug,b); };
+      box.appendChild(b);
+    });
+    grp.append(h,box); listEl.appendChild(grp);
   });
-  if(WANT && !maps.includes(WANT)) { ttl.textContent='No map called '+WANT; }
-  if(CITY) selectCity(CITY);
+  if(WANT){ const b=listEl.querySelector('[data-slug="route:'+WANT+'"]'); if(b) selectMap(WANT,b); else ttl.textContent='No map called '+WANT; }
+  if(CITY){ mark(listEl.querySelector('[data-slug="city:'+CITY+'"]')); selectCity(CITY); }
 });
+document.getElementById('q').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  listEl.querySelectorAll('.grp').forEach(g=>{ const hit=!q||g.dataset.q.includes(q); g.style.display=hit?'':'none'; if(q) g.classList.toggle('open',hit); });
+});
+// the open map is highlighted, and its country stays open and bold
+function mark(btn){
+  listEl.querySelectorAll('.mapbtn.active').forEach(x=>x.classList.remove('active'));
+  listEl.querySelectorAll('.grp.has').forEach(x=>x.classList.remove('has'));
+  if(btn){ btn.classList.add('active'); btn.closest('.grp').classList.add('has','open'); }
+}
 
 // ---- city maps: the base raster with the pin overlay; district labels drag, pin labels
 // (orientation maps) click through n -> e -> s -> w; Save rebuilds and re-embeds.
@@ -431,8 +521,8 @@ function previewCity(){
 }
 
 function selectMap(m,btn){
-  document.querySelectorAll('.mapbtn').forEach(x=>x.classList.remove('active'));
-  btn.classList.add('active');
+  cityMode=false; document.getElementById('hint').textContent='drag any label or pill · double-click a place label to flip its side';
+  mark(btn);
   fetch('/api/map/'+m).then(r=>r.json()).then(d=>{
     slug=m; cfg=d.config; afs=d.afs; dirty=false;
     ttl.textContent=m.replace(/-/g,' '); statusEl.textContent='';

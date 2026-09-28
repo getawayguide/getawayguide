@@ -75,7 +75,7 @@
       font-size: .58rem;
       letter-spacing: .18em;
       text-transform: uppercase;
-      color: rgba(237,232,220,.4);
+      color: rgba(237,232,220,.6);
       padding: .3rem 0;
     }
 
@@ -83,11 +83,14 @@
       font-family: 'Hanken Grotesk', sans-serif;
       font-size: .62rem;
       letter-spacing: .1em;
-      color: rgba(237,232,220,.7);
+      color: rgba(237,232,220,.92);
       background: rgba(255,255,255,.06);
       padding: .3rem .8rem;
       border-radius: 4px;
+      cursor: pointer;
+      transition: background .15s;
     }
+    #file-name:hover { background: rgba(255,255,255,.14); }
 
     .header-actions {
       display: flex;
@@ -126,7 +129,7 @@
       font-size: .55rem;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: rgba(237,232,220,.35);
+      color: rgba(237,232,220,.72);
       min-width: 80px;
       text-align: right;
     }
@@ -150,17 +153,19 @@
       overflow: hidden;
     }
 
-    .sidebar-head {
-      padding: 1.25rem 1.25rem .75rem;
-      border-bottom: 1px solid var(--b-subtle);
-    }
-
+    .side-tabs { display:flex; gap:1.3rem; padding:.8rem 1.1rem 0; border-bottom:1px solid var(--b-subtle); flex-shrink:0; background:#fff; }
+    .side-tabs button { font-family:'Hanken Grotesk',sans-serif; font-weight:500; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--ink); opacity:.45; background:none; border:0; border-bottom:2px solid transparent; padding:0 0 .6rem; margin-bottom:-1px; cursor:pointer; transition:opacity .2s; }
+    .side-tabs button:hover { opacity:.85; }
+    .side-tabs button:focus-visible { outline:2px solid var(--terra); outline-offset:2px; }
+    body:not(.photos-open):not(.review-open) #btn-todo, body.photos-open #btn-photos, body.review-open #btn-review { opacity:1; border-bottom-color:var(--terra); }
+    .sidebar-head { display:none; }   /* the To Do tab names it now */
     .sidebar-label {
       font-family: 'Hanken Grotesk', sans-serif;
       font-size: .52rem;
       letter-spacing: .2em;
       text-transform: uppercase;
-      color: rgba(28,40,33,.35);
+      color: rgba(28,40,33,.6);
     }
 
     #ap-backdrop{position:fixed;inset:0;background:rgba(28,40,33,.42);z-index:900;display:flex;align-items:flex-start;justify-content:center;padding-top:8vh}
@@ -283,7 +288,22 @@
       transition: all .15s;
       line-height: 1;
     }
-    .tool-btn:hover { background: var(--mist); border-color: var(--b-medium); }
+    .tool-btn:hover { background: var(--mist); border-color: transparent; }
+    /* borderless, in three groups (2026-09-27): a border on every button made the bar read as a grid of boxes */
+    .toolbar .tool-btn { border-color: transparent; background: transparent; padding: .38rem .55rem; border-radius: 4px; }
+    .toolbar .tool-btn:hover { background: var(--mist); }
+    .tb-group { display: flex; align-items: center; gap: .1rem; }
+    .tb-more { position: relative; margin-left: auto; }
+    .tb-more-pop { display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 350; background: #fff;
+      border: 1px solid var(--b-medium); border-radius: 8px; box-shadow: 0 10px 30px rgba(28,40,33,.14); padding: .6rem;
+      flex-direction: column; gap: .45rem; min-width: 190px; }
+    .tb-more.open .tb-more-pop { display: flex; }
+    .tb-more.open #tb-more-btn { background: var(--mist); }
+    .tb-more-pop .tool-select { width: 100%; }
+    .tb-more-pop .color-dropdown { left: auto; right: 0; }
+    .tb-more-pop .color-picker-wrap { gap: .5rem; }
+    .tb-more-pop .color-picker-wrap::after { content: 'Text color'; order: 2; font-family: 'Hanken Grotesk', sans-serif; font-size: .72rem; color: #4f5c54; }
+    .tb-more-pop .color-dropdown { order: 3; }
     .tool-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
     /* live caret-state highlight (Word lights up B/I/U for the current selection) */
     .tool-btn.tool-active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
@@ -432,6 +452,66 @@
       padding: 3rem 4rem;
     }
 
+    /* the page's hero as artifact.css draws it (.article-hero.gg-banner / .ah-banner): edge to
+       edge, 1440:560, copy at the lower left over the soft scrim (2026-09-27) */
+    #ed-masthead { position:relative; margin:-3rem -4rem 2.6rem; aspect-ratio:1440/560; min-height:300px; overflow:hidden;
+      display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; text-align:left;
+      padding:0 clamp(24px,6.7%,96px) 3.4rem; background:#1C2821; color:#fff; }
+    #ed-masthead[hidden] { display:none; }
+    #ed-masthead .mh-img { position:absolute; inset:0; background-size:cover; background-repeat:no-repeat; }
+    #ed-masthead .mh-veil { position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(90deg, rgba(18,26,21,.62) 0%, rgba(18,26,21,.34) 34%, rgba(18,26,21,0) 62%),
+                 linear-gradient(180deg, rgba(18,26,21,.42) 0%, rgba(18,26,21,.10) 40%, rgba(18,26,21,.80) 100%); }
+    #ed-masthead.ah .mh-veil { background:linear-gradient(180deg, rgba(18,26,21,.42) 0%, rgba(18,26,21,.08) 40%, rgba(18,26,21,.8) 100%); }
+    #ed-masthead .mh-cpy { position:relative; display:flex; flex-direction:column; align-items:flex-start; }
+    #ed-masthead .mh-tag { font-family:'Hanken Grotesk',sans-serif; font-weight:600; font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.92); }
+    #ed-masthead .mh-kick { font-family:'Hanken Grotesk',sans-serif; font-size:1rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.88); margin-top:1.2rem; }
+    #ed-masthead h1 { font-family:'Newsreader',serif; font-weight:300; font-size:clamp(2rem,3.6vw,3.4rem); line-height:1.06; letter-spacing:-.018em;
+      color:#fff; max-width:22ch; margin:.8rem 0 0; text-wrap:balance; }
+    #ed-masthead.ah h1 { max-width:none; }
+    #ed-masthead [data-mh] { outline:none; border-radius:3px; cursor:text; transition:box-shadow .15s; }
+    #ed-masthead [data-mh]:hover { box-shadow:0 0 0 1px rgba(255,255,255,.35); }
+    #ed-masthead [data-mh]:focus { box-shadow:0 0 0 2px rgba(126,212,168,.8); }
+    #ed-masthead .mh-lead a { color:inherit; }
+    #ed-masthead.plain [data-mh]:hover { box-shadow:0 0 0 1px rgba(28,40,33,.2); }
+    #ed-masthead .mh-lead { font-family:'Hanken Grotesk',sans-serif; font-size:1rem; line-height:1.7; color:rgba(255,255,255,.86); max-width:min(640px,90%); margin:1rem 0 0; text-wrap:balance; }
+    #ed-masthead .mh-date { font-family:'Hanken Grotesk',sans-serif; font-weight:600; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.85); margin-top:.9rem; }
+    #ed-masthead .mh-edit { position:absolute; top:1rem; right:1rem; display:flex; align-items:center; gap:.4rem;
+      font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#1C2821;
+      background:#fff; border:0; border-radius:999px; padding:.6rem .95rem; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);
+      opacity:0; transform:translateY(-4px); transition:opacity .18s, transform .18s; }
+    #ed-masthead:hover .mh-edit, #ed-masthead .mh-edit:focus-visible { opacity:1; transform:none; }
+    #ed-masthead .mh-edit:hover { background:#2D6B50; color:#fff; }
+    #ed-masthead.plain { aspect-ratio:auto; min-height:0; margin:0 auto 2rem; padding:0; background:none; color:var(--ink); align-items:center; text-align:center; }
+    #ed-masthead.plain h1 { color:var(--ink); max-width:none; }
+    #ed-masthead.plain .mh-cpy { align-items:center; }
+
+    /* ---- table of contents: the site's #toc-b box, in the editor's faces (2026-09-27) ---- */
+    #editor #toc-b, #editor .ed-toc { border:1px solid var(--b-medium); border-radius:6px; padding:1.5rem 1.75rem; margin:0 0 2.5rem; background:var(--mist); }
+    #editor #toc-b .toc-label, #editor .ed-toc .tl { display:block; font-family:'Hanken Grotesk',sans-serif; font-size:.5rem; letter-spacing:.18em; text-transform:uppercase; color:var(--terra); opacity:.7; margin-bottom:.5rem; }
+    #editor #toc-b .toc-title, #editor .ed-toc .tt { display:block; font-family:'Newsreader',serif; font-size:1.1rem; font-weight:300; font-style:italic; color:var(--ink); margin-bottom:1.2rem; line-height:1.2; }
+    #editor #toc-b .toc-cols, #editor .ed-toc .tc { display:grid; grid-template-columns:1fr 1fr; gap:0 2.5rem; align-items:start; }
+    #editor #toc-b .toc-row, #editor .ed-toc .tr { display:flex; align-items:baseline; gap:.55rem; padding:.38rem 0; border-bottom:1px solid var(--b-subtle); }
+    #editor #toc-b .toc-row:last-child, #editor .ed-toc .tr:last-child { border-bottom:none; }
+    #editor #toc-b .toc-num, #editor .ed-toc .tr::before { font-family:'Hanken Grotesk',sans-serif; font-size:.65rem; font-weight:400; color:var(--terra); flex-shrink:0; line-height:1.6; }
+    #editor #toc-b a.toc-link, #editor .ed-toc .tr::after { font-family:'Hanken Grotesk',sans-serif; font-size:.85rem; font-weight:400; color:rgba(28,40,33,.85); text-decoration:none; line-height:1.5; }
+    #editor .ed-toc { user-select:none; cursor:default; }
+    #editor .ed-toc .tl::before, #editor .ed-toc .tt::before { content:attr(data-t); }
+    #editor .ed-toc .tr { cursor:pointer; }
+    #editor .ed-toc .tr::before { content:attr(data-n); }
+    #editor .ed-toc .tr::after { content:attr(data-t); }
+    #editor .ed-toc .tr:hover::after { color:var(--terra); }
+    #editor .ed-toc .tk { display:block; }
+    #editor .ed-toc .tr:has(+ .tsub) { border-bottom:none; }
+    #editor .ed-toc .tsub { display:block; padding:.2rem 0 .4rem; border-bottom:1px solid var(--b-subtle); }
+    #editor .ed-toc .tk > :last-child { border-bottom:none; }
+    #editor .ed-toc .tsa { display:block; cursor:pointer; padding:.28rem 0 .28rem 1.1rem; border-left:1.5px solid var(--b-medium); margin-left:.1rem; }
+    #editor .ed-toc .tsa::after { content:attr(data-t); font-family:'Hanken Grotesk',sans-serif; font-size:.78rem; font-weight:300; color:rgba(28,40,33,.7); }
+    #editor .ed-toc .tsa:hover { border-left-color:var(--terra); }
+    #editor .ed-toc .tsa:hover::after { color:var(--terra); }
+    #editor .ed-toc:not(.built)::after { display:none; }
+    #editor .ed-toc::after { content:'Built from your headings'; display:block; margin-top:.9rem; font-family:'Hanken Grotesk',sans-serif; font-size:.6rem; color:#6b7a70; }
+
     #editor {
       /* Default canvas before a file opens. loadFile() overrides this with
          the OPENED page's real content box (its .article-body max-width minus
@@ -502,7 +582,7 @@
        empty; let the folder list take that space instead of leaving a hole */
     #pl-grid:empty { display: none; }
     #photo-panel:has(#pl-grid:empty) #pl-folders { max-height: none; flex: 1 1 auto; }
-    #pk-album { width:100%; font:inherit; font-size:.76rem; padding:3px 4px; margin-bottom:.4rem; }
+    #pk-album { width:100%; margin-bottom:.4rem; }
     #pk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
     .pk-ph { position:relative; cursor:pointer; border-radius:3px; overflow:hidden;
       background:#e9e6df; outline:2px solid #2D6B50; outline-offset:-2px; }
@@ -609,7 +689,7 @@
     body.review-open .sidebar-foot, body.review-open #photo-panel { display: none; }
     body.review-open .workspace { grid-template-columns: 372px 1fr; }
     #pl-countrybar { display: flex; gap: 4px; padding: 8px; align-items: center; border-bottom: 1px solid var(--b-subtle); }
-    #pl-country { flex: 1; min-width: 0; font: inherit; font-size: .72rem; padding: 3px 4px; }
+    #pl-country { flex: 1; min-width: 0; }
     #pl-modebtn { font-family: 'Hanken Grotesk', sans-serif; font-size: .5rem; letter-spacing: .06em;
                   text-transform: uppercase; padding: .35rem .5rem; border: 1px solid var(--b-medium);
                   background: #fff; border-radius: 3px; cursor: pointer; white-space: nowrap; }
@@ -773,7 +853,7 @@
       justify-content: center;
       height: 100%;
       gap: 1rem;
-      color: rgba(28,40,33,.3);
+      color: rgba(28,40,33,.5);
       text-align: center;
     }
 
@@ -913,7 +993,20 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
 .alb.on{background:#eef4f0;border-left:3px solid var(--terra);padding-left:calc(.8rem - 3px)}
 .alb .nm{font-weight:500;font-size:.92rem;display:flex;justify-content:space-between;gap:.4rem}
 .alb .sub{font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.06em;
-          text-transform:uppercase;color:#8a8a8a;margin-top:.2rem}
+          text-transform:uppercase;color:#6b6b6b;margin-top:.2rem}
+/* a finished album is one quiet line: name, count, a green check (2026-09-27) */
+.alb.fin{padding-top:.5rem;padding-bottom:.5rem}
+.alb.fin .sub,.alb.fin .bar,.alb.fin .undo{display:none}
+.alb.fin:hover .sub,.alb.fin.on .sub,.alb.fin:hover .undo,.alb.fin.on .undo{display:block}
+.alb .ck{display:inline-flex;align-items:center;gap:.3rem;color:#8a8a8a}
+.alb .ck svg{color:#2D6B50}
+/* the iPhone count, inline after the backed-up count */
+.alb .cnt{display:inline-flex;align-items:baseline;gap:.2rem;color:#6b6b6b;font-variant-numeric:tabular-nums}
+.alb .cnt .exp{width:2.9em;font:inherit;font-size:.82rem;text-align:left;padding:0 .15rem;border:0;
+  border-bottom:1px dashed rgba(28,40,33,.35);background:transparent;color:#1C2821;-moz-appearance:textfield}
+.alb .cnt .exp::-webkit-inner-spin-button,.alb .cnt .exp::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.alb .cnt .exp:focus{outline:none;border-bottom:1.5px solid #2D6B50}
+.alb .cnt .exp::placeholder{color:#b3453a;opacity:.8}
 /* The verdict line: backed-up files vs the count you read off your iPhone.
    It gets its own row on every card because it is the one number that decides
    whether the shared album can be deleted. */
@@ -959,6 +1052,24 @@ main{overflow-y:auto;padding:1rem}
            width:19px;height:19px;border-radius:4px;display:flex;align-items:center;justify-content:center}
 .ph .res{position:absolute;top:6px;right:6px;background:rgba(28,40,33,.72);color:#fff;
          font-family:Hanken Grotesk,sans-serif;font-size:.5rem;padding:2px 5px;border-radius:3px}
+/* the size is only news when it's short: full-size shows on hover, a 2048px copy is a gold dot */
+.ph .res.full{opacity:0;transition:opacity .15s}
+.ph:hover .res.full{opacity:1}
+.ph:hover .res{right:34px}          /* clear of the pick button that shows on hover */
+.ph .res.copy{font-size:0;width:9px;height:9px;padding:0;border-radius:50%;background:#C9962E;
+  box-shadow:0 0 0 2px rgba(255,255,255,.9)}
+.ph:hover .res.copy{font-size:.5rem;width:auto;height:auto;padding:2px 5px;border-radius:3px;box-shadow:none;background:rgba(180,120,40,.9)}
+#res-legend{display:inline-flex;align-items:center;gap:.35rem;text-transform:none;letter-spacing:0;font-size:.7rem;color:#6b6b6b}
+#res-legend[hidden]{display:none}
+#res-legend i{width:8px;height:8px;border-radius:50%;background:#C9962E;display:inline-block}
+/* the albums-done count as a progress pill */
+header .prog{display:inline-flex;align-items:center;gap:.5rem;padding:.28rem .65rem;border-radius:999px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#fff}
+header .prog .pb{width:44px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+header .prog .pb i{display:block;height:100%;background:#E5B94A}
+header .prog.all .pb i{background:#6EC99A}
+header .prog b{font-weight:600;color:#E5B94A}
+header .prog.all b{color:#6EC99A}
 .ph .stars{position:absolute;left:0;right:0;bottom:0;padding:5px 6px;display:flex;gap:2px;
            background:linear-gradient(transparent,rgba(0,0,0,.65));opacity:0;transition:opacity .15s}
 .ph:hover .stars,.ph.rated .stars{opacity:1}
@@ -1098,6 +1209,19 @@ main{overflow-y:auto;padding:1rem}
 
 }
 #app-library[hidden] { display:none !important; }
+/* ============== ONE DROPDOWN STYLE (2026-09-27) ==============
+   The native menus looked like Windows 95 next to the pill chips. Same face, a thin
+   warm border, a drawn chevron; the list that opens is still the native one. */
+#pk-album,#pk-place,#pl-country,#pl-place,.tb-more-pop .tool-select,#f-place,#pub-modal select{
+  -webkit-appearance:none;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231C2821' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .6rem center/10px 6px;
+  border:1px solid rgba(28,40,33,.16);border-radius:6px;padding:.4rem 1.7rem .4rem .6rem;
+  font-family:'Hanken Grotesk',sans-serif;font-size:.74rem;line-height:1.25;color:#1C2821;cursor:pointer}
+#pk-album:hover,#pk-place:hover,#pl-country:hover,#pl-place:hover,.tb-more-pop .tool-select:hover,#f-place:hover{border-color:rgba(28,40,33,.32)}
+#pk-album:focus-visible,#pk-place:focus-visible,#pl-country:focus-visible,#pl-place:focus-visible,.tb-more-pop .tool-select:focus-visible,#f-place:focus-visible{
+  outline:none;border-color:#2D6B50;box-shadow:0 0 0 3px rgba(45,107,80,.14)}
+#f-place{border-radius:12px;padding:4px 1.7rem 4px 11px;font-size:inherit;border-color:var(--line)}   /* a pill beside the filter chips */
+input[type=checkbox]{accent-color:#2D6B50}
+
 
 /* ============== SUITE SWITCHER (the getsuite wordmark dropdown) ============ */
 .suite-logo{display:inline-flex;align-items:center;gap:.25rem;background:none;border:0;
@@ -1128,6 +1252,14 @@ main{overflow-y:auto;padding:1rem}
   color:rgba(255,255,255,.65)}
 #app-heroes header .stat b{color:#6EC99A;font-weight:600}
 #heroes-frame{width:100%;height:100%;border:0;display:block;background:#F7F7F3}
+/* MAP EDITOR VIEW (2026-09-27): tools/map_editor.py (:5002) in a frame under the same bar, the
+   way the hero picker runs. The Edit button on a map in an article still opens it as a modal. */
+#app-maps{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:52px 1fr;background:#F7F7F3;font-family:Hanken Grotesk,sans-serif;color:#1C2821}
+#app-maps[hidden]{display:none!important}
+#app-maps header{background:#1C2821;color:#fff;display:flex;align-items:center;gap:1rem;padding:0 1rem}
+#maps-frame{width:100%;height:100%;border:0;display:block;background:#F7F7F3}
+#maps-offline{align-self:start;justify-self:center;margin-top:4rem;max-width:30rem;background:#fff;border:1px solid #D8E5DC;border-radius:6px;padding:1.2rem 1.4rem;font-size:.85rem;line-height:1.6}
+#maps-offline[hidden]{display:none}
 #heroes-offline{align-self:start;justify-self:center;margin-top:4rem;max-width:30rem;
   background:#fff;border:1px solid #D8E5DC;border-radius:6px;padding:1.2rem 1.4rem;
   font-size:.85rem;line-height:1.6;color:#1C2821}
@@ -1189,13 +1321,11 @@ main{overflow-y:auto;padding:1rem}
   <div class="header-left">
     <button class="suite-logo" data-switcher aria-haspopup="true">Article&nbsp;<b>Editor</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
     <span class="file-label">—</span>
-    <span id="file-name">no file open</span>
+    <span id="file-name" role="button" tabindex="0" title="Open another article (Ctrl+O)" onclick="openArticles()" onkeydown="if(event.key==='Enter')openArticles()">no file open</span>
   </div>
   <div class="header-actions">
-    <span id="word-count" style="font-family:Hanken Grotesk,sans-serif;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.4)"></span>
+    <span id="word-count" style="font-family:Hanken Grotesk,sans-serif;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,220,.72)"></span>
     <span class="save-status" id="save-status"></span>
-    <button class="btn btn-open" id="btn-photos" onclick="togglePhotoPanel()">Photos</button>
-    <button class="btn btn-open" id="btn-review" onclick="window.review && review.toggle()" title="Track changes and comments for the open article">Review</button>
     <button class="btn btn-open" id="btn-preview" onclick="openPreview()" title="See this article as a phone, tablet or desktop page, unsaved edits included">Preview</button>
     <button class="btn btn-open" id="btn-open" title="Every article in the Travel Blog folder (Ctrl+O)">Open Article</button>
     <button class="btn btn-save" id="btn-save" disabled>Save</button>
@@ -1209,6 +1339,7 @@ main{overflow-y:auto;padding:1rem}
       <input id="ap-q" type="search" placeholder="Type a country, a title, or a word from the file name…" autocomplete="off" spellcheck="false">
       <span id="ap-count" class="ap-dim"></span>
       <button id="ap-browse" class="ap-btn" title="The system file picker, for a page outside the list">Browse files…</button>
+      <button class="ap-btn" onclick="closeArticles();connectFolder()" title="Change the Travel Blog folder the editor saves images into">Site folder…</button>
       <button class="ap-btn" onclick="closeArticles()" title="Close (Esc)">&times;</button>
     </div>
     <div id="ap-list"></div>
@@ -1324,10 +1455,17 @@ main{overflow-y:auto;padding:1rem}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=70371830" defer></script>
+<script src="review.js?v=15df3ad3" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
+    <!-- the sidebar's three faces as tabs (2026-09-27; they were header buttons). The active
+         tab is pure CSS off the body classes the panels already set, so nothing can drift. -->
+    <nav class="side-tabs" role="tablist">
+      <button id="btn-todo" role="tab" onclick="sideTab('todo')" title="Your to-do list">To Do</button>
+      <button id="btn-photos" role="tab" onclick="sideTab('photos')" title="The photo library, to drag photos into the article">Photos</button>
+      <button id="btn-review" role="tab" onclick="sideTab('review')" title="Track changes and comments for the open article">Review</button>
+    </nav>
     <!-- Photo library (swaps with the to-do list via the Photos button) -->
     <div id="photo-panel">
       <!-- Blog Picks: the shortlist made in the Photo Library view, scoped to one
@@ -1383,53 +1521,64 @@ main{overflow-y:auto;padding:1rem}
       <!-- highlight picker removed 2026-09-27 -->
       <!-- Link button removed 2026-09-27: Ctrl+K still inserts a link -->
       <!-- indent / outdent buttons removed 2026-09-26: Tab and Shift+Tab do it in a list -->
-      <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
-      <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
-      <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
-      <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
-      <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
-      <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
+      <div class="tb-group" aria-label="Text">
+        <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
+        <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
+        <button class="tool-btn" onclick="insertHeading('p')" title="Paragraph">¶</button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertEyebrow()" title="Small uppercase eyebrow label (.eyebrow). On an existing sub-heading it converts it.">EYEBROW</button>
+      </div>
       <div class="tool-divider"></div>
-      <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
-      <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
-      <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it.">―</button>
+      <div class="tb-group" aria-label="Lists">
+        <button class="tool-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">• List</button>
+        <button class="tool-btn" onclick="fmt('insertOrderedList')" title="Numbered List">1. List</button>
+        <button class="tool-btn" onclick="insertTermList()" title="Term list (Book a tour style)">≡ Term</button>
+      </div>
       <div class="tool-divider"></div>
-      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
-        <option value="">Font</option>
-        <!-- Only the two faces the site actually serves. The old list offered
-             Jost, Fraunces, Lora and Source Sans 3, all retired by the
-             re-theme: picking one wrote a font into the article that the
-             published page has no @font-face for, so it fell back silently. -->
-        <option value="__body__">Body (Hanken Grotesk)</option>
-        <option value="__body-bold__">Body bold</option>
-        <option value="__display__">Display (Newsreader)</option>
-        <option value="__display-italic__">Display italic</option>
-      </select>
-      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
-        <option value="">Size</option>
-        <option value="t-sm">Small</option>
-        <option value="__reset__">Body (reset)</option>
-        <option value="t-lg">Large</option>
-        <option value="t-xl">XLarge</option>
-      </select>
-      <div class="tool-divider"></div>
-      <div class="color-picker-wrap" id="color-picker-wrap">
-        <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
-          <span class="color-swatch-letter">A</span>
-          <div class="color-swatch-bar" id="color-swatch-bar"></div>
-        </div>
-        <div class="color-dropdown" id="color-dropdown">
-          <span class="color-dropdown-label">Theme</span>
-          <div class="color-swatches-grid" id="color-theme-grid"></div>
-          <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
-          <div class="color-swatches-grid" id="color-swatches-grid"></div>
-          <div class="color-custom-row">
-            <span class="color-custom-label">Custom</span>
-            <input type="color" id="color-input" value="#e63946" title="Pick custom color">
+      <div class="tb-group" aria-label="Photos and layout">
+        <button class="tool-btn" onclick="insertImage()" title="Insert Image">+ Image</button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later.">&#9647;&#9647; Pair</button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9647; Photo</button>
+        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it.">&#9646; Wide</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it.">―</button>
+      </div>
+      <!-- font, size and color are rare, so they live behind the ⋯ (2026-09-27) -->
+      <div class="tb-more" id="tb-more">
+        <button class="tool-btn" id="tb-more-btn" onmousedown="saveSelection()" onclick="document.getElementById('tb-more').classList.toggle('open')" title="Font, size and color" aria-haspopup="true" style="font-size:1rem;padding:.2rem .6rem">&#8943;</button>
+        <div class="tb-more-pop">
+          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
+            <option value="">Font</option>
+            <!-- Only the two faces the site actually serves. The old list offered
+                 Jost, Fraunces, Lora and Source Sans 3, all retired by the
+                 re-theme: picking one wrote a font into the article that the
+                 published page has no @font-face for, so it fell back silently. -->
+            <option value="__body__">Body (Hanken Grotesk)</option>
+            <option value="__body-bold__">Body bold</option>
+            <option value="__display__">Display (Newsreader)</option>
+            <option value="__display-italic__">Display italic</option>
+          </select>
+          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
+            <option value="">Size</option>
+            <option value="t-sm">Small</option>
+            <option value="__reset__">Body (reset)</option>
+            <option value="t-lg">Large</option>
+            <option value="t-xl">XLarge</option>
+          </select>
+          <div class="color-picker-wrap" id="color-picker-wrap">
+            <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
+              <span class="color-swatch-letter">A</span>
+              <div class="color-swatch-bar" id="color-swatch-bar"></div>
+            </div>
+            <div class="color-dropdown" id="color-dropdown">
+              <span class="color-dropdown-label">Theme</span>
+              <div class="color-swatches-grid" id="color-theme-grid"></div>
+              <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
+              <div class="color-swatches-grid" id="color-swatches-grid"></div>
+              <div class="color-custom-row">
+                <span class="color-custom-label">Custom</span>
+                <input type="color" id="color-input" value="#e63946" title="Pick custom color">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1442,6 +1591,9 @@ main{overflow-y:auto;padding:1rem}
           <div class="empty-title">No article open</div>
           <div class="empty-sub">Click "Open Article" to begin editing</div>
         </div>
+        <!-- the page's own hero, title and subtitle, read-only, so the canvas opens the way the
+             published page does (2026-09-27). Change the photo in the Hero Picker. -->
+        <div id="ed-masthead" hidden></div>
         <div id="editor" contenteditable="false" spellcheck="true" style="display:none"></div>
       </div>
     </div>
@@ -1485,6 +1637,7 @@ main{overflow-y:auto;padding:1rem}
     <button id="f-edited">Edited only</button>
     <button id="f-rated">Rated ★3+</button>
     <select id="f-place" title="Only photos taken at this place" style="display:none;margin-left:.5rem;max-width:16rem"></select>
+    <span id="res-legend" hidden title="Photos marked with a gold dot are 2048px copies from the shared album, not the full-size original"><i></i>2048px copy</span>
   </div>
   <div id="grid"></div>
   <div id="empty"></div>
@@ -1539,6 +1692,17 @@ main{overflow-y:auto;padding:1rem}
   </div>
 </div>
 
+<div id="app-maps" hidden>
+  <header>
+    <button class="suite-logo" data-switcher aria-haspopup="true">Map&nbsp;<b>Editor</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </header>
+  <iframe id="maps-frame" title="Map editor"></iframe>
+  <div id="maps-offline" hidden>
+    <b>The map editor isn't running.</b><br>
+    Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
+  </div>
+</div>
+
 <div id="pv-modal" hidden>
   <div class="box">
     <div class="bar">
@@ -1565,6 +1729,7 @@ main{overflow-y:auto;padding:1rem}
   <a href="#editor" data-view="editor">Article&nbsp;<b>Editor</b><span>write &amp; lay out articles</span></a>
   <a href="#library" data-view="library">Photo&nbsp;<b>Library</b><span>backups, ratings &amp; blog picks</span></a>
   <a href="#heroes" data-view="heroes">Hero&nbsp;<b>Picker</b><span>choose the banner for a page</span></a>
+  <a href="#maps" data-view="maps">Map&nbsp;<b>Editor</b><span>move labels on route &amp; city maps</span></a>
   <div id="build-stamp" style="padding:.3rem .8rem .2rem;font-family:Hanken Grotesk,sans-serif;
     font-size:.55rem;letter-spacing:.06em;color:#b5b5b5">build 2026-08-26.1</div>
 </div>
@@ -2124,6 +2289,8 @@ main{overflow-y:auto;padding:1rem}
 
   function updateFolderUI() {
     const status = document.getElementById('folder-status');
+    const foot = status.closest('.sidebar-foot');
+    if (foot) foot.style.display = folderHandle ? 'none' : '';    // hidden once connected (2026-09-27); "Site folder…" in the Articles panel changes it
     if (!folderHandle) {
       status.innerHTML = `<button onclick="connectFolder()" style="width:100%;font-family:Hanken Grotesk,sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;background:var(--terra);color:#fff;border:none;border-radius:3px;padding:.45rem .6rem;cursor:pointer;text-align:left">⚙ Connect Site Folder</button>`;
       return;
@@ -2251,6 +2418,152 @@ main{overflow-y:auto;padding:1rem}
   window.__siteCss = siteCss;   // test seam: the headless checks open an article without the file picker
   window.__setOriginalHTML = h => { originalHTML = h; };   // same seam: the Preview needs the page the body came from
   window.__getOriginalHTML = () => originalHTML;          // the hero picker reads the headline and lead from it
+
+  // ---- the masthead: this page's hero as the site draws it, read-only ----
+  function renderMasthead(html) {
+    const m = document.getElementById('ed-masthead');
+    if (!m) return;
+    if (!html) { m.hidden = true; return; }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const h1 = doc.querySelector('h1');
+    if (!h1) { m.hidden = true; return; }
+    const hero = h1.closest('.article-hero, .ah-banner, section, header') || null;
+    const isAh = !!(hero && hero.classList.contains('ah-banner'));
+    const css = [...doc.querySelectorAll('style')].map(x => x.textContent).join('\n');
+    let img = null, pos = '50% 50%';
+    if (hero) {
+      const u = /url\(['"]?([^'")]+)['"]?\)\s*([\d.]+%\s+[\d.]+%)?/.exec(hero.getAttribute('style') || '');
+      if (u) { img = u[1]; if (u[2]) pos = u[2]; }
+      if (!img) { const i = hero.querySelector('img'); if (i) { img = i.getAttribute('src'); pos = i.style.objectPosition || pos; } }
+    }
+    // the crop and scrim the hero picker wrote: the desktop rule (the first one) is what a laptop shows
+    const crop = /\.article-hero\.gg-banner\s*\{\s*background-position:\s*([^;!}]+)/.exec(css) || /\.band img[^{]*\{\s*object-position:\s*([^;!}]+)/.exec(css);
+    if (crop) pos = crop[1].trim();
+    const scrim = /::before\s*\{\s*opacity:\s*([\d.]+)/.exec(css);
+    const lead = (hero || doc).querySelector('.article-lead, .artsub, .fn-hero-sub, .country-hero-desc');
+    const T = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '';
+    const tag = hero && hero.querySelector('span[onclick], .article-tag');
+    const kids = hero ? [...hero.querySelectorAll('.kick, p, div')].filter(e => !e.children.length && e !== lead && !e.contains(h1)) : [];
+    const date = kids.find(e => /^[A-Z][a-z]{2,8} \d{1,2}, \d{4}$/.test(T(e)));
+    const kick = hero && (hero.querySelector('.kick') || kids.find(e => e !== date && e.tagName === 'P' && T(e).length < 40));
+    const esc = t => (t || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const src = img ? 'http://127.0.0.1:5003/site/' + decodeURIComponent(img).replace(/^(\.\.\/)+/, '').split('/').map(encodeURIComponent).join('/') : '';
+    m.classList.toggle('plain', !img);
+    m.classList.toggle('ah', isAh);
+    m.innerHTML = (img ? `<div class="mh-img" style="background-image:url('${src}');background-position:${esc(pos)}"></div><div class="mh-veil" style="opacity:${scrim ? scrim[1] : 1}"></div>` : '') +
+      `<div class="mh-cpy">` +
+      (tag && T(tag) ? `<div class="mh-tag">${esc(T(tag))}</div>` : '') +
+      (kick && T(kick) ? `<div class="${tag ? 'mh-kick' : 'mh-tag'}">${esc(T(kick))}</div>` : '') +
+      `<h1 contenteditable="plaintext-only" spellcheck="true" data-mh="title">${esc(T(h1))}</h1>` +
+      (lead ? `<p class="mh-lead" contenteditable="true" spellcheck="true" data-mh="lead">${leadHTML(lead)}</p>` : '') +
+      (date ? `<div class="mh-date">${esc(T(date))}</div>` : '') + `</div>` +
+      (img ? `<button class="mh-edit" type="button" onclick="showView('heroes')" title="Change this article's hero photo, crop or scrim in the Hero Picker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>` : '');
+    m.__orig = { title: T(h1), lead: lead ? leadHTML(lead) : null };
+    m.hidden = false;
+  }
+  // the subtitle keeps its links (the itinerary's links Gyumri); everything else is text
+  function leadHTML(el) {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('*').forEach(x => { if (x.tagName !== 'A') { x.replaceWith(...x.childNodes); return; }
+      [...x.attributes].forEach(a => { if (!['href', 'target', 'rel'].includes(a.name)) x.removeAttribute(a.name); }); });
+    return c.innerHTML.replace(/\s+/g, ' ').trim();
+  }
+  // Save: a changed title or subtitle goes into the page's own hero, and into every other copy
+  // of it (the itinerary template carries the hero once per layout variant)
+  function applyMasthead(doc) {
+    const m = document.getElementById('ed-masthead');
+    if (!m || m.hidden || !m.__orig) return;
+    const h = m.querySelector('[data-mh="title"]'), l = m.querySelector('[data-mh="lead"]');
+    const nt = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
+    if (h && nt && nt !== m.__orig.title)
+      doc.querySelectorAll('h1, .serif, .article-hero-title').forEach(e => {
+        if (!e.children.length && e.textContent.replace(/\s+/g, ' ').trim() === m.__orig.title) e.textContent = nt; });
+    if (l && m.__orig.lead != null) {
+      const nl = leadHTML(l);
+      if (nl && nl !== m.__orig.lead)
+        doc.querySelectorAll('.article-lead, .artsub, .fn-hero-sub, .country-hero-desc').forEach(e => {
+          if (leadHTML(e) === m.__orig.lead) e.innerHTML = nl; });
+    }
+  }
+  window.__applyMasthead = applyMasthead;
+  // typing in the hero is an edit like any other: Enter does not make a new line
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.closest && e.target.closest('#ed-masthead [data-mh]')) { e.preventDefault(); e.target.blur(); }
+  });
+  document.addEventListener('input', e => {
+    if (e.target.closest && e.target.closest('#ed-masthead') && typeof setDirty === 'function') setDirty(true);
+  });
+  document.addEventListener('paste', e => {                        // plain text only in the hero
+    if (!(e.target.closest && e.target.closest('#ed-masthead [data-mh]'))) return;
+    e.preventDefault(); e.stopPropagation();
+    document.execCommand('insertText', false, (e.clipboardData.getData('text/plain') || '').replace(/\s+/g, ' '));
+  }, true);
+  window.__renderMasthead = renderMasthead;
+  // ---- the article's table of contents, drawn the way the page's own script draws it ----
+  // The spec comes from that script: which headings it lists and the box's title.
+  window.__tocSpec = null;
+  function tocSpecFrom(doc) {
+    const sc = [...doc.querySelectorAll('script')].find(x => /\.id\s*=\s*['"]toc-b['"]/.test(x.textContent));
+    if (!sc) return null;
+    const t = sc.textContent;
+    const T = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '';
+    const go = a => (a.getAttribute('href') || '').replace(/^#/, '');
+    // written out by hand: the box is exactly that markup
+    const tpl = /\.innerHTML\s*=\s*`([\s\S]*?)`/.exec(t);
+    if (tpl && !tpl[1].includes('${')) {
+      const d = new DOMParser().parseFromString('<div>' + tpl[1] + '</div>', 'text/html');
+      const colEls = [...d.querySelectorAll('.toc-col')];
+      const rowsOf = c => [...c.querySelectorAll('.toc-row')].map(r => {
+        const a = r.querySelector('.toc-link, .toc-section-link');
+        return { n: T(r.querySelector('.toc-num')), t: T(a), go: a ? go(a) : '',
+                 subs: [...r.querySelectorAll('.toc-sub a')].map(x => ({ t: T(x), go: go(x) })) };
+      });
+      return { label: T(d.querySelector('.toc-label')) || 'In this guide', title: T(d.querySelector('.toc-title')),
+               cols: (colEls.length ? colEls : [d.body]).map(rowsOf) };
+    }
+    // built from the headings: which headings, and the box's title
+    const sels = [...t.matchAll(/querySelectorAll\(\s*(["'])([^"']+)\1\s*\)/g)].map(m => m[2]);
+    const title = /toc-title\\?">([^<\\]*)/.exec(t);
+    return { label: 'In this guide', title: title ? title[1] : '', sel: sels.find(x => /h2/.test(x)) || 'h2[id]' };
+  }
+  function buildToc() {
+    const ed = document.getElementById('editor'), spec = window.__tocSpec;
+    const old = ed.querySelector('.ed-toc');
+    if (!spec) { if (old) old.remove(); return; }
+    const first = ed.querySelector('h2');
+    let cols, sig;
+    if (spec.cols) { cols = spec.cols; sig = 'static'; }
+    else {
+      const hs = [...ed.querySelectorAll(spec.sel)];
+      cols = [hs.map((h, i) => ({ n: String(i + 1).padStart(2, '0'), t: h.textContent.replace(/\s+/g, ' ').trim(), go: h.id, subs: [] }))];
+      sig = hs.map(h => h.id + '|' + h.textContent.trim()).join('\n');
+    }
+    if (old && old.dataset.sig === sig && old.nextElementSibling === first) return;     // nothing moved
+    if (old) old.remove();
+    if (!first || !cols.some(c => c.length)) return;
+    const esc = v => (v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const row = r => `<span class="tr" data-n="${esc(r.n)}" data-t="${esc(r.t)}" data-go="${esc(r.go)}"></span>` +
+      (r.subs.length ? '<span class="tsub">' + r.subs.map(x => `<span class="tsa" data-t="${esc(x.t)}" data-go="${esc(x.go)}"></span>`).join('') + '</span>' : '');
+    const box = document.createElement('div');
+    box.className = 'ed-toc'; box.contentEditable = 'false'; box.dataset.chrome = 'toc'; box.dataset.sig = sig;
+    box.title = spec.cols ? "The page's table of contents, as it is written in the page. Click a row to jump to it."
+                          : 'The table of contents the page builds from your headings. Click a row to jump to it.';
+    box.innerHTML = `<span class="tk tl" data-t="${esc(spec.label)}"></span>` + (spec.title ? `<span class="tk tt" data-t="${esc(spec.title)}"></span>` : '') +
+      '<span class="tc">' + cols.map(c => '<span class="tk">' + c.map(row).join('') + '</span>').join('') + '</span>';
+    box.classList.toggle('built', !spec.cols);
+    first.parentNode.insertBefore(box, first);
+  }
+  window.__buildToc = buildToc;
+  let _tocT = null;
+  new MutationObserver(() => { clearTimeout(_tocT); _tocT = setTimeout(buildToc, 250); })
+    .observe(document.getElementById('editor'), { childList: true, subtree: true, characterData: true });
+  document.getElementById('editor').addEventListener('click', e => {
+    const r = e.target.closest && e.target.closest('.ed-toc .tr, .ed-toc .tsa');
+    if (!r) return;
+    e.preventDefault();
+    const h = document.getElementById('editor').querySelector('#' + CSS.escape(r.dataset.go));
+    if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   async function loadFile(fh) {
     fileHandle = fh;
@@ -2398,6 +2711,8 @@ main{overflow-y:auto;padding:1rem}
     editor.style.display = 'block';
     document.getElementById('empty-state').style.display = 'none';
     document.getElementById('notice').style.display = 'none';
+    renderMasthead(originalHTML);
+    window.__tocSpec = tocSpecFrom(doc); buildToc();
 
     // Clean editing engine: Enter creates <p> (not <div>), formatting uses tags (not spans)
     try {
@@ -2993,6 +3308,7 @@ main{overflow-y:auto;padding:1rem}
     // Clone editor content and prepare for saving
     const saveEl = document.createElement('div');
     saveEl.innerHTML = editor.innerHTML;
+    saveEl.querySelectorAll('[data-chrome]').forEach(n => n.remove());     // the drawn table of contents
     // artifacts Chromium injects while EDITING (not just pasting) die here,
     // so they can never reach a saved page again
     stripPasteArtifacts(saveEl);
@@ -3111,6 +3427,7 @@ main{overflow-y:auto;padding:1rem}
     if (window.review) window.review.prepareForSave(saveEl);
     normalizeForSave(saveEl);
     originalBody.innerHTML = prettyPrintBody(saveEl);
+    if (window.__applyMasthead) window.__applyMasthead(doc);     // the hero's title and subtitle
 
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -3134,6 +3451,7 @@ main{overflow-y:auto;padding:1rem}
       await writable.close();
       originalHTML = newHTML;
       setDirty(false);
+      { const m = document.getElementById('ed-masthead'); if (m && !m.hidden && window.__renderMasthead && !m.contains(document.activeElement)) __renderMasthead(newHTML); }
       // the accepted changes are now in the file; commit the half the editor cannot do
       // itself, the destination side of accepted moves, which live in other articles
       if (window.review) window.review.onSaved();
@@ -3815,6 +4133,7 @@ main{overflow-y:auto;padding:1rem}
     document.getElementById('color-dropdown').classList.toggle('open');
   }
 
+  document.addEventListener('click', e => { const m = document.getElementById('tb-more'); if (m && !m.contains(e.target)) m.classList.remove('open'); });
   function closeColorPicker() {
     document.getElementById('color-dropdown').classList.remove('open');
   }
@@ -4163,7 +4482,8 @@ main{overflow-y:auto;padding:1rem}
       // restore via syncFromDom), so they are chrome too: with them in the snapshot, a save that
       // redrew them made the next Ctrl+Z 'undo' only the redraw and look like it did nothing
       const html = e.innerHTML.replace(/<mark class="(?:cm|lint)\b[^>]*>([\s\S]*?)<\/mark>/g, '$1')
-        .replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '');
+        .replace(TRANSIENT, '').replace(/ (?:class|style)=""/g, '').replace(/ data-swap-ref="[^"]*"/g, '')
+        .replace(/<div class="ed-toc[^"]*"[^>]*>(?:(?!<\/?div)[\s\S])*<\/div>/g, '');     // the drawn table of contents (spans only)
       return { html, sel: captureSel(e) };
     }
     function commit() {
@@ -4623,6 +4943,14 @@ main{overflow-y:auto;padding:1rem}
     document.body.classList.toggle('photos-open');
     if (document.body.classList.contains('photos-open') && window.review) review.toggle(false);   // one sidebar
     if (document.body.classList.contains('photos-open') && !PL.online) plBoot();
+  };
+  // the sidebar tabs: To Do is what shows when neither panel is open. Clicking the tab
+  // that is already open does nothing, the way a tab should.
+  window.sideTab = function (t) {
+    const B = document.body.classList;
+    if (t === 'photos') { if (!B.contains('photos-open')) togglePhotoPanel(); }
+    else if (t === 'review') { if (window.review) review.toggle(true); }
+    else { B.remove('photos-open'); if (window.review && B.contains('review-open')) review.toggle(false); }
   };
 
   /* ---- trips, not folders -------------------------------------------------
@@ -5140,11 +5468,10 @@ main{overflow-y:auto;padding:1rem}
       bar = document.createElement('div');
       bar.id = 'pl-placebar';
       bar.style.cssText = 'display:flex;gap:.35rem;align-items:center;padding:.3rem .5rem;margin:0 8px 4px;' +
-        'border-radius:3px;background:#e8efe9;border:1px solid var(--b-medium);' +
+        '' +
         "font-family:Hanken Grotesk,sans-serif;font-size:.55rem;line-height:1.4";
-      bar.innerHTML = '<span title="Filter by where the photo was taken">📍</span>' +
-        '<select id="pl-place" style="flex:1;min-width:0;font-size:.6rem"></select>' +
-        '<label style="cursor:pointer;white-space:nowrap" title="Follow the section the cursor is in">' +
+      bar.innerHTML = '<select id="pl-place" title="Filter by where the photo was taken" style="flex:1;min-width:0"></select>' +
+        '<label style="cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.25rem;font-size:.68rem;color:#4f5c54" title="Follow the section the cursor is in">' +
         '<input type="checkbox" id="pl-follow"> follow</label>' +
         '<span id="pl-geo-state" style="color:#666"></span>';
       ($('#pl-cloudbar') || $('#pl-folders')).after(bar);
@@ -8448,15 +8775,20 @@ async function loadAlbums() {
       ? `<button class="hold on">Back up this album</button>`
       : ticked
       ? `<button class="undo">undo — I still have the album</button>`
-      : `<div style="margin-top:.3rem"><input class="exp" type="number" min="1" step="1" ` +
-        `placeholder="iPhone count" value="${a.expected || ''}" ` +
-        `style="width:100%;font:inherit;font-size:.6rem;padding:2px 5px;` +
-        `border:1px solid var(--line);border-radius:3px"></div>` +
-        ((ver && ver.ok) || archived
+      : ((ver && ver.ok) || archived
           ? `<label class="del"><input type="checkbox"> I deleted the shared album</label>`
           : '');
+    // the count: backed up, then (until the album is ticked off) the iPhone's count to check it against
+    const CHECK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+    const count = archived
+      ? `<span class="ck" title="Backed up and ticked off">${CHECK}${files}</span>`
+      : a.held ? `<span class="cnt">${files}</span>`
+      : `<span class="cnt" title="Backed up / the count on your iPhone">${files}<span>/</span>` +
+        `<input class="exp" type="number" min="1" step="1" placeholder="iPhone" value="${a.expected || ''}" ` +
+        `aria-label="The item count your iPhone shows for this album"></span>`;
+    if (archived) el.classList.add('fin');
 
-    el.innerHTML = `<div class="nm"><span>${esc(a.name)}</span><span style="color:#8a8a8a">${files}</span></div>` +
+    el.innerHTML = `<div class="nm"><span>${esc(a.name)}</span>${count}</div>` +
       `<div class="sub">${sub}</div>` +
       `<div class="bar${barCls}"><i style="width:${syncing ? 100 : pct}%"></i></div>` +
       chk + tail;
@@ -8522,8 +8854,9 @@ async function loadAlbums() {
   $('#hdr-albums').innerHTML =
     `${d.albums.length} albums · ${totN.toLocaleString()} photos &amp; videos · ` +
     `${(totMb/1000).toFixed(1)} GB · ` +
-    `<b style="color:${nVerified === nCounted && nCounted ? '#2D6B50' : '#b3453a'}">` +
-    `${nVerified}/${nCounted} albums done</b>`;
+    `<span class="prog${nVerified === nCounted && nCounted ? ' all' : ''}" title="Albums backed up and checked against your iPhone">` +
+    `<span class="pb"><i style="width:${nCounted ? Math.round(100 * nVerified / nCounted) : 0}%"></i></span>` +
+    `<b>${nVerified}/${nCounted}</b> albums done</span>`;
   const live = d.running;
   $('#hdr-state').innerHTML = `<span class="dot" style="background:${live ? '#6EC99A' : '#888'}"></span>` +
     (live ? 'backup running' : 'backup idle');
@@ -8533,6 +8866,7 @@ let _photosGen = 0, _photosSig = '', _photosAlbum = null;
 async function loadPhotos() {
   if (!CUR) return;
   const album = CUR, gen = ++_photosGen;
+  { const lg = document.getElementById('res-legend'); if (lg && album !== _photosAlbum) lg.hidden = true; }
   $('#tb-title').textContent = CUR;
   let d;
   try {
@@ -8581,7 +8915,7 @@ async function loadGeo() {
   if (!d.groups.length && !d.noGps) return;
   sel.innerHTML = '';
   const mk = (v, t, parent) => { const o = document.createElement('option'); o.value = v; o.textContent = t; (parent || sel).appendChild(o); };
-  mk('', d.pending ? `📍 All places · locating ${d.pending}…` : `📍 All places (${d.total})`);
+  mk('', d.pending ? `All places · locating ${d.pending}…` : `All places (${d.total})`);
   d.groups.forEach(g => { const og = document.createElement('optgroup'); og.label = `${g.city} (${g.n})`;
     if (g.city !== 'Other' && g.places.length > 1) mk('city:' + g.city, `All of ${g.city} (${g.n})`, og);
     g.places.forEach(p => mk(p.name, `${p.name} (${p.n})`, og)); sel.appendChild(og); });
@@ -8664,9 +8998,12 @@ function render() {
       el.appendChild(b);
     }
     const res = document.createElement('div');
-    res.className = 'res';
+    res.className = 'res ' + (p.full ? 'full' : 'copy');
     res.textContent = p.w ? `${p.w}×${p.h}` : `${p.mb} MB`;
-    if (!p.full) { res.textContent = '2048px copy'; res.style.background = 'rgba(180,120,40,.85)'; }
+    if (!p.full) {
+      res.textContent = '2048px copy'; res.title = 'A 2048px copy from the shared album: no full-size original was found';
+      const lg = document.getElementById('res-legend'); if (lg) lg.hidden = false;
+    }
     el.appendChild(res);
     const st = document.createElement('div');
     st.className = 'stars';
@@ -9282,7 +9619,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
    pick the app. #library / #editor in the URL selects the view; the last
    choice is remembered. */
 (function suiteRouter() {
-  const VIEWS = ['editor', 'library', 'heroes'];
+  const VIEWS = ['editor', 'library', 'heroes', 'maps'];
   const HEROES = 'http://127.0.0.1:5004';
 
   // The picker loads on first visit, not with the editor: it starts decoding an
@@ -9396,11 +9733,21 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       html = html.replace(/<\/head>/, '<style id="hero-tiers">\n' + rules + '</style>\n</head>');
     if (html === before) { alert('The picker built the hero files, but this page has no hero block I recognise; nothing changed.'); return; }
     window.__setOriginalHTML(html);
+    if (window.__renderMasthead) __renderMasthead(html);
     setDirty(true);
     const status = document.getElementById('save-status');
     status.textContent = '● Unsaved · hero updated from the picker';
     status.className = 'save-status unsaved';
   });
+
+  function loadMaps() {
+    const frame = document.getElementById('maps-frame'), off = document.getElementById('maps-offline');
+    if (frame.dataset.loaded) return;
+    frame.src = 'http://127.0.0.1:5002/?suite=1'; frame.dataset.loaded = '1';
+    fetch('http://127.0.0.1:5002/api/maps', { mode: 'no-cors', cache: 'no-store' })
+      .then(() => { off.hidden = true; frame.style.display = ''; })
+      .catch(() => { off.hidden = false; frame.style.display = 'none'; frame.dataset.loaded = ''; });
+  }
 
   function showView(v) {
     if (!VIEWS.includes(v)) v = 'editor';
@@ -9410,8 +9757,10 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     const toLib = v === 'library';
     lib.hidden = !toLib;
     heroes.hidden = v !== 'heroes';
+    document.getElementById('app-maps').hidden = v !== 'maps';
     ed.style.display = v === 'editor' ? '' : 'none';
     if (v === 'heroes') loadHeroes();
+    if (v === 'maps') loadMaps();
     try { localStorage.setItem('tb:view', v); } catch (e) {}
     if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
     document.querySelectorAll('#applist a').forEach(a =>

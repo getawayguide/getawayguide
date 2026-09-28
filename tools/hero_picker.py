@@ -604,7 +604,23 @@ PAGE = r"""<!doctype html>
   .strip img { width:100%; display:block; aspect-ratio:var(--shape,2.118);
     object-fit:cover; }
   .strip .n { position:absolute; left:6px; bottom:6px; font-size:9px; letter-spacing:.06em;
-    color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); }
+    color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); opacity:0; transition:opacity .15s; }
+  .strip .t:hover .n, .strip .t.on .n { opacity:1; }      /* names on hover only (2026-09-27) */
+  /* the adjustments, right under the preview's top edge */
+  .tools { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .9rem; margin:0 0 12px; }
+  .tools-gap { flex:1; }
+  .tools select { width:auto; max-width:12rem; }
+  .tools .scrim-ctl input[type=range] { width:96px; }
+  .full .tools { margin:12px 26px; }
+  .link-chip { display:inline-flex; align-items:center; gap:.4rem; font-size:11px; letter-spacing:.04em;
+    padding:.35rem .75rem; border-radius:999px; background:#EEF1EE; color:#4f5c54; white-space:nowrap;
+    max-width:32ch; overflow:hidden; text-overflow:ellipsis; }
+  .link-chip.on { background:rgba(45,107,80,.1); color:#2D6B50; }
+  .link-chip::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; opacity:.8; flex:none; }
+  .cssbox { margin:.7rem 0 0; }
+  .cssbox summary { cursor:pointer; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#4f5c54; width:max-content; }
+  .cssbox summary:hover { color:var(--terra); }
+  .full .cssbox { margin:.7rem 26px 0; }
   .flag { position:absolute; top:6px; right:6px; font-size:8.5px; color:#fff;
     padding:2px 6px; letter-spacing:.08em; }
   .flag.low { background:var(--warn); }
@@ -649,12 +665,15 @@ PAGE = r"""<!doctype html>
   .embed header { background:#fff; border-bottom:1px solid rgba(28,40,33,.14);
     padding:.55rem 1.1rem; gap:.45rem .55rem; flex:0 0 auto; }
   .embed header .logo, .embed header .tally { display:none; }   /* both live in the suite bar */
-  .embed select, .embed input[type=text] { font-size:.74rem; padding:.36rem .55rem;
-    border:1px solid rgba(28,40,33,.14); border-radius:3px; color:#1C2821; }
+  .embed select, .embed input[type=text] { font-size:.74rem; padding:.4rem .6rem;
+    border:1px solid rgba(28,40,33,.16); border-radius:6px; color:#1C2821; }
+  .embed select { -webkit-appearance:none; appearance:none; padding-right:1.7rem; cursor:pointer;
+    background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231C2821' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .6rem center/10px 6px; }
+  .embed .scrim-ctl { color:#4f5c54; }
   .embed select:focus, .embed input[type=text]:focus { outline:none; border-color:#2D6B50;
     box-shadow:0 0 0 2px rgba(45,107,80,.14); }
   .embed button { font-family:'Hanken Grotesk',sans-serif; font-size:.6rem; font-weight:600;
-    letter-spacing:.1em; padding:.48rem .85rem; border-radius:3px; border:1px solid
+    letter-spacing:.1em; padding:.5rem .95rem; border-radius:999px; border:1px solid
     rgba(28,40,33,.14); background:#fff; color:#1C2821; transition:background .15s; }
   .embed button:hover { background:#EDEDE7; }
   .embed button#save { background:#2D6B50; border-color:#2D6B50; color:#fff; }
@@ -682,6 +701,11 @@ PAGE = r"""<!doctype html>
     <option value="article">Article banner</option>
     <option value="wide">Plain 16:9</option>
   </select>
+  <span class="link-chip" id="linkchip" title="Where Save pick writes: the article open in the Article Editor, or (with none open) the country's own hero"></span>
+</header>
+<div class="main">
+  <div class="stage">
+    <div class="tools" id="tools">
   <select id="vw" title="Which of the site's three hero rules you are setting.
 Each keeps its own crop, because the hero is a fixed height and changes shape
 with the window.">
@@ -695,10 +719,9 @@ with the window.">
   </span>
   <button class="q" id="bleed" title="Hide the strip and show the hero edge to edge, the size the site cuts it (F)">Full bleed</button>
   <button class="q" id="reset">Center crop</button>
+  <span class="tools-gap"></span>
   <button id="save">Save pick</button>
-</header>
-<div class="main">
-  <div class="stage">
+    </div>
     <div class="hero" id="hero">
       <img id="pic" draggable="false" alt="">
       <div class="veil"></div>
@@ -714,7 +737,7 @@ with the window.">
     </div>
     <div class="meta" id="meta"></div>
     <p class="hint" id="hint">Drag the photo to set the crop.</p>
-    <pre class="cropcss" id="cropcss"></pre>
+    <details class="cssbox" id="cssbox"><summary>Show CSS</summary><pre class="cropcss" id="cropcss"></pre></details>
     <p class="key">
       <span><i class="flag low" style="position:static">LOW RES</i> under 1920px, blurry at any width</span>
       <span><i class="flag fair" style="position:static">1080p-ish</i> fine at 1x, soft at 2x</span>
@@ -788,6 +811,14 @@ function articleAlbum() {
   else applyArticle();
 }
 function applyArticle() {
+  const chip = $('linkchip');
+  if (chip) {
+    chip.classList.toggle('on', !!ARTICLE);
+    chip.textContent = ARTICLE ? 'Linked to ' + (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '').replace(/-/g, ' ')
+                               : 'Explore mode';
+    chip.title = ARTICLE ? 'Save pick builds this hero into ' + ARTICLE.rel
+                         : 'No article is open in the Article Editor, so Save pick stores the ' + (country || 'country') + ' hero';
+  }
   if (ARTICLE) {
     $('eb').textContent = country + ' · ' + (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '').replace(/-/g, ' ');
     $('title').value = ARTICLE.h1;
@@ -796,7 +827,7 @@ function applyArticle() {
     $('lead').hidden = !ARTICLE.lead;
   } else {
     $('lead').hidden = true;
-    $('eb').textContent = country + ' · Explore mode (no article linked: saves as the country hero)';
+    $('eb').textContent = country + ' · Field notes';
   }
 }
 
