@@ -155,17 +155,44 @@
 
     /* settings-style tabs (2026-09-27, second pass): icon + label; the open tab is a soft green tab with a rule */
     /* three equal tabs, and room on the right for the hide arrow so it never sits on To Do */
-    .side-tabs { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px; padding:10px 22px 0 10px; border-bottom:1px solid var(--b-medium); flex-shrink:0; background:#fff; }
+    .side-tabs { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:2px; padding:10px 22px 0 8px; border-bottom:1px solid var(--b-medium); flex-shrink:0; background:#fff; }
     .side-tabs button { display:flex; align-items:center; justify-content:center; min-width:0; gap:7px; font-family:'Hanken Grotesk',sans-serif; font-weight:500; font-size:13px;
       letter-spacing:0; text-transform:none; color:#4f5c54; background:none; border:0; border-bottom:2px solid transparent;
-      border-radius:8px 8px 0 0; padding:8px 6px 9px; margin-bottom:-1px; cursor:pointer; transition:background .15s, color .15s; white-space:nowrap; }
+      border-radius:8px 8px 0 0; padding:8px 2px 9px; margin-bottom:-1px; cursor:pointer; transition:background .15s, color .15s; white-space:nowrap; font-size:12.5px !important; gap:5px !important; }
     .side-tabs button .ti { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; flex:none; }
     .side-tabs button:hover { background:#F4F6F4; color:var(--ink); }
     .side-tabs button:focus-visible { outline:2px solid var(--terra); outline-offset:-2px; }
     .side-tabs .n { font-size:10px; font-weight:600; line-height:1; background:var(--terra); color:#fff; border-radius:999px; padding:3px 6px; }
     .side-tabs .n:empty { display:none; }
-    body:not(.photos-open):not(.review-open) #btn-todo, body.photos-open #btn-photos, body.review-open #btn-review {
+    body:not(.photos-open):not(.review-open):not(.seo-open) #btn-todo, body.photos-open #btn-photos, body.review-open #btn-review,
+    body.seo-open:not(.photos-open):not(.review-open) #btn-seo {
       background:#EEF3EF; color:var(--terra); border-bottom-color:var(--terra); }
+    .side-tabs .n { padding:2px 5px !important; font-size:9.5px !important; }
+    /* ---- the Search tab (2026-09-28): what Google and link previews show for this page ---- */
+    #seo-panel { display:none; flex-direction:column; gap:16px; padding:14px 14px 20px; overflow-y:auto; flex:1; min-height:0; font-family:'Hanken Grotesk',sans-serif; color:var(--ink); }
+    body.seo-open:not(.photos-open):not(.review-open) #seo-panel { display:flex; }
+    body.seo-open:not(.photos-open):not(.review-open) #todo-list, body.seo-open:not(.photos-open):not(.review-open) .todo-footer,
+    body.seo-open:not(.photos-open):not(.review-open) .sidebar-foot { display:none; }
+    #seo-panel .sf label { display:flex; justify-content:space-between; align-items:baseline; font-size:12px; font-weight:600; margin-bottom:6px; }
+    #seo-panel .sf label .cnt { font-weight:400; font-variant-numeric:tabular-nums; color:#6b7a70; }
+    #seo-panel .sf label .cnt.warn { color:#9A7B2E; } #seo-panel .sf label .cnt.over { color:#B4553C; font-weight:600; }
+    #seo-panel textarea { width:100%; box-sizing:border-box; resize:vertical; font-family:'Hanken Grotesk',sans-serif; font-size:13px; line-height:1.45; color:var(--ink);
+      border:1px solid rgba(28,40,33,.16); border-radius:6px; padding:8px 10px; background:#fff; }
+    #seo-panel textarea:focus { outline:none; border-color:var(--terra); box-shadow:0 0 0 3px rgba(45,107,80,.14); }
+    #seo-panel .hint { font-size:12px; color:#6b7a70; margin-top:5px; line-height:1.45; }
+    #seo-panel .hint.bad { color:#B4553C; }
+    #seo-panel .sf-actions { display:flex; gap:6px; margin-top:6px; }
+    #seo-panel .sf-actions button { font-family:'Hanken Grotesk',sans-serif; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+      height:28px; padding:0 10px; border-radius:999px; border:1px solid rgba(28,40,33,.16); background:#fff; color:var(--ink); cursor:pointer; }
+    #seo-panel .sf-actions button:hover { border-color:var(--terra); color:var(--terra); }
+    #seo-panel .gprev { border:1px solid rgba(28,40,33,.1); border-radius:8px; padding:12px 14px; background:#fff; font-family:Arial, sans-serif; }
+    #seo-panel .gprev .gh { font-size:11px; font-family:'Hanken Grotesk',sans-serif; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#6b7a70; margin-bottom:8px; }
+    #seo-panel .gprev .gu { font-size:12px; color:#4d5156; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #seo-panel .gprev .gt { font-size:18px; line-height:1.3; color:#1a0dab; margin:3px 0 4px; }
+    #seo-panel .gprev .gd { font-size:13px; line-height:1.55; color:#4d5156; }
+    #seo-panel dl { display:grid; grid-template-columns:auto 1fr; gap:6px 12px; margin:0; font-size:12px; }
+    #seo-panel dt { color:#6b7a70; } #seo-panel dd { margin:0; min-width:0; overflow-wrap:anywhere; }
+    #seo-panel .sec { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#6b7a70; margin-bottom:8px; }
     .sidebar-head { display:none; }   /* the To Do tab names it now */
     .sidebar-label {
       font-family: 'Hanken Grotesk', sans-serif;
@@ -1633,6 +1660,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <button id="btn-photos" role="tab" onclick="sideTab('photos')" title="The photo library, to drag photos into the article"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Photos</button>
       <button id="btn-review" role="tab" onclick="sideTab('review')" title="Track changes and comments for the open article"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>Review<span class="n" id="btn-review-n"></span></button>
       <button id="btn-todo" role="tab" onclick="sideTab('todo')" title="Your to-do list"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 2 2 4-4"/><path d="m3 17 2 2 4-4"/><path d="M13 6h8M13 12h8M13 18h8"/></svg>To Do</button>
+      <button id="btn-seo" role="tab" onclick="sideTab('seo')" title="How this page shows up in Google and in link previews"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
     </nav>
     <!-- Photo library (swaps with the to-do list via the Photos button) -->
     <div id="photo-panel">
@@ -1671,6 +1699,24 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     <div class="todo-footer">
       <button onclick="todoAdd('task')" title="Add a task">+ Task</button>
       <button onclick="todoAdd('section')" title="Add a section heading">+ Section</button>
+    </div>
+    <div id="seo-panel">
+      <div class="gprev"><div class="gh">In Google</div><div class="gu" id="seo-g-url"></div><div class="gt" id="seo-g-title"></div><div class="gd" id="seo-g-desc"></div></div>
+      <div class="sf">
+        <label for="seo-title">Search title <span class="cnt" id="seo-title-n"></span></label>
+        <textarea id="seo-title" rows="2" spellcheck="true"></textarea>
+        <div class="sf-actions"><button type="button" id="seo-use-h1" title="Start the search title from the headline on the page">Use headline</button></div>
+        <div class="hint" id="seo-title-hint">The browser tab, the Google result and the link preview. Up to about 70 characters; Google cuts it near 60.</div>
+      </div>
+      <div class="sf">
+        <label for="seo-desc">Description <span class="cnt" id="seo-desc-n"></span></label>
+        <textarea id="seo-desc" rows="4" spellcheck="true"></textarea>
+        <div class="hint">The text under the title in Google and in link previews. Under 160 characters.</div>
+      </div>
+      <div>
+        <div class="sec">Set automatically</div>
+        <dl id="seo-facts"></dl>
+      </div>
     </div>
     <div class="sidebar-foot">
       <div class="sidebar-label" style="margin-bottom:.45rem">Site Folder · for images</div>
@@ -2900,6 +2946,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     document.getElementById('notice').style.display = 'none';
     renderMasthead(originalHTML);
     window.__tocSpec = tocSpecFrom(doc); buildToc();
+    if (window.__loadSeo) window.__loadSeo(doc);      // the Search tab, pre-filled from this page's head
 
     // Clean editing engine: Enter creates <p> (not <div>), formatting uses tags (not spans)
     try {
@@ -3633,6 +3680,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     normalizeForSave(saveEl);
     originalBody.innerHTML = prettyPrintBody(saveEl);
     if (window.__applyMasthead) window.__applyMasthead(doc);     // the hero's title and subtitle
+    if (window.__applySeo) window.__applySeo(doc);               // the Search tab's title and description
 
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -5173,6 +5221,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (t === 'photos') { if (!B.contains('photos-open')) togglePhotoPanel(); }
     else if (t === 'review') { if (window.review) review.toggle(true); }
     else { B.remove('photos-open'); if (window.review && B.contains('review-open')) review.toggle(false); }
+    B.toggle('seo-open', t === 'seo');
   };
 
   /* ---- trips, not folders -------------------------------------------------
@@ -10099,6 +10148,75 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   let v = VIEWS.includes(h) ? h : null;
   if (!v) { try { v = localStorage.getItem('tb:view'); } catch (e) {} }
   showView(VIEWS.includes(v) ? v : 'editor');
+})();
+</script>
+<script>
+/* ============== THE SEARCH TAB (2026-09-28) ==============
+   Pre-filled from the open page's head. On save, a field you changed is written to every place
+   it belongs: the title to <title>, og:title and the JSON-LD headline; the description to the
+   meta description and og:description. Untouched fields leave the head exactly as it was. */
+(function searchTab() {
+  const $ = id => document.getElementById(id);
+  const T = $('seo-title'), D = $('seo-desc');
+  let orig = null, h1 = '';
+  const clean = s => (s || '').replace(/\s+/g, ' ').trim();
+  const meta = (doc, sel) => { const m = doc.querySelector(sel); return m ? m.getAttribute('content') || '' : ''; };
+  function ld(doc) { const out = []; doc.querySelectorAll('script[type="application/ld+json"]').forEach(s => { try { out.push([s, JSON.parse(s.textContent)]); } catch (e) {} }); return out; }
+  function paint() {
+    const t = clean(T.value), d = clean(D.value);
+    const tn = $('seo-title-n'), dn = $('seo-desc-n');
+    tn.textContent = t.length + ' / 70'; tn.className = 'cnt' + (t.length > 70 ? ' over' : t.length > 60 ? ' warn' : '');
+    dn.textContent = d.length + ' / 160'; dn.className = 'cnt' + (d.length >= 160 ? ' over' : d.length > 150 ? ' warn' : '');
+    $('seo-g-title').textContent = t.length > 60 ? t.slice(0, 58).replace(/\s+\S*$/, '') + ' …' : (t || '(no title)');
+    $('seo-g-desc').textContent = d.length > 158 ? d.slice(0, 155).replace(/\s+\S*$/, '') + ' …' : (d || '(no description: Google will pick text from the page)');
+    const hint = $('seo-title-hint');
+    const fn = /field notes/i.test(t);
+    hint.classList.toggle('bad', fn);
+    hint.textContent = fn ? 'Leave "Field Notes" out of the title: it is the brand, and nobody searches it.'
+                          : 'The browser tab, the Google result and the link preview. Up to about 70 characters; Google cuts it near 60.';
+  }
+  window.__loadSeo = function (doc) {
+    const title = clean(doc.querySelector('title') ? doc.querySelector('title').textContent : '');
+    const desc = clean(meta(doc, 'meta[name="description"]'));
+    orig = { title, desc };
+    T.value = title; D.value = desc;
+    h1 = clean(doc.querySelector('h1') ? doc.querySelector('h1').textContent : '');
+    const url = doc.querySelector('link[rel="canonical"]') ? doc.querySelector('link[rel="canonical"]').getAttribute('href') : meta(doc, 'meta[property="og:url"]');
+    $('seo-g-url').textContent = (url || 'getawayguide.io').replace(/^https?:\/\//, '').replace(/\//g, ' › ');
+    const L = ld(doc).map(x => x[1]).find(o => o && (o.datePublished || o.headline)) || {};
+    const facts = [['Address', url || 'Set when the page is published'], ['Page type', meta(doc, 'meta[property="og:type"]') || '—'],
+                   ['Published', L.datePublished || 'Set when the page is published'], ['Last updated', L.dateModified || '—'],
+                   ['Share image', meta(doc, 'meta[property="og:image"]') ? meta(doc, 'meta[property="og:image"]').split('/').pop() : '—']];
+    $('seo-facts').innerHTML = facts.map(([k, v]) => `<dt>${k}</dt><dd>${String(v).replace(/</g, '&lt;')}</dd>`).join('');
+    paint();
+  };
+  window.__applySeo = function (doc) {
+    if (!orig) return;
+    const t = clean(T.value), d = clean(D.value);
+    const setMeta = (sel, attr, key, v) => { let m = doc.querySelector(sel); if (!m) { m = doc.createElement('meta'); m.setAttribute(attr, key); doc.head.appendChild(m); } m.setAttribute('content', v); };
+    if (t && t !== orig.title) {
+      let el = doc.querySelector('title'); if (!el) { el = doc.createElement('title'); doc.head.appendChild(el); } el.textContent = t;
+      setMeta('meta[property="og:title"]', 'property', 'og:title', t);
+      ld(doc).forEach(([s, o]) => { if (o && o.headline !== undefined) { o.headline = t; s.textContent = JSON.stringify(o, null, 2); } });
+    }
+    if (d !== orig.desc) {
+      setMeta('meta[name="description"]', 'name', 'description', d);
+      setMeta('meta[property="og:description"]', 'property', 'og:description', d);
+    }
+    orig = { title: t || orig.title, desc: d };
+  };
+  [T, D].forEach(el => {
+    el.addEventListener('input', () => { paint(); if (typeof setDirty === 'function') setDirty(true); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' && el === T) e.preventDefault(); });   // a title is one line
+  });
+  $('seo-use-h1').onclick = () => {
+    if (!h1) return;
+    const suffix = (/ - getawayguide$/i.exec(T.value) || [''])[0];
+    T.value = h1 + suffix; paint(); if (typeof setDirty === 'function') setDirty(true);
+  };
+  // the headline edited on the canvas is what "Use headline" copies
+  document.addEventListener('input', e => { const h = e.target.closest && e.target.closest('#ed-masthead [data-mh="title"]'); if (h) h1 = clean(h.textContent); });
+  paint();
 })();
 </script>
 <div id="sb-light" hidden role="dialog" aria-label="Photo preview">
