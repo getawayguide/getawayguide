@@ -450,11 +450,6 @@ class PageIndex:
         return self.blocks[i]["end"], "\n    " + markup
 
 
-def index_page(rel):
-    text = read_page(rel)
-    return text, PageIndex(text)
-
-
 # ---------------------------------------------------------------- image import
 def clean_dirname(s):
     """One path COMPONENT: no separators, no drive colons, no dot-traversal.
@@ -474,12 +469,6 @@ def country_dir(slug):
         if d.is_dir() and d.name.lower() == want and d.name != "web":
             return d
     return IMAGES / (name if any(c.isupper() for c in name) else name.title())
-
-
-def country_for(rel):
-    """Map a page path to its Images/<Country> folder (create for drafts)."""
-    slug = Path(rel).parts[1] if rel.startswith("Drafts/") else Path(rel).parts[0]
-    return country_dir(slug)
 
 
 def clean_name(stem):
@@ -810,14 +799,6 @@ def import_photo(src, country_dir, city, rot=0, flip=None, dev=None, name_hint=N
     return dest
 
 
-def img_markup(dest, page_rel, alt, kind):
-    depth = len(Path(page_rel).parts) - 1
-    src = "../" * depth + dest.relative_to(ROOT).as_posix()
-    src = src.replace(" ", "%20")
-    style = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;"
-    return f'<img src="{src}" alt="{esc(alt)}" style="{style}">'
-
-
 def esc(s):
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -826,17 +807,13 @@ PAIR_SLOT = ('<span style="display:block;position:relative;overflow:hidden;'
              'width:100%;aspect-ratio:2/3;border-radius:2px;">{img}</span>')
 
 
-def block_markup(kind, imgs, page_rel):
-    if kind == "landscape":
-        return f'<div class="img-landscape">{imgs[0]}</div>'
-    slots = "".join(PAIR_SLOT.format(img=i) for i in imgs)
-    return f'<div class="img-pair">{slots}</div>'
-
-
 # ---------------------------------------------------------------------- routes
 @app.route("/")
 def ui():
-    return Response_UI
+    # the standalone photo tool that lived here was retired 2026-09-27; the article editor
+    # (with the photo library inside it) is the one place to work now
+    from flask import redirect
+    return redirect("/browser")
 
 
 @app.route("/site/<path:rel>")
@@ -1268,43 +1245,6 @@ def image_file(rel):
 import redline as _redline
 
 
-@app.route("/redline")
-def redline_index():
-    rows = _redline.pending()
-    items = "".join(
-        f'<li><a href="/redline/{r["slug"]}">{r["title"]}</a> &middot; {r["changes"]} changes'
-        f'{" &middot; applied" if r["applied"] else ""}</li>' for r in rows) or "<li>nothing pending</li>"
-    return (f'<!doctype html><meta charset="utf-8"><title>Redline reviews</title>'
-            f'<body style="font:15px/1.6 Hanken Grotesk,Helvetica,Arial,sans-serif;padding:2rem">'
-            f'<h1 style="font:400 1.4rem Newsreader,Georgia,serif">Redline reviews</h1><ul>{items}</ul>')
-
-
-@app.route("/redline/<slug>")
-def redline_page(slug):
-    if not (_redline.STORE / slug / "proposal.json").exists():
-        abort(404)
-    return _redline.render(slug)
-
-
-@app.route("/redline/<slug>/decisions", methods=["POST", "OPTIONS"])
-def redline_decisions(slug):
-    if request.method == "OPTIONS":
-        return "", 204
-    if not (_redline.STORE / slug / "proposal.json").exists():
-        abort(404)
-    _redline.save_decisions(slug, request.get_json(force=True) or {})
-    return jsonify({"ok": True})
-
-
-@app.route("/redline/<slug>/apply", methods=["POST", "OPTIONS"])
-def redline_apply(slug):
-    if request.method == "OPTIONS":
-        return "", 204
-    if not (_redline.STORE / slug / "proposal.json").exists():
-        abort(404)
-    return jsonify(_redline.apply(slug))
-
-
 # ---- the review inside the editor (review.js) -----------------------------------
 @app.route("/review.js")
 def review_js():
@@ -1367,73 +1307,6 @@ def _env_key(name):
     return ""
 
 
-VOICE_GUIDE = Path.home() / ".claude/projects/c--Users-kevin-OneDrive-Documents-Travel-Blog/memory/user_writing_style.md"
-
-
-def _rewrite_prompt(quote, before, after, note):
-    guide = VOICE_GUIDE.read_text(encoding="utf-8", errors="replace") if VOICE_GUIDE.exists() else ""
-    return (
-        "You edit sentences for Kevin's travel blog. Rewrite the SENTENCE below three ways, each clearer or "
-        "tighter, in Kevin's voice: first person, direct, specific, American spelling, no em dashes, no travel "
-        "cliches. Keep every fact and every link text; do not add facts. Return ONLY a JSON array of three strings.\n\n"
-        + ("VOICE GUIDE:\n" + guide[:6000] + "\n\n" if guide else "")
-        + ("WHAT KEVIN WANTS: " + note + "\n\n" if note else "")
-        + "CONTEXT BEFORE: " + before + "\nSENTENCE: " + quote + "\nCONTEXT AFTER: " + after)
-
-
-def _claude_rewrites(prompt, key):
-    """Python's TLS is broken on this box (see the memory note), so the call goes through
-    PowerShell's Invoke-RestMethod like every other outbound request the tools make."""
-    body = json.dumps({"model": (_env_key("ANSWER_MODEL") or "claude-haiku-4-5-20251001"), "max_tokens": 800,
-                       "messages": [{"role": "user", "content": prompt}]})
-    tmp = Path(ROOT) / ".tmp" / "rewrite_req.json"
-    tmp.write_text(body, encoding="utf-8")
-    ps = ("$b = Get-Content -Raw -Encoding UTF8 '%s'; "
-          "$r = Invoke-RestMethod -Uri 'https://api.anthropic.com/v1/messages' -Method Post -TimeoutSec 60 "
-          "-Headers @{'x-api-key'='%s';'anthropic-version'='2023-06-01';'content-type'='application/json'} -Body $b; "
-          "$r.content[0].text" % (str(tmp).replace("'", "''"), key))
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
-                       capture_output=True, text=True, timeout=90, encoding="utf-8", errors="replace")
-    if r.returncode != 0:
-        raise RuntimeError((r.stderr or r.stdout).strip()[-300:])
-    txt = r.stdout.strip()
-    m = re.search(r"\[.*\]", txt, re.S)
-    alts = json.loads(m.group(0) if m else txt)
-    return [a for a in alts if isinstance(a, str) and a.strip()][:3]
-
-
-@app.route("/review/rewrite", methods=["POST", "OPTIONS"])
-def review_rewrite():
-    """Rewrite the selected sentence in Kevin's voice. With ANTHROPIC_API_KEY in .env the
-    answer comes back at once (three alternatives, the editor offers each with a Use button).
-    Without one the ask is queued as a comment thread on the article, which the next review
-    round answers with a proposed change; `python tools/redline.py rewrites` lists the queue."""
-    if request.method == "OPTIONS":
-        return "", 204
-    d = request.get_json(force=True) or {}
-    quote = (d.get("quote") or "").strip()
-    if not quote:
-        abort(400)
-    before, after, note = (d.get("before") or "")[-160:], (d.get("after") or "")[:160], (d.get("note") or "").strip()
-    key = _env_key("ANTHROPIC_API_KEY")
-    if key:
-        try:
-            return jsonify({"live": True, "alternatives": _claude_rewrites(_rewrite_prompt(quote, before, after, note), key)})
-        except Exception as e:
-            return jsonify({"live": True, "error": str(e)[:300]})
-    rel = d.get("rel") or ""
-    if not rel:
-        return jsonify({"live": False, "queued": False, "error": "no article path"})
-    key_ = _redline.comments_key(rel)
-    data = _redline.comments_load(key_)
-    tid = "rw" + format(int(time.time() * 1000), "x")
-    data.setdefault("threads", []).append({
-        "id": tid, "author": "Kevin", "created": time.strftime("%Y-%m-%dT%H:%M:%S"), "kind": "rewrite",
-        "text": "Rewrite: " + (note or "clearer, in my voice"), "status": "sent",
-        "resolved": False, "unanchored": False,
-        "anchor": {"before": before[-60:], "quote": quote, "after": after[:60]}, "replies": []})
-    _redline.comments_save(key_, data)
-    return jsonify({"live": False, "queued": True, "thread": data["threads"][-1]})
 
 
 @app.route("/review/resolve-maps", methods=["POST", "OPTIONS"])
@@ -2541,12 +2414,6 @@ def api_import():
                     "orient": "landscape" if w >= h * 1.05 else "portrait" if h >= w * 1.05 else "square"})
 
 
-@app.route("/api/blocks")
-def api_blocks():
-    _, ix = index_page(request.args["page"])
-    return jsonify({"count": len(ix.blocks), "tags": [b["tag"] for b in ix.blocks]})
-
-
 def read_page(rel):
     """Read without newline translation: offsets must map to the bytes on
     disk, and writing back must not flip CRLF files to LF."""
@@ -2561,106 +2428,6 @@ def splice(rel, edits):
         text = text[:start] + rep + text[end:]
     f.write_text(text, encoding="utf-8", newline="")
     return text
-
-
-@app.route("/api/insert", methods=["POST"])
-def api_insert():
-    d = request.get_json(force=True)
-    rel = d["page"]
-    text, ix = index_page(rel)
-    country = country_for(rel)
-    imgs = []
-    for ph in d["photos"]:
-        src = source_path(ph["root"], ph["path"])
-        dest = import_photo(src, country, d.get("city", "").strip())
-        imgs.append(img_markup(dest, rel, ph.get("alt") or clean_name(src.stem), d["kind"]))
-    block = block_markup(d["kind"], imgs, rel)
-    pos, chunk = ix.place(d["at"], block)
-    splice(rel, [(pos, pos, chunk)])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/pair_add", methods=["POST"])
-def api_pair_add():
-    d = request.get_json(force=True)
-    rel = d["page"]
-    text, ix = index_page(rel)
-    b = ix.blocks[int(d["index"])]
-    ph = d["photo"]
-    src = source_path(ph["root"], ph["path"])
-    dest = import_photo(src, country_for(rel), d.get("city", "").strip())
-    img = img_markup(dest, rel, ph.get("alt") or clean_name(src.stem), "pair")
-    close = text.rindex("</div>", b["start"], b["end"])
-    splice(rel, [(close, close, PAIR_SLOT.format(img=img))])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/remove", methods=["POST"])
-def api_remove():
-    d = request.get_json(force=True)
-    text, ix = index_page(d["page"])
-    b = ix.blocks[int(d["index"])]
-    start = b["start"]
-    m = re.search(r"\n[ \t]*$", text[:start])       # swallow the leading newline+indent
-    if m:
-        start = m.start()
-    splice(d["page"], [(start, b["end"], "")])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/move", methods=["POST"])
-def api_move():
-    d = request.get_json(force=True)
-    text, ix = index_page(d["page"])
-    src = int(d["from"])
-    if not (0 <= src < len(ix.blocks)):
-        return jsonify({"ok": True})
-    b = ix.blocks[src]
-    pos, chunk = ix.place(d["at"], text[b["start"]:b["end"]])
-    if b["start"] <= pos <= b["end"]:
-        return jsonify({"ok": True})
-    rm_start = b["start"]
-    m = re.search(r"\n[ \t]*$", text[:rm_start])
-    if m:
-        rm_start = m.start()
-    splice(d["page"], [(rm_start, b["end"], ""), (pos, pos, chunk)])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/pair_swap", methods=["POST"])
-def api_pair_swap():
-    d = request.get_json(force=True)
-    text, ix = index_page(d["page"])
-    b = ix.blocks[int(d["index"])]
-    seg = text[b["start"]:b["end"]]
-    spans = re.findall(r"<span[^>]*>.*?</span>", seg, re.S)
-    if len(spans) == 2:
-        seg2 = seg.replace(spans[0], "\x00").replace(spans[1], spans[0]).replace("\x00", spans[1])
-        splice(d["page"], [(b["start"], b["end"], seg2)])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/set_pos", methods=["POST"])
-def api_set_pos():
-    d = request.get_json(force=True)
-    text, ix = index_page(d["page"])
-    b = ix.blocks[int(d["index"])]
-    seg = text[b["start"]:b["end"]]
-    tags = list(re.finditer(r"<img\b[^>]*>", seg, re.S))
-    t = tags[int(d["img"])]
-    tag = t.group(0)
-    pos = d["pos"]                                   # e.g. "37% 62%"
-    if not re.fullmatch(r"\d{1,3}% \d{1,3}%", pos):
-        abort(400)
-    if "object-position" in tag:
-        new = re.sub(r"object-position:[^;\"']*", f"object-position:{pos}", tag)
-    elif re.search(r'style="', tag):
-        new = tag.replace('style="', f'style="object-position:{pos};', 1)
-    else:
-        new = tag.replace("<img ", f'<img style="object-position:{pos};" ', 1)
-    start = b["start"] + t.start()
-    splice(d["page"], [(start, start + len(tag), new)])
-    return jsonify({"ok": True})
 
 
 def _run_pipeline(page):
@@ -2683,13 +2450,6 @@ def _run_pipeline(page):
         if r.returncode != 0:
             return False, "\n\n".join(log)
     return True, "\n\n".join(log)
-
-
-@app.route("/api/pipeline", methods=["POST"])
-def api_pipeline():
-    # the direct, run-it-now route: the stand-alone photo tool page still uses it
-    ok, log = _run_pipeline(request.get_json(force=True)["page"])
-    return jsonify({"ok": ok, "log": log}), (200 if ok else 500)
 
 
 # ---- compression after you leave the article -------------------------------------------
@@ -2963,298 +2723,6 @@ def _compress_status():
 
 
 # --------------------------------------------------------------------- UI page
-Response_UI = r"""<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Photo Editor</title>
-<style>
-:root{--ink:#1C2821;--terra:#2D6B50;--cream:#F7F7F3;--mist:#EDEDE7;--line:#D8E5DC}
-*{box-sizing:border-box;margin:0}
-body{font:13px/1.45 "Segoe UI",system-ui,sans-serif;color:var(--ink);height:100vh;
-     display:grid;grid-template-rows:44px 1fr;grid-template-columns:340px 1fr;overflow:hidden}
-header{grid-column:1/3;display:flex;align-items:center;gap:10px;padding:0 12px;
-       background:var(--ink);color:#fff}
-header select,header input{font:inherit;padding:4px 8px;border:0;border-radius:4px}
-header select{max-width:340px}
-header input#city{width:150px}
-header .btn{background:var(--terra);color:#fff;border:0;border-radius:4px;
-            padding:6px 12px;cursor:pointer;font:inherit}
-header .btn:disabled{opacity:.5}
-#status{margin-left:auto;font-size:12px;opacity:.85;max-width:420px;white-space:nowrap;
-        overflow:hidden;text-overflow:ellipsis}
-aside{border-right:1px solid var(--mist);display:flex;flex-direction:column;min-height:0;background:var(--cream)}
-#srcbar{display:flex;gap:4px;padding:8px;flex-wrap:wrap}
-#srcbar button{font:12px inherit;border:1px solid var(--line);background:#fff;
-               border-radius:12px;padding:3px 10px;cursor:pointer}
-#srcbar button.on{background:var(--terra);color:#fff;border-color:var(--terra)}
-#crumbs{padding:0 10px 6px;font-size:12px;color:#555;word-break:break-all}
-#crumbs a{color:var(--terra);cursor:pointer;text-decoration:none}
-#folders{padding:0 8px 4px;display:flex;flex-wrap:wrap;gap:4px}
-#folders div{background:#fff;border:1px solid var(--mist);border-radius:4px;
-             padding:3px 8px;cursor:pointer;font-size:12px}
-#folders div:hover{border-color:var(--terra)}
-#grid{flex:1;overflow-y:auto;padding:8px;display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;align-content:start}
-.ph{position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;cursor:grab;
-    background:var(--mist)}
-.ph img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.ph .b{position:absolute;top:4px;left:4px;background:rgba(28,40,33,.75);color:#fff;
-       font-size:10px;padding:1px 5px;border-radius:3px}
-.ph:hover::after{content:attr(data-name);position:absolute;bottom:0;left:0;right:0;
-       background:rgba(28,40,33,.8);color:#fff;font-size:10px;padding:2px 4px;
-       white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-main{position:relative;min-width:0}
-iframe{width:100%;height:100%;border:0;background:#fff}
-#hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
-      background:rgba(28,40,33,.9);color:#fff;padding:8px 16px;border-radius:20px;
-      font-size:12px;pointer-events:none;opacity:0;transition:opacity .3s}
-#hint.show{opacity:1}
-dialog{border:1px solid var(--mist);border-radius:8px;padding:18px;min-width:340px}
-dialog h3{margin-bottom:10px;font-size:15px}
-dialog label{display:block;margin:8px 0 2px;font-size:12px;color:#555}
-dialog input,dialog select{width:100%;font:inherit;padding:6px;border:1px solid var(--line);border-radius:4px}
-dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-dialog .row button{font:inherit;padding:6px 14px;border-radius:4px;border:1px solid var(--line);
-                   background:#fff;cursor:pointer}
-dialog .row button.go{background:var(--terra);color:#fff;border-color:var(--terra)}
-#log{position:absolute;top:10px;right:10px;max-width:440px;max-height:60%;overflow:auto;
-     background:rgba(28,40,33,.95);color:#cfe3d7;font:11px/1.5 Consolas,monospace;
-     padding:10px 14px;border-radius:6px;white-space:pre-wrap;display:none}
-</style></head><body>
-<header>
-  <b>Photo&nbsp;Editor</b>
-  <select id="article"></select>
-  <input id="city" placeholder="City folder (e.g. Antigua)" title="Subfolder inside Images/<Country>/ that imported photos are filed into">
-  <button class="btn" id="pipeline">Run pipeline</button>
-  <span id="status"></span>
-</header>
-<aside>
-  <div id="srcbar"></div>
-  <div id="crumbs"></div>
-  <div id="folders"></div>
-  <div id="grid"></div>
-</aside>
-<main>
-  <iframe id="frame"></iframe>
-  <div id="hint"></div>
-</main>
-<dialog id="dlg">
-  <h3 id="dlgTitle">Insert photo</h3>
-  <label>Layout</label><select id="dlgKind"></select>
-  <label>Alt text</label><input id="dlgAlt">
-  <div class="row"><button onclick="dlg.close()">Cancel</button>
-  <button class="go" id="dlgGo">Insert</button></div>
-</dialog>
-<div id="log"></div>
-<script>
-const $=q=>document.querySelector(q);
-let SRC=0, PATH="", ARTICLE="", metaCache={};
-const hint=t=>{const h=$("#hint");h.textContent=t;h.classList.add("show");
-               clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove("show"),3500)};
-const api=(u,d)=>fetch(u,d?{method:"POST",headers:{"Content-Type":"application/json"},
-                           body:JSON.stringify(d)}:{}).then(r=>r.json());
-
-async function boot(){
-  const st=await api("/api/state");
-  const sel=$("#article");
-  st.articles.forEach(a=>{const o=document.createElement("option");
-    o.value=a.path;o.textContent=a.label;sel.appendChild(o)});
-  const bar=$("#srcbar");
-  st.sources.forEach((s,i)=>{const b=document.createElement("button");
-    b.textContent=s.label;b.onclick=()=>{SRC=i;PATH="";[...bar.children].forEach(c=>c.classList.remove("on"));
-      b.classList.add("on");browse()};bar.appendChild(b)});
-  if(bar.firstChild)bar.firstChild.classList.add("on");
-  sel.onchange=()=>loadArticle(sel.value);
-  if(st.articles.length)loadArticle(st.articles[0].path);
-  browse();
-  if(!st.heic)hint("pillow-heif missing: HEIC files hidden (pip install pillow-heif)");
-}
-
-async function browse(){
-  const d=await api(`/api/browse?root=${SRC}&path=${encodeURIComponent(PATH)}`);
-  const crumbs=$("#crumbs");crumbs.innerHTML="";
-  const parts=PATH?PATH.split("/"):[];
-  const mk=(t,p)=>{const a=document.createElement("a");a.textContent=t;
-    a.onclick=()=>{PATH=p;browse()};crumbs.appendChild(a);
-    crumbs.appendChild(document.createTextNode(" / "))};
-  mk("⌂","");let acc="";parts.forEach(p=>{acc=acc?acc+"/"+p:p;mk(p,acc)});
-  const fol=$("#folders");fol.innerHTML="";
-  d.dirs.forEach(n=>{const v=document.createElement("div");v.textContent="📁 "+n;
-    v.onclick=()=>{PATH=PATH?PATH+"/"+n:n;browse()};fol.appendChild(v)});
-  const g=$("#grid");g.innerHTML="";
-  d.photos.forEach(n=>{
-    const rel=PATH?PATH+"/"+n:n;
-    const div=document.createElement("div");div.className="ph";div.draggable=true;
-    div.dataset.rel=rel;div.dataset.name=n;
-    const im=document.createElement("img");im.loading="lazy";
-    im.src=`/thumb?root=${SRC}&path=${encodeURIComponent(rel)}`;
-    div.appendChild(im);
-    api(`/api/photo_meta?root=${SRC}&path=${encodeURIComponent(rel)}`).then(m=>{
-      if(m.orient){metaCache[rel]=m;const b=document.createElement("span");
-        b.className="b";b.textContent=m.orient==="landscape"?"H":m.orient==="portrait"?"V":"□";
-        div.appendChild(b)}});
-    div.addEventListener("dragstart",e=>{
-      e.dataTransfer.setData("text/photo",JSON.stringify({root:SRC,path:rel,name:n}));
-      e.dataTransfer.effectAllowed="copy"});
-    g.appendChild(div)});
-}
-
-function loadArticle(p){
-  const changed=ARTICLE!==p;
-  ARTICLE=p;
-  const f=$("#frame");
-  if(changed)f._scroll=0;
-  f.src="/site/"+p+"?t="+Date.now();
-  f.onload=()=>{
-    decorate(f);
-    // originals load slowly and reflow the page; keep re-applying the saved
-    // scroll position until layout settles so actions don't jump to the top
-    const y=f._scroll||0;
-    [0,250,700,1500].forEach(ms=>setTimeout(()=>{
-      if(Math.abs(f.contentWindow.scrollY-y)>4)f.contentWindow.scrollTo(0,y)},ms));
-  };
-  if(changed){
-    const cityGuess=p.split("/").pop().replace(".html","").replace("field-notes","")
-                     .replace(/-/g," ").trim();
-    $("#city").value=cityGuess?cityGuess.replace(/\b\w/g,c=>c.toUpperCase()):"";
-  }
-}
-
-function decorate(f){
-  const doc=f.contentDocument;
-  const body=doc.querySelector(".article-body");
-  if(!body){hint("no .article-body on this page");return}
-  // Flat leaf-block walk — MUST mirror the server's PageIndex: direct children
-  // of article-body, with fn-section divs replaced by their own children.
-  const flat=[];            // [{el, section}]
-  [...body.children].forEach(c=>{
-    if(c.classList.contains("fn-section"))
-      [...c.children].forEach(k=>flat.push({el:k,section:c}));
-    else flat.push({el:c,section:null});
-  });
-  const zone=at=>{
-    const z=doc.createElement("div");z.className="pe-zone";
-    const rest="height:10px;margin:2px 0;border-radius:5px;transition:all .15s";
-    z.style.cssText=rest;
-    z.addEventListener("dragover",e=>{e.preventDefault();
-      z.style.cssText=rest+";height:34px;background:#2D6B5033;border:2px dashed #2D6B50"});
-    z.addEventListener("dragleave",()=>z.style.cssText=rest);
-    z.addEventListener("drop",e=>{e.preventDefault();onDrop(e,at)});
-    return z};
-  flat.forEach((b,i)=>{
-    const k=b.el;
-    k.parentElement.insertBefore(zone({before:i}),k);
-    if(k.classList.contains("img-pair")||k.classList.contains("img-landscape")){
-      k.addEventListener("dragover",e=>{if(k.classList.contains("img-pair")&&
-        k.querySelectorAll("img").length<2){e.preventDefault();e.stopPropagation();
-        k.style.outline="3px dashed #2D6B50"}});
-      k.addEventListener("dragleave",()=>k.style.outline="");
-      k.addEventListener("drop",e=>{k.style.outline="";
-        if(k.classList.contains("img-pair")&&k.querySelectorAll("img").length<2){
-          e.preventDefault();e.stopPropagation();onPairAdd(e,i)}});
-      attachTools(doc,k,i);
-    }
-    k.querySelectorAll("img").forEach((img,j)=>attachPan(f,img,i,j));
-  });
-  // trailing zone at the end of each section, and at the end of the body
-  const lastIn=parent=>{for(let i=flat.length-1;i>=0;i--)
-    if(flat[i].section===parent||(!parent&&!flat[i].section&&flat[i].el.parentElement===body))
-      return i;return -1};
-  [...body.children].filter(c=>c.classList.contains("fn-section")).forEach(sec=>{
-    const i=lastIn(sec);
-    if(i>=0)sec.appendChild(zone({after:i}));
-  });
-  body.appendChild(zone({end:true}));
-  f.contentWindow.addEventListener("scroll",()=>f._scroll=f.contentWindow.scrollY);
-}
-
-function attachTools(doc,k,i){
-  k.style.position=k.style.position||"relative";
-  const bar=doc.createElement("div");
-  bar.style.cssText="position:absolute;top:6px;right:6px;z-index:60;display:none;gap:4px";
-  const mk=(t,title,fn)=>{const b=doc.createElement("button");b.textContent=t;b.title=title;
-    b.style.cssText="font:12px sans-serif;border:0;border-radius:4px;padding:4px 8px;"+
-      "background:rgba(28,40,33,.85);color:#fff;cursor:pointer";
-    b.onclick=e=>{e.stopPropagation();fn()};bar.appendChild(b)};
-  mk("↑","Move up",()=>mut("/api/move",{page:ARTICLE,from:i,at:{before:Math.max(0,i-1)}}));
-  mk("↓","Move down",()=>mut("/api/move",{page:ARTICLE,from:i,at:{after:i+1}}));
-  if(k.classList.contains("img-pair"))mk("⇄","Swap pair",()=>mut("/api/pair_swap",{page:ARTICLE,index:i}));
-  mk("✕","Remove block",()=>{if(confirm("Remove this image block? (The photo stays in Images/)"))
-    mut("/api/remove",{page:ARTICLE,index:i})});
-  bar.style.display="none";
-  k.appendChild(bar);
-  k.addEventListener("mouseenter",()=>bar.style.display="flex");
-  k.addEventListener("mouseleave",()=>bar.style.display="none");
-}
-
-function attachPan(f,img,i,j){
-  let drag=null;
-  img.style.cursor="move";
-  img.addEventListener("mousedown",e=>{
-    e.preventDefault();
-    const cs=f.contentWindow.getComputedStyle(img);
-    const m=/(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/.exec(cs.objectPosition)||[0,50,50];
-    drag={x:e.clientX,y:e.clientY,px:+m[1],py:+m[2]};
-    const move=ev=>{
-      const r=img.getBoundingClientRect();
-      let px=drag.px-(ev.clientX-drag.x)/r.width*100;
-      let py=drag.py-(ev.clientY-drag.y)/r.height*100;
-      px=Math.max(0,Math.min(100,px));py=Math.max(0,Math.min(100,py));
-      img.style.objectPosition=`${px.toFixed(0)}% ${py.toFixed(0)}%`;
-      drag.cur=[px.toFixed(0),py.toFixed(0)]};
-    const up=()=>{f.contentDocument.removeEventListener("mousemove",move);
-      f.contentDocument.removeEventListener("mouseup",up);
-      if(drag.cur)api("/api/set_pos",{page:ARTICLE,index:i,img:j,
-        pos:`${drag.cur[0]}% ${drag.cur[1]}%`}).then(()=>hint("crop saved"));
-      drag=null};
-    f.contentDocument.addEventListener("mousemove",move);
-    f.contentDocument.addEventListener("mouseup",up);
-  });
-}
-
-const dlg=$("#dlg");
-function onDrop(e,at){
-  const raw=e.dataTransfer.getData("text/photo");if(!raw)return;
-  const ph=JSON.parse(raw);
-  const meta=metaCache[ph.path]||{orient:"landscape"};
-  const kindSel=$("#dlgKind");kindSel.innerHTML="";
-  const opts=meta.orient==="portrait"
-    ?[["pair","Portrait pair (drop 2nd photo onto the empty half)"],["landscape","Full-width landscape frame"]]
-    :[["landscape","Full-width landscape frame"],["pair","Portrait pair slot"]];
-  opts.forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;
-    kindSel.appendChild(o)});
-  $("#dlgAlt").value=ph.name.replace(/\.[^.]+$/,"");
-  $("#dlgTitle").textContent="Insert "+ph.name;
-  $("#dlgGo").onclick=()=>{dlg.close();
-    mut("/api/insert",{page:ARTICLE,at,kind:kindSel.value,city:$("#city").value,
-      photos:[{root:ph.root,path:ph.path,alt:$("#dlgAlt").value}]})};
-  dlg.showModal();
-}
-function onPairAdd(e,index){
-  const raw=e.dataTransfer.getData("text/photo");if(!raw)return;
-  const ph=JSON.parse(raw);
-  mut("/api/pair_add",{page:ARTICLE,index,city:$("#city").value,
-    photo:{root:ph.root,path:ph.path,alt:ph.name.replace(/\.[^.]+$/,"")}});
-}
-
-async function mut(url,data){
-  $("#status").textContent="saving…";
-  const r=await api(url,data);
-  $("#status").textContent=r.ok?"saved":"error";
-  if(r.ok)loadArticle(ARTICLE);else hint(JSON.stringify(r));
-}
-
-$("#pipeline").onclick=async()=>{
-  const b=$("#pipeline");b.disabled=true;$("#status").textContent="pipeline running…";
-  const r=await api("/api/pipeline",{page:ARTICLE});
-  b.disabled=false;$("#status").textContent=r.ok?"pipeline done":"pipeline FAILED";
-  const log=$("#log");log.textContent=r.log;log.style.display="block";
-  setTimeout(()=>log.style.display="none",12000);
-  loadArticle(ARTICLE);
-};
-
-boot();
-</script></body></html>"""
-
-
 if __name__ == "__main__":
     # 127.0.0.1 rather than localhost: localhost resolves ::1 first on this
     # box (Bonjour) and every request pays a ~2s IPv6 timeout

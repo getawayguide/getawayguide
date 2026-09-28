@@ -72,7 +72,6 @@
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.id = 'rv-lines'; document.body.appendChild(svg);
     $('rv-close').onclick = () => toggle(false);
     $('rv-lint').onclick = runLint;
-    if ($('rv-rewrite')) $('rv-rewrite').onclick = requestRewrite;      // button removed 2026-09-27; a "rewrite" comment does the same
     $('rv-voice').onclick = () => { state.voiceOpen = !state.voiceOpen; renderVoice(); };
     $('rv-maps').onclick = resolveMaps;
     $('rv-refresh').onclick = () => refresh();
@@ -89,7 +88,6 @@
     $('rv-history').onclick = () => { $('rv-more').parentElement.classList.remove('open'); if (window.openHistory) window.openHistory(); };
     $('rv-all-no').onclick = () => decideAll(false);
     $('rv-new').onmousedown = e => { e.preventDefault(); captureSelection(); };
-    if ($('rv-rewrite')) $('rv-rewrite').onmousedown = e => { e.preventDefault(); captureSelection(); };
     $('rv-new').onclick = () => newComment();
     $('rv-v-list').onclick = () => setView(state.view === 'list' ? 'contextual' : 'list');   // toggles: List <-> beside
     $('rv-resolved').onclick = () => { state.showResolved = !state.showResolved; $('rv-resolved').setAttribute('aria-pressed', state.showResolved); renderAll(); };
@@ -942,17 +940,6 @@
     const d = document.createElement('div');
     d.className = 'rv-card rv-cm' + (t.draft ? ' draft' : '') + (t.resolved ? ' resolved' : '') + (state.active === t.id ? ' active' : '') + (t.author && t.author !== AUTHOR ? ' other' : '');
     d.dataset.cm = t.id;
-    if (t.draft && t.rewrite) {
-      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">rewrite</span></div>
-        <div class="t"><del>${esc(t.anchor.quote)}</del></div>
-        <textarea placeholder="What should the rewrite do? (optional: shorter, clearer, less formal, lead with the view…) Ctrl+Enter sends">${esc(t.text || '')}</textarea>
-        <div class="act"><button class="primary" data-a="send" title="Send (Ctrl+Enter)">${CLAUDE_MARK} Rewrite</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
-      d.querySelector('[data-a="send"]').onclick = () => submitRewrite(d.querySelector('textarea').value);
-      d.querySelector('[data-a="cancel"]').onclick = cancelDraft;
-      d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') submitRewrite(e.target.value); if (e.key === 'Escape') cancelDraft(); };
-      d.querySelector('textarea').oninput = e => { if (state.draft) state.draft.text = e.target.value; queueLayout(); };
-      return d;
-    }
     if (t.draft) {
       d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
         <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
@@ -1151,43 +1138,6 @@
     }
     el.innerHTML = h;
   }
-  // Rewrite the selected sentence. The server answers with three alternatives when it can
-  // reach Claude (a key in .env); otherwise the ask becomes a comment thread on the article
-  // and the next review round answers it with a proposed change.
-  function requestRewrite() {
-    if (state.draft) { toast('Another comment is in progress.'); return; }
-    if (!_range || !_range.toString().trim()) { toast('Select the sentence to rewrite first.'); return; }
-    if (_range.toString().trim().split(/\s+/).length > 80) { toast('Select one sentence or two, not a paragraph.'); return; }
-    if (state.filter === 'changes') setFilter('all'); toggle(true);
-    state.draft = { range: _range, anchor: textAround(_range), id: 'c' + Date.now().toString(36), rewrite: true, text: '' };
-    wrapRange(_range, state.draft.id, true);
-    renderAll();
-    setTimeout(() => { const ta = document.querySelector('.rv-cm.draft textarea'); if (ta) ta.focus(); }, 0);
-  }
-  async function submitRewrite(note) {
-    const d = state.draft; if (!d || !d.rewrite) return;
-    note = (note || '').trim();
-    const a = d.anchor, range = d.range;
-    unwrapMark(d.id); state.draft = null; _range = null; renderAll();
-    const b = $('rv-rewrite') || document.createElement('button'); b.disabled = true; b.textContent = 'Rewriting…';
-    let r; try { r = await (await fetch(API + '/review/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ rel: state.rel, quote: a.quote, before: a.before, after: a.after, note }) })).json(); }
-    catch (e) { toast('Server not reachable'); b.disabled = false; b.innerHTML = CLAUDE_MARK + ' Rewrite'; return; }
-    b.disabled = false; b.innerHTML = CLAUDE_MARK + ' Rewrite';
-    if (r.queued) {
-      state.comments.threads.push(r.thread); anchorComments(); renderAll();
-      toast('Queued: the next review round answers it as a proposed change.', 5000);
-      return;
-    }
-    if (r.error || !(r.alternatives || []).length) { toast('No rewrite: ' + (r.error || 'empty answer')); return; }
-    const id = 'rw' + Date.now().toString(36);
-    // the draft's range died with its mark; find the sentence again from the anchor
-    const rg = findRange(a); if (!rg) { toast('The sentence moved before the rewrite came back; here it is: ' + r.alternatives[0]); return; }
-    wrapRange(rg, id, false, 'lint');
-    state.lint.push({ id, kind: 'rewrite', severity: 'info', anchor: a, alternatives: r.alternatives,
-                      message: note ? 'Asked for: ' + note : 'Three ways to say it; pick one or keep yours.' });
-    state.active = id; renderAll();
-  }
   function useRewrite(f, text) {
     const marks = [...ed().querySelectorAll(`mark.lint[data-lint="${f.id}"]`)];
     if (!marks.length) return;
@@ -1299,7 +1249,6 @@ body.review-open #review-pane{display:flex}
 .rv-voice .sg{white-space:nowrap}.rv-voice .sg.off{color:#B4553C}.rv-voice .sg i{color:#8a9790;font-style:normal}
 .rv-card .acts .claude{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;color:#D97757;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .claude-mark{width:16px;height:16px;border-radius:4px;vertical-align:-3px;display:inline-block}
-#rv-rewrite .claude-mark{width:14px;height:14px;margin-right:.15rem}
 .rv-card .who .claude-mark{width:22px;height:22px;border-radius:50%;flex-shrink:0}
 .rv-card .acts .claude:hover{background:#FBEDE6;border-color:#eec3b3}
 .rv-card .act .send svg{vertical-align:-3px;margin-right:.15rem;color:#D97757}
