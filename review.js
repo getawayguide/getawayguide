@@ -49,14 +49,14 @@
         <div class="rv-chips"><button id="rv-f-all" aria-pressed="true" title="Changes and comments together">All</button>
           <button id="rv-f-changes" title="Only tracked changes">Changes <span id="rv-n-ch">0</span></button>
           <button id="rv-f-comments" title="Only comments">Comments <span id="rv-n-cm">0</span></button></div>
-        <button id="rv-refresh" class="rv-ico" title="Pick up comments or changes added since the article was opened">&#8635;</button>
-        <button id="rv-close" class="rv-ico" title="Close the review and go back to the to-do list">&times;</button>
+        <button id="rv-refresh" class="rv-ico" hidden title="Pick up comments or changes added since the article was opened">&#8635;</button>
+        <button id="rv-close" class="rv-ico" hidden title="Close the review and go back to the to-do list">&times;</button>
       </div>
       <div id="rv-banner" style="display:none"></div>
       <div class="rv-tools">
         <button id="rv-new" class="rv-btn primary" title="Comment on the selected text (Ctrl+Alt+M)">+ Comment</button>
-        <button id="rv-final" class="rv-btn" aria-pressed="false" title="Clean: the page as it reads with the decisions so far (press again for the markup)">Clean</button>
-        <button id="rv-v-list" class="rv-btn" aria-pressed="false" title="List: every card as a list, unplaced ones too (press again for cards beside the text)">List</button>
+        <button id="rv-final" class="rv-btn" aria-pressed="false" hidden title="Clean: the page as it reads with the decisions so far (press again for the markup)">Clean</button>
+        <span class="rv-switch" role="group" aria-label="How the cards are shown"><button id="rv-v-ctx" aria-pressed="true" title="Cards beside the text they belong to">Inline</button><button id="rv-v-list" aria-pressed="false" title="Every card as a list, unplaced ones too">List</button></span>
         <button id="rv-resolved" class="rv-btn" aria-pressed="false" title="Show resolved comment threads in the list" style="display:none">Resolved <span id="rv-n-res">0</span></button>
         <button id="rv-lint" class="rv-btn" title="Every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes, repeats, words you don't use">Prose</button>
         <button id="rv-maps" class="rv-btn" title="Turn Google Maps search links into real place pins" style="display:none">Resolve maps <span id="rv-n-maps">0</span></button>
@@ -89,7 +89,8 @@
     $('rv-all-no').onclick = () => decideAll(false);
     $('rv-new').onmousedown = e => { e.preventDefault(); captureSelection(); };
     $('rv-new').onclick = () => newComment();
-    $('rv-v-list').onclick = () => setView(state.view === 'list' ? 'contextual' : 'list');   // toggles: List <-> beside
+    $('rv-v-list').onclick = () => setView('list');
+    $('rv-v-ctx').onclick = () => setView('contextual');
     $('rv-resolved').onclick = () => { state.showResolved = !state.showResolved; $('rv-resolved').setAttribute('aria-pressed', state.showResolved); renderAll(); };
     // the margin follows the document: re-place the cards whenever anything moves
     const scroller = document.querySelector('.editor-scroll');
@@ -1242,6 +1243,10 @@ body.review-open #review-pane{display:flex}
 .rv-seg{display:inline-flex;border:1px solid #e0ded8;border-radius:3px;overflow:hidden}.rv-seg button{border:0!important;border-radius:0!important;border-right:1px solid #e0ded8!important}.rv-seg button:last-child{border-right:0!important}
 #review-pane .primary{background:#2D6B50;color:#fff;border-color:#2D6B50}
 .rv-more{margin-left:auto;position:relative}
+#review-pane [hidden]{display:none!important}
+.rv-switch{display:inline-flex;background:#F0F0EB;border-radius:7px;padding:2px;gap:2px}
+#review-pane .rv-switch button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;border:0;background:transparent;color:#4f5c54;padding:.42rem .6rem;border-radius:5px;cursor:pointer}
+#review-pane .rv-switch button[aria-pressed="true"]{background:#fff;color:#1C2821;box-shadow:0 1px 3px rgba(28,40,33,.14)}
 .rv-dd{display:none;position:absolute;right:0;top:1.5rem;background:#fff;border:1px solid #e0ded8;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:6;min-width:170px}
 .rv-more.open .rv-dd{display:block}.rv-dd button{display:block;width:100%;text-align:left;border:0!important;border-radius:0!important;text-transform:none!important;letter-spacing:0!important;font-size:.78rem!important;padding:.45rem .7rem!important}
 .rv-dd button:hover{background:#F5F5F2}

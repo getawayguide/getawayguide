@@ -41,6 +41,9 @@ PIPELINE = [
 
 
 def main():
+    # the tools' output carries non-ASCII paths; a cp1252 console (the compress queue's) crashed
+    # printing them after the work was done, and the queue counted that as a failure (2026-09-27)
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     draft = (ROOT / sys.argv[1]).resolve()

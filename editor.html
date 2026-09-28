@@ -306,6 +306,7 @@
       background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231C2821' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .5rem center/9px 6px; }
     .toolbar .tool-select:hover { border-color:rgba(28,40,33,.3); }
     .toolbar .tool-select { width:74px; height:26px; font-size:.65rem; font-weight:600; }
+    .tb-more-pop .tool-select { width:100% !important; height:30px !important; }
     .toolbar .color-swatch { height:26px; width:28px; }        /* a menu is as wide as its longest option; these read 'Font' and 'Size' */
     .toolbar .color-swatch { height:28px; width:30px; border-radius:6px; margin:0 2px; }
     .toolbar .tbi { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
@@ -544,7 +545,7 @@
     /* Article typography in editor */
     #editor h1, #editor h2 { font-family: 'Newsreader', serif; font-weight: 300; }
     #editor h2 { font-size: 1.72rem; line-height: 1.2; margin: 2.5rem 0 1rem; letter-spacing: -.012em; border-bottom: 1px solid var(--b-subtle); padding-bottom: .75rem; }
-    #editor h3 { font-family: 'Newsreader', serif; font-size: 1.5rem; font-weight: 400; font-style: normal; color: var(--ink); line-height: 1.28; letter-spacing: -.01em; margin: 1.75rem 0 .6rem; padding-left: .75rem; border-left: 2px solid var(--terra); }
+    #editor h3 { font-family: 'Newsreader', serif; font-size: 24px; font-weight: 400; font-style: normal; color: var(--ink); line-height: 1.28; letter-spacing: -.01em; margin: 38px 0 10px; padding-left: 14px; border-left: 3px solid var(--terra); }   /* = the site's H3 and Sub Hd (measured 2026-09-27) */
     #editor p { font-family: 'Hanken Grotesk', sans-serif; font-size: 1rem; line-height: 1.82; color: rgba(28,40,33,.78); margin-bottom: 1.1rem; font-weight: 400; }
     #editor a { color: #2D6B50; font-weight: 600; }
     #editor strong, #editor b { font-weight: 600; color: var(--ink); }   /* <b> is what the Bold button writes; it renders as ink on the site */
@@ -582,6 +583,17 @@
       letter-spacing:.07em; text-transform:uppercase; padding:5px 8px; cursor:pointer;
       border:1px solid var(--line,#D8E5DC); background:#fff; border-radius:12px; }
     #pk-toggle.on { background:#2D6B50; color:#fff; border-color:#2D6B50; }
+    /* the Blog Picks button, the same in the editor and the hero picker: wide, dark green (2026-09-27) */
+    #pk-toggle { height:34px; border-radius:8px !important; border:1px solid #1C2821 !important; background:#fff !important; color:#1C2821 !important;
+      font-size:.62rem !important; font-weight:600; letter-spacing:.1em !important; display:flex; align-items:center; justify-content:center; gap:6px; }
+    #pk-toggle:hover { background:#F3F6F4 !important; }
+    /* off: light grey; on: the green of the star badges. Same border width, box and text either
+       way, so turning it on changes nothing but the color (2026-09-27: it bounced) */
+    #pk-toggle { background:#F0F0EB !important; border:1px solid #F0F0EB !important; color:#1C2821 !important; box-sizing:border-box; flex:none;
+      font-weight:600 !important; transition:background .15s, color .15s, border-color .15s; }
+    #pk-toggle:hover { background:#E7E7E0 !important; border-color:#E7E7E0 !important; }
+    #pk-toggle.on { background:#2D6B50 !important; border-color:#2D6B50 !important; color:#fff !important; }
+    #pk-bar { scrollbar-gutter:stable; }
     #pk-panel { padding:.4rem .5rem .6rem; border-bottom:1px solid #eceae3; }
     /* The photo panel clips (overflow:hidden) and every part of it is a flex
        child, so nothing could scroll: an album's picks grew #pk-panel to its
@@ -992,7 +1004,7 @@
   --ink:#1C2821;--terra:#2D6B50;--cream:#F7F7F3;--line:#D8E5DC;--panel:#242424;
   position:fixed; inset:0; z-index:80;
   font-family:Hanken Grotesk,sans-serif; color:var(--ink); background:var(--cream);
-  display:grid; grid-template-rows:52px 1fr; grid-template-columns:290px 1fr;
+  display:grid; grid-template-rows:56px 1fr; grid-template-columns:290px 1fr;
   overflow:hidden;
 
 
@@ -1014,8 +1026,7 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
           text-transform:uppercase;color:#6b6b6b;margin-top:.2rem}
 /* a finished album is one quiet line: name, count, a green check (2026-09-27) */
 .alb.fin{padding-top:.5rem;padding-bottom:.5rem}
-.alb.fin .sub,.alb.fin .bar,.alb.fin .undo{display:none}
-.alb.fin:hover .sub,.alb.fin.on .sub,.alb.fin:hover .undo,.alb.fin.on .undo{display:block}
+.alb.fin .bar{display:none}          /* a done album: name, count, and one line of what it holds */
 .alb .ck{display:inline-flex;align-items:center;gap:.3rem;color:#8a8a8a}
 .alb .ck svg{color:#2D6B50}
 /* the iPhone count, inline after the backed-up count */
@@ -1065,6 +1076,10 @@ main{overflow-y:auto;padding:1rem}
     box-shadow:0 1px 3px rgba(0,0,0,.10)}
 .ph::before{content:'';display:block;padding-top:100%}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.ph .marks{position:absolute;top:6px;left:6px;display:flex;gap:4px;pointer-events:auto}
+.ph .marks .mk{font-family:Hanken Grotesk,sans-serif;font-size:.56rem;font-weight:600;letter-spacing:.04em;line-height:1;
+  padding:4px 6px;border-radius:999px;background:rgba(28,40,33,.78);color:#fff;backdrop-filter:blur(2px)}
+.ph .marks .mk.low{background:rgba(180,85,60,.9)}
 .ph .badge{position:absolute;top:6px;left:6px;background:rgba(28,40,33,.82);color:#fff;
            font-family:Hanken Grotesk,sans-serif;font-size:.58rem;font-weight:600;
            width:19px;height:19px;border-radius:4px;display:flex;align-items:center;justify-content:center}
@@ -1116,6 +1131,7 @@ header .prog.all b{color:#6EC99A}
                       opacity:.7;line-height:1}
 #act-panel .hd button:hover{opacity:1}
 #act-body{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:1rem}
+#act-ctl{padding:0 1.2rem 1.1rem}   /* the suite cards sit in the same column as the status */
 .act-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem}
 .act-card h3{font-family:Hanken Grotesk,sans-serif;font-size:.62rem;letter-spacing:.08em;
              text-transform:uppercase;color:#8a8a8a;margin-bottom:.5rem}
@@ -1227,6 +1243,63 @@ header .prog.all b{color:#6EC99A}
 
 }
 #app-library[hidden] { display:none !important; }
+/* thin scrollbars everywhere (2026-09-27) */
+*{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+::-webkit-scrollbar-track{background:transparent}
+/* Follow: a pill toggle, white off, black on */
+#pl-placebar label.follow-tg{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;border:1px solid rgba(28,40,33,.2);
+  background:#fff;color:#1C2821;font-family:'Hanken Grotesk',sans-serif;font-size:.62rem !important;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;user-select:none}
+#pl-placebar label.follow-tg input{display:none}
+#pl-placebar label.follow-tg:has(input:checked){background:#1C2821;border-color:#1C2821;color:#fff}
+/* a tighter photo sidebar */
+#pk-bar{padding:8px 8px 0 !important}
+#pl-countrybar{padding:6px 8px 4px !important;border-bottom:0 !important}
+#pl-placebar{margin:0 8px 6px !important;padding:0 !important;gap:6px !important}
+/* ============== ONE TYPE STANDARD FOR CONTROLS (2026-09-27) ==============
+   every dropdown: 13px regular; every action button: 11px semibold spaced caps */
+.fsel-btn,.fsel-o,#pl-place,#pk-place,#f-place,.tb-more-pop .tool-select,#pub-modal select{font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:400 !important;letter-spacing:0 !important;text-transform:none !important}
+#app-editor > header .btn,#app-library > header #act-open,#pk-toggle,#pl-libbtn,#pl-placebar label.follow-tg,#review-pane .rv-btn,
+#review-pane .rv-chips button,#review-pane .rv-switch button,#lib-toolbar button,#ap .ap-btn,#pub-modal .pb button,.hold,.undo{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
+/* three tiles that fill the sidebar, spaced like the library (12px on 170px tiles, 2026-09-27) */
+#pl-grid{padding:0 8px 8px !important;gap:8px !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:auto !important;justify-content:stretch !important}
+#pl-grid > .pl-ph{aspect-ratio:1/1}
+/* ============== FLAGGED DROPDOWN + ALBUM FLAGS (2026-09-27) ============== */
+.fsel-native{display:none !important}
+.fsel{position:relative;flex:1;min-width:0}
+.fsel-btn{width:100%;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;
+  background:#fff;font-family:'Hanken Grotesk',sans-serif;font-size:.8rem;color:#1C2821;cursor:pointer;text-align:left}
+.fsel-btn:hover{border-color:rgba(28,40,33,.32)}
+.fsel.open .fsel-btn{border-color:#2D6B50;box-shadow:0 0 0 3px rgba(45,107,80,.14)}
+.fsel-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fsel-chev{width:6px;height:6px;border-right:1.5px solid #1C2821;border-bottom:1.5px solid #1C2821;transform:rotate(45deg) translateY(-2px);flex:none}
+.fsel-list{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:#fff;border:1px solid rgba(28,40,33,.14);border-radius:8px;
+  box-shadow:0 12px 32px rgba(28,40,33,.16);max-height:340px;overflow:auto;padding:4px}
+.fsel-o{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;font-family:'Hanken Grotesk',sans-serif;font-size:.8rem;color:#1C2821;cursor:pointer}
+.fsel-o:hover{background:#F3F6F4}
+.fsel-o.on{background:rgba(45,107,80,.09);color:#2D6B50;font-weight:600}
+.afl{width:18px;height:13px;border-radius:2px;object-fit:cover;flex:none;display:inline-block}
+.afl.none{background:#E8E7E1}
+.alb .nm .anm{display:inline-flex;align-items:center;gap:8px;min-width:0}
+#pl-countrybar{gap:6px !important}
+#pl-libbtn{flex:none;font-family:'Hanken Grotesk',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  height:34px;padding:0 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;background:#fff;color:#1C2821;cursor:pointer;white-space:nowrap}
+#pl-libbtn:hover{border-color:#2D6B50;color:#2D6B50}
+#app-library header [hidden]{display:none !important}
+#act-panel .act-more summary{cursor:pointer;list-style:none;font-size:.78rem;color:#4f5c54;display:flex;align-items:center;gap:.4rem}
+#act-panel .act-more summary::-webkit-details-marker{display:none}
+#act-panel .act-more summary::before{content:'';width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .15s;flex:none}
+#act-panel .act-more[open] summary::before{transform:rotate(45deg)}
+#act-panel .act-more{margin-top:.6rem}
+/* Live Activity, formatted like the editor bar's buttons (outlined pill, spaced caps) */
+#app-library header #act-open{font-family:'Hanken Grotesk',sans-serif;font-size:.58rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;
+  color:#F7F7F3;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:.62rem 1.15rem;display:inline-flex;align-items:center;gap:.5rem;cursor:pointer}
+#app-library header #act-open:hover{background:rgba(255,255,255,.08)}
+#lib-toolbar #f-picks{display:inline-flex;align-items:center;gap:.4rem}
+#lib-toolbar #f-picks span:empty{display:none}
+#lib-toolbar #f-picks span{font-weight:600}
 /* ============== HIDE-THE-SIDEBAR ARROW (2026-09-27) ==============
    the same small round arrow on the sidebar's edge in every app; collapsed, the sidebar folds
    away and the arrow waits at the window edge pointing back */
@@ -1302,6 +1375,13 @@ input[type=checkbox]{accent-color:#2D6B50}
 /* one line: the pieces of every app bar are centered on it */
 header .header-left{gap:18px !important}
 header .file-label{display:none}
+/* one bar for every app: same height, same inset, same spacing, so switching apps moves nothing
+   (Kevin 2026-09-27: "the logos move") */
+#app-editor > header, #app-library > header, #app-heroes > header, #app-maps > header{
+  height:56px !important; padding:0 20px !important; background:#1C2821 !important; box-sizing:border-box}
+#app-library > header, #app-heroes > header, #app-maps > header, #app-editor > header .header-left{gap:18px !important}
+/* the wordmark's space comes from the gap alone: the library resets every margin inside it */
+#app-editor > header .suite-mark, #app-library > header .suite-mark, #app-heroes > header .suite-mark, #app-maps > header .suite-mark{margin:0 6px 0 0 !important}
 /* the bar's buttons are pills too, like the app pills beside them */
 header .btn{border-radius:999px !important;padding:.62rem 1.15rem !important}
 header .btn-open{background:transparent !important;border:1px solid rgba(255,255,255,.2) !important}
@@ -1326,7 +1406,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
    The picker is its own server (tools/hero_picker.py, :5004) because it decodes
    and crops photos. It runs here in a frame with ?embed=1, under the same dark
    bar and switcher as the other two apps, instead of a separate tab. */
-#app-heroes{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:52px 1fr;
+#app-heroes{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:56px 1fr;
   background:#F7F7F3;font-family:Hanken Grotesk,sans-serif;color:#1C2821}
 #app-heroes[hidden]{display:none!important}
 #app-heroes header{background:#1C2821;color:#fff;display:flex;align-items:center;gap:1rem;padding:0 1rem}
@@ -1337,7 +1417,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 #heroes-frame{width:100%;height:100%;border:0;display:block;background:#F7F7F3}
 /* MAP EDITOR VIEW (2026-09-27): tools/map_editor.py (:5002) in a frame under the same bar, the
    way the hero picker runs. The Edit button on a map in an article still opens it as a modal. */
-#app-maps{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:52px 1fr;background:#F7F7F3;font-family:Hanken Grotesk,sans-serif;color:#1C2821}
+#app-maps{position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:56px 1fr;background:#F7F7F3;font-family:Hanken Grotesk,sans-serif;color:#1C2821}
 #app-maps[hidden]{display:none!important}
 #app-maps header{background:#1C2821;color:#fff;display:flex;align-items:center;gap:1rem;padding:0 1rem}
 #maps-frame{width:100%;height:100%;border:0;display:block;background:#F7F7F3}
@@ -1538,7 +1618,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=e9545f89" defer></script>
+<script src="review.js?v=86488e1b" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1567,8 +1647,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <div id="pl-countrybar">
         <select id="pl-country" onchange="plPickCountry(this.value)"
                 title="Browse a trip's photos, the same albums as the Photo Library"></select>
-        <button id="pl-modebtn" onclick="plToggleMode()"
-                title="Switch between trips and the raw source folders">Folders</button>
+        <button id="pl-libbtn" onclick="openInLibrary()" title="Open this album in the Photo Library, at the place you're looking at">Open in Photo Library</button>
       </div>
       <div id="pl-tabs"></div>
       <div id="pl-crumbs"></div>
@@ -1608,41 +1687,6 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <div class="tb-group" aria-label="Text">
         <button class="tool-btn" onclick="insertHeading('h2')" title="Heading 2">H2</button>
         <button class="tool-btn" onclick="insertHeading('h3')" title="Heading 3">H3</button>
-        <button class="tool-btn" onmousedown="saveSelection()" onclick="insertFnSubHd()" title="Sub-heading with the green bar (.fn-sub-hd), the field notes' 'What to Do' level. On an existing eyebrow or sub-heading it converts it.">▎Sub Hd</button>
-      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
-        <option value="">Font</option>
-        <!-- Only the two faces the site actually serves. The old list offered
-             Jost, Fraunces, Lora and Source Sans 3, all retired by the
-             re-theme: picking one wrote a font into the article that the
-             published page has no @font-face for, so it fell back silently. -->
-        <option value="__body__">Body (Hanken Grotesk)</option>
-        <option value="__body-bold__">Body bold</option>
-        <option value="__display__">Display (Newsreader)</option>
-        <option value="__display-italic__">Display italic</option>
-      </select>
-      <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
-        <option value="">Size</option>
-        <option value="t-sm">Small</option>
-        <option value="__reset__">Body (reset)</option>
-        <option value="t-lg">Large</option>
-        <option value="t-xl">XLarge</option>
-      </select>
-      <div class="color-picker-wrap" id="color-picker-wrap">
-        <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
-          <span class="color-swatch-letter">A</span>
-          <div class="color-swatch-bar" id="color-swatch-bar"></div>
-        </div>
-        <div class="color-dropdown" id="color-dropdown">
-          <span class="color-dropdown-label">Theme</span>
-          <div class="color-swatches-grid" id="color-theme-grid"></div>
-          <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
-          <div class="color-swatches-grid" id="color-swatches-grid"></div>
-          <div class="color-custom-row">
-            <span class="color-custom-label">Custom</span>
-            <input type="color" id="color-input" value="#e63946" title="Pick custom color">
-          </div>
-        </div>
-      </div>
         <button class="tool-btn" onmousedown="event.preventDefault()" onclick="insertLine()" title="Add a divider line: under this entry in a list, or between paragraphs. Uses the same thin line the article already has. Click a line to select it, Delete removes it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/></svg></button>
       </div>
       <div class="tool-divider"></div>
@@ -1657,6 +1701,46 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/></svg><span>Pair</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="1.5"/></svg><span>Portrait</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="1.5"/></svg><span>Wide</span></button>
+      </div>
+      <!-- font, size and color live behind the ⋯ (Kevin, 2026-09-27) -->
+      <div class="tb-more" id="tb-more">
+        <button class="tool-btn" id="tb-more-btn" onmousedown="saveSelection()" onclick="document.getElementById('tb-more').classList.toggle('open')" title="Font, size and color" aria-haspopup="true" style="font-size:1rem;padding:.2rem .6rem">&#8943;</button>
+        <div class="tb-more-pop">
+          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontFamily(this, this.value)" title="Font family">
+            <option value="">Font</option>
+            <!-- Only the two faces the site actually serves. The old list offered
+                 Jost, Fraunces, Lora and Source Sans 3, all retired by the
+                 re-theme: picking one wrote a font into the article that the
+                 published page has no @font-face for, so it fell back silently. -->
+            <option value="__body__">Body (Hanken Grotesk)</option>
+            <option value="__body-bold__">Body bold</option>
+            <option value="__display__">Display (Newsreader)</option>
+            <option value="__display-italic__">Display italic</option>
+          </select>
+          <select class="tool-select" onmousedown="saveSelection()" onchange="applyFontSize(this, this.value)" title="Font size">
+            <option value="">Size</option>
+            <option value="t-sm">Small</option>
+            <option value="__reset__">Body (reset)</option>
+            <option value="t-lg">Large</option>
+            <option value="t-xl">XLarge</option>
+          </select>
+          <div class="color-picker-wrap" id="color-picker-wrap">
+            <div class="color-swatch" onclick="toggleColorPicker()" title="Font Color">
+              <span class="color-swatch-letter">A</span>
+              <div class="color-swatch-bar" id="color-swatch-bar"></div>
+            </div>
+            <div class="color-dropdown" id="color-dropdown">
+              <span class="color-dropdown-label">Theme</span>
+              <div class="color-swatches-grid" id="color-theme-grid"></div>
+              <span class="color-dropdown-label" style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--b-subtle);display:block">All Colors</span>
+              <div class="color-swatches-grid" id="color-swatches-grid"></div>
+              <div class="color-custom-row">
+                <span class="color-custom-label">Custom</span>
+                <input type="color" id="color-input" value="#e63946" title="Pick custom color">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1681,9 +1765,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
 <div id="app-library" hidden><header>
   <button class="suite-logo" data-switcher aria-haspopup="true">Photo&nbsp;<b>Library</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-  <span class="stat" id="hdr-albums"></span>
+  <span class="stat" id="hdr-albums" hidden></span>
   <span class="spacer"></span>
-  <button class="act-btn" id="pick-open" onclick="openPicks()" title="Review everything you've shortlisted">
+  <button class="act-btn" id="pick-open" onclick="openPicks()" title="Review everything you've shortlisted" hidden>
     &#9733; Blog Picks <span id="pick-count"></span>
   </button>
   <button class="act-btn" id="act-open" onclick="openActivity()">
@@ -1698,8 +1782,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <h2>Live Activity</h2>
       <button onclick="closeActivity()">&times;</button>
     </div>
-    <div id="act-ctl"></div>
     <div id="act-body"></div>
+    <div id="act-ctl"></div>
   </div>
 </div>
 
@@ -1710,11 +1794,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <div id="lib-toolbar">
     <span id="tb-title" style="font-size:.75rem;letter-spacing:.04em"></span>
     <span style="flex:1"></span>
-    <button id="f-all" class="on">All</button>
-    <button id="f-edited">Edited only</button>
-    <button id="f-rated">Rated ★3+</button>
+    <button id="f-picks" aria-pressed="false" title="Show only this album's blog picks (click again for every photo)">&#9733; Blog picks <span id="f-picks-n"></span></button>
     <select id="f-place" title="Only photos taken at this place" style="display:none;margin-left:.5rem;max-width:16rem"></select>
-    <span id="res-legend" hidden title="Photos marked with a gold dot are 2048px copies from the shared album, not the full-size original"><i></i>2048px copy</span>
   </div>
   <div id="grid"></div>
   <div id="empty"></div>
@@ -1761,7 +1842,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     <span class="stat" id="heroes-count"></span>
     <span class="spacer"></span>
   </header>
-  <iframe id="heroes-frame" title="Hero picker"></iframe>
+  <iframe id="heroes-frame" title="Hero picker" allow="clipboard-write"></iframe>
   <div id="heroes-offline" hidden>
     <b>The hero picker isn't running.</b><br>
     Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
@@ -5084,10 +5165,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
      bar filtering them by where they were taken. The old folder tabs are still
      one click away behind "Folders" for the times a photo is somewhere else
      (a download, a screenshot). Kevin, 2026-09-24. */
-  PL.mode = localStorage.getItem('plMode') || 'country';
+  PL.mode = 'country';     // the folder view is gone (2026-09-27): the sidebar is trips only
   PL.albums = [];
   PL.backupRoot = null;
 
+  window.openInLibrary = function () {
+    const album = $('#pl-country').value, place = ($('#pl-place') || {}).value || '';
+    if (!album) return;
+    showView('library');
+    if (window.__libOpen) window.__libOpen(album, place);
+  };
   window.plToggleMode = function () {
     PL.mode = PL.mode === 'country' ? 'folders' : 'country';
     localStorage.setItem('plMode', PL.mode);
@@ -5101,7 +5188,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // a trip album is flat, so the folder crumbs/list are only for folder mode
     $('#pl-crumbs').style.display = country ? 'none' : '';
     $('#pl-folders').style.display = country ? 'none' : '';
-    $('#pl-modebtn').textContent = country ? 'Folders' : 'Trips';
+    // (the Folders/Trips button is gone, 2026-09-27)
     if (country) plLoadCountries(); else plBrowse();
   }
 
@@ -5593,8 +5680,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         '' +
         "font-family:Hanken Grotesk,sans-serif;font-size:.55rem;line-height:1.4";
       bar.innerHTML = '<select id="pl-place" title="Filter by where the photo was taken" style="flex:1;min-width:0"></select>' +
-        '<label style="cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.25rem;font-size:.68rem;color:#4f5c54" title="Follow the section the cursor is in">' +
-        '<input type="checkbox" id="pl-follow"> follow</label>' +
+        '<label class="follow-tg" title="Follow the section the cursor is in: the photos follow the part of the article you are writing">' +
+        '<input type="checkbox" id="pl-follow"> Follow</label>' +
         '<span id="pl-geo-state" style="color:#666"></span>';
       ($('#pl-cloudbar') || $('#pl-folders')).after(bar);
       // While the menu is open, follow-section must keep its hands off: the
@@ -5873,8 +5960,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (div.querySelector('.b')) return;
     const b = document.createElement('span');
     b.className = 'b';
-    b.textContent = m.orient === 'landscape' ? 'H' : m.orient === 'portrait' ? 'V' : '□';
-    div.appendChild(b);
+    return;       // the V / H orientation letter is gone (2026-09-27): a slot fits whatever you drop
   }
   const plObserver = new IntersectionObserver(entries => {
     entries.forEach(en => {
@@ -8823,8 +8909,7 @@ async function loadAlbums() {
       sub = `${inAlbum} in the album · not backing up`;
     } else if (archived) {
       pct = 100;
-      sub = `✓ done · ${totals}` +
-            (a.archived ? ` · album deleted ${a.archived}` : '');
+      sub = totals;                // done: just what it holds (Kevin, 2026-09-27)
     } else if (waiting) {
       pct = 0; sub = 'waiting for photos to arrive from your phone';
     } else if (a.vidState === 'running') {
@@ -8896,7 +8981,7 @@ async function loadAlbums() {
     const tail = a.held
       ? `<button class="hold on">Back up this album</button>`
       : ticked
-      ? `<button class="undo">undo — I still have the album</button>`
+      ? ''
       : ((ver && ver.ok) || archived
           ? `<label class="del"><input type="checkbox"> I deleted the shared album</label>`
           : '');
@@ -8910,7 +8995,7 @@ async function loadAlbums() {
         `aria-label="The item count your iPhone shows for this album"></span>`;
     if (archived) el.classList.add('fin');
 
-    el.innerHTML = `<div class="nm"><span>${esc(a.name)}</span>${count}</div>` +
+    el.innerHTML = `<div class="nm"><span class="anm">${window.flagImg ? flagImg(a.name) : ''}<span>${esc(a.name)}</span></span>${count}</div>` +
       `<div class="sub">${sub}</div>` +
       `<div class="bar${barCls}"><i style="width:${syncing ? 100 : pct}%"></i></div>` +
       chk + tail;
@@ -8988,7 +9073,6 @@ let _photosGen = 0, _photosSig = '', _photosAlbum = null;
 async function loadPhotos() {
   if (!CUR) return;
   const album = CUR, gen = ++_photosGen;
-  { const lg = document.getElementById('res-legend'); if (lg && album !== _photosAlbum) lg.hidden = true; }
   $('#tb-title').textContent = CUR;
   let d;
   try {
@@ -9095,8 +9179,8 @@ function render() {
   const g = $('#grid');
   g.innerHTML = '';
   let list = PHOTOS;
-  if (FILTER === 'edited') list = list.filter(p => p.edited);
-  if (FILTER === 'rated') list = list.filter(p => (p.rating || 0) >= 3);
+  if (FILTER === 'picks') list = list.filter(p => p.picked);
+  { const n = PHOTOS.filter(p => p.picked).length, c = document.getElementById('f-picks-n'); if (c) c.textContent = n ? n : ''; }
   if (PLACE && GEO) list = list.filter(p => window.placeHit(GEO.photos[p.n], PLACE));
   $('#empty').textContent = list.length ? '' :
     (PHOTOS.length ? 'No photos match this filter.'
@@ -9113,20 +9197,15 @@ function render() {
     im.loading = 'lazy';
     libThumb(im, `${API}/bthumb?album=${encodeURIComponent(CUR)}&name=${encodeURIComponent(p.n)}&s=400`);
     el.appendChild(im);
-    if (p.edited) {
-      const b = document.createElement('div');
-      b.className = 'badge'; b.textContent = 'E';
-      b.title = 'Edited on your phone';
-      el.appendChild(b);
+    // markers, top left: what you'd want to know before picking it (2026-09-27)
+    const marks = [];
+    if (p.edited) marks.push(['Edited', 'Edited on your phone', '']);
+    if (p.w && Math.max(p.w, p.h) < 1920) marks.push(['Low res', `${p.w}×${p.h}: under the 1920px a hero needs`, ' low']);
+    if (marks.length) {
+      const m = document.createElement('div'); m.className = 'marks';
+      m.innerHTML = marks.map(([t, why, c]) => `<span class="mk${c}" title="${why}">${t}</span>`).join('');
+      el.appendChild(m);
     }
-    const res = document.createElement('div');
-    res.className = 'res ' + (p.full ? 'full' : 'copy');
-    res.textContent = p.w ? `${p.w}×${p.h}` : `${p.mb} MB`;
-    if (!p.full) {
-      res.textContent = '2048px copy'; res.title = 'A 2048px copy from the shared album: no full-size original was found';
-      const lg = document.getElementById('res-legend'); if (lg) lg.hidden = false;
-    }
-    el.appendChild(res);
     const st = document.createElement('div');
     st.className = 'stars';
     for (let i = 1; i <= 5; i++) {
@@ -9210,6 +9289,7 @@ async function setPick(p, on) {
   // Repaint ONE tile. This used to call render(), which rebuilt all ~400 tiles
   // and re-requested every thumbnail - that is why picking felt slow.
   p.picked = on;
+  if (FILTER === 'picks' || true) setTimeout(() => { const c = document.getElementById('f-picks-n'); if (c) { const n = PHOTOS.filter(x => x.picked).length; c.textContent = n ? n : ''; } }, 0);
   if (!on) p.note = '';
   paintTile(p);
   if (IDX >= 0 && VIEW[IDX] && VIEW[IDX].n === p.n) paintPick(p);
@@ -9447,7 +9527,7 @@ async function jumpTo(album, name) {
       a.classList.toggle('on', a.dataset.album === album));
     FILTER = 'all';                // a filter could hide the photo we're opening
     PLACE = ''; if ($('#f-place')) $('#f-place').value = '';
-    ['all','edited','rated'].forEach(x => $('#f-' + x).classList.toggle('on', x === 'all'));
+    $('#f-picks').classList.remove('on'); $('#f-picks').setAttribute('aria-pressed', 'false');
     await loadPhotos();
   }
   const i = VIEW.findIndex(p => p.n === name);
@@ -9464,7 +9544,7 @@ async function rate(p, r) {
   const prev = p.rating || 0;
   p.rating = r;
   paintRating(p);                       // one tile, not a rebuild of the whole grid
-  if (FILTER === 'rated') render();     // it may have just left (or joined) the filtered view
+  if (FILTER === 'picks') render();     // (ratings no longer filter; kept so a rate never leaves a stale view)
   let ok = false;
   try {
     const res = await fetch(API + '/api/rate', { method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -9473,18 +9553,16 @@ async function rate(p, r) {
   } catch (e) {}
   if (!ok) {
     p.rating = prev; paintRating(p);
-    if (FILTER === 'rated') render();
+    if (FILTER === 'picks') render();
     libToast("Can't save the rating: the photo server didn't answer.");
   }
 }
 
-['all', 'edited', 'rated'].forEach(f => {
-  $('#f-' + f).onclick = () => {
-    FILTER = f;
-    ['all','edited','rated'].forEach(x => $('#f-' + x).classList.toggle('on', x === f));
-    render();
-  };
-});
+$('#f-picks').onclick = () => {
+  FILTER = FILTER === 'picks' ? 'all' : 'picks';
+  $('#f-picks').classList.toggle('on', FILTER === 'picks'); $('#f-picks').setAttribute('aria-pressed', String(FILTER === 'picks'));
+  render();
+};
 
 // showView('library') refreshes on entry; on an editor-only page load this
 // used to fire the heaviest route on the server for a view nobody was looking at
@@ -9561,7 +9639,7 @@ async function renderSuite() {
   const dot = ok => `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;background:${ok ? '#6EC99A' : '#c9694b'}"></span>`;
   box.innerHTML = `<div class="act-card" style="margin-bottom:.6rem">
     <h3>Suite</h3>
-    <div class="act-sub" style="display:flex;gap:1rem;flex-wrap:wrap">
+    <div class="act-sub" style="display:flex;gap:.9rem;flex-wrap:wrap">
       <span>${dot(true)} photo server</span>
       <span>${dot(st.heroes)} hero picker${st.heroes ? '' : ' (off)'}</span>
       <span>${dot(st.maps)} map editor${st.maps ? '' : ' (off)'}</span>
@@ -9575,12 +9653,14 @@ async function renderSuite() {
         title="Restart Apple's iCloud photo services. Use it when shared albums stop syncing or the backup drops to zero. Takes about a minute.">
         Fix iCloud sync</button>
     </div>
-    ${(job.log && job.log.length) || busy ? `<pre id="ctl-log" class="act-sub" style="white-space:pre-wrap;margin:.6rem 0 0;max-height:180px;overflow:auto;letter-spacing:0">${esc((job.log || []).join('\n') || 'working…')}${busy ? '\n…' : ''}</pre>` : ''}
+    ${busy ? `<pre id="ctl-log" class="act-sub" style="white-space:pre-wrap;margin:.6rem 0 0;max-height:180px;overflow:auto;letter-spacing:0">${esc((job.log || []).join('\n') || 'working…')}\n…</pre>`
+      : (job.log && job.log.length && Date.now() / 1000 - (job.started || 0) < 900)
+      ? `<details class="act-more"><summary>Last run: ${esc(job.name || 'action')}</summary><pre id="ctl-log" class="act-sub" style="white-space:pre-wrap;margin:.4rem 0 0;max-height:180px;overflow:auto;letter-spacing:0">${esc(job.log.join('\n'))}</pre></details>` : ''}
   </div>
   ${d.tidy && d.tidy.lines && d.tidy.lines.length ? `<div class="act-card" style="margin-bottom:.6rem">
-    <h3>Tidy-up</h3>
-    <div class="act-sub">What <b>tools/autofix.py</b> would fix, checked when the editor opened (${esc(d.tidy.at)}). Nothing has been changed.</div>
+    <details class="act-more"><summary><b>Tidy-up</b> · ${d.tidy.lines.length} thing${d.tidy.lines.length === 1 ? '' : 's'} to look at</summary>
     <pre class="act-sub" style="white-space:pre-wrap;margin:.5rem 0 0;max-height:220px;overflow:auto;letter-spacing:0">${esc(d.tidy.lines.join('\n'))}</pre>
+    <div class="act-sub" style="margin-top:.3rem">From tools/autofix.py when the editor opened (${esc(d.tidy.at)}); nothing was changed.</div></details>
   </div>` : ''}
   ${compressCard(d.compress)}`;
   $('#ctl-backup').onclick = () => suiteAction(st.watcher ? 'pause' : 'resume');
@@ -9605,7 +9685,7 @@ function compressCard(c) {
   const rows = [];
   if (c.running) rows.push(`<div>Compressing now: <b>${name(c.running)}</b></div>`);
   if (waiting.length) rows.push(`<div>Waiting until you close it: ${waiting.map(name).join(', ')}</div>`);
-  failed.forEach(r => rows.push(`<div style="color:#c9694b">Failed three times, stopped: <b>${name(r)}</b><pre class="act-sub" style="white-space:pre-wrap;margin:.3rem 0 0;max-height:120px;overflow:auto;letter-spacing:0">${esc(c.failed[r])}</pre></div>`));
+  failed.forEach(r => rows.push(`<details class="act-more" style="color:#c9694b"><summary>Failed three times, stopped: <b>${name(r)}</b></summary><pre class="act-sub" style="white-space:pre-wrap;margin:.3rem 0 0;max-height:120px;overflow:auto;letter-spacing:0">${esc(c.failed[r])}</pre></details>`));
   if (last && last.page && !c.running) rows.push(`<div style="opacity:.75">Last: ${name(last.page)} at ${esc(last.at)}, ${last.ok ? 'done' : 'failed'}</div>`);
   return `<div class="act-card" style="margin-bottom:.6rem"><h3>Photo compression</h3><div class="act-sub" style="display:grid;gap:.3rem">${rows.join('')}</div></div>`;
 }
@@ -9647,7 +9727,7 @@ async function renderActivity() {
     html += `<div class="act-card" style="border-color:#d9a441;background:#fff8e8">
       <h3 style="color:#8a6d24">iCloud throttled - backing off</h3>
       <div class="act-now">${fmtAge(d.throttleLeftSec)} left</div>
-      <div class="act-sub">Apple's CloudKit refused a burst of fetches and set a retry interval. Workers are waiting it out rather than hammering - that is what clears it fastest. (${d.throttleTrips}${d.throttleTrips===1?'st':d.throttleTrips===2?'nd':d.throttleTrips===3?'rd':'th'} time this run)</div>
+      <div class="act-sub">Waiting it out is the fastest way through.</div>
     </div>`;
   }
   if (d.running && d.album) {
@@ -9670,7 +9750,6 @@ async function renderActivity() {
     html += `<div class="act-card" style="border-color:#2D6B50;background:#f2f8f4">
       <h3 style="color:#2D6B50">All caught up</h3>
       <div class="act-now">Everything on this PC is backed up</div>
-      <div class="act-sub">The watcher is running and will start automatically when iCloud delivers more. Remaining gaps are waiting on Apple, not on this machine.</div>
     </div>`;
   } else {
     html += `<div class="act-card"><h3>Status</h3><div class="act-now">Between passes</div>
@@ -9687,7 +9766,7 @@ async function renderActivity() {
     const nq = active.filter(f => f.queued).length;
     const nh = active.filter(f => f.phase === 'hydrating').length;
     html += `<div class="act-card"><h3>Transferring now (${active.length}${nh ? ` · ${nh} fetching` : ''}${nq ? ` · ${nq} queued` : ''})</h3>`;
-    active.forEach(f => {
+    active.slice(0, 6).forEach(f => {
       const state = f.phase === 'hydrating'
         ? `<span style="color:#2D6B50">fetching from iCloud · ${f.mb.toFixed(1)} MB · ${fmtAge(f.ageSec)}</span>`
         : f.queued
@@ -9698,7 +9777,7 @@ async function renderActivity() {
         <div class="meta">${state}</div>
       </div>`;
     });
-    html += `<div class="act-sub" style="margin-top:.5rem">Each original is fetched from Apple explicitly (CfHydratePlaceholder), then copied locally in milliseconds - most land in a few seconds.</div>`;
+    if (active.length > 6) html += `<div class="act-sub" style="margin-top:.4rem">+ ${active.length - 6} more</div>`;
     html += '</div>';
   } else if (d.running) {
     html += '<div class="act-card"><div class="act-sub">Between files - the next one should start any second.</div></div>';
@@ -9709,7 +9788,7 @@ async function renderActivity() {
     // thread is abandoned, not actively working. They sit here until the
     // 30-minute sweep deletes the leftover temp file; showing them as
     // "transferring" would be misleading, so they get their own quieter card.
-    html += `<div class="act-card"><h3>Abandoned, awaiting cleanup (${stalled.length})</h3>`;
+    html += `<div class="act-card"><details class="act-more"><summary>${stalled.length} abandoned cop${stalled.length === 1 ? 'y' : 'ies'} awaiting cleanup</summary>`;
     stalled.slice(0, 10).forEach(f => {
       html += `<div class="act-file">
         <div class="fn"><span class="alb">${f.album}</span>${f.name}</div>
@@ -9717,7 +9796,7 @@ async function renderActivity() {
       </div>`;
     });
     if (stalled.length > 10) html += `<div class="act-sub" style="margin-top:.4rem">+ ${stalled.length - 10} more</div>`;
-    html += '</div>';
+    html += '</details></div>';
   }
 
   body.innerHTML = html;
@@ -9732,6 +9811,21 @@ window.setScope = setScope;
 window.closeLight = closeLight;
 window.togglePick = togglePick;
 window.libStep = step;
+window.__libOpen = async function (album, place) {
+  if (album !== CUR) {
+    CUR = album;
+    document.querySelectorAll('.alb').forEach(a => a.classList.toggle('on', a.dataset.album === album));
+    FILTER = 'all'; $('#f-picks').classList.remove('on'); $('#f-picks').setAttribute('aria-pressed', 'false');
+    await loadPhotos();
+  }
+  const el = document.querySelector('.alb.on'); if (el) el.scrollIntoView({ block: 'nearest' });
+  // the place list arrives with the album's location data; wait for it, then pick the place
+  for (let i = 0; i < 40 && place; i++) {
+    const sel = $('#f-place');
+    if (sel && [...sel.options].some(o => o.value === place)) { sel.value = place; PLACE = place; render(); break; }
+    await new Promise(r => setTimeout(r, 250));
+  }
+};
 window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refreshPickCount(); };
 })();
 </script>
@@ -9950,6 +10044,51 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   let v = VIEWS.includes(h) ? h : null;
   if (!v) { try { v = localStorage.getItem('tb:view'); } catch (e) {} }
   showView(VIEWS.includes(v) ? v : 'editor');
+})();
+</script>
+<script>
+/* ============== ALBUM FLAGS + THE FLAGGED DROPDOWN (2026-09-27) ============== */
+(function () {
+  // album name -> ISO code for Images/web/flags (a trip is named for where it went, not the country)
+  const ALIAS = { 'bali': 'id', 'patagonia': 'cl', 'cologne': 'de', 'munich': 'de', 'turkey': 'tr', 'türkiye': 'tr' };
+  const ISO = { albania:'al', argentina:'ar', armenia:'am', australia:'au', bosnia:'ba', brazil:'br', colombia:'co', egypt:'eg',
+    'el salvador':'sv', georgia:'ge', greece:'gr', guatemala:'gt', india:'in', israel:'il', italy:'it', japan:'jp', jordan:'jo',
+    kosovo:'xk', mexico:'mx', 'new zealand':'nz', nicaragua:'ni', 'north macedonia':'mk', peru:'pe', philippines:'ph',
+    serbia:'rs', tanzania:'tz', vietnam:'vn', croatia:'hr', montenegro:'me', spain:'es', portugal:'pt', france:'fr', thailand:'th',
+    morocco:'ma', cuba:'cu', chile:'cl', indonesia:'id', germany:'de', netherlands:'nl', belgium:'be', uk:'gb' };
+  window.albumFlag = function (name) {
+    const k = String(name || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*&\s*/)[0].trim();
+    const code = ALIAS[k] || ISO[k];
+    return code ? 'http://127.0.0.1:5003/site/Images/web/flags/' + code + '.png' : '';
+  };
+  const flagImg = (name, cls) => { const u = albumFlag(name); return u ? `<img class="${cls || 'afl'}" src="${u}" alt="" width="18" height="13">` : `<span class="${cls || 'afl'} none"></span>`; };
+  window.flagImg = flagImg;
+  // a native <select> dressed as the flagged dropdown; the select keeps its value and change event
+  window.flagSelect = function (sel) {
+    if (!sel || sel.__flagged) return; sel.__flagged = true;
+    const box = document.createElement('div'); box.className = 'fsel'; box.dataset.for = sel.id;
+    box.innerHTML = '<button type="button" class="fsel-btn" aria-haspopup="listbox"></button><div class="fsel-list" role="listbox" hidden></div>';
+    sel.after(box); sel.classList.add('fsel-native');
+    const btn = box.firstChild, list = box.lastChild;
+    const label = o => o ? o.textContent.replace(/\s+/g, ' ').trim() : '';
+    const paint = () => { const o = sel.selectedOptions[0]; btn.innerHTML = flagImg(o && o.value) + `<span class="fsel-t">${label(o) || '—'}</span><i class="fsel-chev"></i>`; };
+    const open = on => {
+      list.hidden = !on; box.classList.toggle('open', on);
+      if (!on) return;
+      list.innerHTML = [...sel.options].filter(o => o.value).map(o =>
+        `<div class="fsel-o${o.selected ? ' on' : ''}" role="option" data-v="${o.value.replace(/"/g, '&quot;')}">${flagImg(o.value)}<span>${label(o)}</span></div>`).join('');
+      const on_ = list.querySelector('.on'); if (on_) on_.scrollIntoView({ block: 'nearest' });
+    };
+    btn.onclick = e => { e.stopPropagation(); open(list.hidden); };
+    list.onclick = e => { const o = e.target.closest('.fsel-o'); if (!o) return; sel.value = o.dataset.v; open(false); paint(); sel.dispatchEvent(new Event('change', { bubbles: true })); };
+    document.addEventListener('click', e => { if (!box.contains(e.target)) open(false); });
+    new MutationObserver(paint).observe(sel, { childList: true, subtree: true, attributes: true });
+    sel.addEventListener('change', paint);
+    const setv = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    Object.defineProperty(sel, 'value', { get() { return setv.get.call(this); }, set(v) { setv.set.call(this, v); paint(); } });
+    paint();
+  };
+  document.addEventListener('DOMContentLoaded', () => { flagSelect(document.getElementById('pl-country')); flagSelect(document.getElementById('pk-album')); });
 })();
 </script>
 </body>

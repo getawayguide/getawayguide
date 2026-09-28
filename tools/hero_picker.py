@@ -590,12 +590,27 @@ PAGE = r"""<!doctype html>
   .strip .t { position:relative; cursor:pointer; border:2px solid transparent;
     background:#f2f2ef; }
   .strip .t.on { border-color:var(--terra); }
-  .strip .t.star .fav { color:#F2C124; }
-  .strip .fav { position:absolute; left:6px; top:4px; z-index:3; border:0;
-    background:transparent; padding:2px 5px; font-size:15px; line-height:1;
-    cursor:pointer; color:rgba(255,255,255,.55);
-    text-shadow:0 1px 3px rgba(0,0,0,.75); }
-  .strip .fav:hover { color:#F2C124; }
+  /* the library's pick button: a round +, green with a star once picked (2026-09-27) */
+  .strip .fav, .embed .strip .fav { position:absolute; left:6px; top:6px; z-index:3; width:21px; height:21px; padding:0;
+    border-radius:50%; background:rgba(28,40,33,.55); border:1px solid rgba(255,255,255,.45); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:11px; letter-spacing:0; line-height:1;
+    cursor:pointer; opacity:0; transition:opacity .15s; text-transform:none; }
+  .strip .t:hover .fav, .strip .t.star .fav { opacity:1; }
+  .strip .t.star .fav, .embed .strip .t.star .fav { background:#2D6B50; border-color:#2D6B50; }
+  .strip .t.star { outline:2px solid #2D6B50; outline-offset:-2px; }
+  .picks-bar { grid-column:1/-1; position:sticky; top:-12px; z-index:5; background:#fff; margin:-12px -12px 0; padding:10px 12px;
+    border-bottom:1px solid var(--line); display:flex; align-items:center; }
+  .picks-bar button, .embed .picks-bar button { width:100%; height:34px; justify-content:center; border-radius:8px !important; box-sizing:border-box;
+    border:1px solid #F0F0EB !important; background:#F0F0EB !important; color:#1C2821 !important;
+    font-size:.62rem !important; font-weight:600 !important; letter-spacing:.1em !important; text-transform:uppercase !important; }
+  .picks-bar button:hover { background:#E7E7E0 !important; border-color:#E7E7E0 !important; }
+  .picks-bar button.on, .embed .picks-bar button.on { background:#2D6B50 !important; border-color:#2D6B50 !important; color:#fff !important; }
+  .picks-bar-old button { font-family:'Hanken Grotesk',sans-serif; font-size:12px; font-weight:500; letter-spacing:0;
+    text-transform:none; border:1px solid rgba(28,40,33,.16); background:#fff; color:#1C2821; border-radius:999px; padding:5px 12px;
+    display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+  .picks-bar button.on, .embed .picks-bar button.on { background:#2D6B50; color:#fff; border-color:#2D6B50; }
+  .picks-bar button span:empty { display:none; }
+  .picks-bar button span { font-weight:600; }
   .strip .t.saved::after { content:'SAVED HERO'; position:absolute; left:0; top:0;
     background:var(--terra); color:#fff; font-size:8.5px; letter-spacing:.1em;
     padding:2px 6px; }
@@ -618,6 +633,11 @@ PAGE = r"""<!doctype html>
   .link-chip.on { background:rgba(45,107,80,.1); color:#2D6B50; }
   .link-chip::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; opacity:.8; flex:none; }
   .cssbox { margin:.7rem 0 0; }
+  .css-actions { display:flex; align-items:center; gap:10px; margin:.5rem 0 0; }
+  .css-actions button, .embed .css-actions button { font-family:'Hanken Grotesk',sans-serif; font-size:11px; font-weight:600; letter-spacing:.1em;
+    text-transform:uppercase; padding:.45rem .9rem; border-radius:999px; background:#fff; color:#1C2821; border:1px solid rgba(28,40,33,.16); cursor:pointer; }
+  .css-actions button:hover { border-color:#2D6B50; color:#2D6B50; background:#fff; }
+  #copied { font-size:11px; color:#2D6B50; }
   .cssbox summary { cursor:pointer; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#4f5c54; width:max-content; }
   .cssbox summary:hover { color:var(--terra); }
   .full .cssbox { margin:.7rem 26px 0; }
@@ -626,7 +646,10 @@ PAGE = r"""<!doctype html>
   .flag.low { background:var(--warn); }
   .flag.fair { background:var(--amber); }
   .flag.blur { background:var(--warn); top:26px; }
-  .hint { font-size:11.5px; color:rgba(28,40,33,.5); margin:8px 0 0; }
+  .hint { display:none !important; }
+  .meta .lowres, .key .lowres { font-style:normal; font-size:8.5px; letter-spacing:.08em; padding:1px 6px;
+    color:#6b7a70; background:#fff; border:1px solid rgba(28,40,33,.22); }
+  .hint-old { font-size:11.5px; color:rgba(28,40,33,.5); margin:8px 0 0; }
   .key { font-size:11px; color:rgba(28,40,33,.5); margin:10px 0 0;
     display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
   .key i { font-style:normal; color:#fff; padding:1px 6px; font-size:8.5px;
@@ -661,17 +684,55 @@ PAGE = r"""<!doctype html>
   .side-handle:hover{color:#2D6B50;border-color:#2D6B50}
   .side-handle:focus-visible{outline:2px solid #2D6B50;outline-offset:2px}
   .side-handle svg{width:12px;height:12px;transition:transform .2s}
-  .main > .stage{grid-column:1;grid-row:1}
-  .main > .strip{grid-column:2;grid-row:1}
-  .main > .side-handle{grid-column:2;grid-row:1;align-self:start;justify-self:start;margin:10px 0 0 -12px}
+  /* the strip on the left, like the other apps' sidebars (2026-09-27) */
+  .main{grid-template-columns:400px minmax(0,1fr) !important}
+  .main > .strip{grid-column:1;grid-row:1;border-left:0 !important;border-right:1px solid var(--line)}
+  .main > .stage{grid-column:2;grid-row:1}
+  .main > .side-handle{grid-column:1;grid-row:1;align-self:start;justify-self:end;margin:10px -12px 0 0}
   /* the picker's own button rules (padding, uppercase, dark fill) would win on specificity */
   .main > button.side-handle, .embed .main > button.side-handle{padding:0;width:24px;height:24px;border-radius:50%;background:#fff;color:#4f5c54;border:1px solid rgba(28,40,33,.16);letter-spacing:0;font-size:0}
   .main > button.side-handle:hover{color:#2D6B50;border-color:#2D6B50;background:#fff}
-  .strip-hidden .main{grid-template-columns:minmax(0,1fr) 0}
+  .strip-hidden .main{grid-template-columns:0 minmax(0,1fr) !important}
   .strip-hidden .strip{visibility:hidden;padding:0;border:0}
-  .strip-hidden .main > .side-handle{margin-left:-30px}
+  .strip-hidden .main > .side-handle{margin-right:-30px}
   .strip-hidden .main > .side-handle svg{transform:rotate(180deg)}
   .full .main > .side-handle{display:none}       /* full bleed already hides the strip */
+  .full .main{grid-template-columns:minmax(0,1fr) !important}
+  .full .main > .stage{grid-column:1}
+/* ============== FLAGGED DROPDOWN + ALBUM FLAGS (2026-09-27) ============== */
+  .fsel-native{display:none !important}
+  .fsel{position:relative;flex:1;min-width:0}
+  .fsel-btn{width:100%;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;
+    background:#fff;font-family:'Hanken Grotesk',sans-serif;font-size:.8rem;color:#1C2821;cursor:pointer;text-align:left}
+  .fsel-btn:hover{border-color:rgba(28,40,33,.32)}
+  .fsel.open .fsel-btn{border-color:#2D6B50;box-shadow:0 0 0 3px rgba(45,107,80,.14)}
+  .fsel-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fsel-chev{width:6px;height:6px;border-right:1.5px solid #1C2821;border-bottom:1.5px solid #1C2821;transform:rotate(45deg) translateY(-2px);flex:none}
+  .fsel-list{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:#fff;border:1px solid rgba(28,40,33,.14);border-radius:8px;
+    box-shadow:0 12px 32px rgba(28,40,33,.16);max-height:340px;overflow:auto;padding:4px}
+  .fsel-o{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;font-family:'Hanken Grotesk',sans-serif;font-size:.8rem;color:#1C2821;cursor:pointer}
+  .fsel-o:hover{background:#F3F6F4}
+  .fsel-o.on{background:rgba(45,107,80,.09);color:#2D6B50;font-weight:600}
+  .afl{width:18px;height:13px;border-radius:2px;object-fit:cover;flex:none;display:inline-block}
+  .afl.none{background:#E8E7E1}
+  
+  header .fsel{flex:0 1 250px}
+  .embed header .fsel-btn, header .fsel-btn{height:34px;text-transform:none;letter-spacing:0;font-size:.8rem;font-weight:400;padding:0 10px;border-radius:6px;background:#fff;color:#1C2821;border:1px solid rgba(28,40,33,.16)}
+
+  /* thin scrollbars everywhere (2026-09-27) */
+  *{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+  ::-webkit-scrollbar-track{background:transparent}
+  
+  /* LOW RES: the only badge, dark green with white text (2026-09-27) */
+  .strip .flag.low, .meta .lowres { background:#2D6B50 !important; color:#fff !important; border:0 !important; font-style:normal;
+    font-size:8.5px; letter-spacing:.08em; padding:2px 6px; font-weight:600; }
+  .strip .flag.fair, .strip .flag.blur, .key { display:none !important; }
+  /* one type standard for controls, the same as the editor's (2026-09-27) */
+  select, .fsel-btn, .fsel-o, input[type=text]{font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:400 !important;letter-spacing:0 !important;text-transform:none !important}
+  header button:not(.fsel-btn), .tools button, .picks-bar button, .css-actions button{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
   .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; font-size:12px;
     letter-spacing:.06em; opacity:0; transition:opacity .25s; pointer-events:none; }
@@ -710,7 +771,6 @@ PAGE = r"""<!doctype html>
     <option value="all">Every photo</option>
     <option value="ok" selected>Hide low res</option>
     <option value="best">Hero-ready only</option>
-    <option value="star">Starred only</option>
   </select>
   <span class="tally" id="tally"></span>
   <span class="tally" id="count"></span>
@@ -737,7 +797,6 @@ with the window.">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
   <button class="q" id="bleed" title="Hide the strip and show the hero edge to edge, the size the site cuts it (F)">Full bleed</button>
-  <button class="q" id="reset">Center crop</button>
   <span class="tools-gap"></span>
   <button id="save">Save pick</button>
     </div>
@@ -756,7 +815,9 @@ with the window.">
     </div>
     <div class="meta" id="meta"></div>
     <p class="hint" id="hint">Drag the photo to set the crop.</p>
-    <details class="cssbox" id="cssbox"><summary>Show CSS</summary><pre class="cropcss" id="cropcss"></pre></details>
+    <details class="cssbox" id="cssbox"><summary>Show CSS</summary>
+      <div class="css-actions"><button type="button" id="copy-claude" title="Copy a prompt for Claude: this photo, where it goes, and the CSS">Copy for Claude</button><span id="copied" hidden>Copied</span></div>
+      <pre class="cropcss" id="cropcss"></pre></details>
     <p class="key">
       <span><i class="flag low" style="position:static">LOW RES</i> under 1920px, blurry at any width</span>
       <span><i class="flag fair" style="position:static">1080p-ish</i> fine at 1x, soft at 2x</span>
@@ -764,7 +825,7 @@ with the window.">
     </p>
   </div>
   <div class="strip" id="strip">Loading&hellip;</div>
-  <button class="side-handle" id="side-handle" type="button" title="Hide the photo strip" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  <button class="side-handle" id="side-handle" type="button" title="Hide the photo strip" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -778,6 +839,22 @@ with the window.">
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
 })();
 
+// Copy for Claude: everything a session needs to set this hero without the picker open
+async function copyForClaude() {
+  if (!cur) return;
+  const target = ARTICLE ? ARTICLE.rel : ((country || 'this country') + "'s country hero (explore mode)");
+  const shapeName = $('shape').selectedOptions[0] ? $('shape').selectedOptions[0].textContent : $('shape').value;
+  const txt = `Set the hero for ${target} to the photo ${cur.name} (album: ${album}, file: ${cur.path}).\n` +
+    `Placement: ${shapeName}. Scrim: ${$('scrimv').textContent}. Straighten: ${$('anglev').textContent.replace('\u00b0', ' degrees')}.\n` +
+    `Title on the hero: ${$('title').value}\n\nCrop CSS from the hero picker:\n\n${$('cropcss').textContent.trim()}\n`;
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch (e2) {} ta.remove();
+  }
+  const c = $('copied'); c.textContent = ok ? 'Copied' : 'Could not reach the clipboard'; c.hidden = false; setTimeout(() => { c.hidden = true; }, 2200);
+}
+let PICKS_ONLY = false; try { PICKS_ONLY = localStorage.getItem('heroPicksOnly') === '1'; } catch (e) {}
 const TITLES = %TITLES%;
 const SHAPES = %SHAPES%;
 let cur = null, country = '', album = '', qTimer = null;
@@ -886,19 +963,18 @@ function render(restore) {
   const ap = articlePick();
   const saved0 = ap ? ap.path : sel.dataset.pick;
   // whatever is already saved stays visible, even when the filter would hide it
-  const rows = ALL.filter(r => r.path === saved0 || (
+  const rows = ALL.filter(r => r.path === saved0 || (PICKS_ONLY && !STARS.includes(r.path) ? false : (
       mode === 'all'  ? true
-    : mode === 'star' ? STARS.includes(r.path)
     : mode === 'best' ? r.tier === 'good'
-    :                   r.tier !== 'low'));
+    :                   r.tier !== 'low')));
   const hidden = ALL.length - rows.length;
   const saved = ap ? ap.path : sel.dataset.pick;
   $('count').textContent = hidden
     ? `${rows.length} shown, ${hidden} hidden` : `${rows.length} photos`;
-  $('strip').innerHTML = rows.map(r => `
+  $('strip').innerHTML = `<div class="picks-bar"><button id="picks-only" aria-pressed="${PICKS_ONLY}" class="${PICKS_ONLY ? 'on' : ''}" title="Show only your hero picks for this album (click again for every photo)">&#9733; Blog picks <span>${STARS.length || ''}</span></button></div>` + rows.map(r => `
     <div class="t${r.path === saved ? ' saved' : ''}${STARS.includes(r.path) ? ' star' : ''}"
          data-p="${r.path}" data-w="${r.heroW}" data-name="${r.name}" data-tier="${r.tier}">
-      <button class="fav" title="Shortlist this photo">${STARS.includes(r.path) ? '★' : '☆'}</button>
+      <button class="fav" title="${STARS.includes(r.path) ? 'In your picks: click to remove' : 'Add to your picks'}">${STARS.includes(r.path) ? '★' : '+'}</button>
       <img loading="lazy" decoding="async"
            src="/img?w=340&p=${encodeURIComponent(r.path)}">
       ${r.tier === 'low' ? '<span class="flag low">LOW RES</span>'
@@ -910,7 +986,8 @@ function render(restore) {
     ev.stopPropagation();          // starring is not choosing
     toggleStar(f.closest('.t'));
   });
-  $('count').textContent += STARS.length ? ` · ${STARS.length} starred` : '';
+  $('count').textContent += STARS.length ? ` · ${STARS.length} pick${STARS.length === 1 ? '' : 's'}` : '';
+  $('picks-only').onclick = () => { PICKS_ONLY = !PICKS_ONLY; try { localStorage.setItem('heroPicksOnly', PICKS_ONLY ? '1' : '0'); } catch (e) {} render(true); };
   if (restore && saved) {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
     const src = ap ? { dataset: { crops: JSON.stringify(ap.crops || {}), scrim: ap.scrim, pickAngle: ap.angle } } : sel;
@@ -1123,13 +1200,12 @@ function pick(t) {
     ? '<span class="good">sharp at 2× on a 1440 hero</span>'
     : cur.tier === 'fair'
       ? '<span class="mid">fine at 1×, soft at 2×</span>'
-      : '<span class="bad">too low resolution for a hero</span>';
+      : '<i class="lowres" title="Too low resolution for a hero">LOW RES</i>';
   const f = t.dataset.focus;
   const soft = f && t.dataset.cut && +f < +t.dataset.cut
     ? ' <span class="bad">soft focus</span>' : '';
   $('meta').innerHTML = `<span><b>${cur.name}</b></span>` +
-    `<span>${cur.w}px wide</span>` + q + soft + `<span id="oyv">crop 50%</span>`
-    + `<span id="frv"></span>`;
+    q + soft;
 }
 
 async function toggleStar(t) {
@@ -1137,12 +1213,13 @@ async function toggleStar(t) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ country, path: t.dataset.p }) })).json();
   t.classList.toggle('star', r.starred);
-  t.querySelector('.fav').textContent = r.starred ? '★' : '☆';
+  t.querySelector('.fav').textContent = r.starred ? '★' : '+';
   STARS = r.starred ? STARS.concat([t.dataset.p])
                     : STARS.filter(x => x !== t.dataset.p);
   const sel = $('album').selectedOptions[0];
   sel.dataset.stars = STARS.join('|');
-  if ($('filter').value === 'star' && !r.starred) { render(); }
+  { const n = document.querySelector('#picks-only span'); if (n) n.textContent = STARS.length || ''; }
+  if (PICKS_ONLY && !r.starred) { render(true); }
 }
 
 /* the scrim is what makes a bright photo readable and a dark one muddy, so it
@@ -1154,9 +1231,10 @@ function setScrim(v) {
   $('hero').style.setProperty('--scrim', scrim / 100);
 }
 $('scrim').addEventListener('input', e => setScrim(+e.target.value));
+$('copy-claude').onclick = copyForClaude;
 
 $('title').addEventListener('input', () => { $('h1').textContent = $('title').value; });
-$('reset').onclick = () => { crops[BP[bpi].key] = 50; applyCrop(); };
+// (Center crop removed 2026-09-27; dragging sets the crop)
 
 function slug(x) {
   return (x || 'hero').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -1375,6 +1453,52 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
   send();
   parent.postMessage({ type: 'heroes-ready' }, '*');     // ask for the open article
 }
+</script>
+<script>
+/* ============== ALBUM FLAGS + THE FLAGGED DROPDOWN (2026-09-27) ============== */
+(function () {
+  // album name -> ISO code for Images/web/flags (a trip is named for where it went, not the country)
+  const ALIAS = { 'bali': 'id', 'patagonia': 'cl', 'cologne': 'de', 'munich': 'de', 'turkey': 'tr', 'türkiye': 'tr' };
+  const ISO = { albania:'al', argentina:'ar', armenia:'am', australia:'au', bosnia:'ba', brazil:'br', colombia:'co', egypt:'eg',
+    'el salvador':'sv', georgia:'ge', greece:'gr', guatemala:'gt', india:'in', israel:'il', italy:'it', japan:'jp', jordan:'jo',
+    kosovo:'xk', mexico:'mx', 'new zealand':'nz', nicaragua:'ni', 'north macedonia':'mk', peru:'pe', philippines:'ph',
+    serbia:'rs', tanzania:'tz', vietnam:'vn', croatia:'hr', montenegro:'me', spain:'es', portugal:'pt', france:'fr', thailand:'th',
+    morocco:'ma', cuba:'cu', chile:'cl', indonesia:'id', germany:'de', netherlands:'nl', belgium:'be', uk:'gb' };
+  window.albumFlag = function (name) {
+    const k = String(name || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*&\s*/)[0].trim();
+    const code = ALIAS[k] || ISO[k];
+    return code ? 'http://127.0.0.1:5003/site/Images/web/flags/' + code + '.png' : '';
+  };
+  const flagImg = (name, cls) => { const u = albumFlag(name); return u ? `<img class="${cls || 'afl'}" src="${u}" alt="" width="18" height="13">` : `<span class="${cls || 'afl'} none"></span>`; };
+  window.flagImg = flagImg;
+  // a native <select> dressed as the flagged dropdown; the select keeps its value and change event
+  window.flagSelect = function (sel) {
+    if (!sel || sel.__flagged) return; sel.__flagged = true;
+    const box = document.createElement('div'); box.className = 'fsel'; box.dataset.for = sel.id;
+    box.innerHTML = '<button type="button" class="fsel-btn" aria-haspopup="listbox"></button><div class="fsel-list" role="listbox" hidden></div>';
+    sel.after(box); sel.classList.add('fsel-native');
+    const btn = box.firstChild, list = box.lastChild;
+    const label = o => o ? o.textContent.replace(/\s+/g, ' ').trim() : '';
+    const paint = () => { const o = sel.selectedOptions[0]; btn.innerHTML = flagImg(o && o.value) + `<span class="fsel-t">${label(o) || '—'}</span><i class="fsel-chev"></i>`; };
+    const open = on => {
+      list.hidden = !on; box.classList.toggle('open', on);
+      if (!on) return;
+      list.innerHTML = [...sel.options].filter(o => o.value).map(o =>
+        `<div class="fsel-o${o.selected ? ' on' : ''}" role="option" data-v="${o.value.replace(/"/g, '&quot;')}">${flagImg(o.value)}<span>${label(o)}</span></div>`).join('');
+      const on_ = list.querySelector('.on'); if (on_) on_.scrollIntoView({ block: 'nearest' });
+    };
+    btn.onclick = e => { e.stopPropagation(); open(list.hidden); };
+    list.onclick = e => { const o = e.target.closest('.fsel-o'); if (!o) return; sel.value = o.dataset.v; open(false); paint(); sel.dispatchEvent(new Event('change', { bubbles: true })); };
+    document.addEventListener('click', e => { if (!box.contains(e.target)) open(false); });
+    new MutationObserver(paint).observe(sel, { childList: true, subtree: true, attributes: true });
+    sel.addEventListener('change', paint);
+    const setv = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    Object.defineProperty(sel, 'value', { get() { return setv.get.call(this); }, set(v) { setv.set.call(this, v); paint(); } });
+    paint();
+  };
+  flagSelect(document.getElementById('album'));
+})();
+
 </script>
 </body></html>
 """.replace("%TITLES%", json.dumps(TITLES, ensure_ascii=False)

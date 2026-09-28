@@ -191,6 +191,16 @@ def api_maps():
     return jsonify(slugs)
 
 
+ISO2 = {"albania": "al", "argentina": "ar", "armenia": "am", "australia": "au", "belgium": "be", "bosnia": "ba",
+        "brazil": "br", "chile": "cl", "colombia": "co", "croatia": "hr", "cuba": "cu", "denmark": "dk", "egypt": "eg",
+        "el-salvador": "sv", "estonia": "ee", "finland": "fi", "france": "fr", "georgia": "ge", "germany": "de",
+        "greece": "gr", "guatemala": "gt", "hungary": "hu", "india": "in", "indonesia": "id", "italy": "it",
+        "japan": "jp", "kosovo": "xk", "latvia": "lv", "mexico": "mx", "montenegro": "me", "morocco": "ma",
+        "netherlands": "nl", "new-zealand": "nz", "nicaragua": "ni", "north-macedonia": "mk", "peru": "pe",
+        "philippines": "ph", "portugal": "pt", "serbia": "rs", "slovenia": "si", "spain": "es", "sweden": "se",
+        "switzerland": "ch", "tanzania": "tz", "thailand": "th", "turkiye": "tr", "vietnam": "vn", "uk": "gb"}   # the same table the article editor uses for its flags
+
+
 def _country_name(slug):
     return {"uk": "UK", "el-salvador": "El Salvador", "north-macedonia": "North Macedonia"}.get(
         slug, slug.replace("-", " ").title())
@@ -225,7 +235,7 @@ def api_catalog():
     out = []
     for k in sorted(groups):
         maps = sorted(groups[k], key=lambda m: (m["kind"] != "route", m["label"] != "Route map", m["label"].lower()))
-        out.append({"country": _country_name(k), "maps": maps})
+        out.append({"country": _country_name(k), "flag": ISO2.get(k, ""), "maps": maps})
     return jsonify(out)
 
 
@@ -375,6 +385,18 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   body.side-collapsed #side > .side-handle{right:-30px}
   body.side-collapsed #side > .side-handle svg{transform:rotate(180deg)}
   body.side-collapsed #bar{padding-left:44px}      /* clear of the arrow */
+
+  /* thin scrollbars everywhere (2026-09-27) */
+  *{scrollbar-width:thin;scrollbar-color:rgba(28,40,33,.28) transparent}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:rgba(28,40,33,.28);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(28,40,33,.45)}
+  ::-webkit-scrollbar-track{background:transparent}
+    .cfl{width:18px;height:13px;border-radius:2px;object-fit:cover;margin-right:9px;flex:none;display:inline-block}
+  .cfl.none{background:#E8E7E1}
+  /* one type standard for controls (2026-09-27) */
+  #q{font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:400 !important;letter-spacing:0 !important;text-transform:none !important}
+  #bar button{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
   #side h1{display:none}
   #q{margin:12px 12px 8px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;outline:none}
   #q:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,107,80,.14)}
@@ -462,7 +484,7 @@ fetch('/api/catalog').then(r=>r.json()).then(cat=>{
     const grp=document.createElement('div'); grp.className='grp';
     grp.dataset.q=(g.country+' '+g.maps.map(m=>m.label+' '+m.slug).join(' ')).toLowerCase();
     const h=document.createElement('button'); h.className='cty';
-    h.innerHTML=g.country.replace(/</g,'&lt;')+' <span>'+g.maps.length+'</span>';
+    h.innerHTML=(g.flag?'<img class="cfl" src="http://127.0.0.1:5003/site/Images/web/flags/'+g.flag+'.png" alt="" width="18" height="13">':'<i class="cfl none"></i>')+g.country.replace(/</g,'&lt;')+' <span>'+g.maps.length+'</span>';
     h.onclick=()=>grp.classList.toggle('open');
     const box=document.createElement('div'); box.className='maps';
     g.maps.forEach(m=>{
