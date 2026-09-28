@@ -185,7 +185,7 @@
     #seo-panel .sf-actions button { font-family:'Hanken Grotesk',sans-serif; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
       height:28px; padding:0 10px; border-radius:999px; border:1px solid rgba(28,40,33,.16); background:#fff; color:var(--ink); cursor:pointer; }
     #seo-panel .sf-actions button:hover { border-color:var(--terra); color:var(--terra); }
-    #seo-panel .gprev { border:1px solid rgba(28,40,33,.1); border-radius:8px; padding:12px 14px; background:#fff; font-family:Arial, sans-serif; }
+    #seo-panel .gprev { border:1px solid rgba(28,40,33,.06); border-radius:8px; padding:12px 14px; background:#F0F0EB; font-family:Arial, sans-serif; cursor:default; user-select:none; }   /* grey: a preview, not a field */
     #seo-panel .gprev .gh { font-size:11px; font-family:'Hanken Grotesk',sans-serif; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#6b7a70; margin-bottom:8px; }
     #seo-panel .gprev .gu { font-size:12px; color:#4d5156; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     #seo-panel .gprev .gt { font-size:18px; line-height:1.3; color:#1a0dab; margin:3px 0 4px; }
@@ -1701,17 +1701,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <button onclick="todoAdd('section')" title="Add a section heading">+ Section</button>
     </div>
     <div id="seo-panel">
-      <div class="gprev"><div class="gh">In Google</div><div class="gu" id="seo-g-url"></div><div class="gt" id="seo-g-title"></div><div class="gd" id="seo-g-desc"></div></div>
+      <div class="gprev"><div class="gh">Google Preview</div><div class="gu" id="seo-g-url"></div><div class="gt" id="seo-g-title"></div><div class="gd" id="seo-g-desc"></div></div>
       <div class="sf">
         <label for="seo-title">Search title <span class="cnt" id="seo-title-n"></span></label>
         <textarea id="seo-title" rows="2" spellcheck="true"></textarea>
         <div class="sf-actions"><button type="button" id="seo-use-h1" title="Start the search title from the headline on the page">Use headline</button></div>
-        <div class="hint" id="seo-title-hint">The browser tab, the Google result and the link preview. Up to about 70 characters; Google cuts it near 60.</div>
+        <div class="hint bad" id="seo-title-hint" hidden></div>
       </div>
       <div class="sf">
         <label for="seo-desc">Description <span class="cnt" id="seo-desc-n"></span></label>
         <textarea id="seo-desc" rows="4" spellcheck="true"></textarea>
-        <div class="hint">The text under the title in Google and in link previews. Under 160 characters.</div>
       </div>
       <div>
         <div class="sec">Set automatically</div>
@@ -3709,6 +3708,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       originalHTML = newHTML;
       setDirty(false);
       { const m = document.getElementById('ed-masthead'); if (m && !m.hidden && window.__renderMasthead && !m.contains(document.activeElement)) __renderMasthead(newHTML); }
+      { const sp = document.getElementById('seo-panel'); if (window.__loadSeo && !(sp && sp.contains(document.activeElement))) __loadSeo(new DOMParser().parseFromString(newHTML, 'text/html')); }   // the Search tab shows the saved dates
       // the accepted changes are now in the file; commit the half the editor cannot do
       // itself, the destination side of accepted moves, which live in other articles
       if (window.review) window.review.onSaved();
@@ -10165,15 +10165,14 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   function paint() {
     const t = clean(T.value), d = clean(D.value);
     const tn = $('seo-title-n'), dn = $('seo-desc-n');
-    tn.textContent = t.length + ' / 70'; tn.className = 'cnt' + (t.length > 70 ? ' over' : t.length > 60 ? ' warn' : '');
+    tn.textContent = t.length + ' / 60'; tn.className = 'cnt' + (t.length > 60 ? ' over' : t.length > 55 ? ' warn' : '');   // Google cuts near 60
     dn.textContent = d.length + ' / 160'; dn.className = 'cnt' + (d.length >= 160 ? ' over' : d.length > 150 ? ' warn' : '');
     $('seo-g-title').textContent = t.length > 60 ? t.slice(0, 58).replace(/\s+\S*$/, '') + ' …' : (t || '(no title)');
     $('seo-g-desc').textContent = d.length > 158 ? d.slice(0, 155).replace(/\s+\S*$/, '') + ' …' : (d || '(no description: Google will pick text from the page)');
     const hint = $('seo-title-hint');
     const fn = /field notes/i.test(t);
-    hint.classList.toggle('bad', fn);
-    hint.textContent = fn ? 'Leave "Field Notes" out of the title: it is the brand, and nobody searches it.'
-                          : 'The browser tab, the Google result and the link preview. Up to about 70 characters; Google cuts it near 60.';
+    hint.hidden = !fn;
+    hint.textContent = 'Leave "Field Notes" out of the title: it is the brand, and nobody searches it.';
   }
   window.__loadSeo = function (doc) {
     const title = clean(doc.querySelector('title') ? doc.querySelector('title').textContent : '');
@@ -10203,6 +10202,16 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       setMeta('meta[name="description"]', 'name', 'description', d);
       setMeta('meta[property="og:description"]', 'property', 'og:description', d);
     }
+    // the dates: an edit is saved today. A page still in Drafts has not been published, so its
+    // published date moves with it too (Kevin, 2026-09-28: "use the latest date")
+    const rel = window.review && review.state && review.state.rel;
+    const n = new Date(), today = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+    ld(doc).forEach(([s, o]) => {
+      if (!o || !('datePublished' in o || 'dateModified' in o)) return;
+      if (rel && rel.startsWith('Drafts/')) o.datePublished = today;
+      o.dateModified = today;
+      s.textContent = JSON.stringify(o, null, 2);
+    });
     orig = { title: t || orig.title, desc: d };
   };
   [T, D].forEach(el => {
