@@ -611,14 +611,14 @@ PAGE = r"""<!doctype html>
   .picks-bar button.on, .embed .picks-bar button.on { background:#2D6B50; color:#fff; border-color:#2D6B50; }
   .picks-bar button span:empty { display:none; }
   .picks-bar button span { font-weight:600; }
-  .strip .t.saved::after { content:'SAVED HERO'; position:absolute; left:0; top:0;
+  .strip .t.saved::after { content:'SAVED HERO'; position:absolute; right:0; bottom:0;   /* bottom right: the pick button owns the top left */
     background:var(--terra); color:#fff; font-size:8.5px; letter-spacing:.1em;
     padding:2px 6px; }
   /* the strip cuts the same shape the chosen hero does, so the crop is no
      surprise when you pick */
   .strip img { width:100%; display:block; aspect-ratio:var(--shape,2.118);
     object-fit:cover; }
-  .strip .n { position:absolute; left:6px; bottom:6px; font-size:9px; letter-spacing:.06em;
+  .strip .n { position:absolute; left:6px; right:6px; bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:9px; letter-spacing:.06em;
     color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); opacity:0; transition:opacity .15s; }
   .strip .t:hover .n, .strip .t.on .n { opacity:1; }      /* names on hover only (2026-09-27) */
   /* the adjustments, right under the preview's top edge */
@@ -732,7 +732,8 @@ PAGE = r"""<!doctype html>
   .strip .flag.fair, .strip .flag.blur, .key { display:none !important; }
   /* one type standard for controls, the same as the editor's (2026-09-27) */
   select, .fsel-btn, .fsel-o, input[type=text]{font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:400 !important;letter-spacing:0 !important;text-transform:none !important}
-  header button:not(.fsel-btn), .tools button, .picks-bar button, .css-actions button{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
+  header button:not(.fsel-btn), .tools button, .picks-bar button, .css-actions button,
+  .embed header button:not(.fsel-btn), .embed .tools button, .embed .picks-bar button, .embed .css-actions button{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
   .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; font-size:12px;
     letter-spacing:.06em; opacity:0; transition:opacity .25s; pointer-events:none; }
@@ -837,6 +838,10 @@ with the window.">
   apply(on);
   btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:heroes', on ? '1' : '0'); } catch (e) {} };
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
+  // the suite's shortcuts work from inside this frame too: Ctrl+Alt+1..4 switch apps, and the
+  // suite asks this frame to toggle its strip when Ctrl+\ is pressed outside it (QA 2026-09-27)
+  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-4]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
+  window.addEventListener('message', e => { if (e.data && e.data.type === 'suite-side') btn.click(); });
 })();
 
 // Copy for Claude: everything a session needs to set this hero without the picker open
@@ -1490,6 +1495,7 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
     btn.onclick = e => { e.stopPropagation(); open(list.hidden); };
     list.onclick = e => { const o = e.target.closest('.fsel-o'); if (!o) return; sel.value = o.dataset.v; open(false); paint(); sel.dispatchEvent(new Event('change', { bubbles: true })); };
     document.addEventListener('click', e => { if (!box.contains(e.target)) open(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !list.hidden) { open(false); btn.focus(); } });
     new MutationObserver(paint).observe(sel, { childList: true, subtree: true, attributes: true });
     sel.addEventListener('change', paint);
     const setv = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');

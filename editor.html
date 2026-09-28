@@ -1079,7 +1079,7 @@ main{overflow-y:auto;padding:1rem}
 .ph .marks{position:absolute;top:6px;left:6px;display:flex;gap:4px;pointer-events:auto}
 .ph .marks .mk{font-family:Hanken Grotesk,sans-serif;font-size:.56rem;font-weight:600;letter-spacing:.04em;line-height:1;
   padding:4px 6px;border-radius:999px;background:rgba(28,40,33,.78);color:#fff;backdrop-filter:blur(2px)}
-.ph .marks .mk.low{background:rgba(180,85,60,.9)}
+.ph .marks .mk.low{background:#2D6B50}   /* the same dark-green LOW RES as the hero picker */
 .ph .badge{position:absolute;top:6px;left:6px;background:rgba(28,40,33,.82);color:#fff;
            font-family:Hanken Grotesk,sans-serif;font-size:.58rem;font-weight:600;
            width:19px;height:19px;border-radius:4px;display:flex;align-items:center;justify-content:center}
@@ -1262,7 +1262,7 @@ header .prog.all b{color:#6EC99A}
    every dropdown: 13px regular; every action button: 11px semibold spaced caps */
 .fsel-btn,.fsel-o,#pl-place,#pk-place,#f-place,.tb-more-pop .tool-select,#pub-modal select{font-family:'Hanken Grotesk',sans-serif !important;font-size:13px !important;font-weight:400 !important;letter-spacing:0 !important;text-transform:none !important}
 #app-editor > header .btn,#app-library > header #act-open,#pk-toggle,#pl-libbtn,#pl-placebar label.follow-tg,#review-pane .rv-btn,
-#review-pane .rv-chips button,#review-pane .rv-switch button,#lib-toolbar button,#ap .ap-btn,#pub-modal .pb button,.hold,.undo{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
+#review-pane .rv-chips button,#review-pane .rv-switch button,#lib-toolbar button,#ed-masthead .mh-edit,#editor .map-edit,#crop-actions button,#ap .ap-btn,#pub-modal .pb button,.hold,.undo{font-family:'Hanken Grotesk',sans-serif !important;font-size:11px !important;font-weight:600 !important;letter-spacing:.08em !important;text-transform:uppercase !important}
 /* three tiles that fill the sidebar, spaced like the library (12px on 170px tiles, 2026-09-27) */
 #pl-grid{padding:0 8px 8px !important;gap:8px !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:auto !important;justify-content:stretch !important}
 #pl-grid > .pl-ph{aspect-ratio:1/1}
@@ -1618,7 +1618,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   Images and divs are hidden in the editor — only text content is shown. They will be preserved on save.
 </div>
 
-<script src="review.js?v=86488e1b" defer></script>
+<script src="review.js?v=0518c2b2" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -2046,7 +2046,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     host.innerHTML = h;
     host.querySelectorAll('.ap-row').forEach(el => { el.onclick = () => apOpen(el.dataset.rel); el.onmousemove = () => { const k = +el.dataset.i; if (k !== AP.sel) { AP.sel = k; host.querySelectorAll('.ap-row').forEach(x => x.classList.toggle('sel', +x.dataset.i === k)); } }; });
     const sel = host.querySelector('.ap-row.sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
-    document.getElementById('ap-count').textContent = vis.length + ' of ' + AP.rows.length;
+    document.getElementById('ap-count').textContent = new Set(vis.map(r => r.rel)).size + ' of ' + AP.rows.length;   // Recent repeats pages
   }
   // The connected folder has to be the Travel Blog root for a repo path to resolve. A folder
   // connected for images may be something else; then one click connects the right one.
@@ -3194,6 +3194,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   }
 
   function normalizeForSave(el) {
+    // a heading made with H2/H3 has no id, and the page's table of contents only lists headings
+    // that have one (QA 2026-09-27): give it a slug of its text, unique on the page
+    { const taken = new Set([...el.querySelectorAll('[id]')].map(x => x.id));
+      el.querySelectorAll('h2.article-h2:not([id]), h3.article-h3:not([id])').forEach(h => {
+        const base = h.textContent.toLowerCase().replace(/&/g, ' and ').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
+        if (!base) return;
+        let id = base, n = 2; while (taken.has(id)) id = base + '-' + n++;
+        h.id = id; taken.add(id);
+      }); }
     // data-li-style is editor bookkeeping: the rule an empty new bullet is holding back
     // until it has text. Whatever state it is in when the file is written, the attribute
     // itself must not reach the page.
@@ -4329,6 +4338,11 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   }
 
   document.addEventListener('click', e => { const m = document.getElementById('tb-more'); if (m && !m.contains(e.target)) m.classList.remove('open'); });
+  document.addEventListener('keydown', e => {      // Escape closes the ⋯ menu and the Live Activity panel
+    if (e.key !== 'Escape') return;
+    const m = document.getElementById('tb-more'); if (m) m.classList.remove('open');
+    const a = document.getElementById('activity'); if (a && a.classList.contains('open') && window.closeActivity) closeActivity();
+  });
   function closeColorPicker() {
     document.getElementById('color-dropdown').classList.remove('open');
   }
@@ -6618,6 +6632,24 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   window.addEventListener('message', ev => {
     if (ev.origin !== MAPS || !ev.data || ev.data.source !== 'map-editor') return;
     if (ev.data.type === 'map-done') { closeMapEditor(); return; }
+    // Saved from the Maps TAB (no modal, so no mapTarget): if it wrote the article that is open,
+    // put the new map into the editor's copy too, or the next save would write the old map back
+    // (QA 2026-09-27). The figure is found by the city map's image, or as the page's only route map.
+    if (ev.data.type === 'map-saved' && !mapTarget) {
+      const open = window.review && review.state && review.state.rel;
+      if (!open || !ev.data.page || open !== String(ev.data.page).split('\\').join('/')) return;
+      let fig = null;
+      if (ev.data.city) fig = [...ed().querySelectorAll('figure.citymap-fig')].find(f => f.innerHTML.includes('city-maps/' + ev.data.slug + '.png')) || null;
+      else { const all = ed().querySelectorAll('figure.itinerary-map'); if (all.length === 1) fig = all[0]; }
+      if (!fig) { if (typeof toast === 'function') toast('The map was saved into the file. Reopen the article to see it here before you save again.'); return; }
+      mapTarget = fig;
+      applyMapSave(ev);
+      mapTarget = null;
+      return;
+    }
+    applyMapSave(ev);
+  });
+  function applyMapSave(ev) {
     if (ev.data.type === 'map-saved' && mapTarget && ev.data.city) {
       // only the pin overlays change when labels move; the base raster and the key stay
       const dk = mapTarget.querySelector('.citymap.desk .cmmap svg'), mb = mapTarget.querySelector('.citymap.mob .cmworld svg');
@@ -6639,7 +6671,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       if (window.review && review.resnapshot) review.resnapshot();   // the map editor wrote the file: our write, not someone else's   // the file changed under us, by us
       if (typeof toast === 'function') toast('Map updated in the article. Save to keep it with your other edits.');
     }
-  });
+  }
 
   let SLOT_SEQ = 0;
   function emptySlot() {
@@ -10001,6 +10033,13 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       e.preventDefault();
       if (!document.getElementById('app-library').hidden) document.getElementById('lib-side-handle').click();
       else if (document.getElementById('app-editor').style.display !== 'none') document.getElementById('ed-side-handle').click();
+      else for (const id of ['heroes', 'maps']) {                   // the framed apps toggle their own sidebars
+        if (!document.getElementById('app-' + id).hidden) { const f = document.getElementById(id + '-frame'); if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'suite-side' }, '*'); }
+      }
+    });
+    window.addEventListener('message', e => {                        // Ctrl+Alt+1..4 pressed inside a framed app
+      if (!e.data || e.data.type !== 'suite-view' || !(e.origin === 'http://127.0.0.1:5004' || e.origin === 'http://127.0.0.1:5002')) return;
+      const v = ['editor', 'library', 'heroes', 'maps'][e.data.n - 1]; if (v && window.showView) showView(v);
     });
   })();
   // every app's wordmark button becomes the same row of tabs
@@ -10082,6 +10121,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     btn.onclick = e => { e.stopPropagation(); open(list.hidden); };
     list.onclick = e => { const o = e.target.closest('.fsel-o'); if (!o) return; sel.value = o.dataset.v; open(false); paint(); sel.dispatchEvent(new Event('change', { bubbles: true })); };
     document.addEventListener('click', e => { if (!box.contains(e.target)) open(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !list.hidden) { open(false); btn.focus(); } });
     new MutationObserver(paint).observe(sel, { childList: true, subtree: true, attributes: true });
     sel.addEventListener('change', paint);
     const setv = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');

@@ -856,7 +856,7 @@
     const hb = $('btn-review-n'); if (hb) hb.textContent = pend.length + open ? String(pend.length + open) : '';
     const cut = state.changes.filter(c => c.kind === 'cut' && state.st[c.id] === true).reduce((s, c) => s + (c.words || 0), 0);
     const yes = Object.values(state.st).filter(v => v === true).length, no = Object.values(state.st).filter(v => v === false).length;
-    const words = state.meta && state.meta.before ? ` · ${state.meta.before - cut} words (${state.meta.tlabel} ${state.meta.target})` : '';
+    const words = state.meta && state.meta.before && state.meta.target ? ` ·${state.meta.before - cut} words (${state.meta.tlabel} ${state.meta.target})` : '';
     $('rv-status').textContent = state.slug ? `${pend.length} to review · ${yes} accepted · ${no} rejected${words}`
                                : (state.rel ? `${open} open comment${open === 1 ? '' : 's'} · no proposed changes` : 'Open an article to review it.');
     const list = $('rv-list'), canvas = $('rv-canvas');

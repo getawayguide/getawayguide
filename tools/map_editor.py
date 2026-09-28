@@ -231,7 +231,15 @@ def api_catalog():
                 continue
             parts = [x for x in (c.get("article") or "").split("/") if x and x not in ("Drafts", ".Full Articles")]
             country = parts[0] if len(parts) > 1 else "other"
-            groups.setdefault(country, []).append({"kind": "city", "slug": p.stem, "label": c.get("city") or p.stem})
+            page = (c.get("article") or "").rsplit("/", 1)[-1].replace(".html", "")
+            where = "field notes" if page == "field-notes" else "guide"
+            groups.setdefault(country, []).append({"kind": "city", "slug": p.stem, "label": c.get("city") or p.stem, "where": where})
+    # two city maps of the same city (field notes and a guide): say which article each is in
+    for maps in groups.values():
+        names = [m["label"] for m in maps if m["kind"] == "city"]
+        for m in maps:
+            if m["kind"] == "city" and names.count(m["label"]) > 1 and m.get("where"):
+                m["label"] = f'{m["label"]} ({m["where"]})'
     out = []
     for k in sorted(groups):
         maps = sorted(groups[k], key=lambda m: (m["kind"] != "route", m["label"] != "Route map", m["label"].lower()))
@@ -463,6 +471,9 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   apply(on);
   btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:maps', on ? '1' : '0'); } catch (e) {} };
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
+  // the suite's shortcuts from inside this frame, and Ctrl+\ from outside it (QA 2026-09-27)
+  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-4]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
+  window.addEventListener('message', e => { if (e.data && e.data.type === 'suite-side') btn.click(); });
 })();
 
 const SVGNS="http://www.w3.org/2000/svg";
