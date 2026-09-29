@@ -2398,11 +2398,35 @@ def api_alt_text():
         p.stat()
     except Exception:
         return jsonify(ok=False, error="no such photo"), 404
+    small = None                         # the sidebar preview's 2000px JPEG: no 6 s HEIC decode
     try:
-        alt = _alt().describe(str(p), b.get("place", ""), b.get("city", ""), b.get("country", ""), b.get("section", ""))
+        small = str(bthumb_path(p, 2000))
+    except Exception:
+        pass
+    try:
+        alt = _alt().describe(str(p), b.get("place", ""), b.get("city", ""), b.get("country", ""), b.get("section", ""),
+                              small=small)
     except Exception as e:
         return jsonify(ok=False, error=str(e)[:200]), 502
     return jsonify(ok=True, alt=alt)
+
+
+@app.route("/api/alt_warm", methods=["POST", "OPTIONS"])
+def api_alt_warm():
+    """The photo sidebar calls this when it opens: if the alt-text session is not running (it takes
+    up to a minute to start), start it now rather than when the first photo is chosen."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    w = _alt()
+    if not w.alive() and not w.lock.locked():
+        threading.Thread(target=w.warm, daemon=True, name="alt-warm").start()
+    return jsonify(ok=True, alive=w.alive())
+
+
+@app.route("/api/alt_status")
+def api_alt_status():
+    """what the alt-text session is doing (alive, busy, its last few events), for diagnosing a stall"""
+    return jsonify(_alt().status())
 
 
 _preview_warm_pool = ThreadPoolExecutor(max_workers=1)   # one: background work, never in your way

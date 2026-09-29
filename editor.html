@@ -6136,6 +6136,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     });
     PL.rendered += slice.length;
     plPaintPicks(PL.rendered === slice.length);      // the album's first chunk re-reads its picks
+    // and makes sure the alt-text session is running: starting one takes up to a minute
+    if (PL.rendered === slice.length) fetch(API + '/api/alt_warm', { method: 'POST' }).catch(() => {});
     // have the server prepare these photos' large viewer images in the background (2026-09-28)
     if (PL.path && !PL.path.includes('/') && slice.length)
       fetch(API + '/api/warm_previews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -8249,38 +8251,21 @@ void main(){
   async function openCropForPhoto(photo, drop) {
     const cropGen = ++_cropOpenGen;
     if (!fileHandle) { alert('Open an article first.'); return; }
+    // a stage image for the PREVIOUS photo that is still loading is stale now: without this it
+    // landed while this one's metadata was on its way and put that photo (and its file name as
+    // the alt text) back in the dialog (2026-09-28)
+    openStage._gen = (openStage._gen || 0) + 1;
+    // The alt text is asked for FIRST (2026-09-28): Claude needs a few seconds, and those used to
+    // come on top of the 5 to 8 s spent on the photo's metadata and the article lookup, so the
+    // answer often landed after the photo was already in. Both lookups now run side by side.
+    const ctxP = articleContext();
     let meta = PL.meta[photo.path];
-    if (!meta || meta.hasOriginal === undefined) {
-      try {
-        meta = await (await fetch(`${API}/api/photo_meta?root=${photo.root}` +
-          `&path=${encodeURIComponent(photo.path)}&full=1`)).json();
-        PL.meta[photo.path] = meta;
-      } catch (e) { meta = { orient: 'landscape' }; }
-    }
-    // tell the user which pixels will actually be published
-    const note = $('#crop-resnote');
-    if (meta.hasOriginal) {
-      note.style.display = 'block';
-      note.style.color = '#8fbfa4';
-      note.textContent = `✓ Full-resolution original found (${meta.origMB} MB vs this ` +
-        `${meta.copyMB} MB preview copy) — the original is downloaded and published.`;
-    } else if (meta.w) {
-      note.style.display = 'block';
-      note.style.color = meta.w < 2400 ? '#d8b271' : '#8fbfa4';
-      note.textContent = `Publishing at ${meta.w}×${meta.h}` +
-        (meta.w < 2400 ? ' (no larger original found for this photo)' : '');
-    } else note.style.display = 'none';
+    const metaP = (!meta || meta.hasOriginal === undefined)
+      ? fetch(`${API}/api/photo_meta?root=${photo.root}&path=${encodeURIComponent(photo.path)}&full=1`)
+          .then(r => r.json()).then(m => (PL.meta[photo.path] = m)).catch(() => ({ orient: 'landscape' }))
+      : Promise.resolve(meta);
+    const ctx = await ctxP;
     if (cropGen !== _cropOpenGen) return;   // a newer photo was clicked mid-fetch
-    loadPendingStage(photo, drop, meta, 0, null);
-    // prefill country/city from the article itself. articleRelPath() needs the
-    // connected site folder, which is usually NOT connected, so the country
-    // came up blank and the city was just whatever was typed last. The
-    // article's own path (canonical link + stylesheet depth, the way review.js
-    // finds it) says the country; the page kind says the city: a city page
-    // (yerevan.html) names its city, an itinerary / top-10 / index page takes
-    // the city the PHOTO was shot in when its location is known (Kevin, 2026-09-24).
-    const ctx = await articleContext();
-    $('#crop-country').value = ctx.country;
     let city = ctx.city;
     if (!city) {
       const geo = (typeof PK !== 'undefined' && PK.geo && PK.geo.photos && PK.geo.photos[photo.name])
@@ -8290,17 +8275,6 @@ void main(){
     if (!city) {
       try { city = JSON.parse(localStorage.getItem('pl-cities') || '{}')[ctx.country] || ''; } catch (e) {}
     }
-    $('#crop-city').value = city;
-
-    // The alt text starts as the PLACE, not the filename. loadPendingStage seeds it
-    // with the photo's stem ("IMG_0777"), which is not alt text and had to be retyped
-    // for every photo. Kevin: "For the alt text of the photo please fill out the
-    // location and I can add more on to the end."
-    //
-    // Only ever replaces that seed, so anything typed or kept from a previous open
-    // survives. And loadPendingStage schedules a focus+select() at 60ms, which would
-    // wipe the prefill on the first keystroke -- the whole point is to type onto the
-    // END of it -- so the caret is placed after that fires.
     const stem = photo.name.replace(/\.[^.]+$/, '');
     const altEl = $('#crop-alt');
     const where = [city, ctx.country].filter(Boolean).join(', ');
@@ -8308,15 +8282,6 @@ void main(){
     // AFTER this) reads it instead of writing the file name over it
     window.__altSeed = { path: photo.path, stem, where, alt: null };
     const untouched = v => !v || v === stem || v === where;
-    if (where && untouched(altEl.value.trim())) {
-      altEl.value = where;
-      setTimeout(() => {
-        if (altEl.value !== where) return;          // they already started typing
-        altEl.focus();
-        altEl.setSelectionRange(altEl.value.length, altEl.value.length);
-      }, 90);
-    }
-
     // Then Claude looks at the photo and writes the alt text (tools/alt_writer.py, 2026-09-28:
     // "I don't like writing Alt text"). It replaces the place prefill only if the field still
     // holds what we put there, so anything typed or kept is never overwritten.
@@ -8355,6 +8320,50 @@ void main(){
           hint.style.display = 'none';                                // no "written by" note: you rarely edit it
         }).catch(() => { hint.style.display = 'none'; });
     }
+    meta = await metaP;
+    // tell the user which pixels will actually be published
+    const note = $('#crop-resnote');
+    if (meta.hasOriginal) {
+      note.style.display = 'block';
+      note.style.color = '#8fbfa4';
+      note.textContent = `✓ Full-resolution original found (${meta.origMB} MB vs this ` +
+        `${meta.copyMB} MB preview copy) — the original is downloaded and published.`;
+    } else if (meta.w) {
+      note.style.display = 'block';
+      note.style.color = meta.w < 2400 ? '#d8b271' : '#8fbfa4';
+      note.textContent = `Publishing at ${meta.w}×${meta.h}` +
+        (meta.w < 2400 ? ' (no larger original found for this photo)' : '');
+    } else note.style.display = 'none';
+    if (cropGen !== _cropOpenGen) return;   // a newer photo was clicked mid-fetch
+    loadPendingStage(photo, drop, meta, 0, null);
+    // prefill country/city from the article itself. articleRelPath() needs the
+    // connected site folder, which is usually NOT connected, so the country
+    // came up blank and the city was just whatever was typed last. The
+    // article's own path (canonical link + stylesheet depth, the way review.js
+    // finds it) says the country; the page kind says the city: a city page
+    // (yerevan.html) names its city, an itinerary / top-10 / index page takes
+    // the city the PHOTO was shot in when its location is known (Kevin, 2026-09-24).
+    $('#crop-country').value = ctx.country;
+    $('#crop-city').value = city;
+
+    // The alt text starts as the PLACE, not the filename. loadPendingStage seeds it
+    // with the photo's stem ("IMG_0777"), which is not alt text and had to be retyped
+    // for every photo. Kevin: "For the alt text of the photo please fill out the
+    // location and I can add more on to the end."
+    //
+    // Only ever replaces that seed, so anything typed or kept from a previous open
+    // survives. And loadPendingStage schedules a focus+select() at 60ms, which would
+    // wipe the prefill on the first keystroke -- the whole point is to type onto the
+    // END of it -- so the caret is placed after that fires.
+    if (where && untouched(altEl.value.trim())) {
+      altEl.value = where;
+      setTimeout(() => {
+        if (altEl.value !== where) return;          // they already started typing
+        altEl.focus();
+        altEl.setSelectionRange(altEl.value.length, altEl.value.length);
+      }, 90);
+    }
+
   }
 
   function dropModes(drop) {
@@ -8734,6 +8743,7 @@ void main(){
     document.querySelectorAll('#editor .img-slot-empty.drag-over').forEach(x => x.classList.remove('drag-over'));
     $('#crop-backdrop').classList.remove('open');
     CM = null;
+    openStage._gen = (openStage._gen || 0) + 1;   // a stage image still loading must not reopen it
     // hand focus back to the article so Ctrl+Z works immediately — the most
     // likely undo moment is right after an insert (QA finding M1)
     const edEl = document.getElementById('editor');

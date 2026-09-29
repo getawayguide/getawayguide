@@ -13,6 +13,13 @@ described "the tiered limestone staircase and sculpture garden leading up to the
 
 Answers are cached per file (path + size + mtime) in .tmp/alt_text_cache.json.
 
+Speed (2026-09-28, Kevin: "it doesn't start automatically for some photos"): the answer itself takes
+1.5 to 3 s, but starting a session took 54 s on this machine and decoding a 5712px HEIC 6 s. So the
+session is never shut down for being idle (that restart is what made the first photo after a break
+seem to get nothing), a session that has described 40 photos is replaced by one built in the
+background while the old one keeps answering, and the photo server hands over the 2000px preview it
+already built for the sidebar instead of the HEIC.
+
 The site-wide audit and batch writer is tools/alt_text.py (API or page context); this one needs
 no API key and is fast enough to fill the field while the crop dialog is open.
 
@@ -22,7 +29,7 @@ Command line:
       fills in alt text ONLY where an <img> has none (or only its file name); never rewrites alt text
       you wrote
 """
-import base64, io, json, os, re, subprocess, sys, threading, time
+import base64, collections, io, json, os, queue, re, subprocess, sys, threading, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -56,6 +63,7 @@ def _key(path):
 
 
 def _small_jpeg(path):
+    """a 768px JPEG for Claude; `path` may be the original or an already-shrunk preview of it"""
     from PIL import Image, ImageOps
     try:
         import pillow_heif
@@ -72,14 +80,20 @@ def _small_jpeg(path):
 
 
 class AltWriter:
-    """one warm session; restarted after 40 photos or 20 idle minutes"""
-    MAX, IDLE = 40, 20 * 60
+    """one warm session, kept alive; after 40 photos a fresh one is built in the background"""
+    MAX = 40
 
     def __init__(self):
         self.p = None; self.n = 0; self.last = 0; self.lock = threading.Lock()
+        self.swapping = False
+        self.events = collections.deque(maxlen=40)     # what the session last said, for /api/alt_status
         self.cache = _load_cache()
 
     def _start(self):
+        self.p = self._spawn(); self.n = 0; self.last = time.time()
+
+    def _spawn(self):
+        """a started, briefed session (slow: up to a minute), not yet in use"""
         sys.path.insert(0, str(ROOT / "tools"))
         import claude_answer
         exe = claude_answer.cli_path()
@@ -90,67 +104,110 @@ class AltWriter:
         if not nomcp.exists():
             nomcp.write_text('{"mcpServers": {}}', encoding="utf-8")
         env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
-        self.p = subprocess.Popen([exe, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
+        p = subprocess.Popen([exe, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
                                    "--model", "sonnet", "--strict-mcp-config", "--mcp-config", str(nomcp)],
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
                                   encoding="utf-8", errors="replace", cwd=str(WORK), env=env, bufsize=1,
                                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        self.n = 0; self.last = time.time()
-        self._ask(BRIEF, 120)
+        # a reader thread, so a session that goes quiet times out instead of blocking readline() forever
+        p.q = queue.Queue()
 
-    def _ask(self, content, timeout):
-        self.p.stdin.write(json.dumps({"type": "user", "message": {"role": "user", "content": content}}) + "\n")
-        self.p.stdin.flush()
-        t0 = time.time()
-        while time.time() - t0 < timeout:
-            line = self.p.stdout.readline()
-            if not line:
-                raise RuntimeError("the Claude session exited")
+        def read():
+            for line in p.stdout:
+                try:
+                    j = json.loads(line)
+                except ValueError:
+                    continue
+                self.events.append((round(time.time(), 1), p.pid, j.get("type"), j.get("subtype") or ""))
+                p.q.put(j)
+            p.q.put(None)
+        threading.Thread(target=read, daemon=True, name="alt-read").start()
+        try:
+            self._ask(BRIEF, 180, p)
+        except Exception:
+            _kill(p); raise
+        return p
+
+    def _ask(self, content, timeout, p=None):
+        p = p or self.p
+        while not p.q.empty():                        # a late answer to an earlier, timed-out question
+            p.q.get_nowait()
+        p.stdin.write(json.dumps({"type": "user", "message": {"role": "user", "content": content}}) + "\n")
+        p.stdin.flush()
+        end = time.time() + timeout
+        while True:
             try:
-                j = json.loads(line)
-            except ValueError:
-                continue
+                j = p.q.get(timeout=max(0.1, end - time.time()))
+            except queue.Empty:
+                raise RuntimeError("the Claude session timed out")
+            if j is None:
+                raise RuntimeError("the Claude session exited")
             if j.get("type") == "result":
                 return (j.get("result") or "").strip()
-        raise RuntimeError("the Claude session timed out")
 
     def stop(self):
-        try:
-            if self.p:
-                self.p.stdin.close(); self.p.terminate()
-        except Exception:
-            pass
+        _kill(self.p)
         self.p = None
+
+    def alive(self):
+        return bool(self.p and self.p.poll() is None)
+
+    def status(self):
+        return {"alive": self.alive(), "busy": self.lock.locked(), "pid": self.p.pid if self.p else None,
+                "answered": self.n, "swapping": self.swapping, "recent": list(self.events)[-12:]}
 
     def warm(self):
         with self.lock:
-            if not (self.p and self.p.poll() is None):
+            if not self.alive():
                 try:
                     self._start()
                 except Exception:
                     self.stop()
 
-    def describe(self, path, place="", city="", country="", section=""):
+    def _replace_later(self):
+        """the next session is built while this one keeps answering, then swapped in"""
+        if self.swapping:
+            return
+        self.swapping = True
+
+        def run():
+            try:
+                new = self._spawn()
+                with self.lock:
+                    old, self.p, self.n, self.last = self.p, new, 0, time.time()
+                _kill(old)
+            except Exception:
+                pass
+            finally:
+                self.swapping = False
+        threading.Thread(target=run, daemon=True, name="alt-swap").start()
+
+    def describe(self, path, place="", city="", country="", section="", small=None):
         key = _key(path) + "|" + "|".join([place, city, country, section])
         if key in self.cache:
             return self.cache[key]
-        img = _small_jpeg(path)
+        img = _small_jpeg(small if small and os.path.exists(small) else path)
         ctx = "\n".join(f"{k}: {v}" for k, v in (("PLACE", place), ("CITY", city), ("COUNTRY", country),
                                                   ("ARTICLE SECTION", section)) if v)
         text = "Alt text for this photo." + ("\n" + ctx if ctx else "\nNo place is known: describe it without naming any place.")
+        msg = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": img}},
+               {"type": "text", "text": text}]
         with self.lock:
-            if self.p and (self.n >= self.MAX or time.time() - self.last > self.IDLE):
-                self.stop()
-            if not (self.p and self.p.poll() is None):
-                self._start()
-            try:
-                alt = self._ask([{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": img}},
-                                 {"type": "text", "text": text}], 90)
-                if len(clean(alt)) > 125:                      # one retry for length, same photo in context
-                    alt = self._ask("That is %d characters. Shorten it to under 125, keeping the place and country. Reply with only the alt text." % len(clean(alt)), 60)
-            except Exception:
-                self.stop(); raise
+            for attempt in (1, 2):                        # a session that died quietly gets one fresh retry
+                if not self.alive():
+                    self._start()
+                try:
+                    alt = self._ask(msg, 90)
+                    if len(clean(alt)) > 125:              # one retry for length, same photo in context
+                        alt = self._ask("That is %d characters. Shorten it to under 125, keeping the place and country. Reply with only the alt text." % len(clean(alt)), 60)
+                    break
+                except Exception:
+                    self.stop()
+                    if attempt == 2:
+                        raise
             self.n += 1; self.last = time.time()
+            if self.n >= self.MAX:
+                self._replace_later()
         alt = clean(alt)
         self.cache[key] = alt
         try:
@@ -159,6 +216,14 @@ class AltWriter:
         except OSError:
             pass
         return alt
+
+
+def _kill(p):
+    try:
+        if p:
+            p.stdin.close(); p.terminate()
+    except Exception:
+        pass
 
 
 def clean(alt):
