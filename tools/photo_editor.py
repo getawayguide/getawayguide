@@ -1564,6 +1564,8 @@ if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
     threading.Thread(target=_task_watch, daemon=True, name="task-watch").start()
     if not _env_key("ANTHROPIC_API_KEY"):
         threading.Thread(target=_worker.warm, daemon=True, name="claude-warm").start()   # boot the worker with the editor
+        # and the alt-text writer, so the first photo is quick (after a pause: _alt is defined further down this file)
+        threading.Thread(target=lambda: (time.sleep(8), _alt().warm()), daemon=True, name="alt-warm").start()
 
 
 # Live Activity polls this every 2 s while the panel is open, and the scan below walks
@@ -1823,7 +1825,7 @@ def _compute_backup_status():
         # in one folder. Each round is a different cut - Apple drops what it can
         # no longer serve - and the filename is a content hash, so the stem is
         # the photo. This is the number that lines up with the iPhone.
-        stems = set()
+        stems, vstems = set(), set()
         if shared.is_dir():
             for sd in shared.iterdir():
                 if not sd.is_dir() or _base(sd.name) != n:
@@ -1832,7 +1834,12 @@ def _compute_backup_status():
                     if (p.is_file() and p.suffix.lower() in IMG_EXTS
                             and not is_stray_thumb(p.name)):
                         stems.add(_re.sub(r"_\d+$", "", p.stem))
+                    elif p.is_file() and p.suffix.lower() in {".mp4", ".mov", ".m4v"}:
+                        vstems.add(_re.sub(r"_\d+$", "", p.stem))
         a["inAlbum"] = len(stems)
+        # photos + videos, for the card's count before the watcher has verified
+        # the album (verify's albumItems is the exact figure once it has)
+        a["inAlbumItems"] = len(stems) + len(vstems)
         out.append(a)
     exp = load_json(EXPECTED, {})
     arch = load_json(ARCHIVED, {})
@@ -2366,6 +2373,36 @@ def warm_library(album, paths):
     missing = [p for p in paths if not bthumb_path(p, 400).exists()]
     if missing:
         _lib_warm_pool.submit(_warm_library_album, album, missing)
+
+
+_alt_writer = None
+
+
+def _alt():
+    global _alt_writer
+    if _alt_writer is None:
+        import alt_writer
+        _alt_writer = alt_writer.AltWriter()
+    return _alt_writer
+
+
+@app.route("/api/alt_text", methods=["POST", "OPTIONS"])
+def api_alt_text():
+    """Alt text for the photo being added (tools/alt_writer.py: Claude looks at it). The editor
+    fills the alt field with it unless you have started typing (2026-09-28)."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    b = request.get_json(silent=True) or {}
+    try:
+        p = source_path(str(b.get("root", "")), b.get("path", ""))
+        p.stat()
+    except Exception:
+        return jsonify(ok=False, error="no such photo"), 404
+    try:
+        alt = _alt().describe(str(p), b.get("place", ""), b.get("city", ""), b.get("country", ""), b.get("section", ""))
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)[:200]), 502
+    return jsonify(ok=True, alt=alt)
 
 
 _preview_warm_pool = ThreadPoolExecutor(max_workers=1)   # one: background work, never in your way

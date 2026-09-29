@@ -1642,6 +1642,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         <div id="crop-resnote" style="display:none;color:#8fbfa4"></div>
         <div class="lbl">Alt text</div>
         <input id="crop-alt" type="text" placeholder="Describe the image">
+        <div id="crop-alt-hint" style="display:none;opacity:.6;font-size:.72rem;margin-top:.25rem"></div>
         <div class="lbl">File into Images/&lt;Country&gt;/&lt;City&gt;/</div>
         <input id="crop-country" type="text" placeholder="Country" style="margin-bottom:.4rem">
         <input id="crop-city" type="text" placeholder="City (optional)">
@@ -8271,7 +8272,11 @@ void main(){
     const stem = photo.name.replace(/\.[^.]+$/, '');
     const altEl = $('#crop-alt');
     const where = [city, ctx.country].filter(Boolean).join(', ');
-    if (where && altEl.value.trim() === stem) {
+    // the best text we have so far for this photo; loadPendingStage (whose image load can finish
+    // AFTER this) reads it instead of writing the file name over it
+    window.__altSeed = { path: photo.path, stem, where, alt: null };
+    const untouched = v => !v || v === stem || v === where;
+    if (where && untouched(altEl.value.trim())) {
       altEl.value = where;
       setTimeout(() => {
         if (altEl.value !== where) return;          // they already started typing
@@ -8279,6 +8284,32 @@ void main(){
         altEl.setSelectionRange(altEl.value.length, altEl.value.length);
       }, 90);
     }
+
+    // Then Claude looks at the photo and writes the alt text (tools/alt_writer.py, 2026-09-28:
+    // "I don't like writing Alt text"). It replaces the place prefill only if the field still
+    // holds what we put there, so anything typed or kept is never overwritten.
+    const hint = $('#crop-alt-hint');
+    if (untouched(altEl.value.trim())) {
+      const geo = (typeof PK !== 'undefined' && PK.geo && PK.geo.photos && PK.geo.photos[photo.name])
+               || (PL.geo && PL.geo.photos && PL.geo.photos[photo.name]) || {};
+      let section = '';
+      for (let n = drop && drop.el; n && n.id !== 'editor'; n = n.parentElement) {
+        let s = n; while ((s = s.previousElementSibling)) { if (/^H[23]$/.test(s.tagName)) { section = s.textContent.trim(); break; } }
+        if (section || (n.parentElement && n.parentElement.id === 'editor')) break;
+      }
+      hint.textContent = 'Writing alt text from the photo…'; hint.style.display = 'block';
+      fetch(API + '/api/alt_text', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        // the city the PHOTO was taken in when its GPS knows it: the article's city is where it is filed,
+        // not necessarily where it was shot (a Geghard photo is not "Geghard, Gyumri")
+        body: JSON.stringify({ root: photo.root, path: photo.path, place: geo.place || '', city: geo.place ? '' : ((geo.city && geo.city !== 'Other') ? geo.city : city),   // an exact place + country beats a nearest-city guess ("Geghard, Yerevan")
+                               country: ctx.country || '', section }) })
+        .then(r => r.json()).then(d => {
+          if (cropGen !== _cropOpenGen) return;                       // a different photo is open now
+          if (d.ok && d.alt && window.__altSeed && window.__altSeed.path === photo.path) window.__altSeed.alt = d.alt;
+          if (d.ok && d.alt && untouched(altEl.value.trim())) { altEl.value = d.alt; hint.textContent = 'Written by Claude from the photo. Edit it if you like.'; }
+          else hint.style.display = 'none';
+        }).catch(() => { hint.style.display = 'none'; });
+    } else hint.style.display = 'none';
   }
 
   function dropModes(drop) {
@@ -8355,8 +8386,11 @@ void main(){
       resetLockUI(true);
       $('#crop-go').textContent = 'Insert';
       if (!keep) {
-        $('#crop-alt').value = photo.name.replace(/\.[^.]+$/, '');
+        // the best text so far (Claude's alt, else the place), not the file name, when it is known already
+        const seed = window.__altSeed && window.__altSeed.path === photo.path ? window.__altSeed : null;
+        $('#crop-alt').value = seed ? (seed.alt || seed.where || seed.stem) : photo.name.replace(/\.[^.]+$/, '');
         $('#crop-caption').value = '';
+        if (!seed || !seed.alt) { const h = $('#crop-alt-hint'); if (h && !(seed && h.textContent.startsWith('Writing'))) h.style.display = 'none'; }
       }
       // drop-mode chips
       const dm = $('#crop-dropmode');
