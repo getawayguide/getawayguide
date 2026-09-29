@@ -3437,6 +3437,18 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
   /* a lone hand-cropped photo is an inline-styled span with margin:1rem auto; its caption
      needs the same 8px, so pull it 8px into that 16 */
   span[style*="aspect-ratio"] + .img-caption { margin-top:-8px !important; }
+  /* text right under a photo gets the same space the text above it leaves (Kevin, 2026-09-29:
+     "I just want it to visually look even"). Measured at 393px: last line of text to the photos
+     22px, photos to the next line 6px, because the paragraph above brings its own 1.1rem and the
+     photo's .15rem was all there was below. The 1.1rem here collapses with that .15rem and makes
+     it 22 / 22. A photo followed by another photo keeps its tight .15rem. In the itinerary the
+     text sits in its own .measure, whose margin collapses through to a heading's 40px when a
+     heading comes next, so headings keep their gap. */
+  :is(.article-body, .fn-section) :is(.img-pair, .img-landscape) + :is(p, ul, ol),
+  .artbody :is(.pair, .img-pair, .ls, .img-landscape) + :is(p, ul, ol, .measure) { margin-top:1.1rem !important; }
+  /* a list ends on 24px where a paragraph ends on 1.1rem, so a photo under a list sat 28 / 22;
+     over a photo it leaves the paragraph's space too */
+  :is(.article-body, .fn-section, .artbody) :is(ul, ol):has(+ :is(.img-pair, .img-landscape, .pair, .ls)) { margin-bottom:1.1rem !important; }
 }
 /* the same span on desktop: 1rem under the box, and the caption's -1rem would touch it */
 span[style*="aspect-ratio"] + .img-caption { margin-top:-8px; }
