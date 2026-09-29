@@ -632,6 +632,11 @@
        and the library grid now share the height and each scrolls on its own;
        min-height:0 is what lets a flex child shrink below its content. */
     #pk-panel { flex: 1 1 0; min-height: 140px; overflow-y: auto; }
+    /* the album menu and place filter stay put; only the picks scroll (2026-09-28: the whole panel
+       scrolled, so going back to the menu meant scrolling up) */
+    #pk-panel[style*="block"] { display: flex !important; flex-direction: column; overflow: hidden; gap: 6px; }
+    #pk-panel > .fsel, #pk-panel > select:not(.fsel-native) { flex: none; }
+    #pk-panel > #pk-grid { flex: 1 1 0; min-height: 0; overflow-y: auto; align-content: start; grid-auto-rows: 114px; }   /* explicit rows: the tiles' images are absolutely placed, so auto rows collapsed (as #pl-grid did) */
     #pl-grid { min-height: 0; }
     /* Blog Picks is a mode, not a second list: while it is open the library
        (tabs, crumbs, folders, grid) is hidden and the picks take the whole
