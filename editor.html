@@ -6395,6 +6395,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       // relative URL that is meaningless from editor.html — any hiccup left a
       // broken-image icon in the article instead of the photo.)
       const blobUrl = API + '/site/' + r.src.split('/').map(encodeURIComponent).join('/');
+      // inserted before Claude's alt text came back: remember the photo, and the answer is written
+      // onto it when it lands (unless its alt has been changed by then)
+      { const sd = window.__altSeed;
+        if (sd && sd.path === photo.path && !sd.alt && (!alt || alt === sd.where || alt === sd.stem)) sd.late = { dataPath, alt }; }
       History.checkpoint();
       const img = document.createElement('img');
       img.src = blobUrl;
@@ -8289,7 +8293,9 @@ void main(){
     // "I don't like writing Alt text"). It replaces the place prefill only if the field still
     // holds what we put there, so anything typed or kept is never overwritten.
     const hint = $('#crop-alt-hint');
-    if (untouched(altEl.value.trim())) {
+    // always ask: at this moment the field can still hold the PREVIOUS photo's text (its own stage
+    // loads after this), so "did you type in it" is decided when the answer lands, not here
+    {
       const geo = (typeof PK !== 'undefined' && PK.geo && PK.geo.photos && PK.geo.photos[photo.name])
                || (PL.geo && PL.geo.photos && PL.geo.photos[photo.name]) || {};
       let section = '';
@@ -8304,12 +8310,23 @@ void main(){
         body: JSON.stringify({ root: photo.root, path: photo.path, place: geo.place || '', city: geo.place ? '' : ((geo.city && geo.city !== 'Other') ? geo.city : city),   // an exact place + country beats a nearest-city guess ("Geghard, Yerevan")
                                country: ctx.country || '', section }) })
         .then(r => r.json()).then(d => {
+          const sd = window.__altSeed && window.__altSeed.path === photo.path ? window.__altSeed : null;
+          if (d.ok && d.alt && sd) {
+            sd.alt = d.alt;
+            if (sd.late) {                                            // already inserted: fix it in place
+              const im = [...document.querySelectorAll('#editor img')].find(x => x.getAttribute('data-path') === sd.late.dataPath);
+              if (im && (im.getAttribute('alt') || '') === sd.late.alt) {
+                im.setAttribute('alt', d.alt);
+                if (typeof setDirty === 'function') setDirty(true);
+              }
+              sd.late = null;
+            }
+          }
           if (cropGen !== _cropOpenGen) return;                       // a different photo is open now
-          if (d.ok && d.alt && window.__altSeed && window.__altSeed.path === photo.path) window.__altSeed.alt = d.alt;
-          if (d.ok && d.alt && untouched(altEl.value.trim())) { altEl.value = d.alt; hint.textContent = 'Written by Claude from the photo. Edit it if you like.'; }
-          else hint.style.display = 'none';
+          if (d.ok && d.alt && untouched(altEl.value.trim())) altEl.value = d.alt;
+          hint.style.display = 'none';                                // no "written by" note: you rarely edit it
         }).catch(() => { hint.style.display = 'none'; });
-    } else hint.style.display = 'none';
+    }
   }
 
   function dropModes(drop) {
@@ -10418,7 +10435,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
 (function () {
   // album name -> ISO code for Images/web/flags (a trip is named for where it went, not the country)
   const ALIAS = { 'bali': 'id', 'patagonia': 'cl', 'cologne': 'de', 'munich': 'de', 'turkey': 'tr', 'türkiye': 'tr',
-    'amsterdam': 'nl', 'ibiza': 'es', 'normandy': 'fr', 'paris': 'fr', 'french riviera': 'fr' };
+    'amsterdam': 'nl', 'ibiza': 'es', 'normandy': 'fr', 'paris': 'fr', 'french riviera': 'fr', 'copenhagen': 'dk' };
   // albums that get an emoji instead of a flag
   const EMOJI = { 'tomorrowland': '🛸' };
   const ISO = { albania:'al', argentina:'ar', armenia:'am', australia:'au', bosnia:'ba', brazil:'br', colombia:'co', egypt:'eg',
@@ -10433,10 +10450,10 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   const LABEL = { 'Amsterdam _ Utrecht (2023)': 'Amsterdam & Utrecht (2023)',
                   'Normandy + Paris (2023)': 'Normandy & Paris (2023)' };
   window.albumLabel = name => LABEL[name] || name;
-  const albumKey = name => String(window.albumLabel(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+]\s*/)[0].trim();
+  const albumKey = name => String(window.albumLabel(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
   window.albumEmoji = name => EMOJI[albumKey(name)] || '';
   window.albumFlag = function (name) {
-    const k = String(window.albumLabel(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+]\s*/)[0].trim();
+    const k = String(window.albumLabel(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
     const code = ALIAS[k] || ISO[k];
     return code ? 'http://127.0.0.1:5003/site/Images/web/flags/' + code + '.png' : '';
   };
