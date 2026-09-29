@@ -30,18 +30,18 @@
   },
   "pois": [
     {
-      "name": "Vardanants Square",
-      "lat": 40.785183,
-      "lon": 43.8416164,
-      "cat": "see",
-      "match": "vardanants"
-    },
-    {
       "name": "St. All Saviors Church",
       "lat": 40.784088,
       "lon": 43.8412203,
       "cat": "see",
       "match": "all saviors"
+    },
+    {
+      "name": "Vardanants Square",
+      "lat": 40.785183,
+      "lon": 43.8416164,
+      "cat": "see",
+      "match": "vardanants"
     },
     {
       "name": "Abovyan Street",
