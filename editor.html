@@ -787,6 +787,9 @@
     .pl-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
     .pl-ph .b { position: absolute; top: 3px; left: 3px; background: rgba(28,40,33,.75); color: #fff;
       font-size: 9px; padding: 0 4px; border-radius: 3px; font-family: 'Hanken Grotesk', sans-serif; }
+    .pl-ph .pl-pick { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; border-radius: 50%;
+      background: #2D6B50; color: #fff; font-size: 10px; line-height: 17px; text-align: center; pointer-events: none;
+      box-shadow: 0 0 0 1.5px rgba(255,255,255,.9); }
     .pl-ph:hover::after { content: attr(data-name); position: absolute; bottom: 0; left: 0; right: 0;
       background: rgba(28,40,33,.85); color: #fff; font-size: 9px; padding: 1px 4px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2766,6 +2769,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const w = r => 1 + r.subs.length, tot = rows.reduce((a, r) => a + w(r), 0);
     let acc = 0, k = 0;
     while (k < rows.length && acc < tot / 2) { acc += w(rows[k]); k++; }
+    // one step back when that is more even (a long sub-list then opens the right column)
+    if (k > 1 && Math.abs(2 * (acc - w(rows[k - 1])) - tot) < Math.abs(2 * acc - tot)) k--;
     return [rows.slice(0, k), rows.slice(k)];
   }
   function buildToc() {
@@ -6063,6 +6068,28 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     });
   }, { root: document.getElementById('pl-grid'), rootMargin: '200px' });
 
+  // blog-pick badges on the tiles (2026-09-28): the library's green star, one fetch per album
+  const SBP = { album: null, set: new Set() };
+  async function plPaintPicks(refetch) {
+    const album = PL.path && !PL.path.includes('/') ? PL.path : null;
+    if (!album) return;
+    if (refetch || SBP.album !== album) {
+      try {
+        const d = await (await fetch(API + '/api/picks?album=' + encodeURIComponent(album), { cache: 'no-store' })).json();
+        SBP.album = album; SBP.set = new Set((d.picks || []).map(p => p.n));
+      } catch (e) { return; }
+    }
+    if (PL.path !== album) return;
+    document.querySelectorAll('#pl-grid .pl-ph').forEach(div => {
+      const on = SBP.set.has(div.dataset.name);
+      div.classList.toggle('picked', on);
+      let st = div.querySelector('.pl-pick');
+      if (on && !st) { st = document.createElement('span'); st.className = 'pl-pick'; st.textContent = '★'; div.appendChild(st); }
+      if (!on && st) st.remove();
+    });
+  }
+  window.__plPaintPicks = plPaintPicks;
+
   function plRenderMore() {
     const g = $('#pl-grid');
     const CHUNK = 300;
@@ -6108,6 +6135,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       plObserver.observe(div);
     });
     PL.rendered += slice.length;
+    plPaintPicks(PL.rendered === slice.length);      // the album's first chunk re-reads its picks
     // have the server prepare these photos' large viewer images in the background (2026-09-28)
     if (PL.path && !PL.path.includes('/') && slice.length)
       fetch(API + '/api/warm_previews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -9749,6 +9777,7 @@ async function pollPicksVersion() {
       if ($('#picks').classList.contains('open')) renderPicks();
       const pk = document.getElementById('pk-panel');
       if (pk && pk.style.display === 'block' && typeof pkLoad === 'function') pkLoad();
+      if (window.__plPaintPicks) window.__plPaintPicks(true);
       if (!document.getElementById('app-library').hidden && CUR) loadPhotos();
     }
     _picksV = d.v;
@@ -10399,6 +10428,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     let ok = false;
     try { ok = (await fetch(`${API}/api/pick`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ album: an[0], name: an[1], picked: on }) })).ok; } catch (e) {}
     if (!ok) { PICKED[key] = !on; paintPick(); alert("Couldn't save the pick: the photo server didn't answer."); }
+    else if (window.__plPaintPicks) window.__plPaintPicks(true);
   };
   function open(t) { loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
   function close() { box.hidden = true; img.removeAttribute('src'); PICKED = null; if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {} }   // picks may have changed
