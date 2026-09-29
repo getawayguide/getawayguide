@@ -44,6 +44,13 @@
       "match": "vardanants"
     },
     {
+      "name": "Holy Mother Cathedral",
+      "lat": 40.7861976,
+      "lon": 43.8423039,
+      "cat": "see",
+      "match": "holy mother"
+    },
+    {
       "name": "Abovyan Street",
       "lat": 40.7869323,
       "lon": 43.8411318,
@@ -58,20 +65,6 @@
       "match": "rijkov"
     },
     {
-      "name": "Gyumri Market",
-      "lat": 40.7817844,
-      "lon": 43.8433239,
-      "cat": "see",
-      "match": "gyumri market"
-    },
-    {
-      "name": "Holy Mother Cathedral",
-      "lat": 40.7861976,
-      "lon": 43.8423039,
-      "cat": "see",
-      "match": "holy mother"
-    },
-    {
       "name": "Mother Armenia of Gyumri",
       "lat": 40.7805008,
       "lon": 43.8247741,
@@ -84,6 +77,13 @@
       "lon": 43.8253236,
       "cat": "see",
       "match": "circular fortress"
+    },
+    {
+      "name": "Gyumri Market",
+      "lat": 40.7817844,
+      "lon": 43.8433239,
+      "cat": "see",
+      "match": "gyumri market"
     },
     {
       "name": "Central Park",
