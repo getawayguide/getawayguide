@@ -2826,6 +2826,100 @@ def api_articles():
 _articles_cache = {"at": 0, "rows": []}
 
 
+def find_card(h, name):
+    """(start, end, tag) of the country-article-card element linking to `name`, any attribute order"""
+    for m in re.finditer(r'<(?:div|a)\b[^>]*\bclass="country-article-card(?:\s[^"]*)?"[^>]*>', h):
+        t = m.group(0)
+        if ("location.href='%s'" % name) in t or ('href="%s"' % name) in t:
+            return m.start(), m.end(), t
+    return None
+
+
+@app.route("/api/thumbs")
+def api_thumbs():
+    """The open article's thumbnails as they are today, one per slot, for the photo sidebar's
+    Thumbnails panel (Kevin, 2026-09-30: "a preview of every thumbnail type with a heading").
+    Slots follow the site audit: the country page card (2:3 on anything wider than 768px, a 16:9
+    strip on a phone), the home and posts card (4:3, 16:9 on a phone; published articles only)
+    and the 1200x630 share image."""
+    import posixpath
+    rel = (request.args.get("rel") or "").replace("\\", "/")
+    page = (ROOT / rel).resolve()
+    if ROOT.resolve() not in page.parents or page.suffix != ".html" or not page.is_file():
+        return jsonify({"ok": False, "error": "no such article"}), 404
+    base = posixpath.dirname(rel)
+
+    def norm(url, at):
+        u = url.replace("&amp;", "&")
+        if u.startswith("http"):
+            u = re.sub(r"^https?://[^/]+/", "", u)
+        else:
+            u = posixpath.normpath(posixpath.join(at, u))
+        return u if (ROOT / u).is_file() else None
+
+    def parse_style(style, at):
+        # prefer the JPEG of an image-set (the 1x/2x webp pair in older cards resolves too)
+        url = (re.search(r"url\(\s*'([^']+\.(?:jpg|jpeg|png))'\s*\)", style)
+               or re.search(r"url\(\s*'([^']+\.webp)'\s*\)", style))
+        pos = re.search(r"url\([^)]*\)\s+(-?[\d.]+%\s+-?[\d.]+%)", style) or re.search(r"background-position:\s*([^;]+)", style)
+        pm = re.search(r"--pm:\s*([^;]+)", style)
+        return (norm(url.group(1), at) if url else None, pos.group(1).strip() if pos else "50% 50%",
+                pm.group(1).strip() if pm else None)
+
+    slots = []
+    idx = ROOT / base / "index.html"
+    card = phone = None
+    if idx.is_file():
+        h = idx.read_text(encoding="utf-8", errors="replace")
+        found = find_card(h, page.name)
+        if found:
+            tag = found[2]
+            st = re.search(r'\bstyle="([^"]*)"', tag)
+            img, pos, pm = parse_style(st.group(1) if st else "", base)
+            if not img:                                  # the photo is a class in styles.css (El Salvador)
+                cls = re.findall(r"img-[a-z0-9-]+", re.search(r'class="([^"]*)"', tag).group(1))
+                css = (ROOT / "styles.css").read_text(encoding="utf-8", errors="replace")
+                rule = re.search(r"\.%s\{([^}]*)\}" % re.escape(cls[0]), css) if cls else None
+                if rule:
+                    img, pos2, pm2 = parse_style(rule.group(1), "")
+                    pos, pm = (pos if st and "background-position" in st.group(1) else pos2), (pm or pm2)
+            card = {"img": img, "pos": pos}
+            phone = {"img": img, "pos": pm or pos, "note": "" if pm else "same crop as the country card: none set for phones yet"}
+    slots.append(dict(key="card", label="Country page card", where="the country page, on a monitor or tablet", ratio="2 / 3",
+                      **(card or {"img": None, "pos": "50% 50%", "note": "this article has no card on its country page"})))
+    live = rel.replace("Drafts/.Full Articles/", "")
+    lst = None
+    for name in ("index.html", "posts.html"):
+        f = ROOT / name
+        if not f.is_file():
+            continue
+        h = f.read_text(encoding="utf-8", errors="replace")
+        m = re.search(r'<a href="%s"[^>]*>\s*<div class="card-img bg([^"]*)"(?: style="([^"]*)")?' % re.escape(live), h)
+        if not m:
+            continue
+        if m.group(2):
+            img, pos, pm = parse_style(m.group(2), "")
+        else:                                       # a class in styles.css (the El Salvador guides)
+            cls = re.findall(r"img-[a-z0-9-]+", m.group(1))
+            css = (ROOT / "styles.css").read_text(encoding="utf-8", errors="replace")
+            rule = re.search(r"\.%s\{([^}]*)\}" % re.escape(cls[0]), css) if cls else None
+            img, pos, pm = parse_style(rule.group(1), "") if rule else (None, "50% 50%", None)
+        lst = {"img": img, "pos": pos, "note": "on " + ("the home page" if name == "index.html" else "posts.html")}
+        break
+    slots.append(dict(key="list", label="Home & posts card", where="Recent Dispatches and the posts list", ratio="4 / 3",
+                      **(lst or {"img": (card or {}).get("img"), "pos": "50% 50%",
+                                 "note": "not on the home page yet (drafts aren't): shown with the card photo"})))
+    slots.append(dict(key="phone", label="Phone card", where="both cards on a phone", ratio="16 / 9",
+                      **(phone or {"img": None, "pos": "50% 50%", "note": ""})))
+    og = None
+    m = re.search(r'<meta property="og:image" content="([^"]+)"', page.read_text(encoding="utf-8", errors="replace"))
+    if m:
+        og = norm(m.group(1), base)
+    slots.append(dict(key="og", label="Share image", where="link previews in messages and social posts", ratio="1200 / 630",
+                      img=og, pos="50% 50%", note="" if og else "no share image yet"))
+    return jsonify({"ok": True, "rel": rel, "slots": slots})
+
+
 def _compress_status():
     with _cq_lock:
         q = _cq_load()

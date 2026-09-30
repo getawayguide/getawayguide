@@ -545,6 +545,15 @@ def save():
 
 THUMB_PICKS = SITE / ".tmp" / "thumb_picks.json"
 
+def find_card(h, name):
+    """(start, end, tag) of the country-article-card element linking to `name`, any attribute order"""
+    for m in re.finditer(r'<(?:div|a)\b[^>]*\bclass="country-article-card(?:\s[^"]*)?"[^>]*>', h):
+        t = m.group(0)
+        if ("location.href='%s'" % name) in t or ('href="%s"' % name) in t:
+            return m.start(), m.end(), t
+    return None
+
+
 
 def _country_card(index_path, file_name, up, slug, country, pos):
     """Point the country page's card for `file_name` at card-<slug> with a position per slot.
@@ -553,13 +562,18 @@ def _country_card(index_path, file_name, up, slug, country, pos):
     if not index_path.is_file():
         return False
     h = index_path.read_text(encoding="utf-8")
-    m = re.search(r'(<div class="country-article-card" onclick="location\.href=\'%s\'" style=")([^"]*)(")' % re.escape(file_name), h)
-    if not m:
+    found = find_card(h, file_name)
+    if not found:
         return False
+    s0, e0, tag = found
     web = "%sImages/web/%s/card-%s" % (up, country, slug)
     style = ("background:url('{w}.jpg') {d}/cover no-repeat;background-image:image-set(url('{w}.webp') type('image/webp'), "
              "url('{w}.jpg') type('image/jpeg'));--pm:{p};cursor:pointer").format(w=web, d=pos.get("card", "50% 50%"), p=pos.get("phone", "50% 50%"))
-    h = h[:m.start(2)] + style + h[m.end(2):]
+    if tag.startswith("<a"):                     # a link card keeps its own display rules
+        style = "display:block;text-decoration:none;" + style
+    new = re.sub(r'\sstyle="[^"]*"', "", tag)
+    new = new[:-1].rstrip("/").rstrip() + ' style="%s">' % style
+    h = h[:s0] + new + h[e0:]
     index_path.write_text(h, encoding="utf-8")
     return True
 
@@ -1641,6 +1655,13 @@ async function restoreThumb() {
   if (!tp || !tp.path) return;
   showPhoto(tp.path, ok => { if (!ok) return; Object.assign(crops, tp.crops || {}); setAngle(+tp.angle || 0); applyCrop(); });
 }
+// the editor's Thumbnails panel: Edit opens this article's thumbnail editor on one slot (2026-09-30)
+window.addEventListener('message', ev => {
+  if (!ev.data || ev.data.type !== 'thumb-edit') return;
+  if ($('shape').value !== 'thumb') { $('shape').value = 'thumb'; applyShape(); }
+  const i = BP.findIndex(b => b.key === ev.data.slot);
+  if (i >= 0 && i !== bpi) { bpi = i; $('vw').value = String(i); applyShape(); }
+});
 $('same-hero').onclick = () => {
   const hp = ARTICLE && PICKS[ARTICLE.rel];
   if (!hp || !hp.path) return toast('This article\'s hero was not saved from the Hero Picker, so pick its photo from the strip');
