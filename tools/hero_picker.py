@@ -791,25 +791,50 @@ def _photo_row(path, angle):
 
 
 def _slide(small, ref0):
-    """(difference, pct, axis) of the best full-height or full-width placement of ref0 in small"""
+    """(difference, pct, axis) of the best full-height or full-width placement of ref0 in small.
+    Coarse at 64 px, then the three best local minima re-measured at up to 512 px: a symmetric
+    subject has twin minima a coarse pass cannot tell apart (Yerevan's card read 40%; it is 50%).
+    The difference is the coarse one, which the match thresholds were tuned on."""
     from PIL import ImageChops
     ar = ref0.width / ref0.height
     w, h = small.size
-    if w / h > ar:
-        th = 64; im = small.resize((max(1, round(w * th / h)), th), Image.BILINEAR)
-        ref = ref0.resize((max(1, round(th * ar)), th), Image.BILINEAR); span = im.width - ref.width; axis = "x"
-    else:
-        tw = 64; im = small.resize((tw, max(1, round(h * tw / w))), Image.BILINEAR)
-        ref = ref0.resize((tw, max(1, round(tw / ar))), Image.BILINEAR); span = im.height - ref.height; axis = "y"
-    if span < 0:
+    axis = "x" if w / h > ar else "y"
+
+    def scan(n, offs=None):
+        if axis == "x":
+            im = small.resize((max(1, round(w * n / h)), n), Image.BILINEAR)
+            ref = ref0.resize((max(1, round(n * ar)), n), Image.BILINEAR); span = im.width - ref.width
+        else:
+            im = small.resize((n, max(1, round(h * n / w))), Image.BILINEAR)
+            ref = ref0.resize((n, max(1, round(n / ar))), Image.BILINEAR); span = im.height - ref.height
+        if span < 0:
+            return None, []
+        out = []
+        for off in (range(span + 1) if offs is None else sorted({min(span, max(0, o)) for o in offs})):
+            box = (off, 0, off + ref.width, ref.height) if axis == "x" else (0, off, ref.width, off + ref.height)
+            out.append((ImageStat.Stat(ImageChops.difference(im.crop(box), ref)).mean[0], off))
+        return span, out
+
+    span, coarse = scan(64)
+    if span is None:
         return None
-    best = None
-    for off in range(span + 1):
-        box = (off, 0, off + ref.width, ref.height) if axis == "x" else (0, off, ref.width, off + ref.height)
-        d = ImageStat.Stat(ImageChops.difference(im.crop(box), ref)).mean[0]
-        if best is None or d < best[0]:
-            best = (d, off)
-    return best[0], (50.0 if span == 0 else round(best[1] / span * 100, 1)), axis
+    best = min(coarse)
+    if span == 0:
+        return best[0], 50.0, axis
+    d = {o: v for v, o in coarse}
+    minima = sorted((v, o) for o, v in d.items() if v <= d.get(o - 1, 1e9) and v <= d.get(o + 1, 1e9))[:3]
+    n2 = min(512, h if axis == "x" else w)
+    span2, _ = scan(n2, [0])
+    if not span2 or span2 <= span:
+        return best[0], round(best[1] / span * 100, 1), axis
+    k = span2 / span
+    offs = []
+    for v, o in minima:
+        c = round(o * k)
+        offs += list(range(c - int(k) - 2, c + int(k) + 3))
+    _, fine = scan(n2, offs)
+    f = min(fine)
+    return best[0], round(f[1] / span2 * 100, 1), axis
 
 
 def _album_photos(rel):
