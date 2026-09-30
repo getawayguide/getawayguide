@@ -55,8 +55,7 @@
       <div id="rv-banner" style="display:none"></div>
       <div class="rv-tools">
         <button id="rv-new" class="rv-btn primary" title="Comment on the selected text (Ctrl+Alt+M)">+ Comment</button>
-        <button id="rv-final" class="rv-btn" aria-pressed="false" hidden title="Clean: the page as it reads with the decisions so far (press again for the markup)">Clean</button>
-        <span class="rv-switch" role="group" aria-label="How the cards are shown"><button id="rv-v-ctx" aria-pressed="true" title="Cards beside the text they belong to">Inline</button><button id="rv-v-list" aria-pressed="false" title="Every card as a list, unplaced ones too">List</button></span>
+        <span class="rv-switch" role="group" aria-label="How the cards are shown"><button id="rv-v-ctx" aria-pressed="true" title="Cards beside the text they belong to">Inline</button><button id="rv-v-list" aria-pressed="false" title="Every card as a list, unplaced ones too">List</button><button id="rv-v-clean" aria-pressed="false" title="Read the article as if every pending change were accepted: no strikethroughs, numbers or highlights (the cards stay in a list, so you can still decide)">Clean</button></span>
         <button id="rv-resolved" class="rv-btn" aria-pressed="false" title="Show resolved comment threads in the list" style="display:none">Resolved <span id="rv-n-res">0</span></button>
         <button id="rv-lint" class="rv-btn" title="Every prose check on this article: typos, spacing, British spellings, em dashes, leftover notes, repeats, words you don't use">Prose</button>
         <button id="rv-maps" class="rv-btn" title="Turn Google Maps search links into real place pins" style="display:none">Resolve maps <span id="rv-n-maps">0</span></button>
@@ -79,7 +78,6 @@
     $('rv-f-all').onclick = () => setFilter('all');
     $('rv-f-changes').onclick = () => setFilter('changes');
     $('rv-f-comments').onclick = () => setFilter('comments');
-    $('rv-final').onclick = () => setMarkup(ed().classList.contains('rl-final'));      // toggles: Clean <-> markup
     if ($('rv-prev')) $('rv-prev').onclick = () => step(-1);
     if ($('rv-next')) $('rv-next').onclick = () => step(1);
     $('rv-more').onclick = e => { e.stopPropagation(); $('rv-more').parentElement.classList.toggle('open'); };
@@ -91,6 +89,7 @@
     $('rv-new').onclick = () => newComment();
     $('rv-v-list').onclick = () => setView('list');
     $('rv-v-ctx').onclick = () => setView('contextual');
+    $('rv-v-clean').onclick = () => setView('clean');
     $('rv-resolved').onclick = () => { state.showResolved = !state.showResolved; $('rv-resolved').setAttribute('aria-pressed', state.showResolved); renderAll(); };
     // the margin follows the document: re-place the cards whenever anything moves
     const scroller = document.querySelector('.editor-scroll');
@@ -124,9 +123,23 @@
     renderAll();
   }
   const press = (id, on) => { const b = $(id); if (b) b.setAttribute('aria-pressed', !!on); };
-  function setView(v) { state.view = v; press('rv-v-ctx', v === 'contextual'); press('rv-v-list', v === 'list'); renderAll(); }
-  function setMarkup(all) { ed().classList.toggle('rl-final', !all); press('rv-markup', all); press('rv-final', !all); renderAll(); }
-  function toast(msg, ms) { const t = $('rv-toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms || 3500); }
+  // Clean (Kevin, 2026-09-29: "read the clean version of a markup, as if the changes were implemented"): the
+  // article shows every pending change as accepted and drops the strikethroughs, numbers and comment
+  // highlights; the cards stay, as a list, so a decision can still be made from there. Nothing is applied.
+  function setView(v) {
+    state.clean = v === 'clean'; state.view = state.clean ? 'list' : v;
+    ed().classList.toggle('rl-final', state.clean);
+    press('rv-v-ctx', v === 'contextual'); press('rv-v-list', v === 'list'); press('rv-v-clean', state.clean);
+    renderAll();
+  }
+  function toast(msg, ms, onClick) {
+    const t = $('rv-toast'); t.textContent = msg; t.style.display = 'block';
+    t.style.cursor = onClick ? 'pointer' : ''; t.onclick = onClick ? () => { t.style.display = 'none'; onClick(); } : null;
+    clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms || 3500);
+  }
+  // Kevin, 2026-09-29: the "comments waiting" notice should take him to the article. The click is the
+  // user gesture the File System Access API needs, so the Articles panel's own open can run from it.
+  function openWaiting() { if (state.rel && window.__apOpen) window.__apOpen(state.rel); }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
   function plain(h) { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent; }
   function dirty() { ed().dispatchEvent(new Event('input', { bubbles: true })); if (window.setDirty) try { window.setDirty(true); } catch (e) {} }
@@ -868,7 +881,9 @@
     if (state.awaitingFile) {
       const file = (state.rel || '').split('/').pop(), n = (state.previewChanges || []).length;
       const p = document.createElement('div'); p.className = 'rv-card rv-cm other wait';
-      p.innerHTML = `<div class="who"><span class="av">!</span><b>Waiting for the article</b></div><div class="tx">These comments${n ? ` and ${n} proposed changes` : ''} belong to <b>${esc(file)}</b>. Click <b>Open Article</b> and pick that file to see them beside the text and accept or reject in place.</div>`;
+      p.innerHTML = `<div class="who"><span class="av">!</span><b>Waiting for the article</b></div><div class="tx">These comments${n ? ` and ${n} proposed changes` : ''} belong to <b>${esc(file)}</b>.</div><button type="button" class="rv-btn primary rv-open">Open ${esc(file)}</button>`;
+      p.style.cursor = 'pointer'; p.title = 'Open ' + file;
+      p.onclick = openWaiting;
       host.appendChild(p);
     }
     const its = items(); let lost = 0;
@@ -1075,7 +1090,8 @@
     state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
     state.previewChanges = r.changes || [];
     toggle(true); setFilter('all'); setView('list');
-    toast(`${(r.comments.threads || []).filter(t => !t.resolved).length} comments and ${(r.changes || []).length} changes waiting. Open the article to review them in place.`, 7000);
+    const file = rel.split('/').pop(), nc = (r.comments.threads || []).filter(t => !t.resolved).length, nch = (r.changes || []).length;
+    toast(`${nc} comment${nc === 1 ? '' : 's'}${nch ? ` and ${nch} change${nch === 1 ? '' : 's'}` : ''} waiting in ${file}. Click to open it.`, 15000, openWaiting);
   }
   // a query parameter, not the hash: the editor's own view router owns location.hash, and an
   // unknown hash value there left the workspace unbuilt, so the pane had nowhere to go
@@ -1324,6 +1340,7 @@ body.review-open #review-pane{display:flex}
 .rv-cm .reply{display:flex;gap:.3rem;align-items:flex-end;margin-top:.4rem}.rv-cm .reply textarea{min-height:32px;margin:0;flex:1}
 .rv-cm .reply button{padding:.4rem .5rem;font-size:.8rem;color:#2D6B50}
 .rv-cm .res{font:400 .74rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#2D6B50;margin-top:.45rem}
+#review-pane .rv-open{margin-top:.5rem}
 #rv-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10001;background:#1C2821;color:#fff;padding:.6rem 1rem;border-radius:4px;font:13px/1.4 'Hanken Grotesk',sans-serif;max-width:640px;display:none}
 /* connector lines from card to text */
 #rv-lines{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;display:none}
@@ -1348,6 +1365,10 @@ body.review-open #rv-lines{display:block}
 #editor :is(p,li,div.copy):has(del.rl,ins.rl){box-shadow:-2px 0 0 0 #C9C3B4;padding-left:.5rem}
 #editor.rl-final del.rl,#editor.rl-final sup.rl-n{display:none}#editor.rl-final ins.rl{color:inherit!important;text-decoration:none!important;background:none}
 #editor.rl-final :is(p,li,div.copy):has(del.rl,ins.rl){box-shadow:none;padding-left:0}
+#editor.rl-final ins.blk{box-shadow:none;padding-left:0}#editor.rl-final ins.blk *{color:inherit!important;text-decoration:none}
+#editor.rl-final ins.rl.struct::before{display:none}
+#editor.rl-final mark.cm,#editor.rl-final mark.lint{background:none!important;border-bottom:0!important;cursor:text}
+#editor.rl-final .rl-hit del.rl,#editor.rl-final .rl-hit ins.rl,#editor.rl-final ins.rl-hover{background:none}
 /* hover preview of a tick or cross: the text as it would read after that decision */
 #editor del.rl-pv-yes,#editor sup.rl-pv-yes,#editor sup.rl-pv-no,#editor ins.rl-pv-no{display:none}
 #editor ins.rl-pv-yes,#editor del.rl-pv-no{color:inherit!important;text-decoration:none!important;background:#E3F0E8!important}
