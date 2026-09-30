@@ -694,7 +694,7 @@ def get_stars():
 PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hero picker</title>
+<title>Covers</title>
 <link rel="stylesheet" href="/fonts.css">
 <script>
   // ?embed=1: running as the Hero Picker view inside editor.html, which draws
@@ -981,7 +981,7 @@ PAGE = r"""<!doctype html>
 </style></head>
 <body>
 <header>
-  <span class="logo">hero picker</span>
+  <span class="logo">covers</span>
   <select id="album"></select>
   <select id="filter">
     <option value="all">Every photo</option>
@@ -1677,7 +1677,7 @@ async function saveThumb() {
                  positions: positions, crops: rounded };
   let r;
   try { r = await (await fetch('/save_thumb', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); }
-  catch (e) { return toast('The hero picker server did not answer'); }
+  catch (e) { return toast('The Covers server did not answer'); }
   if (!r.ok) return toast('Thumbnail not saved: ' + (r.error || ''));
   toast('Thumbnail saved: ' + r.card.split('/').pop() + (r.pages.length ? ', ' + r.pages.map(p => p.split('/').slice(-2).join('/')).join(', ') : '') + (r.og ? ' and the share image' : ''));
   if (window.parent !== window) parent.postMessage({ type: 'thumb-saved', card: r.card, pages: r.pages, og: r.og }, '*');

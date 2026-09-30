@@ -50,7 +50,7 @@ DETACHED = 0x00000008 | 0x00000200          # DETACHED_PROCESS | CREATE_NEW_PROC
 SERVICES = {
     "server":  {"label": "photo server",   "port": 5003,
                 "args": ["-u", "tools/photo_editor.py"],            "log": "editor"},
-    "heroes":  {"label": "hero picker",    "port": 5004,
+    "heroes":  {"label": "covers",         "port": 5004,
                 "args": ["-u", "tools/hero_picker.py"],             "log": "heroes"},
     # the map label editor used to be launched by hand and killed after; it is part of the
     # suite now because the article editor's Edit button on a map opens it in place

@@ -1930,9 +1930,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     <span id="heroes-file" role="button" tabindex="0" title="The article this hero is for. Click to open another."></span>
     <span class="spacer"></span>
   </header>
-  <iframe id="heroes-frame" title="Hero picker" allow="clipboard-write"></iframe>
+  <iframe id="heroes-frame" title="Covers" allow="clipboard-write"></iframe>
   <div id="heroes-offline" hidden>
-    <b>The hero picker isn't running.</b><br>
+    <b>Covers isn't running.</b><br>
     Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
     <br><button type="button" id="heroes-retry">Try again</button>
   </div>
@@ -2704,7 +2704,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       `<h1 contenteditable="plaintext-only" spellcheck="true" data-mh="title">${esc(T(h1))}</h1>` +
       (lead ? `<p class="mh-lead" contenteditable="true" spellcheck="true" data-mh="lead">${leadHTML(lead)}</p>` : '') +
       (date ? `<div class="mh-date">${esc(T(date))}</div>` : '') + `</div>` +
-      (img ? `<button class="mh-edit" type="button" onclick="showView('heroes')" title="Change this article's hero photo, crop or scrim in the Hero Picker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>` : '');
+      (img ? `<button class="mh-edit" type="button" onclick="showView('heroes')" title="Change this article's hero photo, crop or scrim in Covers"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>` : '');
     m.__orig = { title: T(h1), lead: lead ? leadHTML(lead) : null };
     m.hidden = false;
   }
@@ -9956,7 +9956,7 @@ async function renderSuite() {
     <h3>Suite</h3>
     <div class="act-sub" style="display:flex;gap:.9rem;flex-wrap:wrap">
       <span>${dot(true)} photo server</span>
-      <span>${dot(st.heroes)} hero picker${st.heroes ? '' : ' (off)'}</span>
+      <span>${dot(st.heroes)} covers${st.heroes ? '' : ' (off)'}</span>
       <span>${dot(st.maps)} map editor${st.maps ? '' : ' (off)'}</span>
       <span>${dot(st.watcher)} backup watcher ${st.watcher ? 'running' : 'paused'}</span>
     </div>
@@ -10347,7 +10347,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   })();
   // every app's wordmark button becomes the same row of tabs
   const TABS = [['editor', 'Editor', 'Write & lay out articles'], ['library', 'Library', 'Backups, ratings & blog picks'],
-                ['heroes', 'Heroes', 'Choose the banner for a page'], ['maps', 'Maps', 'Move labels on route & city maps']];
+                ['heroes', 'Covers', 'The photos that represent a page: its banner, its cards and its share image'], ['maps', 'Maps', 'Move labels on route & city maps']];
   document.querySelectorAll('[data-switcher]').forEach(btn => {
     const nav = document.createElement('nav');
     nav.className = 'app-tabs'; nav.setAttribute('aria-label', 'Apps');
