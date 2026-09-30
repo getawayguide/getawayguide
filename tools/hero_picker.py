@@ -915,6 +915,7 @@ PAGE = r"""<!doctype html>
   .fsel-o.on{background:rgba(45,107,80,.09);color:#2D6B50;font-weight:600}
   .afl{width:18px;height:13px;border-radius:2px;object-fit:cover;flex:none;display:inline-block}
   .afl.none{background:#E8E7E1}
+  .afl.emo{width:18px;height:13px;font-size:13px;line-height:13px;text-align:center;overflow:visible}
   
   header .fsel{flex:0 1 250px}
   .embed header .fsel-btn, header .fsel-btn{height:34px;text-transform:none;letter-spacing:0;font-size:.8rem;font-weight:400;padding:0 10px;border-radius:6px;background:#fff;color:#1C2821;border:1px solid rgba(28,40,33,.16)}
@@ -1758,18 +1759,31 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
 /* ============== ALBUM FLAGS + THE FLAGGED DROPDOWN (2026-09-27) ============== */
 (function () {
   // album name -> ISO code for Images/web/flags (a trip is named for where it went, not the country)
-  const ALIAS = { 'bali': 'id', 'patagonia': 'cl', 'cologne': 'de', 'munich': 'de', 'turkey': 'tr', 'türkiye': 'tr' };
+  const ALIAS = { 'bali': 'id', 'patagonia': 'cl', 'cologne': 'de', 'munich': 'de', 'turkey': 'tr', 'türkiye': 'tr',
+    'amsterdam': 'nl', 'ibiza': 'es', 'normandy': 'fr', 'paris': 'fr', 'french riviera': 'fr', 'copenhagen': 'dk' };
+  // albums that get an emoji instead of a flag
+  const EMOJI = { 'tomorrowland': '🛸' };
   const ISO = { albania:'al', argentina:'ar', armenia:'am', australia:'au', bosnia:'ba', brazil:'br', colombia:'co', egypt:'eg',
     'el salvador':'sv', georgia:'ge', greece:'gr', guatemala:'gt', india:'in', israel:'il', italy:'it', japan:'jp', jordan:'jo',
     kosovo:'xk', mexico:'mx', 'new zealand':'nz', nicaragua:'ni', 'north macedonia':'mk', peru:'pe', philippines:'ph',
     serbia:'rs', tanzania:'tz', vietnam:'vn', croatia:'hr', montenegro:'me', spain:'es', portugal:'pt', france:'fr', thailand:'th',
-    morocco:'ma', cuba:'cu', chile:'cl', indonesia:'id', germany:'de', netherlands:'nl', belgium:'be', uk:'gb' };
+    morocco:'ma', cuba:'cu', chile:'cl', indonesia:'id', germany:'de', netherlands:'nl', belgium:'be', uk:'gb',
+    estonia:'ee', finland:'fi', hungary:'hu', latvia:'lv', slovenia:'si', sweden:'se', switzerland:'ch' };
+  // How an album is SHOWN. iCloud turns characters Windows can't keep in a
+  // folder name into "_", so the folder reads "Amsterdam _ Utrecht (2023)";
+  // the folder name stays the album's identity everywhere else.
+  const LABEL = { 'Amsterdam _ Utrecht (2023)': 'Amsterdam & Utrecht (2023)',
+                  'Normandy + Paris (2023)': 'Normandy & Paris (2023)' };
+  const labelOf = name => LABEL[name] || name;
+  const albumKey = name => String(labelOf(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
+  window.albumEmoji = name => EMOJI[albumKey(name)] || '';
   window.albumFlag = function (name) {
-    const k = String(name || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*&\s*/)[0].trim();
+    const k = String(labelOf(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
     const code = ALIAS[k] || ISO[k];
     return code ? 'http://127.0.0.1:5003/site/Images/web/flags/' + code + '.png' : '';
   };
-  const flagImg = (name, cls) => { const u = albumFlag(name); return u ? `<img class="${cls || 'afl'}" src="${u}" alt="" width="18" height="13">` : `<span class="${cls || 'afl'} none"></span>`; };
+  const flagImg = (name, cls) => { const e = window.albumEmoji(name); if (e) return `<span class="${cls || 'afl'} emo" aria-hidden="true">${e}</span>`;
+    const u = albumFlag(name); return u ? `<img class="${cls || 'afl'}" src="${u}" alt="" width="18" height="13">` : `<span class="${cls || 'afl'} none"></span>`; };
   window.flagImg = flagImg;
   // a native <select> dressed as the flagged dropdown; the select keeps its value and change event
   window.flagSelect = function (sel) {
