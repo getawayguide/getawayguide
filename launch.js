@@ -1,0 +1,455 @@
+/* The Launch tab: the prelaunch checklist (Kevin, 2026-09-30).
+
+   "a prelaunch checklist tab ... should list out all the checks claude does before launch ... it
+   will show all the claude checks and the checks that I should do ... There should also be buttons
+   taking me to the right tool to clean these up." Then: "how about I choose country and there is
+   an overall country sub tab and identical sub tab for each article".
+
+   So: choose a country. Claude's checks run once over every page of it (they launch together,
+   which is what the relink and not-launching checks need), and each article's sub-tab shows the
+   findings on that page; the Overview adds the country-wide checks and a table of every page.
+   Kevin's checks are ticked per article, each showing what the page says today.
+   The checks live in tools/prelaunch.py on the photo server. */
+(function () {
+  'use strict';
+  const API = 'http://127.0.0.1:5003';
+  const $ = (s, r) => (r || document).querySelector(s);
+  const esc = x => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const store = {
+    get(k) { try { return localStorage.getItem('launch:' + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem('launch:' + k, v); } catch (e) {} }
+  };
+  const L = { defs: null, countries: [], country: null, tab: 'overview', results: {}, finished: null, job: null,
+              current: null, rerun: null, kevin: { hints: {}, ticks: {} }, open: {}, sel: {}, busy: {} };
+
+  // ------------------------------------------------------------------ look
+  const css = document.createElement('style');
+  css.textContent = `
+  #app-launch{--ln-bg:#F7F7F3;--ln-card:#fff;--ln-ink:#1C2821;--ln-mute:#6b7670;--ln-faint:#98a29c;--ln-line:#E7E6DF;
+    --ln-green:#2D6B50;--ln-green-bg:#E8F1EC;--ln-amber:#9A6F12;--ln-amber-bg:#F7EFD9;--ln-red:#B0442F;--ln-red-bg:#F8E7E2;
+    position:fixed;inset:0;z-index:80;display:grid;grid-template-rows:56px 1fr;grid-template-columns:minmax(0,1fr);background:var(--ln-bg);
+    font-family:'Hanken Grotesk',sans-serif;color:var(--ln-ink)}
+  #app-launch[hidden]{display:none!important}
+  #app-launch>header{height:56px;padding:0 20px;background:#1C2821;color:#fff;display:flex;align-items:center;gap:18px;box-sizing:border-box;overflow:hidden}
+  #app-launch>header .suite-mark{margin:0 6px 0 0}
+  #launch-root{overflow-y:auto;overflow-x:hidden;min-height:0}
+  .ln-wrap{max-width:1320px;margin:0 auto;padding:22px 28px 60px}
+  .ln-top{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  .ln-eyebrow{display:block;font-size:.6rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ln-mute);margin-bottom:4px}
+  .ln-country{font-family:'Newsreader',Georgia,serif;font-size:1.9rem;font-weight:400;color:var(--ln-ink);background:transparent;border:0;
+    padding:0 26px 0 0;margin:0;cursor:pointer;appearance:none;-webkit-appearance:none;line-height:1.15;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231C2821' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 2px center}
+  .ln-country:focus-visible{outline:2px solid var(--ln-green);outline-offset:4px;border-radius:4px}
+  .ln-spacer{flex:1}
+  .ln-when{font-size:.72rem;color:var(--ln-mute);font-variant-numeric:tabular-nums}
+  .ln-btn{font:600 .62rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:999px;
+    padding:.62rem 1rem;border:1px solid var(--ln-line);background:var(--ln-card);color:var(--ln-ink);white-space:nowrap}
+  .ln-btn:hover{border-color:var(--ln-green);color:var(--ln-green)}
+  .ln-btn:focus-visible{outline:2px solid var(--ln-green);outline-offset:2px}
+  .ln-btn.primary{background:var(--ln-green);border-color:var(--ln-green);color:#fff}
+  .ln-btn.primary:hover{background:#24573F;color:#fff}
+  .ln-btn[disabled]{opacity:.55;cursor:default}
+  .ln-btn.sm{padding:.45rem .7rem;font-size:.56rem}
+  .ln-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 20px;padding-bottom:14px;border-bottom:1px solid var(--ln-line)}
+  .ln-tab{display:inline-flex;align-items:center;gap:8px;font:500 .78rem/1 'Hanken Grotesk',sans-serif;color:var(--ln-ink);cursor:pointer;
+    background:transparent;border:1px solid transparent;border-radius:999px;padding:.5rem .8rem}
+  .ln-tab:hover{background:#EFEFE9}
+  .ln-tab.on{background:var(--ln-ink);color:#fff}
+  .ln-tab:focus-visible{outline:2px solid var(--ln-green);outline-offset:2px}
+  .ln-tab .n{font:600 .6rem/1 'Hanken Grotesk',sans-serif;border-radius:999px;padding:.22rem .42rem;font-variant-numeric:tabular-nums}
+  .ln-tab .n.fail{background:var(--ln-red-bg);color:var(--ln-red)} .ln-tab .n.warn{background:var(--ln-amber-bg);color:var(--ln-amber)}
+  .ln-tab .n.pass{background:var(--ln-green-bg);color:var(--ln-green)}
+  .ln-tab.on .n{background:rgba(255,255,255,.16);color:#fff}
+  .ln-tab .sep{width:1px;height:14px;background:var(--ln-line);margin:0 2px}
+  .ln-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+  .ln-head h1{font-family:'Newsreader',Georgia,serif;font-weight:400;font-size:1.35rem;margin:0;text-wrap:balance}
+  .ln-pill{font:600 .56rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:.32rem .55rem;border-radius:999px;background:#EFEFE9;color:var(--ln-mute)}
+  .ln-pill.live{background:var(--ln-green-bg);color:var(--ln-green)}
+  .ln-cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:28px;align-items:start}
+  @media (max-width:980px){.ln-cols{grid-template-columns:1fr}}
+  .ln-col>h2{display:flex;align-items:baseline;gap:10px;font:600 .66rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:0 0 10px;color:var(--ln-ink)}
+  .ln-col>h2 span{font-weight:500;letter-spacing:.02em;text-transform:none;font-size:.74rem;color:var(--ln-mute)}
+  .ln-group{font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ln-faint);margin:18px 0 6px}
+  .ln-card{background:var(--ln-card);border:1px solid var(--ln-line);border-radius:12px;overflow:hidden}
+  .ln-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;padding:12px 14px;border-top:1px solid var(--ln-line)}
+  .ln-row:first-child{border-top:0}
+  .ln-ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font:700 .66rem/1 'Hanken Grotesk',sans-serif;margin-top:1px}
+  .st-pass .ln-ic{background:var(--ln-green-bg);color:var(--ln-green)} .st-pass .ln-ic::before{content:'\\2713'}
+  .st-warn .ln-ic{background:var(--ln-amber-bg);color:var(--ln-amber)} .st-warn .ln-ic::before{content:'!'}
+  .st-fail .ln-ic{background:var(--ln-red-bg);color:var(--ln-red)} .st-fail .ln-ic::before{content:'\\2715'}
+  .st-error .ln-ic{background:var(--ln-red-bg);color:var(--ln-red)} .st-error .ln-ic::before{content:'?'}
+  .st-skip .ln-ic,.st-none .ln-ic{background:#EFEFE9;color:var(--ln-faint)} .st-skip .ln-ic::before{content:'\\2013'}
+  .st-run .ln-ic{border:2px solid var(--ln-line);border-top-color:var(--ln-green);animation:ln-spin .8s linear infinite}
+  @keyframes ln-spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.st-run .ln-ic{animation:none}}
+  .ln-t{font-weight:600;font-size:.84rem;line-height:1.35}
+  .ln-s{font-size:.78rem;color:var(--ln-mute);line-height:1.45;margin-top:2px}
+  .st-fail .ln-s{color:var(--ln-red)} .st-warn .ln-s{color:var(--ln-amber)}
+  .ln-why{font-size:.72rem;color:var(--ln-faint);line-height:1.45;margin-top:4px}
+  .ln-acts{display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end;max-width:260px}
+  .ln-more{font:600 .6rem/1 'Hanken Grotesk',sans-serif;color:var(--ln-mute);background:none;border:0;cursor:pointer;padding:.5rem .3rem}
+  .ln-more:hover{color:var(--ln-green)}
+  .ln-items{grid-column:2 / 4;margin-top:4px;border-top:1px dashed var(--ln-line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+  .ln-item{display:flex;gap:8px;align-items:baseline;font-size:.76rem;line-height:1.45;flex-wrap:wrap}
+  .ln-item .pg{font-weight:600;font-size:.7rem;color:var(--ln-ink);background:#EFEFE9;border-radius:4px;padding:.1rem .35rem;white-space:nowrap}
+  .ln-item code{font:.7rem/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--ln-mute);background:#F4F4EF;border-radius:4px;padding:.1rem .3rem;word-break:break-word}
+  .ln-item .later{font-size:.7rem;color:var(--ln-faint)}
+  .ln-item input{accent-color:var(--ln-green);margin:0;transform:translateY(2px)}
+  .ln-item .go{font:600 .58rem/1 'Hanken Grotesk',sans-serif;color:var(--ln-green);background:none;border:0;cursor:pointer;padding:0;margin-left:auto;letter-spacing:.06em;text-transform:uppercase}
+  .ln-note{font-size:.72rem;color:var(--ln-mute);margin-top:4px}
+  .ln-k{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;padding:12px 14px;border-top:1px solid var(--ln-line);align-items:start}
+  .ln-k:first-child{border-top:0}
+  .ln-k input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ln-green);cursor:pointer}
+  .ln-k.done .ln-t{color:var(--ln-mute);text-decoration:line-through;text-decoration-color:rgba(28,40,33,.3)}
+  .ln-h{font-size:.76rem;line-height:1.45;margin-top:3px;color:var(--ln-ink);word-break:break-word}
+  .ln-h.ok::before{content:'\\2713  ';color:var(--ln-green);font-weight:700}
+  .ln-h.no{color:var(--ln-amber)}
+  .ln-h img{display:block;width:120px;aspect-ratio:2/3;object-fit:cover;border-radius:4px;margin-top:6px;background:#EFEFE9}
+  .ln-at{font-size:.66rem;color:var(--ln-faint);margin-top:3px}
+  .ln-table{width:100%;border-collapse:collapse;font-size:.8rem}
+  .ln-table th{font:600 .56rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ln-faint);text-align:left;padding:10px 14px;border-bottom:1px solid var(--ln-line)}
+  .ln-table td{padding:10px 14px;border-top:1px solid var(--ln-line);vertical-align:middle}
+  .ln-table tr:first-child td{border-top:0}
+  .ln-table tbody tr{cursor:pointer} .ln-table tbody tr:hover td{background:#FAFAF7}
+  .ln-table .nm{font-weight:600} .ln-table .k{font-size:.72rem;color:var(--ln-mute)}
+  .ln-counts{display:flex;gap:6px;font-variant-numeric:tabular-nums}
+  .ln-counts span{font:600 .64rem/1 'Hanken Grotesk',sans-serif;border-radius:999px;padding:.25rem .45rem}
+  .ln-counts .f{background:var(--ln-red-bg);color:var(--ln-red)} .ln-counts .w{background:var(--ln-amber-bg);color:var(--ln-amber)} .ln-counts .p{background:var(--ln-green-bg);color:var(--ln-green)}
+  .ln-bar{height:6px;border-radius:999px;background:#EFEFE9;overflow:hidden;width:110px;display:inline-block;vertical-align:middle;margin-right:8px}
+  .ln-bar i{display:block;height:100%;background:var(--ln-green)}
+  .ln-ov{margin-bottom:28px;overflow-x:auto}
+  .ln-counts{flex-wrap:wrap} .ln-counts span{white-space:nowrap}
+  @media (max-width:700px){.ln-table .c-st{display:none}.ln-table th,.ln-table td{padding:10px}.ln-bar{width:56px}}
+  .ln-empty{padding:60px 20px;text-align:center;color:var(--ln-mute);font-size:.9rem;line-height:1.6}
+  .ln-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ln-ink);color:#fff;font-size:.8rem;padding:.7rem 1rem;border-radius:10px;
+    z-index:200;max-width:min(560px,90vw);box-shadow:0 8px 30px rgba(0,0,0,.18);white-space:pre-line}
+  @media (max-width:700px){.ln-wrap{padding:16px 16px 40px}.ln-row,.ln-k{grid-template-columns:22px minmax(0,1fr)}.ln-acts{grid-column:2;justify-content:flex-start;max-width:none}.ln-items{grid-column:1 / 3}}
+  `;
+  document.head.appendChild(css);
+
+  // ------------------------------------------------------------------ data
+  const root = () => $('#launch-root');
+  const country = () => L.countries.find(c => c.country === L.country);
+  const pages = () => (country() || { articles: [] }).articles;
+  const rels = () => pages().map(a => a.rel);
+  const art = rel => pages().find(a => a.rel === rel);
+  function shortTitle(a) {
+    if (!a) return '';
+    if (a.kind === 'country') return 'Country page';
+    if (a.kind === 'itinerary') return 'Itinerary';
+    if (a.kind === 'top10') return 'Top 10';
+    if (a.kind === 'field-notes') return 'Field notes';
+    let t = a.title.split(/\s*[—–:]\s*|\s+-\s+/)[0].replace(/^(The Ultimate Guide to|The)\s+/i, '');
+    if (!/\s(&|and)\s/.test(t) && t.split(',').length === 2) t = t.split(',')[0];
+    return t;
+  }
+  const short = rel => art(rel) ? shortTitle(art(rel)) : rel.split('/').pop().replace(/\.html$/, '');
+  async function api(path, body) {
+    const r = await fetch(API + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : { cache: 'no-store' });
+    return r.json();
+  }
+  function toast(msg, ms) {
+    let t = $('.ln-toast'); if (!t) { t = document.createElement('div'); t.className = 'ln-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; t.hidden = false; clearTimeout(t._h); t._h = setTimeout(() => { t.hidden = true; }, ms || 4000);
+  }
+
+  // a check as one page sees it: that page's findings only
+  function viewOf(id, rel) {
+    const r = L.results[id];
+    if (!r) return null;
+    if (!rel || ['skip', 'error'].includes(r.status)) return r;
+    const items = (r.items || []).filter(i => i.page === rel);
+    if (!items.length) return { status: 'pass', summary: 'Nothing on this page.', items: [], note: r.note };
+    if (items.every(i => i.ok)) return { status: 'pass', summary: items.map(i => i.detail).join(' · '), items: [] };
+    let status = r.status === 'pass' ? 'warn' : r.status;
+    if (items.some(i => i.sev)) status = items.some(i => i.sev === 'high') ? 'fail' : 'warn';
+    const n = items.length, uniq = [...new Set(items.map(i => i.detail))];
+    const summary = id === 'relink' ? `${n} link${n === 1 ? '' : 's'} could open your own article instead of Google Maps.`
+      : id === 'maps-search' ? `${n} map link${n === 1 ? '' : 's'} still open${n === 1 ? 's' : ''} a Google search.`
+      : id === 'voice' ? items.map(i => i.detail).join(' · ')
+      : `${n} here: ${uniq.slice(0, 3).join('; ')}${uniq.length > 3 ? '…' : ''}`;
+    return Object.assign({}, r, { status, items, summary });
+  }
+  function tally(rel) {
+    const t = { fail: 0, warn: 0, pass: 0 };
+    for (const d of (L.defs ? L.defs.claude : [])) {
+      if (rel && d.scope === 'country') continue;
+      const v = viewOf(d.id, rel);
+      if (v && t[v.status] !== undefined) t[v.status]++;
+    }
+    return t;
+  }
+  const kevinDefs = scope => (L.defs ? L.defs.kevin : []).filter(k => k.scope === scope && !(scope === 'article' && k.id === 'k-thumbs' && false));
+  function kevinDone(rel) {
+    const a = art(rel), t = L.kevin.ticks[rel] || {};
+    const defs = kevinDefs('article').filter(k => !(a && ['country', 'field-notes'].includes(a.kind) && ['k-thumbs', 'k-hero'].includes(k.id)));
+    return { done: defs.filter(k => t[k.id]).length, of: defs.length };
+  }
+
+  // ------------------------------------------------------------------ render
+  function render() {
+    const r = root();
+    if (!r) return;
+    const keep = r.scrollTop;
+    const c = country();
+    if (!c) { r.innerHTML = '<div class="ln-empty">Nothing to launch: no drafts found.</div>'; return; }
+    const running = !!L.job;
+    const when = running ? `Checking${L.current ? ': ' + esc(defTitle(L.current)) : '…'}`
+      : L.finished ? 'Last run ' + new Date(L.finished).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not run yet';
+    const tabs = [['overview', 'Overview', tally(null)]].concat(pages().map(a => [a.rel, shortTitle(a), tally(a.rel)]));
+    r.innerHTML = `<div class="ln-wrap">
+      <div class="ln-top">
+        <div><span class="ln-eyebrow">Prelaunch checklist · ${pageCount()}</span>
+          <select class="ln-country" id="ln-country" aria-label="Country">${L.countries.map(x =>
+            `<option value="${esc(x.country)}"${x.country === L.country ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</select></div>
+        <span class="ln-spacer"></span>
+        <span class="ln-when" aria-live="polite">${when}</span>
+        <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''}>${running ? 'Running…' : 'Run Claude’s checks'}</button>
+      </div>
+      <nav class="ln-tabs" aria-label="Pages">${tabs.map(([k, label, t], i) => {
+        const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>` : (L.finished || Object.keys(L.results).length) ? '<span class="n pass">✓</span>' : '';
+        return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}">${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
+      }).join('')}</nav>
+      <div id="ln-body">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
+    </div>`;
+    r.scrollTop = keep;
+    fitSelect($('#ln-country', r));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { const s = $('#ln-country', r); if (s) fitSelect(s); });
+    wire();
+  }
+  function pageCount() {
+    const d = pages().filter(a => !a.live).length, l = pages().length - d;
+    return [d && `${d} draft${d === 1 ? '' : 's'}`, l && `${l} live`].filter(Boolean).join(', ');
+  }
+  // the select is as wide as the chosen country, so its arrow sits beside the name
+  function fitSelect(sel) {
+    const c = fitSelect.c || (fitSelect.c = document.createElement('canvas').getContext('2d'));
+    const cs = getComputedStyle(sel);
+    c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    sel.style.width = Math.ceil(c.measureText(sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '').width) + 34 + 'px';
+  }
+  const defTitle = id => ((L.defs.claude.find(d => d.id === id) || {}).title || id);
+
+  function checkRows(rel, scopeFilter) {
+    const groups = [];
+    for (const d of L.defs.claude) {
+      if (scopeFilter && !scopeFilter(d)) continue;
+      let g = groups.find(x => x.name === d.group);
+      if (!g) groups.push(g = { name: d.group, rows: [] });
+      g.rows.push(checkRow(d, rel));
+    }
+    return groups.map(g => `<div class="ln-group">${esc(g.name)}</div><div class="ln-card">${g.rows.join('')}</div>`).join('');
+  }
+  function checkRow(d, rel) {
+    const running = L.job && (!L.rerun || L.rerun.includes(d.id));
+    const v = viewOf(d.id, rel);
+    const st = running && (!v || L.current === d.id || (L.rerun && L.rerun.includes(d.id))) ? 'run' : v ? v.status : 'none';
+    const key = (rel || 'all') + '|' + d.id, open = L.open[key];
+    const items = v && v.items ? v.items : [];
+    const acts = [];
+    if (v && v.tool && rel && items.length) acts.push(`<button class="ln-btn sm" data-go="${esc(v.tool.kind)}" data-rel="${esc(v.tool.rel || rel)}">${esc(v.tool.label)}</button>`);
+    if (v && v.fix && items.length) {
+      const busy = L.busy[d.id];
+      acts.push(`<button class="ln-btn sm primary" data-fix="${esc(d.id)}" data-rel="${esc(rel || '')}"${busy ? ' disabled' : ''}>${busy ? 'Working…' : esc(v.fix.label)}</button>`);
+    }
+    if (items.length) acts.push(`<button class="ln-more" data-open="${esc(key)}" aria-expanded="${open ? 'true' : 'false'}">${open ? 'Hide' : 'Show ' + items.length}</button>`);
+    const summary = st === 'run' ? 'Checking…' : v ? v.summary : 'Not run yet.';
+    return `<div class="ln-row st-${st}" data-id="${esc(d.id)}">
+      <span class="ln-ic" aria-hidden="true"></span>
+      <div><div class="ln-t" title="${esc(d.why)}">${esc(d.title)}</div><div class="ln-s">${esc(summary)}</div>
+        ${open || !v || (v.status !== 'pass' && st !== 'run') ? `<div class="ln-why">${esc(d.why)}</div>` : ''}
+        ${v && v.note && (open || !items.length) ? `<div class="ln-note">${esc(v.note)}</div>` : ''}</div>
+      <div class="ln-acts">${acts.join('')}</div>
+      ${open && items.length ? `<div class="ln-items">${items.slice(0, 120).map(i => itemRow(d.id, i, rel, v)).join('')}${items.length > 120 ? `<div class="ln-note">${items.length - 120} more.</div>` : ''}</div>` : ''}
+    </div>`;
+  }
+  function itemRow(id, i, rel, v) {
+    const pg = !rel && i.page ? `<span class="pg">${esc(short(i.page))}</span>` : '';
+    if (id === 'relink') {
+      const k = relinkKey(i), on = L.sel[k] !== false;
+      return `<label class="ln-item">${i.apply ? `<input type="checkbox" data-sel="${esc(k)}"${on ? ' checked' : ''}>` : ''}${pg}
+        <span>“${esc(i.text)}” → <b>${esc(short(i.target))}</b></span><code>${esc(i.href)}</code>${i.apply ? '' : `<span class="later">${esc(i.why)}</span>`}</label>`;
+    }
+    const go = !rel && v && v.tool && i.page && art(i.page) ? `<button class="go" data-go="${esc(v.tool.kind)}" data-rel="${esc(i.page)}">Open</button>` : '';
+    return `<div class="ln-item">${pg}<span>${esc(i.detail || '')}</span>${i.value ? `<code>${esc(String(i.value).slice(0, 180))}</code>` : ''}${go}</div>`;
+  }
+  const relinkKey = i => i.page + '|' + i.at + '|' + i.target;
+
+  function kevinRows(key, defs, hints) {
+    const t = L.kevin.ticks[key] || {};
+    return `<div class="ln-card">${defs.map(k => {
+      const h = (hints || {})[k.id], done = t[k.id];
+      const hint = h ? `<div class="ln-h${h.ok === true ? ' ok' : h.ok === false ? ' no' : ''}">${esc(h.text)}${h.img ? `<img src="${API}/site/${h.img.split('/').map(encodeURIComponent).join('/')}" alt="" loading="lazy">` : ''}</div>` : '';
+      return `<div class="ln-k${done ? ' done' : ''}">
+        <input type="checkbox" data-tick="${esc(k.id)}" data-key="${esc(key)}"${done ? ' checked' : ''} aria-label="${esc(k.title)}">
+        <div><div class="ln-t">${esc(k.title)}</div>${hint}<div class="ln-why">${esc(k.why)}</div>${done ? `<div class="ln-at">Done ${new Date(done.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>` : ''}</div>
+        <div class="ln-acts">${k.tool ? `<button class="ln-btn sm" data-go="${esc(k.tool.kind)}" data-rel="${esc(key.startsWith('country:') ? '' : key)}">${esc(k.tool.label)}</button>` : ''}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function articleView(rel) {
+    const a = art(rel);
+    if (!a) { L.tab = 'overview'; return overview(); }
+    const t = tally(rel), kd = kevinDone(rel);
+    const defs = kevinDefs('article').filter(k => !(['country', 'field-notes'].includes(a.kind) && ['k-thumbs', 'k-hero'].includes(k.id)));
+    return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>
+        <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
+      <div class="ln-cols">
+        <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}</span></h2>${checkRows(rel, d => d.scope !== 'country')}</section>
+        <section class="ln-col"><h2>Your checks <span>${kd.done} of ${kd.of} done</span></h2>${kevinRows(rel, defs, L.kevin.hints[rel])}</section>
+      </div>`;
+  }
+  const summaryLine = t => (L.finished || Object.keys(L.results).length) ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix` : 'not run yet';
+
+  function overview() {
+    const c = country(), t = tally(null), ckey = 'country:' + c.country;
+    const rows = pages().map(a => {
+      const s = tally(a.rel), k = kevinDone(a.rel), run = L.finished || Object.keys(L.results).length;
+      return `<tr data-tab="${esc(a.rel)}" tabindex="0"><td><div class="nm">${esc(shortTitle(a))}</div><div class="k">${esc(a.rel.split('/').pop())}</div></td>
+        <td class="c-st"><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span></td>
+        <td>${run ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn ? '<span class="p">all clear</span>' : ''}</span>` : '<span class="k">not run</span>'}</td>
+        <td><span class="ln-bar"><i style="width:${k.of ? Math.round(k.done / k.of * 100) : 0}%"></i></span><span class="k">${k.done} of ${k.of}</span></td></tr>`;
+    }).join('');
+    return `<div class="ln-ov ln-card"><table class="ln-table"><thead><tr><th>Page</th><th class="c-st">Status</th><th>Claude</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="ln-cols">
+        <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}, across ${pages().length} pages</span></h2>${checkRows(null)}</section>
+        <section class="ln-col"><h2>Your checks <span>for ${esc(c.label)} as a whole</span></h2>${kevinRows(ckey, kevinDefs('country'), L.kevin.hints[ckey])}</section>
+      </div>`;
+  }
+
+  // ------------------------------------------------------------------ actions
+  function wire() {
+    const r = root();
+    $('#ln-country', r).onchange = e => { L.country = e.target.value; store.set('country', L.country); L.tab = store.get('tab:' + L.country) || 'overview'; loadCountry(); };
+    $('#ln-run', r).onclick = () => run();
+    r.querySelectorAll('[data-tab]').forEach(b => {
+      const go = () => { L.tab = b.dataset.tab; store.set('tab:' + L.country, L.tab); render(); root().scrollTop = 0; };
+      b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' && b.tagName === 'TR') go(); };
+    });
+    r.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { L.open[b.dataset.open] = !L.open[b.dataset.open]; render(); });
+    r.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.rel));
+    r.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { L.sel[b.dataset.sel] = b.checked; });
+    r.querySelectorAll('[data-tick]').forEach(b => b.onchange = () => tick(b.dataset.key, b.dataset.tick, b.checked));
+    r.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => fix(b.dataset.fix, b.dataset.rel));
+  }
+
+  async function tick(key, id, done) {
+    try {
+      const r = await api('/api/launch/tick', { key, id, done });
+      const row = L.kevin.ticks[key] || (L.kevin.ticks[key] = {});
+      if (done) row[id] = r.tick || { at: new Date().toISOString() }; else delete row[id];
+    } catch (e) { toast('The photo server did not answer, so the tick was not saved.'); }
+    render();
+  }
+
+  async function openRel(rel) {
+    let cur = '';
+    try { cur = window.articleRelPath ? await window.articleRelPath() : ''; } catch (e) {}
+    if (cur === rel) return true;
+    if (window.showView) showView('editor');
+    if (!window.__apOpen) return false;
+    await window.__apOpen(rel);
+    return true;
+  }
+  // every "take me there" button: the right app, the right article, the right panel
+  async function go(kind, rel) {
+    if (kind === 'maps') return showView('maps');
+    if (rel) await openRel(rel);
+    if (kind === 'covers') return showView('heroes');
+    showView('editor');
+    if (kind === 'review') sideTab('review');
+    else if (kind === 'seo') sideTab('seo');
+    else if (kind === 'thumbs') { sideTab('photos'); const p = document.getElementById('th-panel'); if (p && p.style.display === 'none' && window.thToggle) thToggle(); }
+    else if (kind === 'preview' && window.openPreview) openPreview();
+  }
+
+  async function fix(id, rel) {
+    const r = L.results[id];
+    if (!r || !r.fix) return;
+    const v = viewOf(id, rel || null);
+    let body = { kind: r.fix.kind };
+    if (r.fix.kind === 'relink') {
+      const items = (v.items || []).filter(i => i.apply && L.sel[relinkKey(i)] !== false);
+      if (!items.length) return toast('Nothing selected.');
+      body.items = items;
+    } else {
+      const pagesToFix = (r.fix.pages || []).filter(p => !rel || p === rel);
+      if (!pagesToFix.length) return toast('Nothing on this page to fix.');
+      if (r.fix.kind === 'photos' && !confirm('Run the photo pipeline on ' + pagesToFix.map(short).join(', ') + '?\nIt compresses and tiers every photo in the page, and can take a few minutes.')) return;
+      body.pages = pagesToFix;
+    }
+    L.busy[id] = true; render();
+    let out;
+    try { out = await api('/api/launch/fix', body); } catch (e) { out = { ok: false, log: 'The photo server did not answer.' }; }
+    L.busy[id] = false;
+    toast((out.log || (out.ok ? 'Done.' : 'That did not work.')) + (out.ok && out.pages && out.pages.length ? '\nIf one of these is open in the editor, reopen it to see the change.' : ''), 7000);
+    // re-run what the fix touches
+    const again = { relink: ['relink', 'internal', 'unlaunched'], photos: ['photos', 'tiers', 'alt'], dates: ['dates'] }[r.fix.kind] || [id];
+    run(again);
+  }
+
+  // ------------------------------------------------------------------ run
+  async function run(only) {
+    if (L.job) return;
+    const body = { rels: rels() };
+    if (only) body.only = only;
+    let r;
+    try { r = await api('/api/launch/run', body); } catch (e) { return toast('The photo server is not running, so nothing can be checked.'); }
+    if (!r.ok) return toast(r.error || 'Could not start the checks.');
+    L.job = r.job; L.rerun = only || null; L.current = null;
+    if (!only) L.results = {};
+    render();
+    const want = L.country;
+    while (L.job === r.job) {
+      await new Promise(res => setTimeout(res, 700));
+      let j;
+      try { j = await api('/api/launch/job/' + r.job); } catch (e) { continue; }
+      if (L.country !== want) { L.job = null; return; }
+      Object.assign(L.results, j.results || {});
+      L.current = j.current;
+      if (j.state === 'done') { L.job = null; L.rerun = null; L.finished = j.finished; }
+      render();
+    }
+  }
+
+  async function loadCountry() {
+    L.results = {}; L.finished = null; L.kevin = { hints: {}, ticks: {} }; L.open = {};
+    render();
+    try {
+      const [last, kev] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() })]);
+      L.results = last.results || {}; L.finished = last.finished || null;
+      L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} };
+    } catch (e) { toast('The photo server did not answer.'); }
+    render();
+  }
+
+  async function show() {
+    const r = root();
+    if (!r) return;
+    if (!L.defs) {
+      r.innerHTML = '<div class="ln-empty">Loading…</div>';
+      try {
+        const [d, a] = await Promise.all([api('/api/launch/checks'), api('/api/launch/articles')]);
+        L.defs = d; L.countries = a.countries || [];
+      } catch (e) {
+        L.defs = null;
+        r.innerHTML = '<div class="ln-empty"><b>The photo server isn’t running.</b><br>Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then open this tab again.</div>';
+        return;
+      }
+      // open on the country of the article in the editor, else the last one chosen
+      let pick = store.get('country');
+      try { const cur = window.articleRelPath && await window.articleRelPath(); const c = cur && L.countries.find(x => x.articles.some(a => a.rel === cur)); if (c) pick = c.country; } catch (e) {}
+      L.country = (L.countries.find(x => x.country === pick) || L.countries[0] || {}).country || null;
+      L.tab = store.get('tab:' + L.country) || 'overview';
+      await loadCountry();
+      return;
+    }
+    // coming back: the hints (review status, titles) may have changed while you were away
+    try { const kev = await api('/api/launch/kevin', { rels: rels() }); L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} }; } catch (e) {}
+    render();
+  }
+  window.__launchShow = show;
+  window.__launch = L;                                   // test seam
+})();

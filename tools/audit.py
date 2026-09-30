@@ -171,12 +171,14 @@ def check_prose(limit=None):
 
 
 # ---------------------------------------------------------------- 2. tiers
-def check_tiers():
+def check_tiers(pages=None, have=None):
     """Every <picture> must serve the documented set: desktop WebP + JPEG at 1x/2x/3x, the
     same again for mobile, and a -mob-2x.jpg fallback. Missing FILES are what this catches;
-    lint_site catches a reference to a file that is not there."""
+    lint_site catches a reference to a file that is not there.
+    `pages` and `have` are for the Launch tab: drafts, judged by what is on disk."""
+    have = have or (lambda f: f in COMMITTED)
     groups = []
-    for p, r in live_pages():
+    for p, r in (live_pages() if pages is None else pages):
         html = p.read_text(encoding="utf-8")
         probs = []
         for blk in PICTURE.findall(html):
@@ -226,7 +228,7 @@ def check_tiers():
                                              "The %s source offers a single size, so a phone and a 3x screen get the same file." % label,
                                              (s.get("srcset") or "")[:90]))
                     for f in cands:
-                        if f not in COMMITTED:
+                        if not have(f):
                             probs.append(finding("high", "tier-missing", "A %s tier is not published, so it 404s." % label, f))
             if "/Images/" in fallback and "/Images/web/" not in fallback:
                 probs.append(finding("high", "original-as-fallback",
@@ -237,11 +239,12 @@ def check_tiers():
 
 
 # ---------------------------------------------------------------- 3. heroes
-def check_heroes():
+def check_heroes(pages=None, have=None):
     """The hero is the biggest thing a visitor downloads, and it is the first. Its tiers must
     all be published and its fallback must never be an archival original."""
+    have = have or (lambda f: f in COMMITTED)
     groups = []
-    for p, r in live_pages():
+    for p, r in (live_pages() if pages is None else pages):
         html = p.read_text(encoding="utf-8")
         m = re.search(r'<section[^>]*class="[^"]*\b(?:article|country)-hero\b[^"]*".*?</section>', html, re.S | re.I)
         region = m.group(0) if m else ""
@@ -287,7 +290,7 @@ def check_heroes():
                                      "%.1f MB for one hero image; rebuild it with "
                                      "tools/gen_hero_variants.py." % (n / 1048576), f))
         for f in sorted(refs):
-            if f not in COMMITTED:
+            if not have(f):
                 probs.append(finding("high", "hero-tier-missing", "A hero tier is not published, so it 404s.", f))
         # A country index (el-salvador/index.html) leads with a grid of article cards, not a
         # photo hero, so there is nothing here to find. Kevin, 2026-09-25: "country pages are

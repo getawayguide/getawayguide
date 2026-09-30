@@ -472,7 +472,7 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:maps', on ? '1' : '0'); } catch (e) {} };
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
   // the suite's shortcuts from inside this frame, and Ctrl+\ from outside it (QA 2026-09-27)
-  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-4]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
+  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-5]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
   window.addEventListener('message', e => { if (e.data && e.data.type === 'suite-side') btn.click(); });
 })();
 

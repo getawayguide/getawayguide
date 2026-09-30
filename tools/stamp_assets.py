@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PAGE = ROOT / "editor.html"
 # every local asset the editor pulls in over a URL; anything inline needs no stamp
-ASSETS = ["review.js", "fonts.css"]
+ASSETS = ["review.js", "launch.js", "fonts.css"]
 
 
 def digest(p):

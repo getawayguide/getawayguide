@@ -1244,6 +1244,9 @@ def image_file(rel):
 # photos through /site/, which the standalone preview could not. A separate tab, so an article
 # open in the editor is untouched until Apply, which also backs the originals up.
 import redline as _redline
+# the editor's Launch tab: the prelaunch checklist (tools/prelaunch.py, 2026-09-30)
+import prelaunch as _prelaunch
+_prelaunch.register(app)
 
 
 # ---- the review inside the editor (review.js) -----------------------------------
