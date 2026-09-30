@@ -4834,8 +4834,22 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         if (t < 0 || t >= stack.length) return false;
         idx = t; applying = true;
         const e = ed();
+        // Kevin, 2026-09-29: "the page jumps when I hit ctrl + Z". The snapshot leaves out the drawn
+        // table of contents (editor chrome), so after this swap everything below it sat a TOC-height
+        // higher until the TOC was redrawn. Redraw it at once and hold the scroll position.
+        const sc = document.querySelector('.editor-scroll'), top = sc ? sc.scrollTop : 0;
+        const before = e.textContent;
         e.innerHTML = stack[idx].html;
-        restoreSel(e, stack[idx].sel);
+        if (window.__buildToc) { try { window.__buildToc(); } catch (err) {} }
+        // the caret goes where the text changed (as in Word), not where it was when that snapshot was
+        // taken: that was often the top of the article, and the next keystroke scrolled up to it
+        const after = e.textContent;
+        if (before !== after) {
+          let p = 0; const L = Math.min(before.length, after.length);
+          while (p < L && before.charCodeAt(p) === after.charCodeAt(p)) p++;
+          restoreSel(e, { s: p, e: p });
+        } else restoreSel(e, stack[idx].sel);
+        if (sc) { sc.scrollTop = top; requestAnimationFrame(() => { sc.scrollTop = top; }); }
         // the ✕ on each empty slot is a real node, so this innerHTML swap drops it
         if (window.restoreSlotButtons) window.restoreSlotButtons(e);
         // undo can bring a decided change's marks back, or redo remove them again: the DOM

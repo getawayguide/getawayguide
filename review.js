@@ -177,10 +177,25 @@
   const ENT = s => s.replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&nbsp;/g, ' ')
                     .replace(/&rsquo;/g, '’').replace(/&lsquo;/g, '‘').replace(/&hellip;/g, '…');
   function locate(html, needle) {          // the proposal was matched against the file; the DOM re-serialises entities
+    if (!needle) return null;
     if (html.indexOf(needle) >= 0) return needle;
     const n2 = ENT(needle); if (html.indexOf(n2) >= 0) return n2;
-    return null;
+    return loose(html, n2) || loose(html, needle);
   }
+  // Same text, different spacing (Kevin, 2026-09-29: "sometimes when I send to claude, the output isn't
+  // written as a red line"). A third of Claude's answers missed on whitespace alone: pasted text
+  // carries line breaks and &nbsp; inside sentences, and the model's find either kept them or
+  // turned them into plain spaces, so it no longer matched the live text character for character.
+  // Any run of spaces, line breaks or non-breaking spaces matches any other; the match must be unique.
+  function loose(html, needle) {
+    const parts = needle.split(/(?:\s|&nbsp;| )+/).filter(Boolean);
+    if (!parts.length) return null;
+    const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let re; try { re = new RegExp(parts.map(esc).join('(?:\\s|&nbsp;|\\u00a0)+'), 'g'); } catch (e) { return null; }
+    const hits = html.match(re);
+    return hits && hits.length === 1 ? hits[0] : null;
+  }
+  window.__rvLocate = locate;               // test seam
   function injectMarks(only) {               // only: just these changes, numbered after the existing ones
     const e = ed(); let html = e.innerHTML;
     const spans = [];
