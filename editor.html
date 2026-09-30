@@ -3280,6 +3280,11 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // until it has text. Whatever state it is in when the file is written, the attribute
     // itself must not reach the page.
     el.querySelectorAll('li[data-li-style]').forEach(li => li.removeAttribute('data-li-style'));
+    // a link on the editor's own local address never reaches the page (see unresolveHref)
+    el.querySelectorAll('a[href]').forEach(a => {
+      const h = a.getAttribute('href'), r = unresolveHref(h);
+      if (r !== h) { a.setAttribute('href', r); if (!/^https?:/i.test(r)) { a.removeAttribute('target'); a.removeAttribute('rel'); } }
+    });
     // 0. Leftover find-marks (defensive)
     el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
     el.querySelectorAll('mark.lint').forEach(unwrapEl);        // prose-check highlights are editor chrome
@@ -3764,6 +3769,30 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     document.getElementById('editor').focus();
     document.execCommand(cmd, false, value || null);
   }
+
+  // Copy and paste inside the editor puts ABSOLUTE links on the clipboard, resolved against the
+  // editor's own address: "yerevan.html#mother-armenia" came back as
+  // "http://127.0.0.1:5003/yerevan.html#mother-armenia" and "#republic-square" as
+  // "http://127.0.0.1:5003/browser?review=...#republic-square", links that die on the live site
+  // (Gyumri and Yerevan, 2026-09-29). Turn an address on the editor's own origin back into the
+  // relative link it was.
+  function unresolveHref(h) {
+    if (!h) return h;
+    try {
+      const here = location.href.split('#')[0];
+      if (h.startsWith(here + '#')) return h.slice(here.length);              // same page: #section
+      const base = new URL('.', location.href).href;
+      if (h.startsWith(base) && !h.slice(base.length).split(/[?#]/)[0].includes('/')) return h.slice(base.length);   // a sibling article
+      const u = new URL(h);
+      if (/^(127\.0\.0\.1|localhost)$/.test(u.hostname)) {                    // any local editor address
+        if (/^\/(browser|editor)/.test(u.pathname)) return u.hash || h;
+        const p = decodeURIComponent(u.pathname.replace(/^\/(site\/)?/, ''));
+        if (p && !p.includes('/')) return p + u.hash;                             // same folder only; never guess a path
+      }
+    } catch (e) {}
+    return h;
+  }
+  window.unresolveHref = unresolveHref;
 
   function insertLink() {
     let url = prompt('Enter URL:');
@@ -4479,7 +4508,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         // rebuild as clean element with only allowed attributes
         const el = document.createElement(keep);
         if (keep === 'a') {
-          const href = child.getAttribute('href');
+          const href = unresolveHref(child.getAttribute('href'));
           if (href && !href.startsWith('javascript:')) el.setAttribute('href', href);
           if (/^https?:/i.test(href || '')) { el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer'); }
         }
