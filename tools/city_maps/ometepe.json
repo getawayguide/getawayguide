@@ -23,11 +23,12 @@
   },
   "pois": [
     {
-      "name": "Rivas",
+      "name": "Puerto San Jorge",
       "cat": "see",
-      "match": "rivas",
-      "lat": 11.441674,
-      "lon": -85.75915
+      "match": "puerto san jorge",
+      "lat": 11.4607125,
+      "lon": -85.7905291,
+      "href": "https://www.google.com/maps/place/Puerto+San+Jorge/@11.4607125,-85.7905291,17z/data=!3m1!4b1!4m6!3m5!1s0x8f744fb82c59c11b:0x41b77c77a2ecd71b!8m2!3d11.4607125!4d-85.7905291!16s%2Fg%2F11gz8zcv6?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Playa Mango",
@@ -51,9 +52,5 @@
       "lon": -85.531979
     }
   ],
-  "sea_bg": true,
-  "center": {
-    "lat": 11.480387,
-    "lon": -85.645565
-  }
+  "sea_bg": true
 }

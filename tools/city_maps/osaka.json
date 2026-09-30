@@ -72,25 +72,19 @@
       "lon": 135.432453
     },
     {
-      "name": "Kobe",
-      "cat": "see",
-      "match": "kobe",
-      "lat": 34.713504,
-      "lon": 135.418984
-    },
-    {
       "name": "Kura Sushi",
       "cat": "eat",
       "match": "kura sushi",
-      "lat": 34.54112,
-      "lon": 135.560221
+      "lat": 34.6685366,
+      "lon": 135.5036138,
+      "href": "https://www.google.com/maps/place/KURA+SUSHI+Dotonbori+Global+Flagship+Store/@34.663356,135.5009152,16z/data=!4m10!1m2!2m1!1sKura+Sushi+Namba,+Osaka,+Japan!3m6!1s0x6000e777dfcfa0bb:0x7e81b7b505044057!8m2!3d34.6685366!4d135.5036138!15sCh5LdXJhIFN1c2hpIE5hbWJhLCBPc2FrYSwgSmFwYW4iA4gBAVoeIhxrdXJhIHN1c2hpIG5hbWJhIG9zYWthIGphcGFukgEXY2FzdWFsX3N1c2hpX3Jlc3RhdXJhbnSaAURDaTlEUVVsUlFVTnZaRU5vZEhsalJqbHZUMjFHYldFeGJ6TlZSVkl6VG10d2RtTlVhRU5rYWxacVQwYzBNbHB1WXhBQuABAPoBBAgAEEE!16s%2Fg%2F11n7j8wqnd?hl=en&entry=ttu&g_ep=EgoyMDI2MDkyNy4xIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Sukiya",
       "cat": "eat",
       "match": "sukiya",
-      "lat": 34.484507,
-      "lon": 135.515143
+      "lat": 34.6660704,
+      "lon": 135.4992217
     },
     {
       "name": "Shikaku",
@@ -107,8 +101,11 @@
       "lon": 135.49796
     }
   ],
-  "center": {
-    "lat": 34.599006,
-    "lon": 135.489602
-  }
+  "day_trips": [
+    {
+      "name": "Kobe",
+      "match": "kobe",
+      "time": "Full Day"
+    }
+  ]
 }

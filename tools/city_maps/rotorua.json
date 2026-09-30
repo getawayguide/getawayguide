@@ -23,13 +23,6 @@
   },
   "pois": [
     {
-      "name": "Hobbiton",
-      "cat": "see",
-      "match": "hobbiton",
-      "lat": -38.137243,
-      "lon": 176.253485
-    },
-    {
       "name": "Kuirau Park",
       "cat": "see",
       "match": "kuirau park",
@@ -82,5 +75,12 @@
   "center": {
     "lat": -38.148666,
     "lon": 176.25085
-  }
+  },
+  "day_trips": [
+    {
+      "name": "Hobbiton",
+      "match": "hobbiton",
+      "time": "Half Day"
+    }
+  ]
 }

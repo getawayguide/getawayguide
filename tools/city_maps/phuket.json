@@ -23,13 +23,6 @@
   },
   "pois": [
     {
-      "name": "Phang Nga Bay",
-      "cat": "see",
-      "match": "phang nga bay",
-      "lat": 8.010084,
-      "lon": 98.601565
-    },
-    {
       "name": "Kata Noi",
       "cat": "see",
       "match": "kata noi",
@@ -52,8 +45,11 @@
     }
   ],
   "sea_bg": true,
-  "center": {
-    "lat": 7.909711,
-    "lon": 98.449061
-  }
+  "day_trips": [
+    {
+      "name": "Phang Nga Bay",
+      "match": "phang nga bay",
+      "time": "Full Day"
+    }
+  ]
 }
