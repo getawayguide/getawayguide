@@ -153,6 +153,12 @@ is where he is standing when he hits one, and they die there otherwise.
 
 ## Stage 6 — publish
 
+**Start at the Launch tab** in the editor (Ctrl+Alt+5, added 2026-09-30). Choose the country and
+press Run Claude's checks: every mechanical check in this file runs over the whole country at
+once, and the Overview shows what is left per page. It also proposes turning Google Maps links
+into links to the country's own articles (Apply selected). Kevin's judgment checks sit beside
+it with a tick each. A country is ready when both columns are clear.
+
 Pick the destination-card photo first. It is the one publish decision that needs
 Kevin: the default is `Images/dest-cards/<Name>_1.JPG`, but he often names a
 different shot (India used `India_3.JPG`). If it is not the `_1`, crop it to keep
