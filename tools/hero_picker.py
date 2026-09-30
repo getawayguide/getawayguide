@@ -352,9 +352,16 @@ def font_file(name):
     return send_file(f, mimetype="font/woff2")
 
 
-def resolve_src(p):
+def resolve_src(p, display=False):
     """A photo path from the picker: an album photo under ~/Backup, or 'site:Images/...' for a
-    photo the article already uses (its archive original in the repo, never a web variant)."""
+    photo the article already uses (its archive original in the repo, never a web variant).
+    'web:Images/web/...' is a site copy whose original could not be found: the stage may SHOW it
+    (display=True, the /img route) so a thumbnail opens as it is, but nothing is ever cut from it."""
+    if p.startswith("web:"):
+        src = (SITE / p[4:]).resolve()
+        if not display or (SITE / "Images" / "web").resolve() not in src.parents:
+            abort(404)
+        return src
     if p.startswith("site:"):
         src = (SITE / p[5:]).resolve()
         images = (SITE / "Images").resolve()
@@ -449,11 +456,15 @@ def article_photos():
     """The photos an article already shows, as archive originals, in the order they appear.
     Kevin (2026-09-29) picked the Orgov thumbnail from the article's own edited photo
     (IMG_0438-2), which lives in Images/, not in the backup albums the strip browses."""
-    import urllib.parse as up
     rel = request.args.get("rel", "")
     page = (SITE / rel).resolve()
     if SITE.resolve() not in page.parents or page.suffix != ".html" or not page.is_file():
         abort(404)
+    return jsonify(_article_rows(page))
+
+
+def _article_rows(page):
+    import urllib.parse as up
     html = page.read_text(encoding="utf-8", errors="replace")
     rows, seen = [], set()
     for m in re.finditer(r'(?:src|srcset)="([^"]*Images/web/[^"]+)"', html):
@@ -480,7 +491,7 @@ def article_photos():
             tier = "good" if w >= HERO_MIN else "fair" if w >= HERO_FAIR else "low"
             rows.append({"path": "site:" + orig.relative_to(SITE).as_posix(), "name": orig.name,
                          "w": w, "h": h, "heroW": w, "tier": tier, "sharp": w >= HERO_MIN})
-    return jsonify(rows)
+    return rows
 
 
 @app.get("/quality")
@@ -497,7 +508,7 @@ def quality():
 
 @app.get("/img")
 def img():
-    src = resolve_src(request.args["p"])
+    src = resolve_src(request.args["p"], display=True)
     # 4000 covers a full-bleed hero on a 2x monitor (the site itself never
     # serves more); the strip and the plain stage ask for far less
     w = min(int(request.args.get("w", 480)), 4000)
@@ -629,9 +640,13 @@ def save_thumb():
     slug = re.sub(r"[^a-z0-9-]", "", (body.get("slug") or "").lower())
     if not (rel and country and slug and body.get("path")):
         return jsonify({"ok": False, "error": "open the article in the editor first"}), 400
+    if body["path"].startswith("web:"):
+        return jsonify({"ok": False, "error": "the cards' photo is a web copy; pick its original from the strip first"}), 400
     src = resolve_src(body["path"])
     angle = float(body.get("angle") or 0)
     pos = body.get("positions") or {}
+    og_path = body.get("og_path") or body["path"]
+    og_angle = float(body.get("og_angle") if body.get("og_path") else angle)
     picks = json.loads(THUMB_PICKS.read_text(encoding="utf-8")) if THUMB_PICKS.exists() else {}
     picks[rel] = body
     THUMB_PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -649,13 +664,218 @@ def save_thumb():
         wrote.append((page.parent / "index.html").relative_to(SITE).as_posix())
     wrote += _listing_cards(rel, slug, country, pos)
     og = None
-    if pos.get("og"):
+    if pos.get("og") and not og_path.startswith("web:"):     # a web-copy share image stays as it is
         stem = Path(rel).stem
         dst = SITE / "Images" / "web" / "og" / ("%s-%s.jpg" % (page.parent.name, stem))
-        _share_image(src, dst, pos["og"], angle)
+        _share_image(resolve_src(og_path), dst, pos["og"], og_angle)
         og = dst.relative_to(SITE).as_posix()
     return jsonify({"ok": True, "card": "Images/web/%s/card-%s.jpg" % (country, slug), "pages": wrote, "og": og,
                     "log": r.stdout.strip().splitlines()[-2:]})
+
+
+def _thumb_picks():
+    try:
+        return json.loads(THUMB_PICKS.read_text(encoding="utf-8")) if THUMB_PICKS.exists() else {}
+    except Exception:
+        return {}
+
+
+def _web_original(img, rel):
+    """(path, angle, how) of the archive photo a site image was cut from, or None"""
+    import glob as _glob
+    name = Path(img).name
+    tp = _thumb_picks().get(rel) or {}
+    if re.match(r"card-.+\.(?:jpg|webp)$", name) and tp.get("path"):
+        return tp["path"], float(tp.get("angle") or 0), "thumbnail"
+    m = re.match(r"hero-(.+?)(?:-2x|-mob-1x|-mob)?\.(?:jpg|webp)$", name)
+    if m:
+        picks = read_picks()
+        hp = picks.get(rel)
+        if not (isinstance(hp, dict) and hp.get("slug") == m.group(1) and hp.get("path")):
+            hp = next((v for v in picks.values() if isinstance(v, dict) and v.get("slug") == m.group(1) and v.get("path")), None)
+        if hp:
+            return hp["path"], float(hp.get("angle") or 0), "hero"
+    if img.startswith("Images/web/"):
+        stem = re.sub(r"-(?:mob-)?[123]x$|-mob$|-card(?:-[123]x)?$", "", img.split("Images/web/", 1)[1].rsplit(".", 1)[0])
+        base = SITE / "Images" / stem
+        found = [c for c in base.parent.glob(_glob.escape(base.name) + ".*") if c.suffix.lower() in EXT] if base.parent.is_dir() else []
+        root = SITE / "Images" / stem.split("/")[0]
+        if not found and root.is_dir():          # El Salvador's web copies sit one folder above their originals
+            found = sorted(c for c in root.rglob(_glob.escape(Path(stem).name) + ".*") if c.suffix.lower() in EXT)
+        if found:
+            return "site:" + found[0].relative_to(SITE).as_posix(), 0.0, "original"
+        hit = _match_original(img, rel)
+        if hit:
+            return hit, 0.0, "original"
+    return None
+
+
+def _match_original(img, rel):
+    """The photo a web copy was downscaled from, found by its pixels (whole photo, same shape)"""
+    from PIL import ImageChops
+    try:
+        with Image.open(SITE / img) as w0:
+            web = ImageOps.exif_transpose(w0).convert("L")
+    except Exception:
+        return None
+    ar = web.width / web.height
+    ref = web.resize((64, max(1, round(64 / ar))), Image.BILINEAR)
+    cands = []
+    m = re.match(r"Images/web/dest-cards/([a-z0-9-]+)\.", img)
+    if m:                                        # the country placeholder: its dest-card originals
+        keys = {m.group(1), m.group(1).replace("-", ""), m.group(1).split("-")[-1]}
+        for c in sorted((SITE / "Images" / "dest-cards").glob("*")):
+            if c.suffix.lower() in EXT and any(c.name.lower().startswith(k + "_") or c.name.lower().startswith(k + ".") for k in keys):
+                try:
+                    with Image.open(c) as im:
+                        w, h = im.size
+                        if im.getexif().get(274, 1) in (5, 6, 7, 8):
+                            w, h = h, w
+                except Exception:
+                    continue
+                cands.append(("site:" + c.relative_to(SITE).as_posix(), w, h))
+    else:
+        page = SITE / rel
+        if page.is_file():
+            cands = [(r["path"], r["w"], r["h"]) for r in _article_rows(page)]
+    best = None
+    for path, w, h in cands:
+        if abs((w / h) / ar - 1) > 0.02:
+            continue
+        try:
+            im = Image.open(build(resolve_src(path), 480, False, None, 0.0)).convert("L").resize(ref.size, Image.BILINEAR)
+        except Exception:
+            continue
+        d = ImageStat.Stat(ImageChops.difference(im, ref)).mean[0]
+        if best is None or d < best[0]:
+            best = (d, path)
+    return best[1] if best and best[0] <= 12 else None
+
+
+def _pos_xy(pos):
+    """A CSS background-position ("40.5% 50%", "center 70%", "left top") as [x, y] percentages"""
+    kw = {"left": 0.0, "top": 0.0, "center": 50.0, "right": 100.0, "bottom": 100.0}
+    vals = []
+    for p in (pos or "").split()[:2]:
+        if p in kw:
+            vals.append((p, kw[p]))
+        else:
+            try:
+                vals.append((None, float(p.rstrip("%"))))
+            except ValueError:
+                vals.append((None, 50.0))
+    if not vals:
+        return [50.0, 50.0]
+    if len(vals) == 1:
+        k, v = vals[0]
+        return [50.0, v] if k in ("top", "bottom") else [v, 50.0]
+    (k1, a), (k2, b) = vals
+    if k1 in ("top", "bottom") or k2 in ("left", "right"):
+        a, b = b, a
+    return [a, b]
+
+
+def _photo_row(path, angle):
+    """What the stage needs to show a photo: name, size (after rotation and straightening) and tier"""
+    src = resolve_src(path, display=True)
+    try:
+        with Image.open(src) as im:
+            w, h = im.size
+            if im.getexif().get(274, 1) in (5, 6, 7, 8):
+                w, h = h, w
+    except Exception:
+        return None
+    tier = "good" if w >= HERO_MIN else "fair" if w >= HERO_FAIR else "low"
+    return {"path": path, "name": src.name, "w": w, "h": h, "heroW": w, "tier": tier, "angle": angle}
+
+
+def _og_offset(og_file, path, angle):
+    """Where the 1200x630 share image sits in a photo, as [x, y] percentages, or None when it was
+    not cut from this photo. Compared small and in grey: the cut is the same pixels at another scale."""
+    from PIL import ImageChops
+    try:
+        small = Image.open(build(resolve_src(path, display=True), 480, False, None, angle)).convert("L")
+        og = Image.open(og_file).convert("L")
+    except Exception:
+        return None
+    ar = 1200 / 630
+    w, h = small.size
+    if w / h > ar:                                  # a wide photo: the share image slides sideways
+        th = 64; im = small.resize((max(1, round(w * th / h)), th), Image.BILINEAR)
+        ref = og.resize((round(th * ar), th), Image.BILINEAR); span = im.width - ref.width; axis = 0
+    else:
+        tw = 120; im = small.resize((tw, max(1, round(h * tw / w))), Image.BILINEAR)
+        ref = og.resize((tw, round(tw / ar)), Image.BILINEAR); span = im.height - ref.height; axis = 1
+    if span < 0:
+        return None
+    best = None
+    for off in range(span + 1):
+        box = (off, 0, off + ref.width, ref.height) if axis == 0 else (0, off, ref.width, off + ref.height)
+        d = ImageStat.Stat(ImageChops.difference(im.crop(box), ref)).mean[0]
+        if best is None or d < best[0]:
+            best = (d, off)
+    if best[0] > 16:                                # not this photo
+        return None
+    v = 50.0 if span == 0 else round(best[1] / span * 100, 1)
+    return [v, 50.0] if axis == 0 else [50.0, v]
+
+
+@app.post("/thumb_current")
+def thumb_current():
+    """The article's thumbnails as the site shows them now: the cards' photo and the share image's,
+    as archive originals where they can be traced, with each slot's crop."""
+    body = request.json or {}
+    rel = body.get("rel") or ""
+    slots = {x["key"]: x for x in (body.get("slots") or []) if isinstance(x, dict) and x.get("key")}
+    tp = _thumb_picks().get(rel) or {}
+    card = slots.get("card") or {}
+    img = card.get("img") or (slots.get("list") or {}).get("img")
+    out = {"ok": True, "photo": None, "xy": {}, "og": None, "notes": []}
+    if img:
+        found = _web_original(img, rel)
+        path, angle, how = found if found else ("web:" + img, 0.0, "web")
+    elif tp.get("path"):
+        path, angle, how = tp["path"], float(tp.get("angle") or 0), "thumbnail"
+    else:
+        return jsonify(out)                      # nothing set yet: the stage stays on whatever you pick
+    photo = _photo_row(path, angle)
+    if not photo:
+        return jsonify(out)
+    photo["how"] = how
+    out["photo"] = photo
+    if how == "web":
+        out["notes"].append("The cards' photo is a web copy whose original was not found, so pick it again from the strip before saving.")
+    tpos = (tp.get("positions") or {}) if tp.get("path") == path else {}
+    for k in ("card", "list", "phone"):
+        sl = slots.get(k) or {}
+        if k == "list" and sl.get("img") and img and sl["img"] != img:
+            out["notes"].append("The home and posts card uses another photo today; saving gives it this one.")
+            out["xy"][k] = [50.0, 50.0]
+        elif k == "list" and "not on the home page" in (sl.get("note") or ""):
+            out["xy"][k] = _pos_xy(tpos.get("list", "50% 50%"))
+        else:
+            out["xy"][k] = _pos_xy(sl.get("pos") or tpos.get(k) or "50% 50%")
+    # the share image: find which photo it was cut from, and where
+    og_img = (slots.get("og") or {}).get("img")
+    if og_img and (SITE / og_img).is_file():
+        cands = [(path, angle)]
+        hp = read_picks().get(rel)
+        for c in ([(tp["path"], float(tp.get("angle") or 0))] if tp.get("path") else []) + \
+                 ([(hp["path"], float(hp.get("angle") or 0))] if isinstance(hp, dict) and hp.get("path") else []):
+            if c[0] not in [x[0] for x in cands]:
+                cands.append(c)
+        for cp, ca in cands:
+            if cp.startswith("web:"):
+                continue
+            xy = _og_offset(SITE / og_img, cp, ca)
+            if xy:
+                row = photo if cp == path else _photo_row(cp, ca)
+                out["og"] = dict(row or {}, xy=xy, how="same" if cp == path else "other")
+                break
+        if not out["og"]:
+            row = _photo_row("web:" + og_img, 0.0)
+            out["og"] = dict(row or {}, xy=[50.0, 50.0], how="web")
+    return jsonify(out)
 
 
 @app.get("/thumb_picks")
@@ -1092,7 +1312,7 @@ function setModeBP() {
   document.body.classList.toggle('thumb-mode', thumb);
   $('same-hero').hidden = !(thumb && ARTICLE);
   $('save').textContent = thumb ? 'Save thumbnail' : 'Save pick';
-  if (BP !== want) { BP = want; bpi = 0; fillVW(); if (thumb) restoreThumb(); }
+  if (BP !== want) { BP = want; bpi = 0; fillVW(); if (thumb && !THUMB_QUIET) restoreThumb(); }
   $('hero').dataset.slot = BP[bpi].key;
   $('hero').dataset.cardTitle = thumb && BP[bpi].key !== 'og' ? (ARTICLE ? ARTICLE.h1 : $('title').value) : '';
 }
@@ -1262,7 +1482,7 @@ function render(restore) {
   });
   $('count').textContent += STARS.length ? ` · ${STARS.length} pick${STARS.length === 1 ? '' : 's'}` : '';
   $('picks-only').onclick = () => { PICKS_ONLY = !PICKS_ONLY; try { localStorage.setItem('heroPicksOnly', PICKS_ONLY ? '1' : '0'); } catch (e) {} render(true); };
-  if (restore && saved) {
+  if (restore && saved && shape !== 'thumb') {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
     const src = ap ? { dataset: { crops: JSON.stringify(ap.crops || {}), scrim: ap.scrim, pickAngle: ap.angle } } : sel;
     if (t) { pick(t); crops = readCrops(src); applyCrop();
@@ -1304,11 +1524,13 @@ function heroRatio() { const b = boxOf(bpi); return b.w / b.h; }
 /* cover pins whichever dimension runs out first; the other is the one you can
    actually drag. For a 16:9 photo that is sideways on the phone and vertical
    on the two desktop shapes, so the picker has to ask per photo per shape. */
+function slotPhoto(i) { return $('shape').value === 'thumb' && BP[i] && BP[i].key === 'og' && OG ? OG : cur; }
 function geomFor(i) {
-  const img = $('pic');
-  if (!img.naturalWidth) { return { axis: 'y', travel: 0, shown: 1 }; }
+  const img = $('pic'), ph = slotPhoto(i);
+  // the slot's own photo's shape: in Thumbnail mode the stage may be showing the share image's photo
+  const src = ph && ph.ar ? ph.ar : img.naturalWidth ? img.naturalWidth / img.naturalHeight : 0;
+  if (!src) { return { axis: 'y', travel: 0, shown: 1 }; }
   const b = boxOf(i);
-  const src = img.naturalWidth / img.naturalHeight;
   if (src > b.w / b.h) {
     const sw = b.h * src;
     return { axis: 'x', travel: sw - b.w, shown: b.w / sw };
@@ -1377,17 +1599,24 @@ function wantW() {
    downgrade once a bigger one is loaded */
 function loadPic(force) {
   if (!cur) { return; }
+  const sp = stagePhoto(), a = sp === cur ? angle : (+sp.angle || 0);
+  if (sp.path + '|' + a !== picKey) { force = true; picKey = sp.path + '|' + a; }
   const w = full ? wantW() : 1600;
   if (!force && w <= picW) { return; }
   picW = w;
   const img = $('pic');
   img.onload = () => {              // the axis is not known until the photo is
+    if (img.naturalWidth) sp.ar = img.naturalWidth / img.naturalHeight;
     applyCrop();
     if (full && wantW() > picW) { loadPic(); }   // the first guess used a stand-in ratio
   };
-  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(cur.path) + (angle ? '&a=' + angle : '');
+  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(sp.path) + (a ? '&a=' + a : '');
 }
-let angle = 0;
+let angle = 0, picKey = '';
+// Thumbnail mode: the share image is its own file, so it can be a different photo from the cards
+let OG = null;
+function onOgSlot() { return $('shape').value === 'thumb' && BP[bpi] && BP[bpi].key === 'og'; }
+function stagePhoto() { return onOgSlot() && OG ? OG : cur; }
 function setAngle(v, reload) {
   angle = Math.max(-5, Math.min(5, Math.round(v * 10) / 10));
   $('angle').value = angle;
@@ -1464,11 +1693,20 @@ function pollQuality() {
   }, 1200);
 }
 
-function pick(t) {
+// a strip tile's shape, from its thumbnail (the same photo, smaller), until the stage photo loads
+function tileAr(t) { const i = t.querySelector('img'); return i && i.naturalWidth ? i.naturalWidth / i.naturalHeight : 0; }
+function pick(t, allSlots) {
   document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
   t.classList.add('on');
+  if (!allSlots && cur && onOgSlot()) {
+    OG = t.dataset.p === cur.path ? null : { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w, tier: t.dataset.tier, angle: 0, ar: tileAr(t) };
+    crops.og = 50; loadPic(true); applyCrop();
+    $('meta').innerHTML = `<span>Share image: <b>${t.dataset.name}</b></span>`;
+    return;
+  }
+  OG = null;
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
-          tier: t.dataset.tier };
+          tier: t.dataset.tier, ar: tileAr(t) };
   crops = { desktop: 50, laptop: 50, phone: 50 };
   picW = 0;
   loadPic(true);
@@ -1545,7 +1783,8 @@ function applyCrop() {
   }
   navBand(r);
   $('hint').innerHTML = cur
-    ? 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
+    ? (onOgSlot() && OG ? 'The share image is cut from a different photo than the cards (<b>' + OG.name + '</b>); pick from the strip to change it. ' : '')
+      + 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
       + '</b> to set the ' + BP[bpi].label.toLowerCase() + ' crop. This photo is '
       + $('pic').naturalWidth + '\u00d7' + $('pic').naturalHeight
       + ', so in this frame it is pinned by ' + (g.axis === 'x' ? 'height' : 'width')
@@ -1643,24 +1882,61 @@ function tileFor(path) { return document.querySelector(`.strip .t[data-p="${CSS.
 // open the album a photo lives in, then select it (fn runs once the strip has loaded)
 function showPhoto(path, then) {
   const folder = path.startsWith('site:') ? '__article__' : path.split('/')[0];
-  const done = () => { const t = tileFor(path); if (t) { pick(t); t.scrollIntoView({ block: 'center' }); } if (then) then(!!t); };
+  const done = () => { const t = tileFor(path); if (t) { pick(t, true); t.scrollIntoView({ block: 'center' }); } if (then) then(!!t); };
   if ($('album').value === folder && tileFor(path)) return done();
   if (![...$('album').options].some(o => o.value === folder)) { toast('That photo\'s album is not in the list'); return; }
   THUMB_PENDING = done; $('album').value = folder; loadStrip();
 }
-async function restoreThumb() {
+// Thumbnail mode opens on what the site shows today (Kevin, 2026-09-30: "the covers tab should open
+// with the active images that are already set at their current crops"): the photo server reads the
+// cards and the share image off the site, this server traces them to their originals
+const PHOTO_API = 'http://127.0.0.1:5003';
+let THUMB_GEN = 0, THUMB_QUIET = false;
+const axisOf = (p, b) => (p.w / p.h > b.w / b.h ? 'x' : 'y');
+async function restoreThumb(slots) {
   if (!ARTICLE) return;
-  try { THUMB_PICKS = await (await fetch('/thumb_picks')).json(); } catch (e) { THUMB_PICKS = {}; }
-  const tp = THUMB_PICKS[ARTICLE.rel];
-  if (!tp || !tp.path) return;
-  showPhoto(tp.path, ok => { if (!ok) return; Object.assign(crops, tp.crops || {}); setAngle(+tp.angle || 0); applyCrop(); });
+  const my = ++THUMB_GEN, rel = ARTICLE.rel;
+  if (!slots) {
+    try { const d = await (await fetch(PHOTO_API + '/api/thumbs?rel=' + encodeURIComponent(rel), { cache: 'no-store' })).json(); slots = d && d.ok ? d.slots : []; }
+    catch (e) { slots = []; }
+  }
+  let r;
+  try { r = await (await fetch('/thumb_current', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rel, slots }) })).json(); }
+  catch (e) { return toast('The Covers server did not answer'); }
+  if (my !== THUMB_GEN || !ARTICLE || ARTICLE.rel !== rel || !r || !r.photo) return;
+  const P = r.photo;
+  const place = () => {
+    if (my !== THUMB_GEN) return;
+    crops = {};
+    THUMB_BP.forEach(b => { if (b.key === 'og') return; const xy = r.xy[b.key] || [50, 50]; crops[b.key] = axisOf(P, b) === 'x' ? xy[0] : xy[1]; });
+    if (cur && !cur.ar) cur.ar = P.w / P.h;
+    OG = r.og && r.og.path && r.og.path !== P.path ? Object.assign({}, r.og, { ar: r.og.w / r.og.h }) : null;
+    const og = OG || P, oxy = (r.og && r.og.xy) || [50, 50];
+    crops.og = axisOf(og, THUMB_BP[3]) === 'x' ? oxy[0] : oxy[1];
+    picKey = ''; loadPic(true); applyCrop();
+    if (r.notes && r.notes.length) toast(r.notes.join(' '));
+  };
+  const direct = () => {
+    cur = { path: P.path, name: P.name, w: P.heroW, tier: P.tier, ar: P.w / P.h };
+    document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
+    $('meta').innerHTML = `<span><b>${P.name}</b></span>`;
+    place();
+  };
+  setAngle(+P.angle || 0, false);
+  const folder = P.path.startsWith('site:') ? '__article__' : P.path.split('/')[0];
+  if (P.path.startsWith('web:') || ![...$('album').options].some(o => o.value === folder)) return direct();
+  showPhoto(P.path, ok => { if (my !== THUMB_GEN) return; if (ok) place(); else direct(); });
 }
-// the editor's Thumbnails panel: Edit opens this article's thumbnail editor on one slot (2026-09-30)
+// the editor's Thumbnails panel: Edit opens this article's thumbnails as they are (2026-09-30)
 window.addEventListener('message', ev => {
   if (!ev.data || ev.data.type !== 'thumb-edit') return;
+  if (window.parent !== window) parent.postMessage({ type: 'thumb-edit-ok' }, '*');
+  THUMB_QUIET = true;                          // the restore below reads the site; not a second one
   if ($('shape').value !== 'thumb') { $('shape').value = 'thumb'; applyShape(); }
-  const i = BP.findIndex(b => b.key === ev.data.slot);
-  if (i >= 0 && i !== bpi) { bpi = i; $('vw').value = String(i); applyShape(); }
+  THUMB_QUIET = false;
+  const i = Math.max(0, BP.findIndex(b => b.key === ev.data.slot));
+  if (i !== bpi) { bpi = i; $('vw').value = String(i); applyShape(); }
+  restoreThumb(ev.data.slots || null);
 });
 $('same-hero').onclick = () => {
   const hp = ARTICLE && PICKS[ARTICLE.rel];
@@ -1674,7 +1950,8 @@ async function saveThumb() {
   BP.forEach((b, i) => { positions[b.key] = posFor(i); rounded[b.key] = Math.round((crops[b.key] ?? 50) * 10) / 10; });
   const body = { article: ARTICLE.rel, country: ARTICLE.country || country, path: cur.path, name: cur.name,
                  slug: (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, ''), angle: angle,
-                 positions: positions, crops: rounded };
+                 positions: positions, crops: rounded,
+                 og_path: OG ? OG.path : cur.path, og_angle: OG ? (+OG.angle || 0) : angle };
   let r;
   try { r = await (await fetch('/save_thumb', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); }
   catch (e) { return toast('The Covers server did not answer'); }

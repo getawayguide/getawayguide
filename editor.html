@@ -638,9 +638,13 @@
     #th-panel .th-h { display:flex; align-items:baseline; gap:.5rem; margin-bottom:.35rem; }
     #th-panel .th-h b { font-size:.74rem; font-weight:600; }
     #th-panel .th-h span { font-size:.66rem; color:#8a9790; flex:1; min-width:0; }
-    #th-panel .th-edit { font:600 .56rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;
-      background:#fff; color:#1C2821; border:1px solid #D9D7CF; border-radius:6px; padding:.35rem .55rem; flex:none; }
+    #th-panel .th-bar { position:sticky; top:-.5rem; z-index:2; background:#fff; margin:-.5rem -.6rem .6rem; padding:.5rem .6rem; }
+    #th-panel .th-edit { width:100%; height:32px; font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+      background:#fff; color:#1C2821; border:1px solid #D9D7CF; border-radius:8px; }
     #th-panel .th-edit:hover { border-color:#2D6B50; color:#2D6B50; }
+    /* while the thumbnails are open they get the whole sidebar (Kevin, 2026-09-30: "hide the photo
+       library section with drop down and previews when thumbnail is open so I can see the full space") */
+    body.thumbs-open #photo-panel > :not(#pk-bar):not(#th-panel) { display:none !important; }   /* the library, and the bars it adds at run time */
     #th-panel .th-box { position:relative; width:100%; border-radius:4px; overflow:hidden; background:#E8E7E1 center/cover no-repeat; }
     #th-panel .th-box.card { width:62%; }             /* a portrait card at full width was taller than the panel */
     #th-panel .th-box .th-t { position:absolute; inset:auto 0 0 0; padding:1.6rem .7rem .6rem; color:#F4F1EA;
@@ -5485,13 +5489,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // you to the thumbnail editor for that article in the heroes tab". The server reads what the site
   // has today (/api/thumbs); Edit opens the Heroes tab in Thumbnail mode on that slot.
   const thEsc = x => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-  window.thClose = () => { const p = $('#th-panel'); if (p) p.style.display = 'none'; const b = $('#th-toggle'); if (b) b.classList.remove('on'); };
+  window.thClose = () => { const p = $('#th-panel'); if (p) p.style.display = 'none'; const b = $('#th-toggle'); if (b) b.classList.remove('on'); document.body.classList.remove('thumbs-open'); };
   window.thToggle = function () {
     const p = $('#th-panel'), on = p.style.display === 'none';
     if (on) {
       if (!document.body.classList.contains('photos-open')) togglePhotoPanel();
       if ($('#pk-panel').style.display !== 'none') pkHide();
-      p.style.display = 'block'; $('#th-toggle').classList.add('on'); thLoad();
+      p.style.display = 'block'; $('#th-toggle').classList.add('on'); document.body.classList.add('thumbs-open'); thLoad();
     } else thClose();
   };
   async function thRel() {
@@ -5508,16 +5512,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (!d || !d.ok) { p.innerHTML = '<div class="th-top">The photo server did not answer.</div>'; return; }
     const title = (window.__getOriginalHTML ? (new DOMParser().parseFromString(window.__getOriginalHTML(), 'text/html').querySelector('.article-hero h1, h1') || {}).textContent : '') || '';
     const url = img => img ? API + '/site/' + img.split('/').map(encodeURIComponent).join('/') + '?v=' + Date.now() : '';
-    p.innerHTML = '<div class="th-top">How ' + thEsc(rel.split('/').pop()) + ' shows up in listings and link previews. Edit opens the thumbnail editor on that slot.</div>' +
+    p.innerHTML = '<div class="th-bar"><button class="th-edit" type="button" title="Open these thumbnails in Covers, each on its current photo and crop">Edit</button></div>' +
       d.slots.map(sl => {
         const cardish = sl.key !== 'og';
-        return `<div class="th-slot"><div class="th-h"><b>${thEsc(sl.label)}</b><span>${thEsc(sl.where)}</span>` +
-          `<button class="th-edit" data-slot="${sl.key}" title="Open this slot in the thumbnail editor">Edit</button></div>` +
+        return `<div class="th-slot"><div class="th-h"><b>${thEsc(sl.label)}</b><span>${thEsc(sl.where)}</span></div>` +
           `<div class="th-box${sl.key === 'card' ? ' card' : ''}" style="aspect-ratio:${sl.ratio};${sl.img ? `background-image:url('${url(sl.img)}');background-position:${thEsc(sl.pos)};` : ''}">` +
           (cardish && sl.img ? `<div class="th-t">${thEsc(title.trim())}</div>` : '') + `</div>` +
           (sl.note ? `<div class="th-note">${thEsc(sl.note)}</div>` : '') + `</div>`;
       }).join('');
-    p.querySelectorAll('.th-edit').forEach(b => b.onclick = () => window.openThumbEditor && openThumbEditor(b.dataset.slot));
+    p.querySelector('.th-edit').onclick = () => window.openThumbEditor && openThumbEditor(d.slots);
   }
   window.thLoad = thLoad;
   // a thumbnail saved in the Heroes tab refreshes the previews
@@ -10222,25 +10225,27 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   }
   document.addEventListener('article-loaded', () => setTimeout(sendHeroesContext, 400));
   // the Thumbnails panel's Edit: open the Heroes tab in Thumbnail mode on one slot (2026-09-30)
-  let _thumbWant = null;
-  window.openThumbEditor = function (slot) {
-    _thumbWant = slot;
+  let _thumbWant = null, _heroesReady = false;
+  window.openThumbEditor = function (slots) {
+    _thumbWant = { type: 'thumb-edit', slots: slots || null };   // the site's thumbnails now, for Covers to open on
     showView('heroes');
     const send = () => {
       const f = document.getElementById('heroes-frame');
       if (!f || !f.contentWindow || !_thumbWant) return;
       sendHeroesContext();
-      setTimeout(() => f.contentWindow.postMessage({ type: 'thumb-edit', slot: _thumbWant }, '*'), 300);
+      setTimeout(() => { if (_thumbWant) f.contentWindow.postMessage(_thumbWant, '*'); }, 300);
     };
-    send(); setTimeout(send, 1500);                 // the frame may still be loading; it also asks when ready
+    if (_heroesReady) send();
+    setTimeout(send, 2500);                         // a frame still loading asks when ready; Covers acks, so this is a no-op then
   };
   window.addEventListener('message', ev => {
     // the picker asks on its own load, since the article may already be open
     if (ev.origin === HEROES && ev.data && ev.data.type === 'heroes-ready') {
+      _heroesReady = true;
       sendHeroesContext();
-      if (_thumbWant) setTimeout(() => { const f = document.getElementById('heroes-frame'); if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'thumb-edit', slot: _thumbWant }, '*'); }, 400);
+      if (_thumbWant) setTimeout(() => { const f = document.getElementById('heroes-frame'); if (f && f.contentWindow && _thumbWant) f.contentWindow.postMessage(_thumbWant, '*'); }, 400);
     }
-    if (ev.origin === HEROES && ev.data && ev.data.type === 'thumb-saved') _thumbWant = null;
+    if (ev.origin === HEROES && ev.data && (ev.data.type === 'thumb-edit-ok' || ev.data.type === 'thumb-saved')) _thumbWant = null;
   });
 
   // The picker built a hero: rewrite this page's hero to use it. The hero lives outside the
@@ -10449,6 +10454,15 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       if (rel && rel.startsWith('Drafts/')) o.datePublished = today;
       o.dateModified = today;
       s.textContent = JSON.stringify(o, null, 2);
+    });
+    // the date under the subtitle says the same thing (Kevin, 2026-09-30: "the date underneath the
+    // subtitles for the articles doesn't seem to update"): it was written once, when the page was made
+    const shown = n.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    doc.querySelectorAll('h1').forEach(h => {
+      const hero = h.closest('.article-hero, .ah-banner, section, header');
+      if (hero) hero.querySelectorAll('div, p, span, time').forEach(e => {
+        if (!e.children.length && /^[A-Z][a-z]{2,8} \d{1,2}, \d{4}$/.test(e.textContent.trim())) e.textContent = shown;
+      });
     });
     orig = { title: t || orig.title, desc: d };
   };
