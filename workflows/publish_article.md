@@ -101,9 +101,11 @@ Photos, in this exact order (CLAUDE.md, "Image System"):
 
 `gen_image_tiers.py` is the step that was missing when Kosovo shipped with one un-tiered
 JPEG and no WebP. It builds every `-1x/-2x/-3x` and `-mob-1x/-3x` file from the archival
-originals. It does NOT rewrite the page: no tool yet turns a `<picture>` block's srcsets
-into the 1x/2x/3x form, so after this step check the srcsets by hand (Kosovo's were) and
-confirm with `python tools/lint_site.py`, which reads every candidate.
+originals. It does NOT rewrite the page; `python tools/tier_srcsets.py <page>` does (added
+2026-09-30): every single-size `<picture>` becomes the full 1x/2x/3x + WebP form with real
+widths and the site's `sizes`, and a folder name with a space is encoded (Orgov's unencoded
+space had been sending desktop the phone image). It only rewrites a block when every file it
+names exists, and re-running it changes nothing.
 (`python tools/draft_images.py <draft>` runs this whole list on a draft.)
 
 Then:

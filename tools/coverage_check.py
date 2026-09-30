@@ -72,6 +72,25 @@ def covered(name, texts):
     return False
 
 
+def place_keys(url):
+    """what identifies a Google Maps place in a link: its place id, and its pin to ~100 m"""
+    keys = set(re.findall(r"!1s(0x[0-9a-f]+:0x[0-9a-f]+)", url))
+    m = re.findall(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", url)
+    if m:
+        keys.add("%.3f,%.3f" % tuple(map(float, m[-1])))
+    return keys
+
+
+def article_places(paths):
+    """every map place the articles link to, by place_keys"""
+    out = set()
+    for p in paths:
+        t = p.read_text(encoding="utf-8", errors="replace")
+        for u in re.findall(r'href="(https?://[^"]*google\.[^"]*/maps/[^"]+)"', t):
+            out |= place_keys(H.unescape(u))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("country", help="folder name, e.g. armenia")
@@ -87,7 +106,8 @@ def main():
         arts = sorted(p for p in (ROOT / a.country).glob("*.html") if p.name != "field-notes.html")
     texts = [prose(p) for p in arts]
     names = linked_names(fn)
-    missing = [(n, u) for n, u in names if not covered(n, texts)]
+    linked = article_places(arts)       # the same place linked under another name counts
+    missing = [(n, u) for n, u in names if not covered(n, texts) and not (place_keys(H.unescape(u)) & linked)]
     out = sys.stdout
     out.write("%s: %d linked places in the field notes, %d article(s) checked\n\n" % (a.country, len(names), len(arts)))
     if a.all:

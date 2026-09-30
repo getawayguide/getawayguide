@@ -669,6 +669,7 @@ def save_thumb():
         dst = SITE / "Images" / "web" / "og" / ("%s-%s.jpg" % (page.parent.name, stem))
         _share_image(resolve_src(og_path), dst, pos["og"], og_angle)
         og = dst.relative_to(SITE).as_posix()
+        _point_og(page, og)
     return jsonify({"ok": True, "card": "Images/web/%s/card-%s.jpg" % (country, slug), "pages": wrote, "og": og,
                     "log": r.stdout.strip().splitlines()[-2:]})
 
@@ -789,58 +790,165 @@ def _photo_row(path, angle):
     return {"path": path, "name": src.name, "w": w, "h": h, "heroW": w, "tier": tier, "angle": angle}
 
 
+def _slide(small, ref0):
+    """(difference, pct, axis) of the best full-height or full-width placement of ref0 in small"""
+    from PIL import ImageChops
+    ar = ref0.width / ref0.height
+    w, h = small.size
+    if w / h > ar:
+        th = 64; im = small.resize((max(1, round(w * th / h)), th), Image.BILINEAR)
+        ref = ref0.resize((max(1, round(th * ar)), th), Image.BILINEAR); span = im.width - ref.width; axis = "x"
+    else:
+        tw = 64; im = small.resize((tw, max(1, round(h * tw / w))), Image.BILINEAR)
+        ref = ref0.resize((tw, max(1, round(tw / ar))), Image.BILINEAR); span = im.height - ref.height; axis = "y"
+    if span < 0:
+        return None
+    best = None
+    for off in range(span + 1):
+        box = (off, 0, off + ref.width, ref.height) if axis == "x" else (0, off, ref.width, off + ref.height)
+        d = ImageStat.Stat(ImageChops.difference(im.crop(box), ref)).mean[0]
+        if best is None or d < best[0]:
+            best = (d, off)
+    return best[0], (50.0 if span == 0 else round(best[1] / span * 100, 1)), axis
+
+
+def _album_photos(rel):
+    """the backup album photos of an article's country (Drafts/.Full Articles/armenia/x -> Armenia (2026))"""
+    folder = Path(rel).parent.name.lower()
+    out = []
+    for a in albums():
+        if a["country"].lower().replace(" ", "-") == folder:
+            out += [a["folder"] + "/" + f.name for f in sorted((BACKUP / a["folder"]).iterdir()) if f.suffix.lower() in EXT]
+    return out
+
+
+MATCH_CACHE = SITE / ".tmp" / "thumb_match_cache.json"
+
+
+def _crop_match(img, rel):
+    """The photo a CROPPED web copy was cut from, and where: (path, pct, axis) or None. Kevin's
+    Yerevan and day-trip cards were cut at an edited crop, so no whole-photo match can see them.
+    The article's photos first, then the country's album as the strip has already rendered it
+    (an unrendered photo is skipped rather than decoded: a HEIC takes seconds)."""
+    f = SITE / img
+    try:
+        key = "%s|%d" % (img, f.stat().st_mtime_ns)
+        cache = json.loads(MATCH_CACHE.read_text(encoding="utf-8")) if MATCH_CACHE.is_file() else {}
+    except Exception:
+        return None
+    if key in cache:
+        return tuple(cache[key]) if cache[key] else None
+    try:
+        with Image.open(f) as i0:
+            ref0 = ImageOps.exif_transpose(i0).convert("L")
+    except Exception:
+        return None
+    best = None
+    page = SITE / rel
+    for r in (_article_rows(page) if page.is_file() else []):
+        try:
+            m = _slide(Image.open(build(resolve_src(r["path"]), 480, False, None, 0.0)).convert("L"), ref0)
+        except Exception:
+            continue
+        if m and (best is None or m[0] < best[0]):
+            best = (m[0], r["path"], m[1], m[2])
+    if not best or best[0] > 12:
+        for path in _album_photos(rel):
+            try:
+                cp = cache_path(resolve_src(path), 340, False, HERO_RATIO, 0.0)
+                if not cp.exists():
+                    continue
+                m = _slide(Image.open(cp).convert("L"), ref0)
+            except Exception:
+                continue
+            if m and (best is None or m[0] < best[0]):
+                best = (m[0], path, m[1], m[2])
+    hit = [best[1], best[2], best[3]] if best and best[0] <= 12 else None
+    cache[key] = hit
+    try:
+        MATCH_CACHE.write_text(json.dumps(cache, indent=1, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+    return tuple(hit) if hit else None
+
+
+def _view_center(W, H, card_ar, crop, slot_ar, pos):
+    """the centre, in the original's pixels, of what the site shows in a slot: the card image (a
+    crop of the original at `crop`, or all of it) cover-cut to slot_ar at pos"""
+    pct, axis = crop
+    if axis == "x":
+        cw, ch = H * card_ar, H; x0, y0 = (W - cw) * pct / 100, 0.0
+    else:
+        cw, ch = W, W / card_ar; x0, y0 = 0.0, (H - ch) * pct / 100
+    if cw / ch > slot_ar:
+        vw, vh = ch * slot_ar, ch; vx, vy = (cw - vw) * pos[0] / 100, 0.0
+    else:
+        vw, vh = cw, cw / slot_ar; vx, vy = 0.0, (ch - vh) * pos[1] / 100
+    return x0 + vx + vw / 2, y0 + vy + vh / 2
+
+
+def _frame_xy(W, H, slot_ar, cx, cy):
+    """the [x, y] that puts a slot_ar frame cut from the whole original on that centre"""
+    clamp = lambda v: round(max(0.0, min(100.0, v)), 1)
+    if W / H > slot_ar:
+        fw = H * slot_ar
+        return [clamp((cx - fw / 2) / (W - fw) * 100) if W > fw else 50.0, 50.0]
+    fh = W / slot_ar
+    return [50.0, clamp((cy - fh / 2) / (H - fh) * 100) if H > fh else 50.0]
+
+
+def _site_to_orig(W, H, card_ar, crop, slot_ar, pos):
+    """A slot's crop on the site, where the card image is itself a crop of the original, as the
+    [x, y] Covers uses for that slot cut from the whole original: the same centre."""
+    return _frame_xy(W, H, slot_ar, *_view_center(W, H, card_ar, crop, slot_ar, pos))
+
+
+SLOT_AR = {"card": 294 / 441, "list": 395 / 296, "phone": 353 / 199, "og": 1200 / 630}
+
+
 def _og_offset(og_file, path, angle):
     """Where the 1200x630 share image sits in a photo, as [x, y] percentages, or None when it was
     not cut from this photo. Compared small and in grey: the cut is the same pixels at another scale."""
-    from PIL import ImageChops
     try:
         small = Image.open(build(resolve_src(path, display=True), 480, False, None, angle)).convert("L")
         og = Image.open(og_file).convert("L")
     except Exception:
         return None
-    ar = 1200 / 630
-    w, h = small.size
-    if w / h > ar:                                  # a wide photo: the share image slides sideways
-        th = 64; im = small.resize((max(1, round(w * th / h)), th), Image.BILINEAR)
-        ref = og.resize((round(th * ar), th), Image.BILINEAR); span = im.width - ref.width; axis = 0
-    else:
-        tw = 120; im = small.resize((tw, max(1, round(h * tw / w))), Image.BILINEAR)
-        ref = og.resize((tw, round(tw / ar)), Image.BILINEAR); span = im.height - ref.height; axis = 1
-    if span < 0:
+    m = _slide(small, og)
+    if not m or m[0] > 16:                          # not this photo
         return None
-    best = None
-    for off in range(span + 1):
-        box = (off, 0, off + ref.width, ref.height) if axis == 0 else (0, off, ref.width, off + ref.height)
-        d = ImageStat.Stat(ImageChops.difference(im.crop(box), ref)).mean[0]
-        if best is None or d < best[0]:
-            best = (d, off)
-    if best[0] > 16:                                # not this photo
-        return None
-    v = 50.0 if span == 0 else round(best[1] / span * 100, 1)
-    return [v, 50.0] if axis == 0 else [50.0, v]
+    return [m[1], 50.0] if m[2] == "x" else [50.0, m[1]]
 
 
 @app.post("/thumb_current")
 def thumb_current():
-    """The article's thumbnails as the site shows them now: the cards' photo and the share image's,
-    as archive originals where they can be traced, with each slot's crop."""
+    """The article's thumbnails as the site shows them now: the cards' photo, as an archive original
+    where it can be traced, with each slot's crop; the share image is always the cards' photo."""
     body = request.json or {}
-    rel = body.get("rel") or ""
-    slots = {x["key"]: x for x in (body.get("slots") or []) if isinstance(x, dict) and x.get("key")}
+    return jsonify(_current(body.get("rel") or "", body.get("slots") or []))
+
+
+def _current(rel, slot_list):
+    slots = {x["key"]: x for x in slot_list if isinstance(x, dict) and x.get("key")}
     tp = _thumb_picks().get(rel) or {}
     card = slots.get("card") or {}
     img = card.get("img") or (slots.get("list") or {}).get("img")
     out = {"ok": True, "photo": None, "xy": {}, "og": None, "notes": []}
+    crop = None
     if img:
         found = _web_original(img, rel)
+        if not found and img.startswith("Images/web/"):
+            cm = _crop_match(img, rel)                # a card cut at a crop of its original
+            if cm:
+                found, crop = (cm[0], 0.0, "crop"), (cm[1], cm[2])
         path, angle, how = found if found else ("web:" + img, 0.0, "web")
     elif tp.get("path"):
         path, angle, how = tp["path"], float(tp.get("angle") or 0), "thumbnail"
     else:
-        return jsonify(out)                      # nothing set yet: the stage stays on whatever you pick
+        return out                               # nothing set yet: the stage stays on whatever you pick
     photo = _photo_row(path, angle)
     if not photo:
-        return jsonify(out)
+        return out
     photo["how"] = how
     out["photo"] = photo
     if how == "web":
@@ -855,6 +963,15 @@ def thumb_current():
             out["xy"][k] = _pos_xy(tpos.get("list", "50% 50%"))
         else:
             out["xy"][k] = _pos_xy(sl.get("pos") or tpos.get(k) or "50% 50%")
+    card_ar = None
+    if crop:                                     # the site's crops are on the card image, not the photo
+        try:
+            with Image.open(SITE / img) as ci:
+                card_ar = ci.width / ci.height
+        except Exception:
+            card_ar = SLOT_AR["card"]
+        for k in ("card", "list", "phone"):
+            out["xy"][k] = _site_to_orig(photo["w"], photo["h"], card_ar, crop, SLOT_AR[k], out["xy"][k])
     # the share image: find which photo it was cut from, and where
     og_img = (slots.get("og") or {}).get("img")
     if og_img and (SITE / og_img).is_file():
@@ -872,10 +989,53 @@ def thumb_current():
                 row = photo if cp == path else _photo_row(cp, ca)
                 out["og"] = dict(row or {}, xy=xy, how="same" if cp == path else "other")
                 break
-        if not out["og"]:
-            row = _photo_row("web:" + og_img, 0.0)
-            out["og"] = dict(row or {}, xy=[50.0, 50.0], how="web")
-    return jsonify(out)
+    # Kevin (2026-09-30): the share image is the cards' photo. Cut from anything else, it is shown
+    # on the cards' photo centred where the card is, and Save cuts it from there.
+    if not out["og"] or out["og"].get("how") != "same":
+        if crop:                                 # centred where the country card is
+            cx, cy = _view_center(photo["w"], photo["h"], card_ar, crop, SLOT_AR["card"], [50.0, 50.0])
+        else:
+            cx, cy = _view_center(photo["w"], photo["h"], photo["w"] / photo["h"], (50.0, "x"), SLOT_AR["card"],
+                                  out["xy"].get("card") or [50.0, 50.0])
+        xy = _frame_xy(photo["w"], photo["h"], SLOT_AR["og"], cx, cy)
+        had = out["og"]
+        out["og"] = dict(photo, xy=xy, how="recut")
+        if og_img:
+            out["notes"].append("The share image was cut from %s; saving cuts it from the cards' photo." %
+                                ("another photo" if had and had.get("how") == "other" else "a photo other than the card's"))
+    return out
+
+
+def _point_og(page, dst):
+    """og:image and twitter:image name the share image Save wrote"""
+    url = "https://getawayguide.io/" + dst
+    h = page.read_text(encoding="utf-8")
+    h2 = re.sub(r'(<meta\s+(?:property|name)="(?:og:image|twitter:image)"\s+content=")[^"]*(")', lambda m: m.group(1) + url + m.group(2), h)
+    if h2 != h:
+        page.write_text(h2, encoding="utf-8")
+    return h2 != h
+
+
+@app.post("/recut_share")
+def recut_share():
+    """The Launch tab's fix: cut the share image from the cards' photo, centred on the card."""
+    body = request.json or {}
+    rel = body.get("rel") or ""
+    page = SITE / rel
+    if not page.is_file():
+        return jsonify({"ok": False, "error": "no such article"}), 404
+    cur = _current(rel, body.get("slots") or [])
+    ph, og = cur.get("photo"), cur.get("og")
+    if not ph or not og:
+        return jsonify({"ok": False, "error": "this article has no card photo to cut from"}), 400
+    if og.get("how") == "same":
+        return jsonify({"ok": True, "log": "%s: the share image is already the card's photo." % page.name})
+    if ph["path"].startswith("web:"):
+        return jsonify({"ok": False, "error": "the card's original was not found; pick it in Covers"}), 400
+    dst = "Images/web/og/%s-%s.jpg" % (page.parent.name, page.stem)
+    _share_image(resolve_src(ph["path"]), SITE / dst, "%s%% %s%%" % tuple(og["xy"]), float(ph.get("angle") or 0))
+    _point_og(page, dst)
+    return jsonify({"ok": True, "log": "%s: share image cut from %s." % (page.name, ph["name"]), "og": dst})
 
 
 @app.get("/thumb_picks")
@@ -1698,13 +1858,7 @@ function tileAr(t) { const i = t.querySelector('img'); return i && i.naturalWidt
 function pick(t, allSlots) {
   document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
   t.classList.add('on');
-  if (!allSlots && cur && onOgSlot()) {
-    OG = t.dataset.p === cur.path ? null : { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w, tier: t.dataset.tier, angle: 0, ar: tileAr(t) };
-    crops.og = 50; loadPic(true); applyCrop();
-    $('meta').innerHTML = `<span>Share image: <b>${t.dataset.name}</b></span>`;
-    return;
-  }
-  OG = null;
+  OG = null;                     // the share image is the cards' photo (Kevin, 2026-09-30)
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
           tier: t.dataset.tier, ar: tileAr(t) };
   crops = { desktop: 50, laptop: 50, phone: 50 };
@@ -1783,8 +1937,7 @@ function applyCrop() {
   }
   navBand(r);
   $('hint').innerHTML = cur
-    ? (onOgSlot() && OG ? 'The share image is cut from a different photo than the cards (<b>' + OG.name + '</b>); pick from the strip to change it. ' : '')
-      + 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
+    ? 'Drag the photo <b>' + (g.axis === 'x' ? 'left or right' : 'up or down')
       + '</b> to set the ' + BP[bpi].label.toLowerCase() + ' crop. This photo is '
       + $('pic').naturalWidth + '\u00d7' + $('pic').naturalHeight
       + ', so in this frame it is pinned by ' + (g.axis === 'x' ? 'height' : 'width')
@@ -1910,9 +2063,9 @@ async function restoreThumb(slots) {
     crops = {};
     THUMB_BP.forEach(b => { if (b.key === 'og') return; const xy = r.xy[b.key] || [50, 50]; crops[b.key] = axisOf(P, b) === 'x' ? xy[0] : xy[1]; });
     if (cur && !cur.ar) cur.ar = P.w / P.h;
-    OG = r.og && r.og.path && r.og.path !== P.path ? Object.assign({}, r.og, { ar: r.og.w / r.og.h }) : null;
-    const og = OG || P, oxy = (r.og && r.og.xy) || [50, 50];
-    crops.og = axisOf(og, THUMB_BP[3]) === 'x' ? oxy[0] : oxy[1];
+    OG = null;                   // always the cards' photo: a share image cut from another is re-cut on Save
+    const oxy = (r.og && r.og.xy) || [50, 50];
+    crops.og = axisOf(P, THUMB_BP[3]) === 'x' ? oxy[0] : oxy[1];
     picKey = ''; loadPic(true); applyCrop();
     if (r.notes && r.notes.length) toast(r.notes.join(' '));
   };

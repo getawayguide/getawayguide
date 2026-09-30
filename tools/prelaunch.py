@@ -628,9 +628,20 @@ def _thumbs(ctx, rel):
         return {}
 
 
+def _covers_current(rel, slots):
+    """Covers' reading of an article's thumbnails (tools/hero_picker.py /thumb_current), or None"""
+    import urllib.request
+    try:
+        req = urllib.request.Request("http://127.0.0.1:5004/thumb_current", data=json.dumps({"rel": rel, "slots": slots}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        return json.load(urllib.request.urlopen(req, timeout=120))
+    except Exception:
+        return None
+
+
 def c_cards(ctx):
-    """the country-page card and the share image: present, and this article's own"""
-    items = []
+    """the country-page card and the share image: present, this article's own, and one photo"""
+    items, recut = [], []
     for rel in ctx["set"]:
         if ctx["kind"][rel] in ("country", "field-notes"):
             continue
@@ -646,10 +657,16 @@ def c_cards(ctx):
             items.append({"page": rel, "detail": "No share image"})
         elif og.rsplit("/", 1)[-1] in ("%s.jpg" % country, "og-image.jpg"):
             items.append({"page": rel, "detail": "The share image is the country's, not this article's", "value": og.rsplit("/", 1)[-1]})
+        elif card and "/dest-cards/" not in card:
+            cur = _covers_current(rel, d.get("slots", []))
+            if cur and cur.get("og") and cur["og"].get("how") == "recut" and not (cur.get("photo") or {}).get("path", "").startswith("web:"):
+                items.append({"page": rel, "detail": "The share image is not cut from the card's photo", "value": og.rsplit("/", 1)[-1]})
+                recut.append(rel)
     if not items:
-        return result("pass", "Every article has its own card photo and share image.")
+        return result("pass", "Every article has its own card photo and share image, cut from the same photo.")
     return result("warn", count_label(len(items), "thumbnail problem") + ".", items,
-                  tool={"kind": "thumbs", "label": "Open Thumbnails"})
+                  tool={"kind": "thumbs", "label": "Open Thumbnails"},
+                  fix={"kind": "share", "label": "Cut the share image from the card", "pages": recut} if recut else None)
 
 
 def c_country_page(ctx):
@@ -681,8 +698,9 @@ def c_coverage(ctx):
         if not fn.exists() or not arts:
             continue
         texts = [cc.prose(p) for p in arts]
+        linked = cc.article_places(arts)
         for n, u in cc.linked_names(fn):
-            if not cc.covered(n, texts):
+            if not cc.covered(n, texts) and not (cc.place_keys(H.unescape(u)) & linked):
                 out.append({"page": fn.relative_to(ROOT).as_posix(), "detail": "In the field notes, in no article", "value": n})
     if not out:
         return result("pass", "Every place in the field notes made it into an article.")
@@ -732,7 +750,7 @@ CLAUDE = [
     ("dup-photos", "Photos", "No photo used in two articles", "Across the pages launching together.", c_dup_photos),
     ("city-maps", "Maps", "City and route maps are embedded and point true", "Each key row's link lands on its pin; itineraries have a route map.", c_city_maps),
     ("seo", "Search & sharing", "Search title, description and share tags", "CLAUDE.md: title up to ~70, description under 160, og tags, headline matches.", c_seo),
-    ("cards", "Search & sharing", "Each article has its own card and share image", "Not the country's placeholder photo or share image.", c_cards),
+    ("cards", "Search & sharing", "Each article has its own card and share image", "Not the country's placeholder, and the share image cut from the card's photo.", c_cards),
     ("dates", "Search & sharing", "One date per page", "The date under the subtitle and dateModified agree.", c_dates),
     ("country-page", "Country", "The country page has a card for every article", "An article with no card is only findable by search.", c_country_page),
     ("coverage", "Country", "Everything in the field notes made it into an article", "coverage_check.py (Sevanavank, the Black Wall and the plane once fell through).", c_coverage),
@@ -769,8 +787,12 @@ def kevin_hints(ctx, rel):
         st = redline.review_state(rel)
         open_c = [t for t in (st.get("comments") or {}).get("threads", []) if not t.get("resolved")]
         pend = [c for c in st.get("changes", []) if c["id"] not in (st.get("decisions") or {})]
+        loose = lambda x: re.sub(r"\s+", " ", (x or "").replace("&nbsp;", " ").replace(" ", " "))
+        page = loose(h)
+        stale = [c for c in pend if c.get("kind") == "grammar" and loose(c.get("find")) not in page]
         out["k-review"] = {"text": "Clear: no open comments, no undecided changes." if not (open_c or pend) else
-                           "%s, %s." % (count_label(len(open_c), "open comment"), count_label(len(pend), "undecided change")),
+                           "%s, %s%s." % (count_label(len(open_c), "open comment"), count_label(len(pend), "undecided change"),
+                                          (" (%d no longer match the text: they were written before an edit)" % len(stale)) if stale else ""),
                            "ok": not (open_c or pend)}
     except Exception as e:
         out["k-review"] = {"text": "Could not read the review: %s" % e}
@@ -978,6 +1000,20 @@ def api_fix():
                                text=True, encoding="utf-8", errors="replace", timeout=3600)
             logs.append("%s: %s" % (Path(p).name, "done" if r.returncode == 0 else "failed: " + (r.stderr or r.stdout)[-300:]))
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": pages})
+    if kind == "share":
+        import urllib.request
+        from urllib.parse import quote
+        logs, client = [], bp_app["app"].test_client()
+        for p in [p for p in d.get("pages") or [] if (ROOT / p).is_file()]:
+            slots = (client.get("/api/thumbs?rel=" + quote(p)).get_json() or {}).get("slots", [])
+            try:
+                req = urllib.request.Request("http://127.0.0.1:5004/recut_share", data=json.dumps({"rel": p, "slots": slots}).encode(),
+                                             headers={"Content-Type": "application/json"})
+                r = json.load(urllib.request.urlopen(req, timeout=300))
+            except Exception as e:
+                r = {"log": "%s: Covers did not answer (%s)" % (Path(p).name, e)}
+            logs.append(r.get("log") or r.get("error") or "")
+        return jsonify({"ok": True, "log": "\n".join(logs), "pages": d.get("pages") or []})
     if kind == "dates":
         pages = [p for p in d.get("pages") or [] if (ROOT / p).is_file()]
         logs = []
