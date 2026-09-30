@@ -352,6 +352,21 @@ def font_file(name):
     return send_file(f, mimetype="font/woff2")
 
 
+def resolve_src(p):
+    """A photo path from the picker: an album photo under ~/Backup, or 'site:Images/...' for a
+    photo the article already uses (its archive original in the repo, never a web variant)."""
+    if p.startswith("site:"):
+        src = (SITE / p[5:]).resolve()
+        images = (SITE / "Images").resolve()
+        if images not in src.parents or (images / "web") in src.parents or (images / "web") == src:
+            abort(404)
+        return src
+    src = (BACKUP / p).resolve()
+    if BACKUP.resolve() not in src.parents:
+        abort(404)
+    return src
+
+
 def measure(f):
     """Dimensions only: opening an image reads the header, not the pixels."""
     try:
@@ -429,6 +444,45 @@ def prescan_all():
             pass
 
 
+@app.get("/article_photos")
+def article_photos():
+    """The photos an article already shows, as archive originals, in the order they appear.
+    Kevin (2026-09-29) picked the Orgov thumbnail from the article's own edited photo
+    (IMG_0438-2), which lives in Images/, not in the backup albums the strip browses."""
+    import urllib.parse as up
+    rel = request.args.get("rel", "")
+    page = (SITE / rel).resolve()
+    if SITE.resolve() not in page.parents or page.suffix != ".html" or not page.is_file():
+        abort(404)
+    html = page.read_text(encoding="utf-8", errors="replace")
+    rows, seen = [], set()
+    for m in re.finditer(r'(?:src|srcset)="([^"]*Images/web/[^"]+)"', html):
+        for part in m.group(1).split(","):
+            u = up.unquote(part.strip().split(" ")[0])
+            if "Images/web/" not in u or "/flags/" in u or "/city-maps/" in u or "/og/" in u:
+                continue
+            sub = u.split("Images/web/", 1)[1]
+            stem = re.sub(r"-(?:mob-)?(?:[123]x)$|-mob$", "", sub.rsplit(".", 1)[0])
+            if stem in seen:
+                continue
+            seen.add(stem)
+            base = SITE / "Images" / stem
+            orig = next((c for c in base.parent.glob(base.name + ".*") if c.suffix.lower() in EXT), None) if base.parent.is_dir() else None
+            if not orig:
+                continue
+            try:
+                with Image.open(orig) as im:
+                    w, h = im.size
+                    if im.getexif().get(274, 1) in (5, 6, 7, 8):
+                        w, h = h, w
+            except Exception:
+                continue
+            tier = "good" if w >= HERO_MIN else "fair" if w >= HERO_FAIR else "low"
+            rows.append({"path": "site:" + orig.relative_to(SITE).as_posix(), "name": orig.name,
+                         "w": w, "h": h, "heroW": w, "tier": tier, "sharp": w >= HERO_MIN})
+    return jsonify(rows)
+
+
 @app.get("/quality")
 def quality():
     """Focus scores for whatever the pool has finished, plus the album median so
@@ -443,8 +497,7 @@ def quality():
 
 @app.get("/img")
 def img():
-    src = (BACKUP / request.args["p"]).resolve()
-    assert BACKUP in src.parents, "outside the backup"
+    src = resolve_src(request.args["p"])
     # 4000 covers a full-bleed hero on a 2x monitor (the site itself never
     # serves more); the strip and the plain stage ask for far less
     w = min(int(request.args.get("w", 480)), 4000)
@@ -477,8 +530,8 @@ def save():
         import re as _re, subprocess, sys as _sys
         slug = _re.sub(r"[^a-z0-9-]", "", slug.lower())
         web = SITE / "Images" / "web" / body["country"]
-        src = (BACKUP / body["path"]).resolve()
-        if BACKUP in src.parents and src.is_file() and slug:
+        src = resolve_src(body["path"])
+        if src.is_file() and slug:
             args = [_sys.executable, str(SITE / "tools" / "gen_hero_variants.py"), str(src),
                     "--out", str(web), "--slug", slug, "--force"]
             if abs(float(body.get("angle") or 0)) > 1e-3:
@@ -488,6 +541,112 @@ def save():
                         "web": "Images/web/" + body["country"],
                         "log": "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-4:])})
     return jsonify(out)
+
+
+THUMB_PICKS = SITE / ".tmp" / "thumb_picks.json"
+
+
+def _country_card(index_path, file_name, up, slug, country, pos):
+    """Point the country page's card for `file_name` at card-<slug> with a position per slot.
+    The inline background carries the 2:3 position (every width over 768); --pm carries the phone
+    16:9 one, which artifact.css applies at 768 and below."""
+    if not index_path.is_file():
+        return False
+    h = index_path.read_text(encoding="utf-8")
+    m = re.search(r'(<div class="country-article-card" onclick="location\.href=\'%s\'" style=")([^"]*)(")' % re.escape(file_name), h)
+    if not m:
+        return False
+    web = "%sImages/web/%s/card-%s" % (up, country, slug)
+    style = ("background:url('{w}.jpg') {d}/cover no-repeat;background-image:image-set(url('{w}.webp') type('image/webp'), "
+             "url('{w}.jpg') type('image/jpeg'));--pm:{p};cursor:pointer").format(w=web, d=pos.get("card", "50% 50%"), p=pos.get("phone", "50% 50%"))
+    h = h[:m.start(2)] + style + h[m.end(2):]
+    index_path.write_text(h, encoding="utf-8")
+    return True
+
+
+def _listing_cards(rel, slug, country, pos):
+    """The home page's Recent Dispatches and posts.html's Guides link to PUBLISHED articles through a
+    `.card-img` block (4:3 on a monitor, 16:9 on a phone). When one points at this article, it gets
+    the card photo inline with both crops; a draft has no such card yet, so nothing is touched."""
+    live = rel.replace("Drafts/.Full Articles/", "")
+    wrote = []
+    for name in ("index.html", "posts.html"):
+        f = SITE / name
+        if not f.is_file():
+            continue
+        h = f.read_text(encoding="utf-8")
+        pat = re.compile(r'(<a href="%s"[^>]*>\s*<div class="card-img bg[^"]*")(?: style="[^"]*")?(>)' % re.escape(live))
+        if not pat.search(h):
+            continue
+        web = "Images/web/%s/card-%s" % (country, slug)
+        style = (' style="background-image:image-set(url(\'{w}.webp\') type(\'image/webp\'), url(\'{w}.jpg\') type(\'image/jpeg\'));'
+                 'background-size:cover;background-position:{d};--pm:{p}"').format(w=web, d=pos.get("list", "50% 50%"), p=pos.get("phone", "50% 50%"))
+        h = pat.sub(lambda m: m.group(1) + style + m.group(2), h)
+        f.write_text(h, encoding="utf-8")
+        wrote.append(name)
+    return wrote
+
+
+def _share_image(src, dst, pos, angle=0.0):
+    """The 1200x630 share image, cut from the same original at the 'og' crop (x%, y%)."""
+    im0 = ImageOps.exif_transpose(Image.open(src)); icc = im0.info.get("icc_profile")
+    im = straighten(im0.convert("RGB"), angle) if abs(angle) > 1e-3 else im0.convert("RGB")
+    w, h = im.size; ar = 1200 / 630
+    try:
+        px, py = [float(v.strip().rstrip("%")) / 100 for v in pos.split()]
+    except Exception:
+        px, py = 0.5, 0.5
+    if w / h > ar:
+        nw = round(h * ar); x = round((w - nw) * px); im = im.crop((x, 0, x + nw, h))
+    else:
+        nh = round(w / ar); y = round((h - nh) * py); im = im.crop((0, y, w, y + nh))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    im.resize((1200, 630), Image.LANCZOS).save(dst, "JPEG", quality=82, optimize=True, progressive=True, icc_profile=icc)
+
+
+@app.post("/save_thumb")
+def save_thumb():
+    """Thumbnail mode's Save (Kevin, 2026-09-29: "make thumbnails ... exactly like how this works
+    for the heroes"). Builds card-<slug>.jpg/.webp from the archive original, points every card
+    for the article at it with that slot's crop, and recuts the share image."""
+    import subprocess, sys as _sys
+    body = dict(request.json or {})
+    rel, country = body.get("article") or "", body.get("country") or ""
+    slug = re.sub(r"[^a-z0-9-]", "", (body.get("slug") or "").lower())
+    if not (rel and country and slug and body.get("path")):
+        return jsonify({"ok": False, "error": "open the article in the editor first"}), 400
+    src = resolve_src(body["path"])
+    angle = float(body.get("angle") or 0)
+    pos = body.get("positions") or {}
+    picks = json.loads(THUMB_PICKS.read_text(encoding="utf-8")) if THUMB_PICKS.exists() else {}
+    picks[rel] = body
+    THUMB_PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
+    web = SITE / "Images" / "web" / country
+    args = [_sys.executable, str(SITE / "tools" / "gen_card_variants.py"), str(src), "--out", str(web), "--slug", slug]
+    if abs(angle) > 1e-3:
+        args += ["--angle", str(angle)]
+    r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=300)
+    if r.returncode != 0:
+        return jsonify({"ok": False, "error": (r.stderr or r.stdout)[-300:]}), 500
+    page = (SITE / rel)
+    up = "../" * (len(Path(rel).parts) - 1)
+    wrote = []
+    if _country_card(page.parent / "index.html", page.name, up, slug, country, pos):
+        wrote.append((page.parent / "index.html").relative_to(SITE).as_posix())
+    wrote += _listing_cards(rel, slug, country, pos)
+    og = None
+    if pos.get("og"):
+        stem = Path(rel).stem
+        dst = SITE / "Images" / "web" / "og" / ("%s-%s.jpg" % (page.parent.name, stem))
+        _share_image(src, dst, pos["og"], angle)
+        og = dst.relative_to(SITE).as_posix()
+    return jsonify({"ok": True, "card": "Images/web/%s/card-%s.jpg" % (country, slug), "pages": wrote, "og": og,
+                    "log": r.stdout.strip().splitlines()[-2:]})
+
+
+@app.get("/thumb_picks")
+def get_thumb_picks():
+    return jsonify(json.loads(THUMB_PICKS.read_text(encoding="utf-8")) if THUMB_PICKS.exists() else {})
 
 
 @app.get("/picks")
@@ -583,6 +742,14 @@ PAGE = r"""<!doctype html>
   .navband .nb-burger i { display:block; width:calc(20px * var(--navk,1));
     height:calc(1.5px * var(--navk,1)); background:rgba(28,40,33,.8); }
   /* the scrim strength is live: not every photo needs the same weight */
+  .thumb-mode .cpy, .thumb-mode .navband, .thumb-mode #scrim-ctl { display:none !important; }
+  /* a portrait card at the stage's full width ran far below the window: fit the frame to the height */
+  .thumb-mode .hero { width:min(100%, calc((100vh - 230px) * var(--shape, 1))); margin:0 auto; }
+  .thumb-mode .veil { opacity:1 !important; background:linear-gradient(transparent 35%, rgba(6,10,8,.88)) !important; }
+  .thumb-mode .hero[data-slot="og"] .veil { display:none; }
+  .thumb-mode .hero::after { content:attr(data-card-title); position:absolute; left:1.25rem; right:1.25rem; bottom:1.5rem;
+    font:400 1.05rem/1.35 Fraunces, Georgia, serif; color:#F4F1EA; pointer-events:none; }
+  .thumb-mode .hero[data-slot="og"]::after { display:none; }
   .veil { position:absolute; inset:0; pointer-events:none; opacity:var(--scrim,1);
     background:linear-gradient(180deg,
     rgba(18,26,21,.46) 0%, rgba(18,26,21,.16) 38%, rgba(18,26,21,.86) 100%); }
@@ -812,7 +979,7 @@ PAGE = r"""<!doctype html>
   <select id="shape" title="Which hero on the site this photo is destined for">
     <option value="home" selected>Home hero</option>
     <option value="article">Article banner</option>
-    <option value="wide">Plain 16:9</option>
+    <option value="thumb">Article thumbnail</option>
   </select>
   <span class="link-chip" id="linkchip" title="Where Save pick writes: the article open in the Article Editor, or (with none open) the country's own hero"></span>
 </header>
@@ -827,11 +994,12 @@ with the window.">
     <span id="anglename" style="cursor:pointer">Straighten</span>
     <input type="range" id="angle" min="-5" max="5" step="0.1" value="0"><b id="anglev">0.0&deg;</b>
   </span>
-  <span class="scrim-ctl" title="How heavy the overlay sits on this photo">
+  <span class="scrim-ctl" id="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
   <button class="q" id="bleed" title="Hide the strip and show the hero edge to edge, the size the site cuts it (F)">Full bleed</button>
   <span class="tools-gap"></span>
+  <button class="q" id="same-hero" hidden title="Use the photo this article's hero was cut from, for continuity">Same photo as the hero</button>
   <button id="save">Save pick</button>
     </div>
     <div class="hero" id="hero">
@@ -896,7 +1064,23 @@ let PICKS_ONLY = false; try { PICKS_ONLY = localStorage.getItem('heroPicksOnly')
 const TITLES = %TITLES%;
 const SHAPES = %SHAPES%;
 let cur = null, country = '', album = '', qTimer = null;
-const BP = %BREAKPOINTS%;
+const HERO_BP = %BREAKPOINTS%;
+const THUMB_BP = [{"key": "card", "label": "Country page card", "w": 294, "h": 441, "vw": 1440, "media": "(min-width:769px)"}, {"key": "list", "label": "Home & posts card", "w": 395, "h": 296, "vw": 1440, "media": "(min-width:769px)"}, {"key": "phone", "label": "Phone card", "w": 353, "h": 199, "vw": 393, "media": "(max-width:768px)"}, {"key": "og", "label": "Share image", "w": 1200, "h": 630, "vw": 1200, "media": "link previews"}];
+let BP = HERO_BP;                              // the hero rules, or the thumbnail slots in Thumbnail mode
+function fillVW() {
+  $('vw').innerHTML = BP.map((b, i) =>
+    `<option value="${i}">${b.label} ${b.w ? b.w + '\u00d7' + b.h : b.vw}${b.media ? '  ' + b.media : ''}</option>`).join('');
+  $('vw').value = String(Math.min(bpi, BP.length - 1));
+}
+function setModeBP() {
+  const thumb = $('shape').value === 'thumb', want = thumb ? THUMB_BP : HERO_BP;
+  document.body.classList.toggle('thumb-mode', thumb);
+  $('same-hero').hidden = !(thumb && ARTICLE);
+  $('save').textContent = thumb ? 'Save thumbnail' : 'Save pick';
+  if (BP !== want) { BP = want; bpi = 0; fillVW(); if (thumb) restoreThumb(); }
+  $('hero').dataset.slot = BP[bpi].key;
+  $('hero').dataset.cardTitle = thumb && BP[bpi].key !== 'og' ? (ARTICLE ? ARTICLE.h1 : $('title').value) : '';
+}
 let bpi = 0;                                   // which hero rule is being set
 let crops = { desktop: 50, laptop: 50, phone: 50 };
 let ALL = [], QUAL = { scores: {}, median: null, done: 0 };
@@ -959,7 +1143,23 @@ function articleAlbum() {
   if (opt && $('album').value !== opt.value) { $('album').value = opt.value; loadStrip(); }
   else applyArticle();
 }
+function articleOption() {
+  // "This article's photos": the photos the open article already shows (Kevin picked the Orgov
+  // thumbnail from the article's own edited IMG_0438-2, which no backup album has)
+  const sel = $('album'); let o = sel.querySelector('option[value="__article__"]');
+  if (ARTICLE && !o) {
+    o = document.createElement('option'); o.value = '__article__';
+    sel.insertBefore(o, sel.firstChild);
+  }
+  if (o) {
+    if (!ARTICLE) { o.remove(); return; }
+    o.dataset.country = ARTICLE.country || '';
+    o.textContent = '\u2605 This article\'s photos (' + (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '') + ')';
+  }
+}
 function applyArticle() {
+  articleOption();
+  if ($('shape').value === 'thumb') setModeBP();
   const chip = $('linkchip');
   if (chip) {
     chip.classList.toggle('on', !!ARTICLE);
@@ -994,17 +1194,22 @@ async function loadStrip() {
   // used to arrive late and draw that country's photos over the one you picked. An album seen
   // before is drawn from memory at once and refreshed behind it.
   if (!STRIP_CACHE) { STRIP_CACHE = new Map(); STRIP_GEN = 0; }
+  if (album === '__article__') { country = ARTICLE ? ARTICLE.country : country; STRIP_CACHE.delete('__article__'); }
   const my = ++STRIP_GEN, want = album;
   if (STRIP_CACHE.has(want)) { ALL = STRIP_CACHE.get(want); render(true); }
   else $('strip').textContent = 'Loading…';
   let rows;
-  try { rows = await (await fetch('/photos?album=' + encodeURIComponent(want))).json(); } catch (e) { return; }
+  const url = want === '__article__'
+    ? '/article_photos?rel=' + encodeURIComponent(ARTICLE ? ARTICLE.rel : '')
+    : '/photos?album=' + encodeURIComponent(want);
+  try { rows = await (await fetch(url)).json(); } catch (e) { return; }
   STRIP_CACHE.set(want, rows);
   if (my !== STRIP_GEN || album !== want) return;          // you have moved on
   const changed = ALL !== rows && JSON.stringify(ALL) !== JSON.stringify(rows);
   ALL = rows;
   if (changed || !document.querySelector('.strip .t')) render(true);   // a fresh album restores whatever was saved for it
-  pollQuality();
+  if (want !== '__article__') pollQuality();
+  if (THUMB_PENDING) { const tp = THUMB_PENDING; THUMB_PENDING = null; tp(); }
 }
 var STRIP_GEN = STRIP_GEN || 0; var STRIP_CACHE = STRIP_CACHE || new Map();   // var: loadStrip can run before this line does
 
@@ -1071,6 +1276,7 @@ $('filter').onchange = () => { render(); };   // keeps the crop in progress
 function boxOf(i) {
   const shape = $('shape').value;
   const vw = BP[i].vw;
+  if (shape === 'thumb') { return { w: BP[i].w, h: BP[i].h }; }
   if (shape === 'wide') { return { w: vw, h: vw / (16 / 9) }; }
   if (vw <= 768) { return { w: vw, h: shape === 'article' ? 420 : 470 }; }
   // the article banner is aspect-ratio 1440/560 with a 420px floor, not a
@@ -1109,7 +1315,8 @@ function siteFrame() {
   const shape = $('shape').value, vw = BP[bpi].vw, r = document.documentElement.style;
   r.setProperty('--bw', vw);
   const set = (h, ar, min) => { r.setProperty('--fh', h); r.setProperty('--far', ar); r.setProperty('--fmin', min); };
-  if (shape === 'wide') { set('auto', '16 / 9', '0'); }
+  if (shape === 'thumb') { set('auto', BP[bpi].w + ' / ' + BP[bpi].h, '0'); r.setProperty('--bw', BP[bpi].w); }
+  else if (shape === 'wide') { set('auto', '16 / 9', '0'); }
   else if (vw <= 768) { set((shape === 'article' ? 420 : 470) + 'px', 'auto', '0'); }
   else if (shape === 'article') { set('auto', '1440 / 560', '420px'); }
   else { set('680px', 'auto', '0'); }
@@ -1118,6 +1325,7 @@ function siteFrame() {
 }
 
 function applyShape() {
+  setModeBP();
   document.documentElement.style.setProperty('--shape', heroRatio());
   siteFrame();
   applyCrop();
@@ -1297,14 +1505,16 @@ function slug(x) {
 /* the value goes in whichever slot moves; the pinned one stays at 50% because
    putting anything else there would be a number that does nothing */
 function posFor(i) {
-  const v = Math.round(crops[BP[i].key] * 10) / 10;
+  const c = crops[BP[i].key];
+  const v = Math.round((Number.isFinite(c) ? c : 50) * 10) / 10;
   return geomFor(i).axis === 'x' ? v + '% 50%' : '50% ' + v + '%';
 }
 
 function applyCrop() {
   const g = geomFor(bpi);
   const key = BP[bpi].key;
-  crops[key] = Math.max(0, Math.min(100, crops[key]));
+  crops[key] = Math.max(0, Math.min(100, Number.isFinite(crops[key]) ? crops[key] : 50));
+  $('hero').dataset.slot = key;
   const v = crops[key];
   $('pic').style.setProperty('--ox', g.axis === 'x' ? v + '%' : '50%');
   $('pic').style.setProperty('--oy', g.axis === 'y' ? v + '%' : '50%');
@@ -1326,7 +1536,7 @@ function applyCrop() {
       + ', so in this frame it is pinned by ' + (g.axis === 'x' ? 'height' : 'width')
       + ' and only that one axis moves. It keeps ' + Math.round(g.shown * 100)
       + '% of the photo.'
-      + ($('shape').value === 'wide' ? '' : ' The top '
+      + (['wide', 'thumb'].includes($('shape').value) ? '' : ' The top '
          + (BP[bpi].vw <= 768 ? NAV_H_PHONE : NAV_H)
          + 'px sits under the site’s nav, so nothing you put there is seen.')
       + (full ? ' <b>← →</b> step through the strip, <b>F</b> brings it back.' : '')
@@ -1342,8 +1552,9 @@ function applyCrop() {
       ? '<b>' + v2 + '%</b> <i>50%</i>' : '<i>50%</i> <b>' + v2 + '%</b>';
     return cls + ' { object-position:' + val + '; }';
   };
-  $('cropcss').innerHTML =
-    mark(0) + '\n\n@media ' + BP[1].media + ' {\n  ' + mark(1) + '\n}\n\n'
+  $('cropcss').innerHTML = $('shape').value === 'thumb'
+    ? BP.map((b, i) => '<i>/* ' + b.label + ' ' + b.w + '\u00d7' + b.h + ' */</i> background-position: <b>' + posFor(i) + '</b>;').join('\n')
+    : mark(0) + '\n\n@media ' + BP[1].media + ' {\n  ' + mark(1) + '\n}\n\n'
     + '@media ' + BP[2].media + ' {\n  ' + mark(2) + '\n}';
 }
 
@@ -1356,7 +1567,7 @@ function navBand(r) {
   const k = r.width ? r.width / vw : 1;
   const hero = $('hero');
   // "Plain 16:9" is not a page hero, so no site nav sits over it
-  const on = $('shape').value !== 'wide';
+  const on = !['wide', 'thumb'].includes($('shape').value);
   $('navband').hidden = !on;
   hero.style.setProperty('--navk', k);
   hero.style.setProperty('--nav', on ? Math.round((phone ? NAV_H_PHONE : NAV_H) * k) + 'px' : '0px');
@@ -1412,7 +1623,45 @@ $('hero').addEventListener('pointermove', e => {
   drag = null; $('pic').classList.remove('dragging');
 }));
 
+let THUMB_PICKS = null, THUMB_PENDING = null;
+function tileFor(path) { return document.querySelector(`.strip .t[data-p="${CSS.escape(path)}"]`); }
+// open the album a photo lives in, then select it (fn runs once the strip has loaded)
+function showPhoto(path, then) {
+  const folder = path.startsWith('site:') ? '__article__' : path.split('/')[0];
+  const done = () => { const t = tileFor(path); if (t) { pick(t); t.scrollIntoView({ block: 'center' }); } if (then) then(!!t); };
+  if ($('album').value === folder && tileFor(path)) return done();
+  if (![...$('album').options].some(o => o.value === folder)) { toast('That photo\'s album is not in the list'); return; }
+  THUMB_PENDING = done; $('album').value = folder; loadStrip();
+}
+async function restoreThumb() {
+  if (!ARTICLE) return;
+  try { THUMB_PICKS = await (await fetch('/thumb_picks')).json(); } catch (e) { THUMB_PICKS = {}; }
+  const tp = THUMB_PICKS[ARTICLE.rel];
+  if (!tp || !tp.path) return;
+  showPhoto(tp.path, ok => { if (!ok) return; Object.assign(crops, tp.crops || {}); setAngle(+tp.angle || 0); applyCrop(); });
+}
+$('same-hero').onclick = () => {
+  const hp = ARTICLE && PICKS[ARTICLE.rel];
+  if (!hp || !hp.path) return toast('This article\'s hero was not saved from the Hero Picker, so pick its photo from the strip');
+  showPhoto(hp.path, ok => { if (ok) { setAngle(+hp.angle || 0); applyCrop(); toast('The hero photo: now set each thumbnail crop'); } });
+};
+async function saveThumb() {
+  if (!cur) return toast('Pick a photo first');
+  if (!ARTICLE) return toast('Open the article in the editor first: a thumbnail belongs to an article');
+  const positions = {}, rounded = {};
+  BP.forEach((b, i) => { positions[b.key] = posFor(i); rounded[b.key] = Math.round((crops[b.key] ?? 50) * 10) / 10; });
+  const body = { article: ARTICLE.rel, country: ARTICLE.country || country, path: cur.path, name: cur.name,
+                 slug: (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, ''), angle: angle,
+                 positions: positions, crops: rounded };
+  let r;
+  try { r = await (await fetch('/save_thumb', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); }
+  catch (e) { return toast('The hero picker server did not answer'); }
+  if (!r.ok) return toast('Thumbnail not saved: ' + (r.error || ''));
+  toast('Thumbnail saved: ' + r.card.split('/').pop() + (r.pages.length ? ', ' + r.pages.map(p => p.split('/').slice(-2).join('/')).join(', ') : '') + (r.og ? ' and the share image' : ''));
+  if (window.parent !== window) parent.postMessage({ type: 'thumb-saved', card: r.card, pages: r.pages, og: r.og }, '*');
+}
 $('save').onclick = async () => {
+  if ($('shape').value === 'thumb') return saveThumb();
   if (!cur) { return toast('Pick a photo first'); }
   const rounded = {};
   BP.forEach(b => { rounded[b.key] = Math.round(crops[b.key] * 10) / 10; });
@@ -1486,10 +1735,7 @@ function toast(t) {
 (function () {
   const mine = Math.max(320, (window.screen && screen.width ? screen.width : 1905) - 15);
   if (mine > 1400) { BP[0].vw = mine; }
-  $('vw').innerHTML = BP.map((b, i) =>
-    `<option value="${i}">${b.label} ${b.vw}${b.media ? '  ' + b.media : ''}</option>`
-  ).join('');
-  $('vw').value = '0';
+  fillVW();
 })();
 document.documentElement.style.setProperty('--shape', heroRatio());
 siteFrame();
