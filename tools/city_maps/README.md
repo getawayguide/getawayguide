@@ -112,3 +112,16 @@ $r.Content | Out-File -Encoding utf8 .tmp/<slug>_osm.json
 ```
 
 `out geom;` inlines node coordinates so the tool can project them offline.
+
+### When Overpass times out, or you don't need new streets (2026-09-29)
+
+- **Only pins, links or the key changed and the frame did not** (same `--bbox` output): skip OSM
+  entirely and re-embed on the published PNGs with `--keep-base`.
+- **Dense or busy boxes 504**: fetch in tiles and merge. `.tmp/fetch_citymap_osm_tiled.ps1 <slug> <N>`
+  splits the bbox N×N (2 for a small city, 4 for Bangkok/Tokyo); `python .tmp/merge_osm_tiles.py <slug>`
+  dedupes the tiles into `.tmp/<slug>_osm.json`. Mirrors that answered: overpass-api.de and
+  maps.mail.ru; kumi.systems and private.coffee timed out.
+- **Check the links after any rebuild**: `python .tmp/check_map_links.py [slug ...]` flags a key link
+  more than 3 km from its pin. The builder no longer reads links out of the map's own previous embed
+  (that is how wrong links copied themselves forward); a bare `match` like "mar" can still hit the
+  wrong link text in the same section, so give such pins an explicit `href`.
