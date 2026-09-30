@@ -13,22 +13,15 @@
     "Double-tap to open in Google Maps"
   ],
   "desktop": {
-    "pad": 1.3
+    "pad": 2.2
   },
   "mobile": {
-    "pad": 1.2,
-    "init_w": 0.82,
+    "pad": 2.2,
+    "init_w": 0.95,
     "init_x": 0.5,
     "init_y": 0.5
   },
   "pois": [
-    {
-      "name": "Cerro Negro",
-      "cat": "see",
-      "match": "cerro negro",
-      "lat": 12.507822,
-      "lon": -86.703288
-    },
     {
       "name": "Museo de la Revolución",
       "cat": "see",
@@ -40,8 +33,8 @@
       "name": "Iglesia El Calvario",
       "cat": "see",
       "match": "iglesia el calvario",
-      "lat": 12.888448,
-      "lon": -86.535555
+      "lat": 12.4356699,
+      "lon": -86.8738479
     },
     {
       "name": "Restaurante El Sesteo",
@@ -51,8 +44,11 @@
       "lon": -86.878697
     }
   ],
-  "center": {
-    "lat": 12.661572,
-    "lon": -86.707558
-  }
+  "day_trips": [
+    {
+      "name": "Cerro Negro",
+      "match": "cerro negro",
+      "time": "Half Day"
+    }
+  ]
 }

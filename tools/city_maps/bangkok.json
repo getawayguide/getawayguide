@@ -55,7 +55,8 @@
       "cat": "see",
       "match": "victory monument",
       "lat": 13.764931,
-      "lon": 100.538286
+      "lon": 100.538286,
+      "href": "https://www.google.com/maps/search/?api=1&query=Victory+Monument+Bangkok"
     }
   ],
   "center": {

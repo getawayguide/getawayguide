@@ -44,13 +44,6 @@
       "lon": 7.275138
     },
     {
-      "name": "Monaco",
-      "cat": "see",
-      "match": "monaco",
-      "lat": 43.745118,
-      "lon": 7.36704
-    },
-    {
       "name": "Èze",
       "cat": "see",
       "match": "èze",
@@ -85,6 +78,11 @@
     "lon": 7.302258
   },
   "day_trips": [
+    {
+      "name": "Monaco",
+      "time": "Half Day",
+      "match": "monaco"
+    },
     {
       "name": "Menton",
       "match": "menton",

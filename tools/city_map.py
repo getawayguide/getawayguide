@@ -288,7 +288,7 @@ async def _raster(svg, W, H):
         png = await pg.locator("#t").screenshot(); await br.close(); return png
 
 
-def build(cfg_path, embed=False, demo=None, article=None):
+def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
     cfg = json.load(open(cfg_path, encoding="utf-8"))
     if article:
         # the label editor passes the page the writer has open: a draft whose map is already
@@ -296,7 +296,10 @@ def build(cfg_path, embed=False, demo=None, article=None):
         cfg["article"] = article
     slug = cfg["slug"]; city = cfg["city"]; kicker = cfg["kicker"]
     os.makedirs(IMGDIR, exist_ok=True); os.makedirs(PREV, exist_ok=True)
-    osm = json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
+    # --keep-base: the street layer is unchanged (only pins, links or the key moved), so the PNGs
+    # already published are reused and no OSM export is needed (2026-09-29: Overpass was timing
+    # out, and three maps only needed a link or a pin fixed). The frame must not have changed.
+    osm = [] if keep_base else json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
     water, parks, roads, coast, water_islands = parse_osm(osm)
     up = "../" * cfg["article"].count("/")   # relative depth to repo root (live=../, draft=../../)
 
@@ -546,8 +549,11 @@ def build(cfg_path, embed=False, demo=None, article=None):
                     o.append(f'<polyline points="{s}" fill="none" stroke="{TOP}" stroke-width="{wdt*1.3:.1f}" stroke-linecap="round" stroke-linejoin="round"/>')
             o.append('</svg>'); return "\n".join(o)
 
-        png = asyncio.run(_raster(basemap(), W, H))
-        open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
+        if keep_base:
+            png = open(f"{IMGDIR}/{pngname}.png", "rb").read()
+        else:
+            png = asyncio.run(_raster(basemap(), W, H))
+            open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
         b64 = base64.b64encode(png).decode()
         ext_href = f"{up}Images/web/city-maps/{pngname}.png"
 
@@ -1013,8 +1019,9 @@ if __name__ == "__main__":
     ap.add_argument("--embed", action="store_true", help="embed the map into cfg['article'] between its markers")
     ap.add_argument("--demo", type=int, default=None, help="preview auto-opens this pin's name bubble")
     ap.add_argument("--bbox", action="store_true", help="print a generous Overpass fetch bbox (S,W,N,E) and exit")
+    ap.add_argument("--keep-base", action="store_true", help="reuse the published street PNGs (no OSM needed): only pins, links or the key changed")
     a = ap.parse_args()
     if a.bbox:
         print("%.4f,%.4f,%.4f,%.4f" % fetch_bbox(a.config))
     else:
-        build(a.config, embed=a.embed, demo=a.demo)
+        build(a.config, embed=a.embed, demo=a.demo, keep_base=a.keep_base)
