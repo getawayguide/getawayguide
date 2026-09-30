@@ -340,6 +340,10 @@ def build(cfg_path, embed=False, demo=None, article=None):
     # resolve each pin's Google-Maps link: explicit href > a matching link in the
     # article > a generic maps search for "<name> <city>"
     art = open(f"{ROOT}/{cfg['article']}", encoding="utf-8").read() if cfg.get("article") else ""
+    # never read links back out of an earlier build of this map: its key holds last time's
+    # answers, so one wrong link copied itself forward on every rebuild (Gyumri's Mother Armenia
+    # pin kept pointing at the statue in Yerevan, 2026-09-29)
+    art = re.sub(r'<figure class="citymap-fig".*?</figure>', "", art, flags=re.S)
 
     def _links(html):
         return [(u.replace("&amp;", "&"), re.sub(r"<[^>]+>", "", t).strip().lower())

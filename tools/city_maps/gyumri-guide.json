@@ -69,7 +69,8 @@
       "lat": 40.7805008,
       "lon": 43.8247741,
       "cat": "see",
-      "match": "mother armenia"
+      "match": "mother armenia",
+      "href": "https://www.google.com/maps/place/Mother+Armenia/@40.7805008,43.8247741,17z/data=!3m1!4b1!4m6!3m5!1s0x4041fc0d6755a0f3:0x5d44af6a53cf4015!8m2!3d40.7805008!4d43.8247741!16s%2Fg%2F1q5hrmnyz?hl=en&entry=ttu&g_ep=EgoyMDI2MDkyMy4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Black Circular Fortress",
