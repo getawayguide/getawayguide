@@ -88,7 +88,7 @@
   .ln-plan-body li{margin:.2rem 0}
   .ln-plan-body .ln-note{margin-top:.5rem}
   .ln-tab .n.retire{background:var(--ln-amber-bg);color:var(--ln-amber);font-weight:500}
-  .ln-cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:28px;align-items:start}
+  .ln-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}   /* Claude's half, yours */
   @media (max-width:980px){.ln-cols{grid-template-columns:1fr}}
   .ln-col>h2{display:flex;align-items:baseline;gap:10px;font:600 .66rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:0 0 10px;color:var(--ln-ink)}
   .ln-col>h2 span{font-weight:500;letter-spacing:.02em;text-transform:none;font-size:.74rem;color:var(--ln-mute)}
