@@ -54,7 +54,7 @@
   .ln-btn.sm{padding:.45rem .7rem;font-size:.56rem}
   /* the editor sidebar's tabs (editor.html .side-tabs): icon + label on a white bar, the open one a soft green tab with a rule */
   .ln-tabs{display:flex;gap:2px;margin:18px 0 22px;padding:8px 8px 0;background:#fff;border:1px solid var(--ln-line);border-bottom-color:rgba(28,40,33,.14);
-    border-radius:12px 12px 0 0;overflow-x:auto;scrollbar-width:thin}
+    border-radius:12px 12px 0 0;flex-wrap:wrap;row-gap:2px}
   .ln-tab{display:inline-flex;align-items:center;gap:6px;flex:none;font:500 12.5px/1 'Hanken Grotesk',sans-serif;color:#4f5c54;cursor:pointer;
     background:none;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:9px 12px 10px;margin-bottom:-1px;white-space:nowrap;
     transition:background .15s,color .15s}
@@ -212,11 +212,13 @@
   // which of your checks a page has: no thumbnail on a country page or field notes, no maps check without a map
   function kevinFor(rel) {
     const a = art(rel), h = L.kevin.hints[rel] || {};
-    return kevinDefs('article').filter(k => !(k.id === 'k-thumbs' && a && ['country', 'field-notes'].includes(a.kind))
-                                          && !(k.id === 'k-maps' && h['k-maps'] && !h['k-maps'].n));
+    return kevinDefs('article').filter(k => !(k.id === 'k-thumbs' && a && ['country', 'field-notes'].includes(a.kind)));
   }
   // the review check ticks itself: done exactly when the review store says it is clear
   const isDone = (rel, k) => k.auto ? !!((L.kevin.hints[rel] || {})[k.id] || {}).ok : !!(L.kevin.ticks[rel] || {})[k.id];
+  // every one of your checks ticked on these pages (a retiring field notes page owes nothing)
+  const allMine = rels_ => rels_.every(r => { const a = art(r); if (a && a.kind === 'field-notes' && L.plan === 'retire') return true;
+                                            const d = kevinDone(r); return d.done === d.of; });
   function kevinDone(rel) {
     const defs = kevinFor(rel);
     return { done: defs.filter(k => isDone(rel, k)).length, of: defs.length };
@@ -245,7 +247,8 @@
       <nav class="ln-tabs" role="tablist" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
         if (a && a.kind === 'field-notes' && L.plan === 'retire')
           return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
-        const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>` : (L.finished || Object.keys(L.results).length) ? '<span class="n pass">✓</span>' : '';
+        const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>`
+          : (L.finished || Object.keys(L.results).length) && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
         return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
       <div id="ln-body">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
@@ -379,7 +382,7 @@
 
   function kevinGrid() {
     const defs = kevinDefs('article');
-    const short = { 'k-review': 'Review', 'k-search': 'Search', 'k-thumbs': 'Thumbnails', 'k-maps': 'Maps' };
+    const short = { 'k-review': 'Review', 'k-search': 'Search', 'k-thumbs': 'Thumbnails' };
     const rows = pages().map(a => {
       const mine = kevinFor(a.rel).map(k => k.id);
       return `<tr><td>${esc(shortTitle(a))}</td>${defs.map(k => {

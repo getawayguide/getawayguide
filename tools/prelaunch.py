@@ -982,11 +982,10 @@ COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage"}
 
 KEVIN = [
     # (id, title, why, tool kind, tool label, scope)
-    # Kevin, 2026-09-30: "keep review is clear, search title, thumbnails, maps look right"
+    # Kevin, 2026-09-30: "keep review is clear, search title, thumbnails", then "remove maps look right"
     ("k-review", "Review is clear", "Ticks itself once every comment is resolved and every proposed change decided.", "review", "Open the review", "article"),
     ("k-search", "Search title and description read right", "What Google shows. Lead with what people search, then real place names.", "seo", "Open the Search tab", "article"),
     ("k-thumbs", "Thumbnails and share image", "The card on the country page, the home and posts card, the phone card and the link preview.", "thumbs", "Open Thumbnails", "article"),
-    ("k-maps", "Maps look right", "Pins, labels, nothing hidden under another label.", "maps", "Open the Maps tab", "article"),
 ]
 
 
