@@ -161,6 +161,13 @@ once, and the Overview shows what is left per page. It also proposes turning Goo
 into links to the country's own articles (Apply selected). Kevin's judgment checks sit beside
 it with a tick each. A country is ready when both columns are clear.
 
+**Field notes at launch.** The Field notes sub-tab says whether the country's live field notes
+stay up (the default: they keep linking to the articles) or retire with this launch. When it says
+retire, run `python tools/retire_field_notes.py <slug>` once the country page is live: the country
+becomes an In-Depth Guide like El Salvador (destinations card and map, `FULL_GUIDES`, the nav on
+every page), every other link moves to the country page, and the field notes become a redirect.
+It refuses to run before the country page exists; `--dry-run` shows what it will do.
+
 Pick the destination-card photo first. It is the one publish decision that needs
 Kevin: the default is `Images/dest-cards/<Name>_1.JPG`, but he often names a
 different shot (India used `India_3.JPG`). If it is not the `_1`, crop it to keep

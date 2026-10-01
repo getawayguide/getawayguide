@@ -324,7 +324,7 @@
         <section class="ln-col"><h2>Claude checks <span>${keep ? summaryLine(t) : 'they no longer block the launch'}</span></h2>${checkRows(rel, d => d.scope !== 'country')}</section>
         <section class="ln-col"><h2>At launch</h2>
           <div class="ln-card ln-plan">
-            <label class="ln-k${keep ? '' : ' done'}"><input type="checkbox" id="ln-keep-fn"${keep ? ' checked' : ''} aria-label="Keep the field notes live after the launch">
+            <label class="ln-k"><input type="checkbox" id="ln-keep-fn"${keep ? ' checked' : ''} aria-label="Keep the field notes live after the launch">
               <div><div class="ln-t">Keep the field notes live</div><div class="ln-why">Checked: they stay up beside the articles. Unchecked: they retire when this country launches.</div></div><div></div></label>
             <div class="ln-plan-body">${body}</div>
           </div>
@@ -393,7 +393,7 @@
   async function setPlan(v) {
     try {
       const d = await api('/api/launch/plan', { country: L.country, field_notes: v });
-      L.plan = d.field_notes; L.retire = d.retire;
+      L.plan = d.field_notes;
     } catch (e) { toast('The photo server did not answer, so the choice was not saved.'); }
     render();
     if (Object.keys(L.results).length) run(['relink']);       // relinks out of retiring field notes drop out
@@ -475,7 +475,11 @@
     try {
       const [last, kev, plan] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() }),
                                                    api('/api/launch/plan?country=' + encodeURIComponent(L.country))]);
-      L.plan = plan.field_notes || 'keep'; L.retire = plan.retire || null;
+      L.plan = plan.field_notes || 'keep';
+      if (pages().some(a => a.kind === 'field-notes')) {          // what retiring does: slow to work out, so after the rest
+        const want = L.country;
+        api('/api/launch/plan?preview=1&country=' + encodeURIComponent(want)).then(d => { if (L.country === want) { L.retire = d.retire || null; render(); } }).catch(() => {});
+      }
       L.results = last.results || {}; L.finished = last.finished || null;
       L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} };
     } catch (e) { toast('The photo server did not answer.'); }

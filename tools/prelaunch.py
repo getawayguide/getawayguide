@@ -1105,6 +1105,8 @@ def api_plan():
             PLAN.write_text(json.dumps(p, indent=1, ensure_ascii=False), encoding="utf-8")
     c = request.args.get("country") or (request.get_json(silent=True) or {}).get("country") or ""
     out = {"ok": True, "country": c, "field_notes": field_notes_plan(c)}
+    if request.args.get("preview") != "1":            # the preview reads every page (~3 s): only when asked
+        return jsonify(out)
     try:
         import retire_field_notes as rf
         out["retire"] = rf.plan(c) if (ROOT / c / "field-notes.html").is_file() else None
