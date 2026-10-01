@@ -467,7 +467,7 @@
         if (r.complete) {
           state.changes.filter(c => state.st[c.id] === false).forEach(c => keep(c, false));
           state.slug = null; state.changes = [];
-          toast('Review complete: every change is decided and applied. To change your mind on one, see Decided in List.', 7000);
+          toast('Review complete: every change is decided and applied. To change your mind on one, open List and show the decided changes.', 7000);
         }
         renderAll();
       } else toast('Saved the article, but the supporting-article writes failed: ' + (r.problems || []).join(' | '), 12000);
@@ -916,23 +916,18 @@
       if (!listMode && !it.el) { lost++; continue; }                  // the margin holds only what has a place in the text
       host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card(Object.assign({}, state.draft, { draft: true })) : it.kind === 'lint' ? lintCard(it.f) : card(it.t));
     }
+    // decided changes stay out of the way (Kevin, 2026-10-01: "can you hide the Decided comments?"):
+    // one collapsed row at the end of List, opened only to change a decision
     const dec = state.filter !== 'comments' ? (state.decided || []) : [];
     if (listMode && dec.length) {
-      const h = document.createElement('div'); h.className = 'rv-dec-h';
-      h.textContent = `Decided · ${dec.length}`; host.appendChild(h);
-      [...dec].sort((a, b) => a.round === b.round ? a.n - b.n : (a.round < b.round ? 1 : -1)).forEach(x => host.appendChild(decidedCard(x)));
+      const h = document.createElement('button'); h.type = 'button'; h.className = 'rv-dec-h' + (state.showDecided ? ' open' : '');
+      h.textContent = `${state.showDecided ? 'Hide' : 'Show'} decided changes (${dec.length})`;
+      h.onclick = () => { state.showDecided = !state.showDecided; renderAll(); };
+      host.appendChild(h);
+      if (state.showDecided) [...dec].sort((a, b) => a.round === b.round ? a.n - b.n : (a.round < b.round ? 1 : -1)).forEach(x => host.appendChild(decidedCard(x)));
     }
-    if (lost || (dec.length && !listMode)) {
-      const n = document.createElement('div'); n.className = 'rv-note';
-      if (lost) n.append(`${lost} more not found in the open text · see List`);
-      if (dec.length && !listMode) {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-dec-go';
-        b.textContent = `${dec.length} decided change${dec.length === 1 ? '' : 's'} · change your mind`; b.onclick = () => setView('list');
-        if (lost) n.append(' · '); n.appendChild(b);
-      }
-      host.appendChild(n);
-    }
-    if (!host.querySelector(':scope > :not(.rv-note)')) {
+    if (lost) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${lost} more not found in the open text · see List`; host.appendChild(n); }
+    if (!host.querySelector(':scope > :not(.rv-note):not(.rv-dec-h)')) {
       const e = document.createElement('div'); e.className = 'rv-empty';
       e.textContent = state.slug && !pend.length && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
                     : state.filter === 'changes' ? 'No changes to review.' : 'Select text and choose + Comment (Ctrl+Alt+M).';
@@ -1377,9 +1372,9 @@ body.review-open #review-pane{display:flex}
 .rv-status{font:400 .78rem/1.4 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#6b7a70;padding:.4rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
 .rv-body{flex:1;overflow:hidden;position:relative}.rv-body.list{overflow:auto}.rv-list{padding:.5rem}.rv-canvas{position:relative;height:100%}
 #rv-banner{background:#FBEFC2;color:#5c4a12;font-size:.78rem;padding:.5rem .6rem;border-bottom:1px solid #E8C86A}#rv-banner button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;margin-left:.3rem;border:1px solid #E8C86A;background:#fff;border-radius:3px;padding:.25rem .4rem;cursor:pointer}
-.rv-dec-h{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#8a9790;padding:1rem .6rem .35rem;border-top:1px solid #e6e6e2;margin-top:.6rem}.rv-dec-h:first-child{border-top:0;margin-top:0;padding-top:.5rem}
+.rv-dec-h{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid #e6e6e2;margin-top:.6rem;font:600 .62rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8a9790;padding:1rem .6rem .5rem;cursor:pointer}.rv-dec-h:hover{color:#2D6B50}.rv-dec-h::before{content:'▸';display:inline-block;margin-right:.4rem;transition:transform .15s}.rv-dec-h.open::before{transform:rotate(90deg)}.rv-dec-h:first-child{border-top:0;margin-top:0;padding-top:.5rem}.rv-dec-h:focus-visible{outline:2px solid #2D6B50;outline-offset:-2px}
 .rv-card.rv-done{cursor:pointer}.rv-card.rv-done .who b{font-weight:600}.rv-card.rv-done .t{opacity:.8;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.rv-card.rv-done.open .t{display:block}
-.rv-done .act{display:flex;gap:.3rem;margin-top:.45rem}.rv-done .act button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .55rem;border:1px solid #e0ded8;background:#fff;border-radius:3px;cursor:pointer;color:#1C2821}.rv-done .act button:hover{border-color:#b9d4c5;color:#2D6B50}.rv-done .act button:focus-visible{outline:2px solid #2D6B50;outline-offset:1px}.rv-note .rv-dec-go{background:none;border:0;padding:0;font:inherit;color:#2D6B50;text-decoration:underline;cursor:pointer}
+.rv-done .act{display:flex;gap:.3rem;margin-top:.45rem}.rv-done .act button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .55rem;border:1px solid #e0ded8;background:#fff;border-radius:3px;cursor:pointer;color:#1C2821}.rv-done .act button:hover{border-color:#b9d4c5;color:#2D6B50}.rv-done .act button:focus-visible{outline:2px solid #2D6B50;outline-offset:1px}
 .rv-empty,.rv-note{font-size:.8rem;color:#8a9790;padding:.9rem .6rem}.rv-canvas .rv-note{position:absolute;left:0;right:0;bottom:0;background:#F7F7F4;border-top:1px solid #e6e6e2;font-size:.7rem;padding:.4rem .6rem}
 /* cards: one shape for a change and a comment, Word's margin */
 .rv-card{border:1px solid #e3e2dc;border-radius:6px;padding:.5rem .6rem .55rem;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);font-size:.82rem}
