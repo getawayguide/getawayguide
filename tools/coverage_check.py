@@ -30,8 +30,18 @@ TAILS = re.compile(r"\s+(monastery|market|museum|church|cathedral|temple|fortres
                    r"national park|observatory|arch|bridge|tunnel|gorge|valley|station)$", re.I)
 
 
+def _visible(t):
+    """the page as read: unselected layout variants blanked (tools/page_variants.py)"""
+    try:
+        from page_variants import blank_hidden
+    except ImportError:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from page_variants import blank_hidden
+    return blank_hidden(t)
+
+
 def prose(path):
-    t = path.read_text(encoding="utf-8", errors="replace")
+    t = _visible(path.read_text(encoding="utf-8", errors="replace"))
     t = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", t, flags=re.S)
     return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", t))).lower()
 
@@ -85,7 +95,7 @@ def article_places(paths):
     """every map place the articles link to, by place_keys"""
     out = set()
     for p in paths:
-        t = p.read_text(encoding="utf-8", errors="replace")
+        t = _visible(p.read_text(encoding="utf-8", errors="replace"))
         for u in re.findall(r'href="(https?://[^"]*google\.[^"]*/maps/[^"]+)"', t):
             out |= place_keys(H.unescape(u))
     return out

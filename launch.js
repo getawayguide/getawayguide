@@ -20,7 +20,8 @@
     set(k, v) { try { localStorage.setItem('launch:' + k, v); } catch (e) {} }
   };
   const L = { defs: null, countries: [], country: null, tab: 'overview', results: {}, finished: null, job: null,
-              current: null, rerun: null, kevin: { hints: {}, ticks: {} }, open: {}, sel: {}, busy: {} };
+              current: null, rerun: null, kevin: { hints: {}, ticks: {} }, open: {}, sel: {}, busy: {},
+              plan: 'keep', retire: null };
 
   // ------------------------------------------------------------------ look
   const css = document.createElement('style');
@@ -66,6 +67,13 @@
   .ln-head h1{font-family:'Newsreader',Georgia,serif;font-weight:400;font-size:1.35rem;margin:0;text-wrap:balance}
   .ln-pill{font:600 .56rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:.32rem .55rem;border-radius:999px;background:#EFEFE9;color:var(--ln-mute)}
   .ln-pill.live{background:var(--ln-green-bg);color:var(--ln-green)}
+  .ln-pill.retire{background:var(--ln-amber-bg);color:var(--ln-amber)}
+  .ln-plan .ln-k{border-top:0}
+  .ln-plan-body{padding:0 14px 14px 48px;font-size:.78rem;line-height:1.55;color:var(--ln-ink)}
+  .ln-plan-body ol{margin:.4rem 0 .6rem;padding-left:1.1rem}
+  .ln-plan-body li{margin:.2rem 0}
+  .ln-plan-body .ln-note{margin-top:.5rem}
+  .ln-tab .n.retire{background:var(--ln-amber-bg);color:var(--ln-amber);font-weight:500}
   .ln-cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:28px;align-items:start}
   @media (max-width:980px){.ln-cols{grid-template-columns:1fr}}
   .ln-col>h2{display:flex;align-items:baseline;gap:10px;font:600 .66rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:0 0 10px;color:var(--ln-ink)}
@@ -155,9 +163,16 @@
   }
 
   // a check as one page sees it: that page's findings only
+  const retiring = () => { const f = pages().find(a => a.kind === 'field-notes'); return f && L.plan === 'retire' ? f.rel : null; };
   function viewOf(id, rel) {
     const r = L.results[id];
     if (!r) return null;
+    const gone = retiring();
+    if (!rel && gone && (r.items || []).some(i => i.page === gone)) {
+      const its = r.items.filter(i => i.page !== gone);
+      if (!its.length) return { status: 'pass', summary: 'Nothing on the pages that stay.', items: [], note: r.note };
+      return Object.assign({}, r, { items: its });
+    }
     if (!rel || ['skip', 'error'].includes(r.status)) return r;
     const items = (r.items || []).filter(i => i.page === rel);
     if (!items.length) return { status: 'pass', summary: 'Nothing on this page.', items: [], note: r.note };
@@ -197,7 +212,7 @@
     const running = !!L.job;
     const when = running ? `Checking${L.current ? ': ' + esc(defTitle(L.current)) : '…'}`
       : L.finished ? 'Last run ' + new Date(L.finished).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not run yet';
-    const tabs = [['overview', 'Overview', tally(null)]].concat(pages().map(a => [a.rel, shortTitle(a), tally(a.rel)]));
+    const tabs = [['overview', 'Overview', tally(null)]].concat(pages().map(a => [a.rel, shortTitle(a), tally(a.rel), a]));
     r.innerHTML = `<div class="ln-wrap">
       <div class="ln-top">
         <div><span class="ln-eyebrow">Prelaunch checklist · ${pageCount()}</span>
@@ -207,7 +222,9 @@
         <span class="ln-when" aria-live="polite">${when}</span>
         <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''}>${running ? 'Running…' : 'Run Claude’s checks'}</button>
       </div>
-      <nav class="ln-tabs" aria-label="Pages">${tabs.map(([k, label, t], i) => {
+      <nav class="ln-tabs" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
+        if (a && a.kind === 'field-notes' && L.plan === 'retire')
+          return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}">${esc(label)}<span class="n retire">retires</span></button>`;
         const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>` : (L.finished || Object.keys(L.results).length) ? '<span class="n pass">✓</span>' : '';
         return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}">${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
@@ -266,6 +283,11 @@
   }
   function itemRow(id, i, rel, v) {
     const pg = !rel && i.page ? `<span class="pg">${esc(short(i.page))}</span>` : '';
+    if (id === 'mentions') {
+      const k = relinkKey(i), on = L.sel[k] !== false;
+      return `<label class="ln-item"><input type="checkbox" data-sel="${esc(k)}"${on ? ' checked' : ''}>${pg}
+        <span>“${esc(i.text)}” \u2192 <b>${esc(short(i.target))}</b></span><code>${esc(i.value || '')}</code></label>`;
+    }
     if (id === 'relink') {
       const k = relinkKey(i), on = L.sel[k] !== false;
       return `<label class="ln-item">${i.apply ? `<input type="checkbox" data-sel="${esc(k)}"${on ? ' checked' : ''}>` : ''}${pg}
@@ -289,9 +311,31 @@
     }).join('')}</div>`;
   }
 
+  function fieldNotesView(rel) {
+    const a = art(rel), keep = L.plan !== 'retire', pv = L.retire || {}, t = tally(rel);
+    const steps = (pv.steps || []).map(x => `<li>${esc(x)}</li>`).join('');
+    const body = keep
+      ? `<p>They stay up after the launch and keep pointing readers at the articles. Uncheck this when a launch should take them down: the whole country goes live as an In-Depth Guide and these come down with it.</p>`
+      : `<p>This launch takes them down:</p><ol>${steps}</ol>
+         <div class="ln-note">The launch runs <code>tools/retire_field_notes.py ${esc(pv.country || '')}</code> after it publishes the country page${pv.country_page_live ? '' : ` (<code>${esc(pv.country_page || '')}</code> is not live yet: it goes live in the same launch)`}. Nothing changes until then.</div>`;
+    return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${keep ? '' : '<span class="ln-pill retire">Retires at launch</span>'}
+        <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
+      <div class="ln-cols">
+        <section class="ln-col"><h2>Claude checks <span>${keep ? summaryLine(t) : 'they no longer block the launch'}</span></h2>${checkRows(rel, d => d.scope !== 'country')}</section>
+        <section class="ln-col"><h2>At launch</h2>
+          <div class="ln-card ln-plan">
+            <label class="ln-k${keep ? '' : ' done'}"><input type="checkbox" id="ln-keep-fn"${keep ? ' checked' : ''} aria-label="Keep the field notes live after the launch">
+              <div><div class="ln-t">Keep the field notes live</div><div class="ln-why">Checked: they stay up beside the articles. Unchecked: they retire when this country launches.</div></div><div></div></label>
+            <div class="ln-plan-body">${body}</div>
+          </div>
+        </section>
+      </div>`;
+  }
+
   function articleView(rel) {
     const a = art(rel);
     if (!a) { L.tab = 'overview'; return overview(); }
+    if (a.kind === 'field-notes') return fieldNotesView(rel);
     const t = tally(rel), kd = kevinDone(rel);
     const defs = kevinDefs('article').filter(k => !(['country', 'field-notes'].includes(a.kind) && ['k-thumbs', 'k-hero'].includes(k.id)));
     return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>
@@ -308,7 +352,7 @@
     const rows = pages().map(a => {
       const s = tally(a.rel), k = kevinDone(a.rel), run = L.finished || Object.keys(L.results).length;
       return `<tr data-tab="${esc(a.rel)}" tabindex="0"><td><div class="nm">${esc(shortTitle(a))}</div><div class="k">${esc(a.rel.split('/').pop())}</div></td>
-        <td class="c-st"><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span></td>
+        <td class="c-st"><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${a.kind === 'field-notes' && L.plan === 'retire' ? ' <span class="ln-pill retire">Retires</span>' : ''}</td>
         <td>${run ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn ? '<span class="p">all clear</span>' : ''}</span>` : '<span class="k">not run</span>'}</td>
         <td><span class="ln-bar"><i style="width:${k.of ? Math.round(k.done / k.of * 100) : 0}%"></i></span><span class="k">${k.done} of ${k.of}</span></td></tr>`;
     }).join('');
@@ -333,6 +377,8 @@
     r.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { L.sel[b.dataset.sel] = b.checked; });
     r.querySelectorAll('[data-tick]').forEach(b => b.onchange = () => tick(b.dataset.key, b.dataset.tick, b.checked));
     r.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => fix(b.dataset.fix, b.dataset.rel));
+    const k = $('#ln-keep-fn', r);
+    if (k) k.onchange = () => setPlan(k.checked ? 'keep' : 'retire');
   }
 
   async function tick(key, id, done) {
@@ -342,6 +388,15 @@
       if (done) row[id] = r.tick || { at: new Date().toISOString() }; else delete row[id];
     } catch (e) { toast('The photo server did not answer, so the tick was not saved.'); }
     render();
+  }
+
+  async function setPlan(v) {
+    try {
+      const d = await api('/api/launch/plan', { country: L.country, field_notes: v });
+      L.plan = d.field_notes; L.retire = d.retire;
+    } catch (e) { toast('The photo server did not answer, so the choice was not saved.'); }
+    render();
+    if (Object.keys(L.results).length) run(['relink']);       // relinks out of retiring field notes drop out
   }
 
   async function openRel(rel) {
@@ -370,7 +425,7 @@
     if (!r || !r.fix) return;
     const v = viewOf(id, rel || null);
     let body = { kind: r.fix.kind };
-    if (r.fix.kind === 'relink') {
+    if (r.fix.kind === 'relink' || r.fix.kind === 'mentions') {
       const items = (v.items || []).filter(i => i.apply && L.sel[relinkKey(i)] !== false);
       if (!items.length) return toast('Nothing selected.');
       body.items = items;
@@ -386,7 +441,7 @@
     L.busy[id] = false;
     toast((out.log || (out.ok ? 'Done.' : 'That did not work.')) + (out.ok && out.pages && out.pages.length ? '\nIf one of these is open in the editor, reopen it to see the change.' : ''), 7000);
     // re-run what the fix touches
-    const again = { relink: ['relink', 'internal', 'unlaunched'], photos: ['photos', 'tiers', 'alt'], dates: ['dates'] }[r.fix.kind] || [id];
+    const again = { relink: ['relink', 'internal', 'unlaunched'], mentions: ['mentions', 'internal'], photos: ['photos', 'tiers', 'alt'], dates: ['dates'], share: ['cards'] }[r.fix.kind] || [id];
     run(again);
   }
 
@@ -415,10 +470,12 @@
   }
 
   async function loadCountry() {
-    L.results = {}; L.finished = null; L.kevin = { hints: {}, ticks: {} }; L.open = {};
+    L.results = {}; L.finished = null; L.kevin = { hints: {}, ticks: {} }; L.open = {}; L.plan = 'keep'; L.retire = null;
     render();
     try {
-      const [last, kev] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() })]);
+      const [last, kev, plan] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() }),
+                                                   api('/api/launch/plan?country=' + encodeURIComponent(L.country))]);
+      L.plan = plan.field_notes || 'keep'; L.retire = plan.retire || null;
       L.results = last.results || {}; L.finished = last.finished || null;
       L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} };
     } catch (e) { toast('The photo server did not answer.'); }

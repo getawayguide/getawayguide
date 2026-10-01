@@ -114,7 +114,13 @@ def countries():
                 rel = p.relative_to(ROOT).as_posix()
                 if not any(a["rel"] == rel for a in out.get(d.name, {}).get("articles", [])):
                     add(d.name, rel, "live")
-    order = {"country": 0, "itinerary": 1, "top10": 2, "guide": 3, "field-notes": 4}
+    for c in list(out):                               # a country's LIVE field notes, while it launches its guide
+        fn = ROOT / c / "field-notes.html"
+        rel = "%s/field-notes.html" % c
+        if fn.is_file() and not any(a["rel"] == rel or a["kind"] == "field-notes" for a in out[c]["articles"]) \
+                and 'http-equiv="refresh"' not in _read(fn):
+            add(c, rel, "live")
+    order = {"field-notes": -1, "country": 0, "itinerary": 1, "top10": 2, "guide": 3}
     for c in out.values():
         c["articles"].sort(key=lambda a: (order.get(a["kind"], 9), a["title"].lower()))
         idx = next((a for a in c["articles"] if a["kind"] == "country"), None)
@@ -159,6 +165,8 @@ def resolve_rel(href, page_rel):
     if not h or re.match(r"^[a-z]+:|^//", h, re.I):
         return None
     from urllib.parse import unquote
+    if h.startswith("/"):                               # site-root relative: /Images/web/icons/...
+        return os.path.normpath(unquote(h).lstrip("/")).replace("\\", "/")
     return os.path.normpath(os.path.join(os.path.dirname(page_rel), unquote(h))).replace("\\", "/")
 
 
@@ -249,8 +257,9 @@ def relink_scan(ctx):
             if r not in sources and all(live_twin(s) != r for s in sources):
                 sources.append(r)
     items = []
+    from page_variants import blank_hidden
     for src in sources:
-        h = ctx["html"].get(src) or _read(ROOT / src)
+        h = ctx["html"].get(src) or blank_hidden(_read(ROOT / src))
         masked = MASK.sub(lambda m: " " * len(m.group(0)), h)
         # map key rows and figures keep their Google links: they belong to the pins
         for fig in re.finditer(r"<figure\b.*?</figure>", masked, re.S | re.I):
@@ -309,6 +318,96 @@ def relink_apply(items):
     return done, missed
 
 
+# ----------------------------------------------------------------------------- mentions
+TOKEN = re.compile(r"<[^>]+>|[^<]+")
+SKIP_TAGS = {"a", "h1", "h2", "h3", "h4", "h5", "h6", "figcaption", "button", "script", "style", "title", "nav", "svg", "figure"}
+
+
+def mention_names(rel, html):
+    """what a reader would call the place an article is about: its names, plus the first word of
+    a two-word name when it stands on its own ("Orgov" for the Orgov Observatory)"""
+    names = article_names(rel, html)
+    extra = [n.split()[0] for n in names if len(n.split()) == 2 and len(n.split()[0]) >= 5 and n.split()[0][0].isupper()]
+    return [n for n in dict.fromkeys(names + extra) if n[:1].isupper()]
+
+
+def first_mention(h, s0, e0, names):
+    """(start, end, text) of the first mention of any name in body text a link may wrap: not
+    already in a link, a heading, a caption, a button or the table of contents"""
+    rx = re.compile(r"(?<![\w-])(" + "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)) + r")(?![\w-])")
+    stack = []                                      # (tag, skip)
+    for m in TOKEN.finditer(h, s0, e0):
+        t = m.group(0)
+        if t.startswith("<"):
+            tm = re.match(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)", t)
+            if not tm or t.endswith("/>"):
+                continue
+            tag = tm.group(2).lower()
+            if tag in ("br", "img", "source", "input", "hr", "meta", "link", "wbr"):
+                continue
+            if tm.group(1):
+                while stack and stack[-1][0] != tag:
+                    stack.pop()
+                if stack:
+                    stack.pop()
+            else:
+                cls = (re.search(r'class="([^"]*)"', t) or [None, ""])[1]
+                skip = tag in SKIP_TAGS or bool(re.search(r"caption|toc|hero|breadcrumb|card", cls))
+                stack.append((tag, skip))
+            continue
+        if any(sk for _, sk in stack):
+            continue
+        mm = rx.search(t)
+        if mm:
+            return m.start() + mm.start(), m.start() + mm.end(), mm.group(1)
+    return None
+
+
+def mention_scan(ctx):
+    targets = [(r, mention_names(r, ctx["html"][r])) for r in ctx["set"]]
+    targets = [(r, n) for r, n in targets if n]
+    items = []
+    for src in ctx["set"]:
+        if ctx["kind"][src] in ("country", "field-notes"):
+            continue
+        h = ctx["html"][src]
+        s0, e0 = body_span(h)
+        linked = {resolve_rel(m.group(1), src) for m in HREF.finditer(h, s0, e0)}
+        for trel, names in targets:
+            if trel == src or trel in linked:
+                continue
+            hit = first_mention(h, s0, e0, names)
+            if not hit:
+                continue
+            a, b, text = hit
+            ctxt = _text(h[max(s0, a - 160):b + 120])
+            items.append({"page": src, "target": trel, "text": text, "at": a, "end": b, "href": relpath(trel, src), "apply": True,
+                          "detail": "“%s” is not linked to your %s article" % (text, _title(trel, ctx)), "value": ctxt[:200]})
+    return items
+
+
+def mentions_apply(items):
+    """wrap each mention in a link to its article; the text at the recorded offsets must still be
+    the name, or the item is skipped"""
+    by_page, done, missed = {}, [], []
+    for it in items:
+        by_page.setdefault(it["page"], []).append(it)
+    for page, its in by_page.items():
+        p = ROOT / page
+        raw = io.open(p, encoding="utf-8", newline="").read()
+        s = raw
+        for it in sorted(its, key=lambda x: -int(x["at"])):
+            a, b = int(it["at"]), int(it["end"])
+            if s[a:b] != it["text"]:
+                missed.append(it)
+                continue
+            s = s[:a] + '<a href="%s">%s</a>' % (it["href"], it["text"]) + s[b:]
+            done.append(it)
+        if s != raw:
+            io.open(p, "w", encoding="utf-8", newline="").write(s)
+    return done, missed
+
+
 # ----------------------------------------------------------------------------- CLAUDE's checks
 def c_prose(ctx):
     import prose_check
@@ -354,10 +453,11 @@ def c_voice(ctx):
 def c_repeats(ctx):
     """a sentence that appears word for word in two of the launching pages (the de-template and
     overlap passes of workflows/publish_article.md, stage 2)"""
-    if len(ctx["set"]) < 2:
+    pages = [r for r in ctx["set"] if ctx["kind"][r] != "field-notes"]
+    if len(pages) < 2:
         return result("skip", "Needs two or more pages.")
     seen = {}
-    for rel in ctx["set"]:
+    for rel in pages:
         t = _text(MASK.sub(" ", body_of(ctx["html"][rel])))
         for sent in re.split(r"(?<=[.!?])\s+", t):
             w = _fold(sent).split()
@@ -372,13 +472,23 @@ def c_repeats(ctx):
 
 
 def c_relink(ctx):
-    items = relink_scan(ctx)
+    items = [i for i in relink_scan(ctx)
+             if not (i["page"].endswith("/field-notes.html") and field_notes_plan(i["page"].split("/")[-2]) == "retire")]
     if not items:
         return result("pass", "No Google Maps link points at a place you have an article about.")
     n = sum(1 for i in items if i["apply"])
     return result("warn", "%s could link to your own article instead of Google Maps%s." % (
         count_label(len(items), "link"), "" if n == len(items) else " (%d once the article is live)" % (len(items) - n)),
                   items, fix={"kind": "relink", "label": "Apply selected"})
+
+
+def c_mentions(ctx):
+    items = mention_scan(ctx)
+    if not items:
+        return result("pass", "Every page links to the other articles it mentions.")
+    return result("warn", "%s of places you wrote about aren't linked to the article." % count_label(len(items), "mention"),
+                  items, fix={"kind": "mentions", "label": "Link them"},
+                  note="Only the first mention on a page, and only where the page doesn't link to that article yet.")
 
 
 def c_unlaunched(ctx):
@@ -741,6 +851,7 @@ CLAUDE = [
     ("voice", "Writing", "Sounds like you", "voice_check.py: contractions, numerals and pet words per 1,000 words against your live pages.", c_voice),
     ("repeats", "Writing", "No sentence repeated across articles", "The de-template and overlap passes: one sentence, one page.", c_repeats),
     ("relink", "Links", "Places you wrote about link to your article", "A Google Maps link to a place with its own article (live, or launching now) should open the article.", c_relink),
+    ("mentions", "Links", "Articles link to each other where they mention each other", "The first mention of a place you wrote about links to that article (the field notes used to be the hub).", c_mentions),
     ("unlaunched", "Links", "No links to drafts that aren't launching", "A link to a draft left behind is a 404 the day these go live.", c_unlaunched),
     ("internal", "Links", "Internal links, anchors and the table of contents resolve", "Missing files, #anchors with no target, duplicate ids.", c_internal),
     ("maps-search", "Links", "Map links open a place, not a search", "A search link drops the reader on a Google results page.", c_maps_search),
@@ -844,7 +955,8 @@ def _ctx(rels, client):
     for c in cs:
         all_country += [p.relative_to(ROOT).as_posix() for p in sorted((DRAFTS / c).glob("*.html"))] if (DRAFTS / c).is_dir() else []
         all_country += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / c).glob("*.html"))] if (ROOT / c).is_dir() else []
-    return {"set": rels, "html": {r: _read(ROOT / r) for r in rels}, "kind": {r: kind_of(r) for r in rels},
+    from page_variants import blank_hidden          # hidden layout variants are not content
+    return {"set": rels, "html": {r: blank_hidden(_read(ROOT / r)) for r in rels}, "kind": {r: kind_of(r) for r in rels},
             "countries": cs, "all_country": all_country, "client": client}
 
 
@@ -876,6 +988,22 @@ def _run(jid, rels, only, client):
     prev["results"].update(job["results"])
     prev.update({"rels": rels, "finished": job["finished"]})
     last.write_text(json.dumps(prev, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
+PLAN = STATE / "plan.json"
+
+
+def load_plan():
+    try:
+        return json.loads(PLAN.read_text(encoding="utf-8")) if PLAN.is_file() else {}
+    except Exception:
+        return {}
+
+
+def field_notes_plan(country):
+    """"keep" (the default: field notes stay up and link to the articles) or "retire" (taken down
+    when the whole country launches)"""
+    return (load_plan().get(country) or {}).get("field_notes", "keep")
 
 
 def _ticks():
@@ -960,6 +1088,31 @@ def api_kevin():
     return jsonify({"ok": True, "hints": hints, "ticks": {k: v for k, v in ticks.items() if k in rels or k.split(":", 1)[-1] in countries_}})
 
 
+@bp.route("/api/launch/plan", methods=["GET", "POST", "OPTIONS"])
+def api_plan():
+    if request.method == "OPTIONS":
+        return "", 204
+    if request.method == "POST":
+        d = request.get_json(force=True) or {}
+        c, v = d.get("country") or "", d.get("field_notes")
+        if not c or v not in ("keep", "retire"):
+            return jsonify({"ok": False}), 400
+        with _lock:
+            p = load_plan()
+            p.setdefault(c, {})["field_notes"] = v
+            p[c]["at"] = datetime.now().isoformat(timespec="seconds")
+            STATE.mkdir(parents=True, exist_ok=True)
+            PLAN.write_text(json.dumps(p, indent=1, ensure_ascii=False), encoding="utf-8")
+    c = request.args.get("country") or (request.get_json(silent=True) or {}).get("country") or ""
+    out = {"ok": True, "country": c, "field_notes": field_notes_plan(c)}
+    try:
+        import retire_field_notes as rf
+        out["retire"] = rf.plan(c) if (ROOT / c / "field-notes.html").is_file() else None
+    except Exception as e:
+        out["retire"] = {"error": str(e)}
+    return jsonify(out)
+
+
 @bp.route("/api/launch/tick", methods=["POST", "OPTIONS"])
 def api_tick():
     if request.method == "OPTIONS":
@@ -991,6 +1144,11 @@ def api_fix():
         items = [i for i in d.get("items") or [] if isinstance(i, dict) and i.get("apply") and (ROOT / i.get("page", "")).is_file()]
         done, missed = relink_apply(items)
         return jsonify({"ok": True, "log": "%s relinked%s." % (count_label(len(done), "link"), ", %d not found (the page changed; run again)" % len(missed) if missed else ""),
+                        "pages": sorted({i["page"] for i in done})})
+    if kind == "mentions":
+        items = [i for i in d.get("items") or [] if isinstance(i, dict) and (ROOT / i.get("page", "")).is_file()]
+        done, missed = mentions_apply(items)
+        return jsonify({"ok": True, "log": "%s linked%s." % (count_label(len(done), "mention"), ", %d skipped (the text moved; run again)" % len(missed) if missed else ""),
                         "pages": sorted({i["page"] for i in done})})
     if kind == "photos":
         pages = [p for p in d.get("pages") or [] if p.startswith("Drafts/.Full Articles/") and (ROOT / p).is_file()]

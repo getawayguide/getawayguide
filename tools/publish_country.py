@@ -138,7 +138,7 @@ def build_nav(pfx, by_cont):
     def a(n, iso, href, full):
         dot = '<span class="nav-fulldot"></span>' if full else ''
         return ('<a href="%s%s"><img class="fl" src="%sImages/web/flags/%s.png" alt="" width="16" '
-                'height="12"><span>%s</span>%s</a>') % (pfx, href, pfx, iso, n, dot)
+                'height="12" loading="lazy"><span>%s</span>%s</a>') % (pfx, href, pfx, iso, n, dot)   # as the committed nav has it
 
     cols = []
     for col in MEGA_COLS:
