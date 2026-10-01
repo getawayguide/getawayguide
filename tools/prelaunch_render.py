@@ -48,7 +48,7 @@ PROBE = """async () => {
     // Chrome halves a photo (a mipmap) and resamples the rest bilinearly, so a file just over 1x or
     // 2x the drawn width is resampled by a fraction of a pixel: the softest result there is, and it
     // shows on a 1x screen (measured: .tmp/tier_sweep.py; the cure is tools/fit_image_tiers.py)
-    else if (dpr < 1.5 && (k < 1.3 || (k >= 1.97 && k < 2.3))) soft.push(name + ' (' + real[0] + ' px file drawn ' + Math.round(need) + ': ' + k.toFixed(2) + 'x is resampled soft on a 1x screen)');
+    else if (dpr < 1.5 && Math.abs(real[0] - need) >= 0.01 && (k < 1.3 || (k >= 1.97 && k < 2.3))) soft.push(name + ' (' + real[0] + ' px file drawn ' + Math.round(need) + ': ' + k.toFixed(2) + 'x is resampled soft on a 1x screen)');
   }
   return { broken: [...new Set(broken)], overflow: over > 1 ? over : 0, wide, soft };
 }"""

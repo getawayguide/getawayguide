@@ -94,9 +94,20 @@ The `<img src>` is only the fallback for clients that ignore `srcset`; point it 
 2. `python tools/add_picture_mobile.py` — wrap bare `<img>` tags in `<picture>`
 3. `python tools/gen_mobile_webp.py` — mobile WebP + fixes the `src` fallback
 4. `python tools/fix_img_perf.py` — `loading` + intrinsic `width`/`height` (layout shift)
-5. `python tools/fix_case.py` — case-sensitivity for GitHub Pages (Linux)
+5. `python tools/fit_image_tiers.py <page>` — recuts each photo's files from its original at the
+   width the page actually draws it, and rewrites the srcsets to match (needs the photo server)
+6. `python tools/fix_case.py` — case-sensitivity for GitHub Pages (Linux)
 
 Run them in that order any time photos are added or changed.
+
+**Never cut a desktop file at exactly 1x or 2x the width it is drawn.** Chrome shrinks an image
+by halving it and then resampling the rest, so a file at ~1.0x or ~2.0x the drawn width is
+resampled by a fraction of a pixel and looks soft. That is the softest result there is, and it
+shows on a 1x monitor, which is what I review on. Sharpness peaks near 1.9x. So desktop tiers are
+**1.85x / 2.8x / 3.7x** the drawn width (step 5 does this). City maps follow the same rule: a
+1350 px 1x copy for the 729 px column (`tools/city_maps_1x.py`, called by `city_map.py`). Always
+judge image quality at **1x** (`device_scale_factor=1`), not only 2x/3x. The Launch tab's render
+check does. Learned 2026-09-30, when Armenia's photos went soft.
 
 **ALWAYS carry the ICC profile through.** These photos are **Display P3**. Pillow's
 `.convert("RGB")` silently drops the profile, and a browser then reads P3 pixel values as

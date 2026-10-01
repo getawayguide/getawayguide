@@ -556,6 +556,12 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
         b64 = base64.b64encode(png).decode()
         ext_href = f"{up}Images/web/city-maps/{pngname}.png"
+        # the desktop map is drawn 729 px wide; a 1x screen given the 1520 px render (2.09x) draws it
+        # soft, so it gets a 1350 px copy (Kevin, 2026-10-01; tools/city_maps_1x.py)
+        one_x = W == DESK_W
+        if one_x:
+            import city_maps_1x
+            city_maps_1x.write_1x(png, f"{IMGDIR}/{pngname}-1x.webp")
 
         # A neighborhood/district label names LAND, so NO part of it may sit in water. Sample the
         # rendered base raster across the label's actual glyph band (works for polygon water AND
@@ -625,7 +631,8 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             # static; mobile wraps both in a .cmworld that JS pans/zooms via CSS transform
             # (so base + pins move together) — see the JS. This avoids the SVG <image>
             # paint bug that left the map blank / half-rendered at the edges.
-            img = f'<img class="cmbase" src="{src}" width="{W}" height="{H}" alt="{html.escape(city)} map">'
+            sset = (" " + __import__("city_maps_1x").desk_srcset(ext_href)) if external and one_x else ""
+            img = f'<img class="cmbase" src="{src}"{sset} width="{W}" height="{H}" alt="{html.escape(city)} map">'
             # data-proj lets the label editor turn a dragged pixel back into lat/lon
             o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif" style="paint-order:stroke" data-proj="{cx:.8f} {cy:.8f} {scale:.4f} {W} {H}">']
             # a ROUTE drawn under the pins: an ordered list of [lat,lon] following the

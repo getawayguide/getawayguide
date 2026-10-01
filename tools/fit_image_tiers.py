@@ -32,7 +32,7 @@ and at 3x density a fraction of a device pixel does not show).
 
 Needs the photo server (http://127.0.0.1:5003) for /site/.
 
-    python tools/fit_image_tiers.py "Drafts/.Full Articles/armenia/yerevan.html" [...] [--dry-run]
+    python tools/fit_image_tiers.py "Drafts/.Full Articles/armenia/yerevan.html" [...] [--dry-run] [--only=TEXT ...]
 """
 import io
 import math
@@ -111,10 +111,10 @@ def cut(orig, web_base, desk, mob, dry):
     return made
 
 
-def run(rels, dry=False):
+def run(rels, dry=False, only=()):
     data = measure(rels)
-    need = {}                                       # web base (repo path) -> [desk px, phone px at 393, orig, aspect]
-    seen = {}                                       # (page, index) -> web base
+    need = {}                                       # web base (repo path) -> [[desk px per place], phone px at 393, orig, orig width]
+    seen = {}                                       # (page, index) -> (web base, desk px here, phone px here)
     for rel, res in data.items():
         page_dir = (ROOT / rel).parent
         for i, d in enumerate(res[1440]):
@@ -135,12 +135,20 @@ def run(rels, dry=False):
             nd = max(d["w"], d["h"] * ar)                # cover: drawn at the wider of the two
             nm = max(m["w"], m["h"] * ar) if m and m["shown"] else nd * 393 / 1440
             k = str(web_base)
+            if only and not any(o.replace("\\", "/").lower() in k.replace("\\", "/").lower() for o in only):
+                continue
             cur = need.get(k)
-            need[k] = [max(nd, cur[0]) if cur else nd, max(nm, cur[1]) if cur else nm, orig, ow]
-            seen[(rel, i)] = k
+            need[k] = [(cur[0] if cur else []) + [nd], max(nm, cur[1]) if cur else nm, orig, ow]
+            seen[(rel, i)] = (k, nd, nm)
     tiers = {}
-    for k, (nd, nm, orig, ow) in need.items():
-        desk = widths(nd, ow, DESK_MULT)
+    for k, (nds, nm, orig, ow) in need.items():
+        # one set of files serves every place the photo appears. Cut for the narrowest place when the
+        # places are within 1.42x of each other (then every page lands between 1.3x and 1.85x); cut
+        # for the widest when they differ more (the narrow page then picks a larger tier). Cutting
+        # for the widest always put the narrower page past the 2x cliff (Tacos Shalpa: 319 and 276).
+        lo, hi = min(nds), max(nds)
+        nd = lo if hi <= 1.42 * lo else hi
+        desk = widths(nd, ow, DESK_MULT)            # an original too small for these is served as it is (cutting it smaller only loses pixels)
         mob = widths(nm * PHONE_MAX / 393, ow)
         tiers[k] = (desk, mob, nd, nm)
         made = cut(orig, Path(k), desk, mob, dry)
@@ -153,10 +161,11 @@ def run(rels, dry=False):
         blocks = list(PICTURE.finditer(raw))
         s, pos, out = raw, 0, []
         for i, m in enumerate(blocks):
-            k = seen.get((rel, i))
-            if not k or k not in tiers:
+            hit = seen.get((rel, i))
+            if not hit or hit[0] not in tiers:
                 continue
-            desk, mob, nd, nm = tiers[k]
+            k, nd, nm = hit                            # sizes say how wide THIS page draws it
+            desk, mob, _, _ = tiers[k]
             b = base_of(re.search(r'<img\b[^>]*\bsrc="([^"]+)"', m.group(0)).group(1))
             names = lambda tag, n: [b + "%s-%dx" % (tag, j + 1) for j in range(n)]
             d_set = lambda ext: srcset([(enc(u + ext), w) for u, w in zip(names("", len(desk)), desk)])
@@ -185,7 +194,9 @@ def main():
     if not rels:
         print(__doc__)
         return 2
-    run(rels, dry="--dry-run" in sys.argv)
+    # --only=TEXT (repeatable): recut only the photos whose web path contains TEXT; the rest are left alone
+    only = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--only=")]
+    run(rels, dry="--dry-run" in sys.argv, only=only)
     return 0
 
 
