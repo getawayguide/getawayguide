@@ -39,7 +39,9 @@ except ImportError:
     pass
 
 ROOT = Path(__file__).resolve().parent.parent
-# long edge, suffix
+# WIDTH, suffix. A hero is a full-width banner, so its files are sized by width. They used to be
+# sized by the long edge, which is the same thing for a landscape photo and a third too narrow for a
+# portrait one: the itinerary's portrait hero served a 1921 px file to a 2880 px banner (2026-09-30).
 SIZES = [(2000, ""), (2561, "-2x"), (1206, "-mob"), (603, "-mob-1x")]
 JPEG_Q, WEBP_Q = 86, 82
 
@@ -92,15 +94,15 @@ def main():
         outdir.mkdir(parents=True, exist_ok=True)
     total = 0
     done = set()
-    for long_edge, suffix in SIZES:
-        scale = min(1.0, long_edge / max(w, h))
+    for width, suffix in SIZES:
+        scale = min(1.0, width / w)
         size = (max(1, round(w * scale)), max(1, round(h * scale)))
         # A source smaller than the tier cannot fill it. Writing it anyway produced a -2x
         # that was byte-for-byte the same picture as the 1x, which is not a tier: it is a
         # second copy the browser may download believing it is sharper.
         if size in done:
-            out("  skip (source is only %dpx; -2x would duplicate the 1x)  hero-%s%s"
-                % (max(w, h), a.slug, suffix))
+            out("  skip (source is only %dpx wide; -2x would duplicate the 1x)  hero-%s%s"
+                % (w, a.slug, suffix))
             continue
         done.add(size)
         im = rgb if scale == 1.0 else rgb.resize(size, Image.LANCZOS)

@@ -12,7 +12,7 @@ from urllib.parse import quote
 from playwright.sync_api import sync_playwright
 
 SITE = "http://127.0.0.1:5003/site/"
-WIDTHS = [(393, 852), (820, 1180), (1440, 900)]
+WIDTHS = [(393, 852, 3), (820, 1180, 2), (1440, 900, 2)]       # at the screen density people read on
 
 # every lazy image loads, then the page is measured; the widest element names the overflow
 PROBE = """async () => {
@@ -32,7 +32,18 @@ PROBE = """async () => {
     }
     if (best) wide = best.e.tagName.toLowerCase() + (best.e.id ? '#' + best.e.id : '') + (best.e.className && typeof best.e.className === 'string' ? '.' + best.e.className.trim().split(/\\s+/).slice(0, 2).join('.') : '');
   }
-  return { broken: [...new Set(broken)], overflow: over > 1 ? over : 0, wide };
+  // soft: a body photo whose chosen file is narrower than it is drawn (cover draws it at the wider of
+  // frame width and frame height x aspect), at this screen's density (Kevin, 2026-09-30: blurry photos)
+  const dpr = window.devicePixelRatio || 1, soft = [];
+  for (const i of imgs) {
+    if (!i.currentSrc || i.closest('section') || i.closest('nav') || !i.complete || !i.naturalWidth) continue;
+    const r = i.getBoundingClientRect(); if (r.width < 60) continue;
+    const real = await new Promise(res => { const t = new Image(); t.onload = () => res([t.naturalWidth, t.naturalHeight]); t.onerror = () => res(null); t.src = i.currentSrc; });
+    if (!real) continue;
+    const need = Math.max(r.width, r.height * real[0] / real[1]) * dpr;
+    if (real[0] < need * 0.85) soft.push((i.alt || decodeURIComponent(i.currentSrc.split('/').pop())) + ' (' + real[0] + ' px file, drawn ' + Math.round(need) + ')');
+  }
+  return { broken: [...new Set(broken)], overflow: over > 1 ? over : 0, wide, soft };
 }"""
 
 
@@ -42,8 +53,8 @@ def main(rels):
         b = p.chromium.launch()
         for rel in rels:
             out[rel] = {}
-            for w, h in WIDTHS:
-                pg = b.new_page(viewport={"width": w, "height": h})
+            for w, h, dpr in WIDTHS:
+                pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=dpr)
                 errs = []
                 pg.on("pageerror", lambda e, errs=errs: errs.append(str(e)))
                 try:

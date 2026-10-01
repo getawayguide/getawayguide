@@ -106,6 +106,14 @@ originals. It does NOT rewrite the page; `python tools/tier_srcsets.py <page>` d
 widths and the site's `sizes`, and a folder name with a space is encoded (Orgov's unencoded
 space had been sending desktop the phone image). It only rewrites a block when every file it
 names exists, and re-running it changes nothing.
+
+Then `python tools/fit_image_tiers.py <page>` (added 2026-09-30, after Kevin found blurry photos on
+Yerevan): it renders the page, measures how wide each photo is actually drawn (desktop and phone,
+cover-cropping included), cuts the 1x/2x/3x files again from the original at those widths and
+writes `sizes` to match. `tier_srcsets` only guesses from the photo's shape, and the tiers
+`gen_image_tiers` cuts are anchored on the old desktop copy (600 px for a pair photo), which is
+too small for a photo shown full width. The Launch tab's render check flags any photo still softer
+than the screen.
 (`python tools/draft_images.py <draft>` runs this whole list on a draft.)
 
 Then:

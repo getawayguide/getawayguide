@@ -893,12 +893,14 @@ def c_render(ctx):
                 items.append({"page": rel, "detail": "Broken image at %spx" % w, "value": b, "sev": "high"})
             if f.get("overflow"):
                 items.append({"page": rel, "detail": "Scrolls sideways at %spx (%dpx wide)" % (w, f["overflow"]), "value": f.get("wide", "")})
+            for x in f.get("soft", [])[:8]:
+                items.append({"page": rel, "detail": "Soft at %spx" % w, "value": x})
             for e in f.get("errors", [])[:3]:
                 items.append({"page": rel, "detail": "Script error at %spx" % w, "value": e[:140]})
             if f.get("error"):
                 items.append({"page": rel, "detail": "Did not load at %spx" % w, "value": f["error"][:140], "sev": "high"})
     if not items:
-        return result("pass", "Loads clean at 393, 820 and 1440 px: no broken images, no sideways scroll, no script errors.")
+        return result("pass", "Loads clean and sharp at 393, 820 and 1440 px: no broken images, no soft photos, no sideways scroll, no script errors.")
     high = any(i.get("sev") == "high" for i in items)
     return result("fail" if high else "warn", count_label(len(items), "render problem") + ".", items,
                   tool={"kind": "preview", "label": "Preview it"})
@@ -920,7 +922,7 @@ PASS_TEXT = {
     "seo": "Title, description and share tags are in place and within length.",
     "cards": "It has its own card and share image, cut from the same photo.",
     "dates": "The date under the subtitle matches dateModified.",
-    "render": "Loads clean at 393, 820 and 1440 px.",
+    "render": "Loads clean and sharp at 393, 820 and 1440 px.",
 }
 
 
@@ -974,7 +976,7 @@ CLAUDE = [
     ("dates", "Search & sharing", "One date per page", "The date under the subtitle and dateModified agree.", c_dates),
     ("country-page", "Country", "The country page has a card for every article", "An article with no card is only findable by search.", c_country_page),
     ("coverage", "Country", "Everything in the field notes made it into an article", "coverage_check.py (Sevanavank, the Black Wall and the plane once fell through).", c_coverage),
-    ("render", "Rendering", "Loads clean at phone, tablet and desktop width", "Broken images, sideways scroll and script errors at 393, 820 and 1440 px.", c_render),
+    ("render", "Rendering", "Loads clean and sharp at phone, tablet and desktop width", "Broken images, photos softer than the screen, sideways scroll and script errors at 393, 820 and 1440 px.", c_render),
 ]
 
 # the checks that are about the launch as a whole; every other one is reported per article
