@@ -53,10 +53,21 @@
   .ln-btn[disabled]{opacity:.55;cursor:default}
   .ln-btn.sm{padding:.45rem .7rem;font-size:.56rem}
   /* the editor sidebar's tabs (editor.html .side-tabs): icon + label on a white bar, the open one a soft green tab with a rule */
-  .ln-tabs{display:flex;gap:2px;margin:18px 0 22px;padding:8px 8px 0;background:#fff;border:1px solid var(--ln-line);border-bottom-color:rgba(28,40,33,.14);
-    border-radius:12px 12px 0 0;flex-wrap:wrap;row-gap:2px}
+  .ln-tabs{position:relative;margin:18px 0 22px;padding:8px 8px 0;background:#fff;border:1px solid var(--ln-line);border-bottom-color:rgba(28,40,33,.14);
+    border-radius:12px 12px 0 0}
+  /* one row that scrolls sideways; the bar itself shows no scroll bar, the arrows move it */
+  .ln-tabstrip{display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+  .ln-tabstrip::-webkit-scrollbar{display:none}
+  .ln-tabarrow{position:absolute;top:8px;bottom:0;width:44px;display:flex;align-items:center;border:0;padding:0;cursor:pointer;color:#4f5c54;z-index:2}
+  .ln-tabarrow[hidden]{display:none}
+  .ln-tabarrow.l{left:0;justify-content:flex-start;padding-left:8px;border-radius:12px 0 0 0;background:linear-gradient(to right,#fff 55%,rgba(255,255,255,0))}
+  .ln-tabarrow.r{right:0;justify-content:flex-end;padding-right:8px;border-radius:0 12px 0 0;background:linear-gradient(to left,#fff 55%,rgba(255,255,255,0))}
+  .ln-tabarrow span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1px solid var(--ln-line);box-shadow:0 1px 4px rgba(28,40,33,.12)}
+  .ln-tabarrow:hover span{color:var(--ln-green);border-color:var(--ln-green)}
+  .ln-tabarrow:focus-visible span{outline:2px solid var(--ln-green);outline-offset:2px}
+  .ln-tabarrow svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
   .ln-tab{display:inline-flex;align-items:center;gap:6px;flex:none;font:500 12.5px/1 'Hanken Grotesk',sans-serif;color:#4f5c54;cursor:pointer;
-    background:none;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:9px 12px 10px;margin-bottom:-1px;white-space:nowrap;
+    background:none;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:9px 12px 10px;white-space:nowrap;
     transition:background .15s,color .15s}
   .ln-tab .ti{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
   .ln-tab:hover{background:#F4F6F4;color:var(--ln-ink)}
@@ -244,20 +255,50 @@
         <span class="ln-when" aria-live="polite">${when}</span>
         <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''}>${running ? 'Running…' : 'Run Claude’s checks'}</button>
       </div>
-      <nav class="ln-tabs" role="tablist" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
+      <div class="ln-tabs"><button class="ln-tabarrow l" type="button" aria-label="Earlier tabs" hidden><span><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></span></button>
+      <nav class="ln-tabstrip" role="tablist" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
         if (a && a.kind === 'field-notes' && L.plan === 'retire')
           return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
         const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>`
           : (L.finished || Object.keys(L.results).length) && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
         return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
+      <button class="ln-tabarrow r" type="button" aria-label="More tabs" hidden><span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span></button></div>
       <div id="ln-body">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
     </div>`;
     r.scrollTop = keep;
+    tabArrows(r);
     fitSelect($('#ln-country', r));
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { const s = $('#ln-country', r); if (s) fitSelect(s); });
     wire();
   }
+  // the tab row: keep its place across redraws, keep the open tab in view, show an arrow only on a
+  // side that has tabs past it
+  function tabArrows(r) {
+    const strip = $('.ln-tabstrip', r), left = $('.ln-tabarrow.l', r), right = $('.ln-tabarrow.r', r);
+    if (!strip) return;
+    strip.scrollLeft = L.tabScroll || 0;
+    const on = $('.ln-tab.on', strip);
+    if (on && L.tabShown !== L.tab) {                 // a newly opened tab is brought into view, once
+      const a = on.offsetLeft - strip.offsetLeft, b = a + on.offsetWidth;
+      if (a < strip.scrollLeft + 40) strip.scrollLeft = Math.max(0, a - 48);
+      else if (b > strip.scrollLeft + strip.clientWidth - 40) strip.scrollLeft = b - strip.clientWidth + 48;
+      L.tabShown = L.tab;
+    }
+    const update = () => {
+      left.hidden = strip.scrollLeft <= 1;
+      right.hidden = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 1;
+    };
+    strip.onscroll = () => { L.tabScroll = strip.scrollLeft; update(); };
+    const smooth = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    left.onclick = () => strip.scrollBy({ left: -Math.max(160, strip.clientWidth * .7), behavior: smooth ? 'smooth' : 'auto' });
+    right.onclick = () => strip.scrollBy({ left: Math.max(160, strip.clientWidth * .7), behavior: smooth ? 'smooth' : 'auto' });
+    L.tabScroll = strip.scrollLeft;
+    update();
+    tabArrows.update = update;
+  }
+  window.addEventListener('resize', () => { if (tabArrows.update) tabArrows.update(); });
+
   function pageCount() {
     const d = pages().filter(a => !a.live).length, l = pages().length - d;
     return [d && `${d} draft${d === 1 ? '' : 's'}`, l && `${l} live`].filter(Boolean).join(', ');
@@ -299,7 +340,7 @@
     const items = v && v.items ? v.items : [];
     const acts = [];
     if (v && v.tool && rel && items.length) acts.push(`<button class="ln-btn sm" data-go="${esc(v.tool.kind)}" data-rel="${esc(v.tool.rel || rel)}">${esc(v.tool.label)}</button>`);
-    if (v && v.fix && items.length) {
+    if (v && v.fix && items.length && items.some(i => i.apply !== false)) {      // nothing to apply yet: no button
       const busy = L.busy[d.id];
       acts.push(`<button class="ln-btn sm primary" data-fix="${esc(d.id)}" data-rel="${esc(rel || '')}"${busy ? ' disabled' : ''}>${busy ? 'Working…' : esc(v.fix.label)}</button>`);
     }
@@ -522,6 +563,7 @@
 
   async function loadCountry() {
     L.results = {}; L.finished = null; L.kevin = { hints: {}, ticks: {} }; L.open = {}; L.plan = 'keep'; L.retire = null;
+    L.tabScroll = 0; L.tabShown = null;                  // a new country starts its tab row at the left
     render();
     try {
       const [last, kev, plan] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() }),
