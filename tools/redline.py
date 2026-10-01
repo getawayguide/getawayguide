@@ -332,15 +332,47 @@ def commit(slug, accepted_ids):
     return {"ok": True, "applied": len(acc), "destination_writes": len(plan), "complete": done}
 
 
+def decided_changes(p, only=None):
+    """a round's grammar changes that are decided (and, of an open round, saved): the margin lists
+    them under Decided so a decision can be reversed after its card has gone. Kevin, 2026-09-30:
+    the autosave committed #15 and closed the round, and nothing could bring the card back."""
+    out = []
+    for i, c in enumerate(p["changes"]):
+        v = p["decisions"].get(c["id"])
+        if c["kind"] != "grammar" or v is None or (only is not None and c["id"] not in only):
+            continue
+        out.append({"round": p["slug"], "id": c["id"], "n": i + 1, "section": c.get("section", ""),
+                    "find": c["find"], "replace": c["replace"], "accepted": bool(v)})
+    return out
+
+
+def last_closed(rel):
+    """slug of the newest round for this article that is closed (applied.json), else None"""
+    rel = rel.replace("\\", "/").lstrip("./")
+    best = None
+    for d in STORE.glob("*/applied.json"):
+        pj = d.parent / "proposal.json"
+        if not pj.exists():
+            continue
+        p = json.loads(pj.read_text(encoding="utf-8"))
+        if p["article_dir"] + "/" + p["article"] == rel and (best is None or d.stat().st_mtime > best[0]):
+            best = (d.stat().st_mtime, p["slug"])
+    return best[1] if best else None
+
+
 def review_state(rel):
     """everything the editor needs when an article opens"""
     slug = slug_for(rel)
     out = {"slug": slug, "comments_key": comments_key(rel), "changes": [], "decisions": {},
-           "comments": comments_load(comments_key(rel))}
+           "comments": comments_load(comments_key(rel)), "decided": []}
+    closed = last_closed(rel)
+    if closed:
+        out["decided"] += decided_changes(load(closed))
     if slug:
         p = load(slug)
         prog = p["_dir"] / "progress.json"
         applied_ids = set(json.loads(prog.read_text(encoding="utf-8"))["ids"]) if prog.exists() else set()
+        out["decided"] += decided_changes(p, applied_ids)
         out["changes"] = [c for c in p["changes"] if c["id"] not in applied_ids]
         out["decisions"] = p["decisions"]
         out["title"] = p.get("title", slug)

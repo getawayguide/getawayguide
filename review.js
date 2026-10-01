@@ -35,7 +35,7 @@
   const $ = id => document.getElementById(id);
   const ed = () => $('editor');
 
-  const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] }, lint: [],
+  const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] }, lint: [], decided: [],
                   active: null, filter: 'all', view: 'contextual', draft: null, hidden: [], hover: null };
 
   // ------------------------------------------------------------------ pane
@@ -153,6 +153,7 @@
     catch (e) { console.warn('review: server not reachable', e); return; }
     state.slug = r.slug; state.key = r.comments_key; state.comments = r.comments || { threads: [] };
     state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
+    state.decided = r.decided || [];
     if (state.awaitingFile) { state.view = 'contextual'; press('rv-v-ctx', true); press('rv-v-list', false); }
     state.awaitingFile = false;
     snapshotDisk(rel);                                   // so a later change on disk can be noticed
@@ -457,8 +458,17 @@
       const r = await (await fetch(API + `/review/${state.slug}/commit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accepted }) })).json();
       if (r.ok) {
         toast(`Saved. ${r.applied} accepted change(s) committed` + (r.destination_writes ? `, ${r.destination_writes} sentence(s) written into supporting articles.` : '.'), 6000);
+        // a saved decision stays reversible under Decided (in List) instead of vanishing with its card:
+        // Kevin, 2026-09-30, could not reject #15 once the autosave had committed it
+        const slug = state.slug, keep = (c, v) => { if (c && c.kind === 'grammar' && !state.decided.some(x => x.round === slug && x.id === c.id))
+          state.decided.push({ round: slug, id: c.id, n: c.n, section: c.section, find: c.find, replace: c.replace, accepted: v }); };
+        accepted.forEach(id => keep(byId(id), true));
         state.changes = state.changes.filter(c => !accepted.includes(c.id)); accepted.forEach(id => delete state.st[id]);
-        if (r.complete) { state.slug = null; state.changes = []; toast('Review complete: every change is decided and applied.', 6000); }
+        if (r.complete) {
+          state.changes.filter(c => state.st[c.id] === false).forEach(c => keep(c, false));
+          state.slug = null; state.changes = [];
+          toast('Review complete: every change is decided and applied. To change your mind on one, see Decided in List.', 7000);
+        }
         renderAll();
       } else toast('Saved the article, but the supporting-article writes failed: ' + (r.problems || []).join(' | '), 12000);
     } catch (e) { toast('Saved the article, but could not reach the server to commit the moves.', 8000); }
@@ -906,8 +916,23 @@
       if (!listMode && !it.el) { lost++; continue; }                  // the margin holds only what has a place in the text
       host.appendChild(it.kind === 'change' ? changeCard(it.c, it.dim, it.threads) : it.kind === 'draft' ? card(Object.assign({}, state.draft, { draft: true })) : it.kind === 'lint' ? lintCard(it.f) : card(it.t));
     }
-    if (lost) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${lost} more not found in the open text · see List`; host.appendChild(n); }
-    if (!host.children.length) {
+    const dec = state.filter !== 'comments' ? (state.decided || []) : [];
+    if (listMode && dec.length) {
+      const h = document.createElement('div'); h.className = 'rv-dec-h';
+      h.textContent = `Decided · ${dec.length}`; host.appendChild(h);
+      [...dec].sort((a, b) => a.round === b.round ? a.n - b.n : (a.round < b.round ? 1 : -1)).forEach(x => host.appendChild(decidedCard(x)));
+    }
+    if (lost || (dec.length && !listMode)) {
+      const n = document.createElement('div'); n.className = 'rv-note';
+      if (lost) n.append(`${lost} more not found in the open text · see List`);
+      if (dec.length && !listMode) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'rv-dec-go';
+        b.textContent = `${dec.length} decided change${dec.length === 1 ? '' : 's'} · change your mind`; b.onclick = () => setView('list');
+        if (lost) n.append(' · '); n.appendChild(b);
+      }
+      host.appendChild(n);
+    }
+    if (!host.querySelector(':scope > :not(.rv-note)')) {
       const e = document.createElement('div'); e.className = 'rv-empty';
       e.textContent = state.slug && !pend.length && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
                     : state.filter === 'changes' ? 'No changes to review.' : 'Select text and choose + Comment (Ctrl+Alt+M).';
@@ -958,6 +983,42 @@
       d.appendChild(sub);
     }
     return d;
+  }
+  // A decided, saved change: what was decided, and the other choice. The text is swapped in the
+  // editor (an undoable edit, unsaved until Save) and the decision posted to that change's round,
+  // open or closed. Grammar changes only: a cut or a move has written other files.
+  function decidedCard(x) {
+    const d = document.createElement('div');
+    d.className = 'rv-card rv-c ed rv-done'; d.dataset.dec = x.round + ':' + x.id;
+    d.innerHTML = `<div class="who"><span class="av">${REVIEWER[0]}</span><b>${x.accepted ? 'Accepted' : 'Rejected'}</b><span class="tm">${esc(x.round)}</span></div>
+      <div class="lbl"><span class="num">${x.n}</span>Replaced${x.section ? ' · ' + esc(x.section) : ''}</div>
+      <div class="t"><del>${esc(plain(x.find))}</del> <ins>${esc(plain(x.replace))}</ins></div>
+      <div class="act"><button type="button" data-a="flip">${x.accepted ? 'Reject instead' : 'Accept instead'}</button></div>`;
+    d.querySelector('[data-a="flip"]').onclick = ev => { ev.stopPropagation(); redecide(x, !x.accepted); };
+    d.title = 'Click to show the whole change'; d.onclick = () => { d.classList.toggle('open'); queueLayout(); };
+    return d;
+  }
+  function redecide(x, accept) {
+    const e = ed();
+    e.querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap); e.normalize();
+    const h = e.innerHTML.replace(/ class=""/g, ''), key = locate(h, accept ? x.find : x.replace);
+    if (!key) {
+      anchorComments(); renderAll();
+      toast(`Change ${x.n} has been edited since it was ${x.accepted ? 'accepted' : 'rejected'}, so its text is not in the article any more. Nothing changed: edit it by hand.`, 9000);
+      return;
+    }
+    if (H()) H().checkpoint();
+    e.innerHTML = h.replace(key, () => accept ? x.replace : x.find);    // a function: "$" in the text is literal
+    if (window.adoptPlaceholders) window.adoptPlaceholders(e);
+    if (window.restoreSlotButtons) window.restoreSlotButtons(e);
+    if (window.restoreMapButtons) window.restoreMapButtons(e);
+    anchorComments();
+    x.accepted = accept;
+    fetch(API + `/review/${x.round}/decisions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [x.id]: accept }) })
+      .catch(() => toast('Could not save the decision (server?)'));
+    if (H() && H().label) H().label((accept ? 'Accepted' : 'Rejected') + ' instead: ' + plain(x.replace).replace(/\s+/g, ' ').slice(0, 48));
+    if (H()) H().touch(); dirty(); renderAll();
+    toast(`Change ${x.n} ${accept ? 'accepted' : 'rejected'} instead. Save to keep it.`, 5000);
   }
   function previewDecision(id, accept) {       // while the tick or cross is hovered the text shows the outcome
     ed().querySelectorAll('.rl-pv-yes,.rl-pv-no').forEach(m => m.classList.remove('rl-pv-yes', 'rl-pv-no'));
@@ -1103,6 +1164,7 @@
     let r; try { r = await (await fetch(API + '/review/for?rel=' + encodeURIComponent(rel), { cache: 'no-store' })).json(); } catch (e) { return; }
     state.slug = r.slug; state.key = r.comments_key; state.comments = r.comments || { threads: [] };
     state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
+    state.decided = r.decided || [];
     state.previewChanges = r.changes || [];
     toggle(true); setFilter('all'); setView('list');
     const file = rel.split('/').pop(), nc = (r.comments.threads || []).filter(t => !t.resolved).length, nch = (r.changes || []).length;
@@ -1315,6 +1377,9 @@ body.review-open #review-pane{display:flex}
 .rv-status{font:400 .78rem/1.4 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#6b7a70;padding:.4rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
 .rv-body{flex:1;overflow:hidden;position:relative}.rv-body.list{overflow:auto}.rv-list{padding:.5rem}.rv-canvas{position:relative;height:100%}
 #rv-banner{background:#FBEFC2;color:#5c4a12;font-size:.78rem;padding:.5rem .6rem;border-bottom:1px solid #E8C86A}#rv-banner button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;margin-left:.3rem;border:1px solid #E8C86A;background:#fff;border-radius:3px;padding:.25rem .4rem;cursor:pointer}
+.rv-dec-h{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#8a9790;padding:1rem .6rem .35rem;border-top:1px solid #e6e6e2;margin-top:.6rem}.rv-dec-h:first-child{border-top:0;margin-top:0;padding-top:.5rem}
+.rv-card.rv-done{cursor:pointer}.rv-card.rv-done .who b{font-weight:600}.rv-card.rv-done .t{opacity:.8;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.rv-card.rv-done.open .t{display:block}
+.rv-done .act{display:flex;gap:.3rem;margin-top:.45rem}.rv-done .act button{font:600 .6rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .55rem;border:1px solid #e0ded8;background:#fff;border-radius:3px;cursor:pointer;color:#1C2821}.rv-done .act button:hover{border-color:#b9d4c5;color:#2D6B50}.rv-done .act button:focus-visible{outline:2px solid #2D6B50;outline-offset:1px}.rv-note .rv-dec-go{background:none;border:0;padding:0;font:inherit;color:#2D6B50;text-decoration:underline;cursor:pointer}
 .rv-empty,.rv-note{font-size:.8rem;color:#8a9790;padding:.9rem .6rem}.rv-canvas .rv-note{position:absolute;left:0;right:0;bottom:0;background:#F7F7F4;border-top:1px solid #e6e6e2;font-size:.7rem;padding:.4rem .6rem}
 /* cards: one shape for a change and a comment, Word's margin */
 .rv-card{border:1px solid #e3e2dc;border-radius:6px;padding:.5rem .6rem .55rem;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);font-size:.82rem}
