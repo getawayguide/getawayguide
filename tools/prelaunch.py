@@ -240,6 +240,40 @@ def name_matches(link_text, name):
     return set(nt) <= set(lt) and len(lt) <= len(nt) + 2
 
 
+SECTION_SKIP = re.compile(r"^(overview|getting|how to|where to|more\b|the experience|day trips|yerevan as|faq|tips|budget|when to|what to)", re.I)
+
+
+def section_places(rel, h):
+    """{place key: (anchor, name)} for each section of an article that is about one place: an id'd
+    heading or paragraph whose Google Maps link names it. The key is the map place (id or pin), so a
+    link elsewhere to the SAME place matches, and a look-alike (Yerevan's Abovyan Street, Gyumri's
+    Abovyan walking street) does not."""
+    import coverage_check as cc
+    s0, e0 = body_span(h)
+    marks = [(m.start(), m.group(1), m.group(2), _text(m.group(3)) if m.group(1) != "p" else "")
+             for m in re.finditer(r'<(h2|h3|p)\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</\1>', h[s0:e0], re.S)]
+    out = {}
+    for i, (pos, tag, anchor, title) in enumerate(marks):
+        title = title or anchor.replace("-", " ")
+        if SECTION_SKIP.match(title) or "city itself" in title.lower():
+            continue
+        a = s0 + pos
+        b = h.find("</p>", a) + 4 if tag == "p" else next((s0 + p2 for p2, t2, *_ in marks[i + 1:] if t2 != "p"), e0)
+        links = [(H.unescape(m.group(1)), _text(m.group(2)))
+                 for m in re.finditer(r'<a\b[^>]*href="([^"]*google\.[^"]*/maps/[^"]*)"[^>]*>(.*?)</a>', h[a:b], re.S)]
+        if not links:
+            continue
+        tw = set(_fold(title).split())
+        best = max(links, key=lambda l: len(set(_fold(l[1]).split()) & tw))
+        if not set(_fold(best[1]).split()) & tw:
+            if tag != "p":
+                continue
+            best = links[0]
+        for k in cc.place_keys(best[0]):
+            out.setdefault(k, (anchor, title))
+    return out
+
+
 def relink_scan(ctx):
     """Google Maps links to places that have their own article, in every launching page and in
     the country's live pages"""
@@ -250,6 +284,13 @@ def relink_scan(ctx):
         if rel not in ctx["set"] and all(live_twin(r) != rel for r in ctx["set"]):
             targets.append((rel, article_names(rel, _read(ROOT / rel)), True))
     targets = [t for t in targets if t[1]]
+    import coverage_check as cc
+    sections = {}                                     # place key -> (article, anchor, title, live)
+    for trel, names, live in [(r, None, (ROOT / live_twin(r)).is_file() or not r.startswith("Drafts/")) for r in ctx["set"]] + \
+                             [(r, None, True) for r in live_articles() if r not in ctx["set"] and all(live_twin(s) != r for s in ctx["set"])]:
+        if kind_of(trel) in ("guide",):
+            for k, (anchor, title) in section_places(trel, ctx["html"].get(trel) or _read(ROOT / trel)).items():
+                sections.setdefault(k, (trel, anchor, title, live))
     sources = list(ctx["set"])
     for c in ctx["countries"]:                         # the country's LIVE pages link to these too
         for p in (ROOT / c).glob("*.html") if (ROOT / c).is_dir() else []:
@@ -270,6 +311,17 @@ def relink_scan(ctx):
             if not hm or not GMAPS.search(hm.group(1)):
                 continue
             text = _text(h[m.start(2):m.end(2)])
+            hit = next((sections[k] for k in cc.place_keys(H.unescape(hm.group(1))) if k in sections), None)
+            if hit and live_twin(hit[0]) != live_twin(src):
+                trel, anchor, title, live = hit
+                now = live or src.startswith("Drafts/")
+                dest = trel if src.startswith("Drafts/") or not trel.startswith("Drafts/") else live_twin(trel)
+                items.append({"page": src, "text": text, "target": trel, "anchor": anchor, "href": relpath(dest, src) + "#" + anchor,
+                              "at": m.start(), "tag": h[m.start():m.start(2)],
+                              "detail": "“%s” goes to Google Maps; your %s article covers it (%s)" % (text, _title(trel, ctx), title),
+                              "apply": bool(now),
+                              "why": "" if now else "Apply after %s is published: until then the live page would link to a missing page." % Path(trel).name})
+                continue
             for trel, names, live in targets:
                 if live_twin(trel) == live_twin(src):
                     continue
@@ -527,6 +579,14 @@ def c_internal(ctx):
             t = resolve_rel(href, rel)
             if t and not (ROOT / t).exists():
                 items.append({"page": rel, "detail": "Link to a file that does not exist", "value": href})
+                continue
+            # a link into another page's section: that page must have the anchor (section relinks, 2026-09-30)
+            frag = href.split("#", 1)[1] if "#" in href and not href.startswith("#") else ""
+            s0, e0 = body_span(h)          # the article's own links: the nav's destinations.html#asia are read by script
+            if t and frag and t.endswith(".html") and s0 <= m.start() < e0 and t != "destinations.html":
+                other = ctx["html"].get(t) or _read(ROOT / t)
+                if not re.search(r'\b(?:id|name)="%s"' % re.escape(frag), other):
+                    items.append({"page": rel, "detail": "Links to a section %s does not have" % Path(t).name, "value": href})
     if not items:
         return result("pass", "Every internal link, anchor and table-of-contents entry resolves.")
     return result("fail", count_label(len(items), "broken link") + ".", items, tool={"kind": "editor", "label": "Open in the editor"})
@@ -844,6 +904,55 @@ def c_render(ctx):
                   tool={"kind": "preview", "label": "Preview it"})
 
 
+PASS_TEXT = {
+    "prose": "No typos, spacing slips, British spellings, em dashes or leftover notes here.",
+    "repeats": "No sentence here appears word for word in another page.",
+    "relink": "No Google Maps link here points at a place one of your articles covers.",
+    "mentions": "Every mention here of a place you wrote about links to it.",
+    "unlaunched": "Every article this page links to is live or launching with it.",
+    "internal": "Every link, anchor and table-of-contents entry here resolves.",
+    "maps-search": "Every Google Maps link here opens a place.",
+    "photos": "Every photo here is a compressed web copy.",
+    "tiers": "Every photo here has its phone, 2x and 3x files.",
+    "alt": "Every photo here has real alt text.",
+    "dup-photos": "No photo here is used in another guide.",
+    "city-maps": "Its maps are embedded and every key row lands on its pin.",
+    "seo": "Title, description and share tags are in place and within length.",
+    "cards": "It has its own card and share image, cut from the same photo.",
+    "dates": "The date under the subtitle matches dateModified.",
+    "render": "Loads clean at 393, 820 and 1440 px.",
+}
+
+
+def _short(rel, ctx):
+    """what the tab calls a page: Yerevan, Itinerary, Top 10 (launch.js shortTitle)"""
+    k = ctx["kind"].get(rel) or kind_of(rel)
+    if k != "guide":
+        return {"itinerary": "Itinerary", "top10": "Top 10", "country": "Country page", "field-notes": "Field notes"}.get(k, Path(rel).stem)
+    t = re.split(r"\s*[—–:]\s*|\s+-\s+", title_of(ctx["html"].get(rel) or _read(ROOT / rel)))[0]
+    t = re.sub(r"^(The Ultimate Guide to|The)\s+", "", t)
+    if not re.search(r"\s(&|and)\s", t) and len(t.split(",")) == 2:
+        t = t.split(",")[0]
+    return t
+
+
+def links_per_page(ctx):
+    """what each page links to among the launching pages: 'Yerevan 10, Itinerary 2'"""
+    out = {}
+    for src in ctx["set"]:
+        h = ctx["html"][src]
+        s0, e0 = body_span(h)
+        n = {}
+        for m in HREF.finditer(h, s0, e0):
+            t = resolve_rel(m.group(1), src)
+            if t in ctx["set"] and t != src:
+                n[t] = n.get(t, 0) + 1
+        out[src] = ("Links to %s: " % count_label(len(n), "other page") + ", ".join(
+            "%s %d" % (_short(t, ctx), c)
+            for t, c in sorted(n.items(), key=lambda x: -x[1]))) if n else "Links to none of the other pages."
+    return out
+
+
 CLAUDE = [
     # (id, group, title, why, fn)
     ("prose", "Writing", "Typos, spacing, American spelling, em dashes, leftover notes",
@@ -873,19 +982,11 @@ COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage"}
 
 KEVIN = [
     # (id, title, why, tool kind, tool label, scope)
-    ("k-review", "Review is clear", "Every comment resolved and every proposed change accepted or rejected.", "review", "Open the review", "article"),
+    # Kevin, 2026-09-30: "keep review is clear, search title, thumbnails, maps look right"
+    ("k-review", "Review is clear", "Ticks itself once every comment is resolved and every proposed change decided.", "review", "Open the review", "article"),
     ("k-search", "Search title and description read right", "What Google shows. Lead with what people search, then real place names.", "seo", "Open the Search tab", "article"),
     ("k-thumbs", "Thumbnails and share image", "The card on the country page, the home and posts card, the phone card and the link preview.", "thumbs", "Open Thumbnails", "article"),
-    ("k-hero", "Hero photo, crop and scrim", "The first thing anyone sees, at desktop and phone crops.", "covers", "Open Covers", "article"),
-    ("k-headline", "Headline and subtitle", "The words over the hero.", "editor", "Open in the editor", "article"),
-    ("k-read", "Read it once on a phone, top to bottom", "Where most readers are. Catches what a desktop read misses.", "preview", "Preview on a phone", "article"),
-    ("k-photos", "Photo order, crops and pairs", "Each photo next to the paragraph it belongs to, portraits paired.", "editor", "Open in the editor", "article"),
-    ("k-sensitive", "Nothing in the photos you'd rather not publish", "Signs and slogans you can't read, faces, plates, anything political.", "editor", "Open in the editor", "article"),
-    ("k-facts", "Prices, hours and places still current", "Anything that could have changed since the trip.", "editor", "Open in the editor", "article"),
-    ("k-links", "Recommendations link where you want", "Hostels, tours and restaurants: the booking site you'd actually send a friend to.", "editor", "Open in the editor", "article"),
     ("k-maps", "Maps look right", "Pins, labels, nothing hidden under another label.", "maps", "Open the Maps tab", "article"),
-    ("k-destcard", "The country's destination card", "The photo on the destinations page and the country's share image.", "covers", "Open Covers", "country"),
-    ("k-home", "Home page placement", "Whether it goes into Recent Dispatches or the featured row.", "", "", "country"),
 ]
 
 
@@ -940,7 +1041,7 @@ def kevin_hints(ctx, rel):
         doms[d] = doms.get(d, 0) + 1
     out["k-links"] = {"text": ", ".join("%s %d" % kv for kv in sorted(doms.items(), key=lambda x: -x[1])[:5]) or "No outside links"}
     maps = len(re.findall(r'class="citymap-fig"', h)) + ("Suggested Route Overview" in h)
-    out["k-maps"] = {"text": count_label(maps, "map") + " embedded"}
+    out["k-maps"] = {"text": count_label(maps, "map") + " embedded", "n": maps}
     return out
 
 
@@ -967,6 +1068,7 @@ def _key(rels):
 def _run(jid, rels, only, client):
     job = JOBS[jid]
     ctx = _ctx(rels, client)
+    per_page = links_per_page(ctx)
     for cid, group, title, why, fn in CLAUDE:
         if only and cid not in only:
             continue
@@ -978,6 +1080,9 @@ def _run(jid, rels, only, client):
             import traceback
             r = result("error", "The check crashed: %s" % e, [{"detail": traceback.format_exc().splitlines()[-1]}])
         r["ms"] = int((time.time() - t0) * 1000)
+        if cid in ("mentions", "relink"):
+            r["per_page"] = per_page
+        r["pass_text"] = PASS_TEXT.get(cid, "")
         job["results"][cid] = r
     job["current"] = None
     job["state"] = "done"
@@ -1028,7 +1133,9 @@ def api_articles():
 def api_checks():
     return jsonify({"ok": True,
                     "claude": [{"id": c[0], "group": c[1], "title": c[2], "why": c[3], "scope": "country" if c[0] in COUNTRY_SCOPE else "article"} for c in CLAUDE],
-                    "kevin": [{"id": k[0], "title": k[1], "why": k[2], "tool": {"kind": k[3], "label": k[4]} if k[3] else None, "scope": k[5]} for k in KEVIN]})
+                    "kevin": [{"id": k[0], "title": k[1], "why": k[2], "tool": {"kind": k[3], "label": k[4]} if k[3] else None, "scope": k[5],
+                               "auto": k[0] == "k-review"} for k in KEVIN],
+                    "pass_text": PASS_TEXT})
 
 
 @bp.route("/api/launch/run", methods=["POST", "OPTIONS"])

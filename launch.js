@@ -52,17 +52,20 @@
   .ln-btn.primary:hover{background:#24573F;color:#fff}
   .ln-btn[disabled]{opacity:.55;cursor:default}
   .ln-btn.sm{padding:.45rem .7rem;font-size:.56rem}
-  .ln-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 20px;padding-bottom:14px;border-bottom:1px solid var(--ln-line)}
-  .ln-tab{display:inline-flex;align-items:center;gap:8px;font:500 .78rem/1 'Hanken Grotesk',sans-serif;color:var(--ln-ink);cursor:pointer;
-    background:transparent;border:1px solid transparent;border-radius:999px;padding:.5rem .8rem}
-  .ln-tab:hover{background:#EFEFE9}
-  .ln-tab.on{background:var(--ln-ink);color:#fff}
-  .ln-tab:focus-visible{outline:2px solid var(--ln-green);outline-offset:2px}
-  .ln-tab .n{font:600 .6rem/1 'Hanken Grotesk',sans-serif;border-radius:999px;padding:.22rem .42rem;font-variant-numeric:tabular-nums}
+  /* the editor sidebar's tabs (editor.html .side-tabs): icon + label on a white bar, the open one a soft green tab with a rule */
+  .ln-tabs{display:flex;gap:2px;margin:18px 0 22px;padding:8px 8px 0;background:#fff;border:1px solid var(--ln-line);border-bottom-color:rgba(28,40,33,.14);
+    border-radius:12px 12px 0 0;overflow-x:auto;scrollbar-width:thin}
+  .ln-tab{display:inline-flex;align-items:center;gap:6px;flex:none;font:500 12.5px/1 'Hanken Grotesk',sans-serif;color:#4f5c54;cursor:pointer;
+    background:none;border:0;border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:9px 12px 10px;margin-bottom:-1px;white-space:nowrap;
+    transition:background .15s,color .15s}
+  .ln-tab .ti{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .ln-tab:hover{background:#F4F6F4;color:var(--ln-ink)}
+  .ln-tab.on{background:#EEF3EF;color:var(--ln-green);border-bottom-color:var(--ln-green)}
+  .ln-tab:focus-visible{outline:2px solid var(--ln-green);outline-offset:-2px}
+  .ln-tab .n{font:600 9.5px/1 'Hanken Grotesk',sans-serif;border-radius:999px;padding:2px 5px;font-variant-numeric:tabular-nums}
   .ln-tab .n.fail{background:var(--ln-red-bg);color:var(--ln-red)} .ln-tab .n.warn{background:var(--ln-amber-bg);color:var(--ln-amber)}
   .ln-tab .n.pass{background:var(--ln-green-bg);color:var(--ln-green)}
-  .ln-tab.on .n{background:rgba(255,255,255,.16);color:#fff}
-  .ln-tab .sep{width:1px;height:14px;background:var(--ln-line);margin:0 2px}
+  .ln-tab .sep{width:1px;height:18px;background:var(--ln-line);margin:8px 4px 0;flex:none}
   .ln-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 18px}
   .ln-head h1{font-family:'Newsreader',Georgia,serif;font-weight:400;font-size:1.35rem;margin:0;text-wrap:balance}
   .ln-pill{font:600 .56rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:.32rem .55rem;border-radius:999px;background:#EFEFE9;color:var(--ln-mute)}
@@ -109,6 +112,15 @@
   .ln-k{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;padding:12px 14px;border-top:1px solid var(--ln-line);align-items:start}
   .ln-k:first-child{border-top:0}
   .ln-k input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ln-green);cursor:pointer}
+  .ln-k input[data-auto],.ln-grid input[data-auto]{cursor:help}
+  .ln-grid input{width:16px;height:16px;accent-color:var(--ln-green);cursor:pointer}
+  .ln-grid{width:100%;border-collapse:collapse;font-size:.76rem}
+  .ln-grid th{font:600 .54rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ln-faint);text-align:center;padding:10px 6px;border-bottom:1px solid var(--ln-line);vertical-align:bottom}
+  .ln-grid th:first-child{text-align:left;padding-left:14px}
+  .ln-grid td{padding:8px 6px;border-top:1px solid var(--ln-line);text-align:center}
+  .ln-grid td:first-child{text-align:left;padding-left:14px;font-weight:600}
+  .ln-grid tr:first-child td{border-top:0}
+  .ln-grid .na{color:var(--ln-faint)}
   .ln-k.done .ln-t{color:var(--ln-mute);text-decoration:line-through;text-decoration-color:rgba(28,40,33,.3)}
   .ln-h{font-size:.76rem;line-height:1.45;margin-top:3px;color:var(--ln-ink);word-break:break-word}
   .ln-h.ok::before{content:'\\2713  ';color:var(--ln-green);font-weight:700}
@@ -175,7 +187,8 @@
     }
     if (!rel || ['skip', 'error'].includes(r.status)) return r;
     const items = (r.items || []).filter(i => i.page === rel);
-    if (!items.length) return { status: 'pass', summary: 'Nothing on this page.', items: [], note: r.note };
+    if (!items.length) return { status: 'pass', items: [], note: r.note,
+      summary: (id === 'mentions' && r.per_page && r.per_page[rel]) || r.pass_text || ((L.defs.pass_text || {})[id]) || 'Clear on this page.' };
     if (items.every(i => i.ok)) return { status: 'pass', summary: items.map(i => i.detail).join(' · '), items: [] };
     let status = r.status === 'pass' ? 'warn' : r.status;
     if (items.some(i => i.sev)) status = items.some(i => i.sev === 'high') ? 'fail' : 'warn';
@@ -195,11 +208,18 @@
     }
     return t;
   }
-  const kevinDefs = scope => (L.defs ? L.defs.kevin : []).filter(k => k.scope === scope && !(scope === 'article' && k.id === 'k-thumbs' && false));
+  const kevinDefs = scope => (L.defs ? L.defs.kevin : []).filter(k => k.scope === scope);
+  // which of your checks a page has: no thumbnail on a country page or field notes, no maps check without a map
+  function kevinFor(rel) {
+    const a = art(rel), h = L.kevin.hints[rel] || {};
+    return kevinDefs('article').filter(k => !(k.id === 'k-thumbs' && a && ['country', 'field-notes'].includes(a.kind))
+                                          && !(k.id === 'k-maps' && h['k-maps'] && !h['k-maps'].n));
+  }
+  // the review check ticks itself: done exactly when the review store says it is clear
+  const isDone = (rel, k) => k.auto ? !!((L.kevin.hints[rel] || {})[k.id] || {}).ok : !!(L.kevin.ticks[rel] || {})[k.id];
   function kevinDone(rel) {
-    const a = art(rel), t = L.kevin.ticks[rel] || {};
-    const defs = kevinDefs('article').filter(k => !(a && ['country', 'field-notes'].includes(a.kind) && ['k-thumbs', 'k-hero'].includes(k.id)));
-    return { done: defs.filter(k => t[k.id]).length, of: defs.length };
+    const defs = kevinFor(rel);
+    return { done: defs.filter(k => isDone(rel, k)).length, of: defs.length };
   }
 
   // ------------------------------------------------------------------ render
@@ -222,11 +242,11 @@
         <span class="ln-when" aria-live="polite">${when}</span>
         <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''}>${running ? 'Running…' : 'Run Claude’s checks'}</button>
       </div>
-      <nav class="ln-tabs" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
+      <nav class="ln-tabs" role="tablist" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
         if (a && a.kind === 'field-notes' && L.plan === 'retire')
-          return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}">${esc(label)}<span class="n retire">retires</span></button>`;
+          return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
         const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>` : (L.finished || Object.keys(L.results).length) ? '<span class="n pass">✓</span>' : '';
-        return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}">${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
+        return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
       <div id="ln-body">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
     </div>`;
@@ -246,6 +266,16 @@
     c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
     sel.style.width = Math.ceil(c.measureText(sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '').width) + 34 + 'px';
   }
+  // one icon per kind of page, drawn like the editor sidebar's (15px, 1.9 stroke)
+  const ICONS = {
+    overview: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    'field-notes': '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/>',
+    country: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    itinerary: '<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
+    top10: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    guide: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'
+  };
+  const icon = k => `<svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || ICONS.guide}</svg>`;
   const defTitle = id => ((L.defs.claude.find(d => d.id === id) || {}).title || id);
 
   function checkRows(rel, scopeFilter) {
@@ -301,11 +331,11 @@
   function kevinRows(key, defs, hints) {
     const t = L.kevin.ticks[key] || {};
     return `<div class="ln-card">${defs.map(k => {
-      const h = (hints || {})[k.id], done = t[k.id];
+      const h = (hints || {})[k.id], done = k.auto ? (h && h.ok ? { auto: true } : null) : t[k.id];
       const hint = h ? `<div class="ln-h${h.ok === true ? ' ok' : h.ok === false ? ' no' : ''}">${esc(h.text)}${h.img ? `<img src="${API}/site/${h.img.split('/').map(encodeURIComponent).join('/')}" alt="" loading="lazy">` : ''}</div>` : '';
       return `<div class="ln-k${done ? ' done' : ''}">
-        <input type="checkbox" data-tick="${esc(k.id)}" data-key="${esc(key)}"${done ? ' checked' : ''} aria-label="${esc(k.title)}">
-        <div><div class="ln-t">${esc(k.title)}</div>${hint}<div class="ln-why">${esc(k.why)}</div>${done ? `<div class="ln-at">Done ${new Date(done.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>` : ''}</div>
+        <input type="checkbox" data-tick="${esc(k.id)}" data-key="${esc(key)}"${done ? ' checked' : ''}${k.auto ? ' data-auto="1" aria-disabled="true" title="Ticks itself when the review is clear"' : ''} aria-label="${esc(k.title)}">
+        <div><div class="ln-t">${esc(k.title)}</div>${hint}<div class="ln-why">${esc(k.why)}</div>${done ? `<div class="ln-at">${done.auto ? 'Ticked automatically' : 'Done ' + new Date(done.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>` : ''}</div>
         <div class="ln-acts">${k.tool ? `<button class="ln-btn sm" data-go="${esc(k.tool.kind)}" data-rel="${esc(key.startsWith('country:') ? '' : key)}">${esc(k.tool.label)}</button>` : ''}</div>
       </div>`;
     }).join('')}</div>`;
@@ -316,7 +346,7 @@
     const steps = (pv.steps || []).map(x => `<li>${esc(x)}</li>`).join('');
     const body = keep
       ? `<p>They stay up after the launch and keep pointing readers at the articles. Uncheck this when a launch should take them down: the whole country goes live as an In-Depth Guide and these come down with it.</p>`
-      : `<p>This launch takes them down:</p><ol>${steps}</ol>
+      : `<p>This launch takes them down:</p>${steps ? `<ol>${steps}</ol>` : '<p class="ln-note">Working out what retiring changes across the site…</p>'}
          <div class="ln-note">The launch runs <code>tools/retire_field_notes.py ${esc(pv.country || '')}</code> after it publishes the country page${pv.country_page_live ? '' : ` (<code>${esc(pv.country_page || '')}</code> is not live yet: it goes live in the same launch)`}. Nothing changes until then.</div>`;
     return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${keep ? '' : '<span class="ln-pill retire">Retires at launch</span>'}
         <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
@@ -337,7 +367,7 @@
     if (!a) { L.tab = 'overview'; return overview(); }
     if (a.kind === 'field-notes') return fieldNotesView(rel);
     const t = tally(rel), kd = kevinDone(rel);
-    const defs = kevinDefs('article').filter(k => !(['country', 'field-notes'].includes(a.kind) && ['k-thumbs', 'k-hero'].includes(k.id)));
+    const defs = kevinFor(rel);
     return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>
         <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
       <div class="ln-cols">
@@ -346,6 +376,20 @@
       </div>`;
   }
   const summaryLine = t => (L.finished || Object.keys(L.results).length) ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix` : 'not run yet';
+
+  function kevinGrid() {
+    const defs = kevinDefs('article');
+    const short = { 'k-review': 'Review', 'k-search': 'Search', 'k-thumbs': 'Thumbnails', 'k-maps': 'Maps' };
+    const rows = pages().map(a => {
+      const mine = kevinFor(a.rel).map(k => k.id);
+      return `<tr><td>${esc(shortTitle(a))}</td>${defs.map(k => {
+        if (!mine.includes(k.id)) return '<td class="na" title="Not on this page">–</td>';
+        const on = isDone(a.rel, k);
+        return `<td><input type="checkbox" data-tick="${esc(k.id)}" data-key="${esc(a.rel)}"${on ? ' checked' : ''}${k.auto ? ' data-auto="1" aria-disabled="true" title="Ticks itself when the review is clear"' : ''} aria-label="${esc(k.title + ': ' + shortTitle(a))}"></td>`;
+      }).join('')}</tr>`;
+    }).join('');
+    return `<div class="ln-card"><table class="ln-grid"><thead><tr><th>Page</th>${defs.map(k => `<th>${esc(short[k.id] || k.title)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
 
   function overview() {
     const c = country(), t = tally(null), ckey = 'country:' + c.country;
@@ -359,7 +403,7 @@
     return `<div class="ln-ov ln-card"><table class="ln-table"><thead><tr><th>Page</th><th class="c-st">Status</th><th>Claude</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div>
       <div class="ln-cols">
         <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}, across ${pages().length} pages</span></h2>${checkRows(null)}</section>
-        <section class="ln-col"><h2>Your checks <span>for ${esc(c.label)} as a whole</span></h2>${kevinRows(ckey, kevinDefs('country'), L.kevin.hints[ckey])}</section>
+        <section class="ln-col"><h2>Your checks <span>every page</span></h2>${kevinGrid()}</section>
       </div>`;
   }
 
@@ -375,7 +419,11 @@
     r.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { L.open[b.dataset.open] = !L.open[b.dataset.open]; render(); });
     r.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.rel));
     r.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { L.sel[b.dataset.sel] = b.checked; });
-    r.querySelectorAll('[data-tick]').forEach(b => b.onchange = () => tick(b.dataset.key, b.dataset.tick, b.checked));
+    r.querySelectorAll('[data-tick]').forEach(b => {
+      // the review check ticks itself: a click explains instead of changing it (a disabled box would draw grey)
+      if (b.dataset.auto) b.onclick = e => { e.preventDefault(); toast(b.checked ? 'This one ticks itself: the review is clear.' : 'This one ticks itself once every comment is resolved and every change decided.'); };
+      else b.onchange = () => tick(b.dataset.key, b.dataset.tick, b.checked);
+    });
     r.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => fix(b.dataset.fix, b.dataset.rel));
     const k = $('#ln-keep-fn', r);
     if (k) k.onchange = () => setPlan(k.checked ? 'keep' : 'retire');

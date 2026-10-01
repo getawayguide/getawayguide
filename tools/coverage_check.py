@@ -84,7 +84,10 @@ def covered(name, texts):
 
 def place_keys(url):
     """what identifies a Google Maps place in a link: its place id, and its pin to ~100 m"""
-    keys = set(re.findall(r"!1s(0x[0-9a-f]+:0x[0-9a-f]+)", url))
+    # only the LAST place id: a URL saved after a search carries the place searched before it too
+    # (the plane's link also names Anteb Restaurant), and that one is not where the link goes
+    ids = re.findall(r"!1s(0x[0-9a-f]+:0x[0-9a-f]+)", url)
+    keys = {ids[-1]} if ids else set()
     m = re.findall(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", url)
     if m:
         keys.add("%.3f,%.3f" % tuple(map(float, m[-1])))
