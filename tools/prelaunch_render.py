@@ -12,7 +12,9 @@ from urllib.parse import quote
 from playwright.sync_api import sync_playwright
 
 SITE = "http://127.0.0.1:5003/site/"
-WIDTHS = [(393, 852, 3), (820, 1180, 2), (1440, 900, 2)]       # at the screen density people read on
+# at the screen densities people read on; 1440 at 1x is an external monitor, where Kevin saw Armenia's
+# photos go soft (2026-09-30) and the 2x/3x passes saw nothing
+WIDTHS = [(393, 852, 3), (820, 1180, 2), (1440, 900, 2), (1440, 900, 1)]
 
 # every lazy image loads, then the page is measured; the widest element names the overflow
 PROBE = """async () => {
@@ -40,8 +42,13 @@ PROBE = """async () => {
     const r = i.getBoundingClientRect(); if (r.width < 60) continue;
     const real = await new Promise(res => { const t = new Image(); t.onload = () => res([t.naturalWidth, t.naturalHeight]); t.onerror = () => res(null); t.src = i.currentSrc; });
     if (!real) continue;
-    const need = Math.max(r.width, r.height * real[0] / real[1]) * dpr;
-    if (real[0] < need * 0.85) soft.push((i.alt || decodeURIComponent(i.currentSrc.split('/').pop())) + ' (' + real[0] + ' px file, drawn ' + Math.round(need) + ')');
+    const need = Math.max(r.width, r.height * real[0] / real[1]) * dpr, k = real[0] / need;
+    const name = i.alt || decodeURIComponent(i.currentSrc.split('/').pop());
+    if (k < 0.85) soft.push(name + ' (' + real[0] + ' px file, drawn ' + Math.round(need) + ')');
+    // Chrome halves a photo (a mipmap) and resamples the rest bilinearly, so a file just over 1x or
+    // 2x the drawn width is resampled by a fraction of a pixel: the softest result there is, and it
+    // shows on a 1x screen (measured: .tmp/tier_sweep.py; the cure is tools/fit_image_tiers.py)
+    else if (dpr < 1.5 && (k < 1.3 || (k >= 1.97 && k < 2.3))) soft.push(name + ' (' + real[0] + ' px file drawn ' + Math.round(need) + ': ' + k.toFixed(2) + 'x is resampled soft on a 1x screen)');
   }
   return { broken: [...new Set(broken)], overflow: over > 1 ? over : 0, wide, soft };
 }"""
@@ -64,7 +71,7 @@ def main(rels):
                     r["errors"] = errs
                 except Exception as e:
                     r = {"error": str(e).splitlines()[0]}
-                out[rel][str(w)] = r
+                out[rel][str(w) + ("@1x" if dpr == 1 else "")] = r
                 pg.close()
         b.close()
     sys.stdout.write(json.dumps(out, ensure_ascii=True) + "\n")

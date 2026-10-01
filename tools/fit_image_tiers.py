@@ -19,6 +19,17 @@ CLAUDE.md requires: these are Display P3), JPEG + WebP, under the same names, an
 gets the real widths and a `sizes` that says how wide it is drawn: px on a monitor, vw on a phone.
 A photo used on several pages is cut for the widest place it appears.
 
+The desktop files are NOT cut at exactly 1x/2x/3x the drawn width (Kevin, 2026-09-30, on his 1x
+monitor: "these photos look noticeably worse than before"). Chrome shrinks a photo by halving it
+first (a mipmap) and resampling the rest of the way bilinearly, so a file at exactly 1x or exactly
+2x the drawn width ends up resampled by a fraction of a pixel, the softest result there is: on
+Yerevan's pairs that cost a third of the fine detail against the old 600 px files. Measured in
+Chrome (.tmp/tier_sweep.py), detail climbs from 1.0x to a peak near 1.9x and falls off a cliff at
+2.0x. So the desktop tiers are 1.85x / 2.8x / 3.7x the drawn width: a 1x monitor gets 1.85x,
+1.25x gets 1.5x, a 2x Retina screen 1.4x, and no common screen lands on 1.0x or 2.0x. The names
+still say which screen each file is for. The phone tier stays 1x/2x/3x (bytes matter there,
+and at 3x density a fraction of a device pixel does not show).
+
 Needs the photo server (http://127.0.0.1:5003) for /site/.
 
     python tools/fit_image_tiers.py "Drafts/.Full Articles/armenia/yerevan.html" [...] [--dry-run]
@@ -39,6 +50,8 @@ from tier_srcsets import enc, srcset, PICTURE, IMG
 
 SITE = "http://127.0.0.1:5003/site/"
 PHONE_MAX = 430                        # the widest phone the vw sizes are cut for (iPhone Pro Max)
+DESK_MULT = (1.85, 2.8, 3.7)           # x the drawn width, for 1x/2x/3x screens: never on 1.0 or 2.0 (see above)
+PHONE_MULT = (1, 2, 3)
 MEASURE = """() => [...document.querySelectorAll('picture')].map(p => {
   const img = p.querySelector('img'); const r = img.getBoundingClientRect();
   return { src: img.getAttribute('src') || '', w: r.width, h: r.height, hero: !!p.closest('section'),
@@ -70,12 +83,12 @@ def base_of(src):
     return m.group(1) if m and "/Images/web/" in unquote(src) else None
 
 
-def widths(need, orig_w):
-    """1x/2x/3x for a photo drawn `need` px wide, never past the original, no duplicates"""
+def widths(need, orig_w, mult=PHONE_MULT):
+    """the files for 1x/2x/3x screens for a photo drawn `need` px wide, never past the original, no duplicates"""
     base = int(math.ceil(need / 10.0) * 10)
     out = []
-    for k in (1, 2, 3):
-        w = min(base * k, orig_w)
+    for k in mult:
+        w = min(int(round(base * k)), orig_w)
         if not out or w > out[-1]:
             out.append(w)
     return out
@@ -127,7 +140,7 @@ def run(rels, dry=False):
             seen[(rel, i)] = k
     tiers = {}
     for k, (nd, nm, orig, ow) in need.items():
-        desk = widths(nd, ow)
+        desk = widths(nd, ow, DESK_MULT)
         mob = widths(nm * PHONE_MAX / 393, ow)
         tiers[k] = (desk, mob, nd, nm)
         made = cut(orig, Path(k), desk, mob, dry)

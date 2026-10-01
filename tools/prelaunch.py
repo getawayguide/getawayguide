@@ -887,20 +887,21 @@ def c_render(ctx):
     except Exception as e:
         return result("error", "The render check could not run: %s" % str(e)[:160])
     items = []
+    at = lambda w: "%s px on a 1x screen" % w[:-3] if w.endswith("@1x") else "%s px" % w
     for rel, widths in data.items():
         for w, f in widths.items():
             for b in f.get("broken", []):
-                items.append({"page": rel, "detail": "Broken image at %spx" % w, "value": b, "sev": "high"})
+                items.append({"page": rel, "detail": "Broken image at %s" % at(w), "value": b, "sev": "high"})
             if f.get("overflow"):
-                items.append({"page": rel, "detail": "Scrolls sideways at %spx (%dpx wide)" % (w, f["overflow"]), "value": f.get("wide", "")})
+                items.append({"page": rel, "detail": "Scrolls sideways at %s (%dpx wide)" % (at(w), f["overflow"]), "value": f.get("wide", "")})
             for x in f.get("soft", [])[:8]:
-                items.append({"page": rel, "detail": "Soft at %spx" % w, "value": x})
+                items.append({"page": rel, "detail": "Soft at %s" % at(w), "value": x})
             for e in f.get("errors", [])[:3]:
-                items.append({"page": rel, "detail": "Script error at %spx" % w, "value": e[:140]})
+                items.append({"page": rel, "detail": "Script error at %s" % at(w), "value": e[:140]})
             if f.get("error"):
-                items.append({"page": rel, "detail": "Did not load at %spx" % w, "value": f["error"][:140], "sev": "high"})
+                items.append({"page": rel, "detail": "Did not load at %s" % at(w), "value": f["error"][:140], "sev": "high"})
     if not items:
-        return result("pass", "Loads clean and sharp at 393, 820 and 1440 px: no broken images, no soft photos, no sideways scroll, no script errors.")
+        return result("pass", "Loads clean and sharp at 393, 820 and 1440 px, and at 1440 on a 1x monitor: no broken images, no soft photos, no sideways scroll, no script errors.")
     high = any(i.get("sev") == "high" for i in items)
     return result("fail" if high else "warn", count_label(len(items), "render problem") + ".", items,
                   tool={"kind": "preview", "label": "Preview it"})
@@ -976,7 +977,7 @@ CLAUDE = [
     ("dates", "Search & sharing", "One date per page", "The date under the subtitle and dateModified agree.", c_dates),
     ("country-page", "Country", "The country page has a card for every article", "An article with no card is only findable by search.", c_country_page),
     ("coverage", "Country", "Everything in the field notes made it into an article", "coverage_check.py (Sevanavank, the Black Wall and the plane once fell through).", c_coverage),
-    ("render", "Rendering", "Loads clean and sharp at phone, tablet and desktop width", "Broken images, photos softer than the screen, sideways scroll and script errors at 393, 820 and 1440 px.", c_render),
+    ("render", "Rendering", "Loads clean and sharp at phone, tablet and desktop width", "Broken images, photos softer than the screen, sideways scroll and script errors at 393, 820 and 1440 px, and 1440 on a 1x monitor.", c_render),
 ]
 
 # the checks that are about the launch as a whole; every other one is reported per article
