@@ -394,8 +394,8 @@ def check_seo():
         title = htmlmod.unescape(t.group(1).strip()) if t else None
         if not title:
             probs.append(finding("high", "no-title", "No <title>."))
-        elif len(title) > 70:
-            probs.append(finding("medium", "title-long", "Title is %d characters; Google truncates around 70." % len(title), title))
+        elif len(title) > 60:
+            probs.append(finding("medium", "title-long", "Title is %d characters; Google truncates around 60." % len(title), title))
         og_t = meta("og:title")
         if not og_t:
             probs.append(finding("medium", "no-og-title", "No og:title, so a share shows whatever the crawler guesses."))

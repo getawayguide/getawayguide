@@ -205,7 +205,7 @@ Every published page must have:
 
 | | |
 |---|---|
-| `<title>` and `og:title` | `<Country> Travel Guide: City, City & City`, **up to ~70 chars** |
+| `<title>` and `og:title` | `<Country> Travel Guide: City, City & City`, **60 chars or fewer** |
 | `<h1>` | `<Country> Travel Guide` (not the bare country name) |
 | meta + `og:description` | **under 160 chars** |
 | `rel="canonical"` | from the page's own `og:url` |
@@ -213,9 +213,11 @@ Every published page must have:
 | JSON-LD | `datePublished` + `dateModified`, and `headline` matching the `<title>` |
 
 Never target "Field Notes" in a title. It's brand, and nobody searches it. Lead with the
-keyword, then spend the rest of the ~70 characters on real place names from the page.
-(The cap was 60 until 2026-09-21; Google truncates around there, but a slightly longer
-title that earns its length with real place names is worth more than a truncated one.)
+keyword, then spend the rest of the 60 characters on real place names from the page.
+The 60 is the whole `<title>`, as the browser tab and Google show it (the editor's Search tab
+counts to 60), so a ` - getawayguide` ending counts against it: drop the ending when it would
+push a title over, never the place names. (The cap was ~70 from 2026-09-21 to 2026-10-02, when
+every title went back under 60.)
 
 `dateModified` comes from the last commit that changed the page's **prose**, not `git log -1`
 — sitewide asset passes touch every page at once, and publishing that everywhere is untrue

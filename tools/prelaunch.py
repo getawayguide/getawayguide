@@ -776,8 +776,8 @@ def c_seo(ctx):
         desc = _meta(h, "description", "name") or ""
         if not title:
             items.append({"page": rel, "detail": "No search title", "sev": "high"})
-        elif len(title) > 70:
-            items.append({"page": rel, "detail": "Search title is %d characters (up to ~70)" % len(title), "value": title})
+        elif len(title) > 60:
+            items.append({"page": rel, "detail": "Search title is %d characters (60 or fewer)" % len(title), "value": title})
         at_publish = rel.startswith("Drafts/") and ctx["kind"][rel] == "field-notes"
         if "field notes" in title.lower() and not at_publish:
             items.append({"page": rel, "detail": "“Field Notes” in the title is brand, nobody searches it", "value": title})
@@ -1015,7 +1015,7 @@ CLAUDE = [
     ("alt", "Photos", "Every photo has real alt text", "Not missing, not a file name.", c_alt),
     ("dup-photos", "Photos", "No photo used in two articles", "Across the pages launching together.", c_dup_photos),
     ("city-maps", "Maps", "City and route maps are embedded and point true", "Each key row's link lands on its pin; itineraries have a route map.", c_city_maps),
-    ("seo", "Search & sharing", "Search title, description and share tags", "CLAUDE.md: title up to ~70, description under 160, og tags, headline matches.", c_seo),
+    ("seo", "Search & sharing", "Search title, description and share tags", "CLAUDE.md: title 60 characters or fewer, description under 160, og tags, headline matches.", c_seo),
     ("cards", "Search & sharing", "Each article has its own card and share image", "Not the country's placeholder, and the share image cut from the card's photo.", c_cards),
     ("dates", "Search & sharing", "One date per page", "The date under the subtitle and dateModified agree.", c_dates),
     ("country-page", "Country", "The country page has a card for every article", "An article with no card is only findable by search.", c_country_page),
@@ -1056,7 +1056,7 @@ def kevin_hints(ctx, rel):
     t = re.search(r"<title>(.*?)</title>", h, re.S)
     title = H.unescape(t.group(1).strip()) if t else ""
     desc = _meta(h, "description", "name") or ""
-    out["k-search"] = {"text": "%s (%d/70) · %s (%d/160)" % (title or "no title", len(title), desc or "no description", len(desc)),
+    out["k-search"] = {"text": "%s (%d/60) · %s (%d/160)" % (title or "no title", len(title), desc or "no description", len(desc)),
                        "ok": bool(title) and len(title) <= 70 and bool(desc) and len(desc) < 160}
     if ctx["kind"].get(rel) not in ("country", "field-notes"):
         d = _thumbs(ctx, rel)

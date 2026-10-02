@@ -512,10 +512,10 @@
   // ------------------------------------------------------------------ actions
   function wire() {
     const r = root();
-    $('#ln-country', r).onchange = e => { L.country = e.target.value; store.set('country', L.country); L.tab = store.get('tab:' + L.country) || 'overview'; loadCountry(); };
+    $('#ln-country', r).onchange = e => { L.country = e.target.value; store.set('country', L.country); L.tab = store.get('tab:' + L.country) || 'overview'; nav('push'); loadCountry(); };
     $('#ln-run', r).onclick = () => run();
     r.querySelectorAll('[data-tab]').forEach(b => {
-      const go = () => { L.tab = b.dataset.tab; store.set('tab:' + L.country, L.tab); render(); root().scrollTop = 0; };
+      const go = () => { L.tab = b.dataset.tab; store.set('tab:' + L.country, L.tab); nav('push'); render(); root().scrollTop = 0; };
       b.onclick = go;
       b.onkeydown = e => {
         if (e.key === 'Enter' && b.tagName === 'TR') return go();
@@ -523,7 +523,7 @@
         e.preventDefault();
         const all = [...r.querySelectorAll('[role=tab]')], i = all.indexOf(b);
         const next = e.key === 'Home' ? all[0] : e.key === 'End' ? all[all.length - 1] : all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length];
-        L.tab = next.dataset.tab; store.set('tab:' + L.country, L.tab); render();
+        L.tab = next.dataset.tab; store.set('tab:' + L.country, L.tab); nav('replace'); render();   // arrows don't flood history
         const t = [...root().querySelectorAll('[role=tab]')].find(x => x.dataset.tab === L.tab);   // focus follows the arrow
         if (t) t.focus();
       };
@@ -541,6 +541,23 @@
     const k = $('#ln-keep-fn', r);
     if (k) k.onchange = () => setPlan(k.checked ? 'keep' : 'retire');
   }
+
+  // Back and Forward move between the countries and tabs you opened (Kevin, 2026-10-02: they used to leave
+  // the editor). Each choice is a history entry on the same #launch address, carrying the country and
+  // tab; the editor's own hash routing still moves between views.
+  function nav(how) {
+    const st = { launch: { country: L.country, tab: L.tab } }, cur = history.state && history.state.launch;
+    if (how === 'push' && cur && cur.country === L.country && cur.tab === L.tab) return;
+    try { history[how === 'push' && cur ? 'pushState' : 'replaceState'](Object.assign({}, history.state || {}, st), '', location.href); } catch (e) {}
+  }
+  window.addEventListener('popstate', e => {
+    const s = e.state && e.state.launch;
+    if (!s || !L.defs || !L.countries.some(c => c.country === s.country)) return;
+    const changed = s.country !== L.country;
+    L.country = s.country; L.tab = s.tab || 'overview';
+    store.set('country', L.country); store.set('tab:' + L.country, L.tab);
+    if (changed) loadCountry(); else { render(); const r = root(); if (r) r.scrollTop = 0; }
+  });
 
   function tick(key, id, done) {
     const row = L.kevin.ticks[key] || (L.kevin.ticks[key] = {}), k = key + '|' + id;
@@ -715,11 +732,14 @@
       try { const cur = window.articleRelPath && await window.articleRelPath(); const c = cur && L.countries.find(x => x.articles.some(a => a.rel === cur)); if (c) pick = c.country; } catch (e) {}
       L.country = (L.countries.find(x => x.country === pick) || L.countries.find(x => countryGroup(x) === 'Ready to launch') || L.countries[0] || {}).country || null;
       L.tab = store.get('tab:' + L.country) || 'overview';
+      if (L.tab !== 'overview' && !art(L.tab)) L.tab = 'overview';
+      nav('replace');                                      // this entry is where Back returns to
       await loadCountry();
       return;
     }
     // coming back: the hints (review status, titles) may have changed while you were away
     try { const kev = await api('/api/launch/kevin', { rels: rels() }); L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} }; } catch (e) {}
+    if (!(history.state && history.state.launch)) nav('replace');
     render();
   }
   window.__launchShow = show;
