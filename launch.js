@@ -21,7 +21,9 @@
   };
   const L = { defs: null, countries: [], country: null, tab: 'overview', results: {}, finished: null, job: null,
               current: null, rerun: null, kevin: { hints: {}, ticks: {} }, open: {}, sel: {}, busy: {},
-              plan: 'keep', retire: null };
+              plan: 'keep', retire: null,
+              loadSeq: 0, loading: { runs: false, hints: false }, starting: false, ranRels: null, detail: null,
+              started: 0, pendingRerun: null, tickChain: {}, touched: {} };
 
   // ------------------------------------------------------------------ look
   const css = document.createElement('style');
@@ -152,6 +154,8 @@
   .ln-ov{margin-bottom:28px;overflow-x:auto}
   .ln-counts{flex-wrap:wrap} .ln-counts span{white-space:nowrap}
   @media (max-width:700px){.ln-table .c-st{display:none}.ln-table th,.ln-table td{padding:10px}.ln-bar{width:56px}}
+  .ln-col h2.ln-h2-gap{margin-top:22px}
+  .ln-btn[disabled]{cursor:default}
   .ln-empty{padding:60px 20px;text-align:center;color:var(--ln-mute);font-size:.9rem;line-height:1.6}
   .ln-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ln-ink);color:#fff;font-size:.8rem;padding:.7rem 1rem;border-radius:10px;
     z-index:200;max-width:min(560px,90vw);box-shadow:0 8px 30px rgba(0,0,0,.18);white-space:pre-line}
@@ -178,6 +182,7 @@
   const short = rel => art(rel) ? shortTitle(art(rel)) : rel.split('/').pop().replace(/\.html$/, '');
   async function api(path, body) {
     const r = await fetch(API + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : { cache: 'no-store' });
+    if (!r.ok && r.status !== 400) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
     return r.json();
   }
   function toast(msg, ms) {
@@ -190,6 +195,7 @@
   function viewOf(id, rel) {
     const r = L.results[id];
     if (!r) return null;
+    if (rel && L.ranRels && !L.ranRels.includes(rel) && !L.job) return null;   // not in that run: not checked
     const gone = retiring();
     if (!rel && gone && (r.items || []).some(i => i.page === gone)) {
       const its = r.items.filter(i => i.page !== gone);
@@ -211,13 +217,42 @@
     return Object.assign({}, r, { status, items, summary });
   }
   function tally(rel) {
-    const t = { fail: 0, warn: 0, pass: 0 };
+    const t = { fail: 0, warn: 0, pass: 0, error: 0 };
     for (const d of (L.defs ? L.defs.claude : [])) {
       if (rel && d.scope === 'country') continue;
       const v = viewOf(d.id, rel);
       if (v && t[v.status] !== undefined) t[v.status]++;
     }
     return t;
+  }
+  const onlyFieldNotes = () => pages().length > 0 && pages().every(a => a.kind === 'field-notes');
+  // what the header says: checking (with the step, the page and the time), loading, or the last run
+  function whenText() {
+    if (L.job || L.starting) {
+      const sec = L.started ? Math.max(0, Math.round((Date.now() - L.started) / 1000)) : 0;
+      const t = sec ? ` · ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : '';
+      return `Checking${L.current ? ': ' + defTitle(L.current) : '…'}${L.detail ? ' (' + L.detail + ')' : ''}${t}`;
+    }
+    if (L.loading.runs) return 'Loading…';
+    return L.finished ? 'Last run ' + new Date(L.finished).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not run yet';
+  }
+  const updateWhen = () => { const w = $('.ln-when', root()); if (w) w.textContent = whenText(); };
+  // the element that had focus, so a redraw can put it back (every redraw used to drop focus to the page)
+  function focusKey(el) {
+    if (!el || !el.getAttribute) return null;
+    for (const a of ['data-tick', 'data-tab', 'data-open', 'data-fix', 'data-sel', 'data-go', 'id']) {
+      if (el.hasAttribute(a)) return { a, v: el.getAttribute(a), k: el.getAttribute('data-key') || el.getAttribute('data-rel') || '', tag: el.tagName };
+    }
+    return null;
+  }
+  function refocus(r, f) {
+    if (!f) return;
+    const esc_ = x => window.CSS && CSS.escape ? CSS.escape(x) : x.replace(/"/g, '\\"');
+    let sel = `${f.tag.toLowerCase()}[${f.a}="${esc_(f.v)}"]`;
+    if (f.k && f.a === 'data-tick') sel += `[data-key="${esc_(f.k)}"]`;
+    else if (f.k && (f.a === 'data-go' || f.a === 'data-fix')) sel += `[data-rel="${esc_(f.k)}"]`;
+    const el = r.querySelector(sel);
+    if (el) try { el.focus({ preventScroll: true }); } catch (e) {}
   }
   const kevinDefs = scope => (L.defs ? L.defs.kevin : []).filter(k => k.scope === scope);
   // which of your checks a page has: no thumbnail on a country page or field notes, no maps check without a map
@@ -240,37 +275,50 @@
     const r = root();
     if (!r) return;
     const keep = r.scrollTop;
+    const focus = r.contains(document.activeElement) ? focusKey(document.activeElement) : null;
     const c = country();
     if (!c) { r.innerHTML = '<div class="ln-empty">Nothing to launch: no drafts found.</div>'; return; }
-    const running = !!L.job;
-    const when = running ? `Checking${L.current ? ': ' + esc(defTitle(L.current)) : '…'}`
-      : L.finished ? 'Last run ' + new Date(L.finished).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not run yet';
+    const running = !!L.job || L.starting;
+    const when = esc(whenText()), np = pages().length;
     const tabs = [['overview', 'Overview', tally(null)]].concat(pages().map(a => [a.rel, shortTitle(a), tally(a.rel), a]));
     r.innerHTML = `<div class="ln-wrap">
       <div class="ln-top">
         <div><span class="ln-eyebrow">Prelaunch checklist · ${pageCount()}</span>
-          <select class="ln-country" id="ln-country" aria-label="Country">${L.countries.map(x =>
-            `<option value="${esc(x.country)}"${x.country === L.country ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</select></div>
+          <select class="ln-country" id="ln-country" aria-label="Country">${countryOptions()}</select></div>
         <span class="ln-spacer"></span>
         <span class="ln-when" aria-live="polite">${when}</span>
-        <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''}>${running ? 'Running…' : 'Run Claude’s checks'}</button>
+        <button class="ln-btn primary" id="ln-run"${running ? ' disabled' : ''} title="Claude’s checks always run over every page of the country: they launch together">${running ? 'Running…' : `Check ${np === 1 ? 'the page' : 'all ' + np + ' pages'}`}</button>
       </div>
       <div class="ln-tabs"><button class="ln-tabarrow l" type="button" aria-label="Earlier tabs" hidden><span><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></span></button>
       <nav class="ln-tabstrip" role="tablist" aria-label="Pages">${tabs.map(([k, label, t, a], i) => {
-        if (a && a.kind === 'field-notes' && L.plan === 'retire')
-          return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
-        const n = t.fail ? `<span class="n fail">${t.fail}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>`
-          : (L.finished || Object.keys(L.results).length) && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
-        return `<button class="ln-tab${L.tab === k ? ' on' : ''}" data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}">${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
+        const attrs = `data-tab="${esc(k)}" role="tab" aria-selected="${L.tab === k}" aria-controls="ln-body" tabindex="${L.tab === k ? 0 : -1}"`;
+        if (a && a.kind === 'field-notes' && L.plan === 'retire' && !onlyFieldNotes())
+          return `<button class="ln-tab${L.tab === k ? ' on' : ''}" ${attrs}>${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
+        const bad = t.fail + t.error;
+        const n = bad ? `<span class="n fail">${bad}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>`
+          : (L.finished || Object.keys(L.results).length) && !L.loading.hints && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
+        return `<button class="ln-tab${L.tab === k ? ' on' : ''}" ${attrs}>${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
       <button class="ln-tabarrow r" type="button" aria-label="More tabs" hidden><span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span></button></div>
-      <div id="ln-body">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
+      <div id="ln-body" role="tabpanel">${L.tab === 'overview' ? overview() : articleView(L.tab)}</div>
     </div>`;
     r.scrollTop = keep;
     tabArrows(r);
     fitSelect($('#ln-country', r));
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { const s = $('#ln-country', r); if (s) fitSelect(s); });
     wire();
+    refocus(r, focus);
+  }
+  // the country menu in three groups: what is ready to launch, field-notes drafts, what has launched
+  function countryGroup(x) {
+    const draft = x.articles.some(a => !a.live), fn = x.articles.every(a => a.kind === 'field-notes');
+    return !draft ? 'Launched' : fn ? 'Field notes drafts' : 'Ready to launch';
+  }
+  function countryOptions() {
+    return ['Ready to launch', 'Field notes drafts', 'Launched'].map(g => {
+      const xs = L.countries.filter(x => countryGroup(x) === g);
+      return xs.length ? `<optgroup label="${g}">${xs.map(x => `<option value="${esc(x.country)}"${x.country === L.country ? ' selected' : ''}>${esc(x.label)}</option>`).join('')}</optgroup>` : '';
+    }).join('');
   }
   // the tab row: keep its place across redraws, keep the open tab in view, show an arrow only on a
   // side that has tabs past it
@@ -341,11 +389,11 @@
     const acts = [];
     if (v && v.tool && rel && items.length) acts.push(`<button class="ln-btn sm" data-go="${esc(v.tool.kind)}" data-rel="${esc(v.tool.rel || rel)}">${esc(v.tool.label)}</button>`);
     if (v && v.fix && items.length && items.some(i => i.apply !== false)) {      // nothing to apply yet: no button
-      const busy = L.busy[d.id];
-      acts.push(`<button class="ln-btn sm primary" data-fix="${esc(d.id)}" data-rel="${esc(rel || '')}"${busy ? ' disabled' : ''}>${busy ? 'Working…' : esc(v.fix.label)}</button>`);
+      const busy = L.busy[d.id], wait = !busy && (L.job || L.starting);
+      acts.push(`<button class="ln-btn sm primary" data-fix="${esc(d.id)}" data-rel="${esc(rel || '')}"${busy || wait ? ' disabled' : ''}${wait ? ' title="Wait for the run to finish"' : ''}>${busy ? 'Working…' : esc(v.fix.label)}</button>`);
     }
     if (items.length) acts.push(`<button class="ln-more" data-open="${esc(key)}" aria-expanded="${open ? 'true' : 'false'}">${open ? 'Hide' : 'Show ' + items.length}</button>`);
-    const summary = st === 'run' ? 'Checking…' : v ? v.summary : 'Not run yet.';
+    const summary = st === 'run' ? 'Checking…' : v ? v.summary : L.loading.runs ? 'Loading…' : 'Not run yet.';
     return `<div class="ln-row st-${st}" data-id="${esc(d.id)}">
       <span class="ln-ic" aria-hidden="true"></span>
       <div><div class="ln-t" title="${esc(d.why)}">${esc(d.title)}</div><div class="ln-s">${esc(summary)}</div>
@@ -386,22 +434,29 @@
   }
 
   function fieldNotesView(rel) {
-    const a = art(rel), keep = L.plan !== 'retire', pv = L.retire || {}, t = tally(rel);
+    const a = art(rel), solo = onlyFieldNotes(), keep = solo || L.plan !== 'retire', t = tally(rel);
+    const pv = L.retire || {}, loading = L.retire === undefined, none = L.retire === false || (L.retire && !L.retire.live);
     const steps = (pv.steps || []).map(x => `<li>${esc(x)}</li>`).join('');
-    const body = keep
+    const body = solo
+      ? `<p>These field notes are the only page ${esc(country().label)} has, so they launch as field notes: <code>tools/publish_country.py</code> moves them live and wires them into the site.</p>`
+      : keep
       ? `<p>They stay up after the launch and keep pointing readers at the articles. Uncheck this when a launch should take them down: the whole country goes live as an In-Depth Guide and these come down with it.</p>`
-      : `<p>This launch takes them down:</p>${steps ? `<ol>${steps}</ol>` : '<p class="ln-note">Working out what retiring changes across the site…</p>'}
+      : loading ? `<p>This launch takes them down.</p><p class="ln-note">Working out what retiring changes across the site…</p>`
+      : none || !steps ? `<p class="ln-note">Nothing to retire: these field notes are not live, so they simply stay in Drafts when the country launches.</p>`
+      : `<p>This launch takes them down:</p><ol>${steps}</ol>
          <div class="ln-note">The launch runs <code>tools/retire_field_notes.py ${esc(pv.country || '')}</code> after it publishes the country page${pv.country_page_live ? '' : ` (<code>${esc(pv.country_page || '')}</code> is not live yet: it goes live in the same launch)`}. Nothing changes until then.</div>`;
+    const kd = kevinDone(rel);
+    const mine = keep ? `<h2 class="ln-h2-gap">Your checks <span>${L.loading.hints ? 'loading…' : kd.done + ' of ' + kd.of + ' done'}</span></h2>${kevinRows(rel, kevinFor(rel), L.kevin.hints[rel])}` : '';
     return `<div class="ln-head"><h1>${esc(a.title)}</h1><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${keep ? '' : '<span class="ln-pill retire">Retires at launch</span>'}
         <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
       <div class="ln-cols">
         <section class="ln-col"><h2>Claude checks <span>${keep ? summaryLine(t) : 'they no longer block the launch'}</span></h2>${checkRows(rel, d => d.scope !== 'country')}</section>
         <section class="ln-col"><h2>At launch</h2>
           <div class="ln-card ln-plan">
-            <label class="ln-k"><input type="checkbox" id="ln-keep-fn"${keep ? ' checked' : ''} aria-label="Keep the field notes live after the launch">
-              <div><div class="ln-t">Keep the field notes live</div><div class="ln-why">Checked: they stay up beside the articles. Unchecked: they retire when this country launches.</div></div><div></div></label>
+            ${solo ? '' : `<label class="ln-k"><input type="checkbox" id="ln-keep-fn"${keep ? ' checked' : ''} aria-label="Keep the field notes live after the launch">
+              <div><div class="ln-t">Keep the field notes live</div><div class="ln-why">Checked: they stay up beside the articles. Unchecked: they retire when this country launches.</div></div><div></div></label>`}
             <div class="ln-plan-body">${body}</div>
-          </div>
+          </div>${mine}
         </section>
       </div>`;
   }
@@ -416,15 +471,16 @@
         <span class="ln-spacer"></span><button class="ln-btn sm" data-go="editor" data-rel="${esc(rel)}">Open in the editor</button></div>
       <div class="ln-cols">
         <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}</span></h2>${checkRows(rel, d => d.scope !== 'country')}</section>
-        <section class="ln-col"><h2>Your checks <span>${kd.done} of ${kd.of} done</span></h2>${kevinRows(rel, defs, L.kevin.hints[rel])}</section>
+        <section class="ln-col"><h2>Your checks <span>${L.loading.hints ? 'loading…' : kd.done + ' of ' + kd.of + ' done'}</span></h2>${kevinRows(rel, defs, L.kevin.hints[rel])}</section>
       </div>`;
   }
-  const summaryLine = t => (L.finished || Object.keys(L.results).length) ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix` : 'not run yet';
+  const summaryLine = t => L.loading.runs ? 'loading…' : (L.finished || Object.keys(L.results).length)
+    ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix${t.error ? ` · ${t.error} couldn’t run` : ''}` : 'not run yet';
 
   function kevinGrid() {
     const defs = kevinDefs('article');
     const short = { 'k-review': 'Review', 'k-search': 'Search', 'k-thumbs': 'Thumbnails' };
-    const rows = pages().map(a => {
+    const rows = pages().filter(a => !(a.kind === 'field-notes' && L.plan === 'retire' && !onlyFieldNotes())).map(a => {
       const mine = kevinFor(a.rel).map(k => k.id);
       return `<tr><td>${esc(shortTitle(a))}</td>${defs.map(k => {
         if (!mine.includes(k.id)) return '<td class="na" title="Not on this page">–</td>';
@@ -439,14 +495,16 @@
     const c = country(), t = tally(null), ckey = 'country:' + c.country;
     const rows = pages().map(a => {
       const s = tally(a.rel), k = kevinDone(a.rel), run = L.finished || Object.keys(L.results).length;
+      const gone = a.kind === 'field-notes' && L.plan === 'retire' && !onlyFieldNotes();
+      const notRun = L.ranRels && !L.ranRels.includes(a.rel) && !L.job;
       return `<tr data-tab="${esc(a.rel)}" tabindex="0"><td><div class="nm">${esc(shortTitle(a))}</div><div class="k">${esc(a.rel.split('/').pop())}</div></td>
         <td class="c-st"><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${a.kind === 'field-notes' && L.plan === 'retire' ? ' <span class="ln-pill retire">Retires</span>' : ''}</td>
-        <td>${run ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn ? '<span class="p">all clear</span>' : ''}</span>` : '<span class="k">not run</span>'}</td>
-        <td><span class="ln-bar"><i style="width:${k.of ? Math.round(k.done / k.of * 100) : 0}%"></i></span><span class="k">${k.done} of ${k.of}</span></td></tr>`;
+        <td>${gone ? '<span class="k">retires at launch</span>' : L.loading.runs ? '<span class="k">loading…</span>' : run && !notRun ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.error ? `<span class="f">${s.error} couldn’t run</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn && !s.error ? '<span class="p">all clear</span>' : ''}</span>` : '<span class="k">not run</span>'}</td>
+        <td>${gone ? '' : L.loading.hints ? '<span class="k">loading…</span>' : `<span class="ln-bar"><i style="width:${k.of ? Math.round(k.done / k.of * 100) : 0}%"></i></span><span class="k">${k.done} of ${k.of}</span>`}</td></tr>`;
     }).join('');
     return `<div class="ln-ov ln-card"><table class="ln-table"><thead><tr><th>Page</th><th class="c-st">Status</th><th>Claude</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div>
       <div class="ln-cols">
-        <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}, across ${pages().length} pages</span></h2>${checkRows(null)}</section>
+        <section class="ln-col"><h2>Claude checks <span>${summaryLine(t)}, across ${pages().length} page${pages().length === 1 ? '' : 's'}</span></h2>${checkRows(null)}</section>
         <section class="ln-col"><h2>Your checks <span>every page</span></h2>${kevinGrid()}</section>
       </div>`;
   }
@@ -458,14 +516,25 @@
     $('#ln-run', r).onclick = () => run();
     r.querySelectorAll('[data-tab]').forEach(b => {
       const go = () => { L.tab = b.dataset.tab; store.set('tab:' + L.country, L.tab); render(); root().scrollTop = 0; };
-      b.onclick = go; b.onkeydown = e => { if (e.key === 'Enter' && b.tagName === 'TR') go(); };
+      b.onclick = go;
+      b.onkeydown = e => {
+        if (e.key === 'Enter' && b.tagName === 'TR') return go();
+        if (b.getAttribute('role') !== 'tab' || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+        e.preventDefault();
+        const all = [...r.querySelectorAll('[role=tab]')], i = all.indexOf(b);
+        const next = e.key === 'Home' ? all[0] : e.key === 'End' ? all[all.length - 1] : all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length];
+        L.tab = next.dataset.tab; store.set('tab:' + L.country, L.tab); render();
+        const t = [...root().querySelectorAll('[role=tab]')].find(x => x.dataset.tab === L.tab);   // focus follows the arrow
+        if (t) t.focus();
+      };
     });
     r.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { L.open[b.dataset.open] = !L.open[b.dataset.open]; render(); });
     r.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.rel));
     r.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { L.sel[b.dataset.sel] = b.checked; });
     r.querySelectorAll('[data-tick]').forEach(b => {
       // the review check ticks itself: a click explains instead of changing it (a disabled box would draw grey)
-      if (b.dataset.auto) b.onclick = e => { e.preventDefault(); toast(b.checked ? 'This one ticks itself: the review is clear.' : 'This one ticks itself once every comment is resolved and every change decided.'); };
+      // (inside a click the box has already flipped, so the state before the click is !b.checked)
+      if (b.dataset.auto) b.onclick = e => { e.preventDefault(); toast(!b.checked ? 'This one ticks itself: the review is clear.' : 'This one ticks itself once every comment is resolved and every change decided.'); };
       else b.onchange = () => tick(b.dataset.key, b.dataset.tick, b.checked);
     });
     r.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => fix(b.dataset.fix, b.dataset.rel));
@@ -473,13 +542,14 @@
     if (k) k.onchange = () => setPlan(k.checked ? 'keep' : 'retire');
   }
 
-  async function tick(key, id, done) {
-    try {
-      const r = await api('/api/launch/tick', { key, id, done });
-      const row = L.kevin.ticks[key] || (L.kevin.ticks[key] = {});
-      if (done) row[id] = r.tick || { at: new Date().toISOString() }; else delete row[id];
-    } catch (e) { toast('The photo server did not answer, so the tick was not saved.'); }
+  function tick(key, id, done) {
+    const row = L.kevin.ticks[key] || (L.kevin.ticks[key] = {}), k = key + '|' + id;
+    if (done) row[id] = row[id] || { at: new Date().toISOString() }; else delete row[id];
+    L.touched[key] = true;
     render();
+    L.tickChain[k] = (L.tickChain[k] || Promise.resolve()).then(() => api('/api/launch/tick', { key, id, done }))
+      .then(r => { if (done && r && r.tick && row[id]) row[id] = r.tick; })
+      .catch(() => toast('The photo server did not answer, so the tick was not saved.'));
   }
 
   async function setPlan(v) {
@@ -488,7 +558,9 @@
       L.plan = d.field_notes;
     } catch (e) { toast('The photo server did not answer, so the choice was not saved.'); }
     render();
-    if (Object.keys(L.results).length) run(['relink']);       // relinks out of retiring field notes drop out
+    if (Object.keys(L.results).length) {                       // relinks out of retiring field notes drop out
+      if (L.job || L.starting) L.pendingRerun = ['relink']; else run(['relink']);
+    }
   }
 
   async function openRel(rel) {
@@ -539,44 +611,90 @@
 
   // ------------------------------------------------------------------ run
   async function run(only) {
-    if (L.job) return;
-    const body = { rels: rels() };
+    if (L.job || L.starting) return;                          // a double click started two full runs
+    const want = L.country, body = { rels: rels() };
     if (only) body.only = only;
+    L.starting = true; L.started = Date.now(); render();
     let r;
-    try { r = await api('/api/launch/run', body); } catch (e) { return toast('The photo server is not running, so nothing can be checked.'); }
-    if (!r.ok) return toast(r.error || 'Could not start the checks.');
-    L.job = r.job; L.rerun = only || null; L.current = null;
-    if (!only) L.results = {};
+    try { r = await api('/api/launch/run', body); }
+    catch (e) { L.starting = false; render(); return toast('The photo server is not running, so nothing can be checked.'); }
+    L.starting = false;
+    if (!r.ok) { render(); return toast(r.error || 'Could not start the checks.'); }
+    if (L.country !== want) return;                            // switched away: coming back picks the run up
+    if (!only) { L.results = {}; L.ranRels = rels(); }
+    follow(r.job, only || null, Date.now());
+  }
+
+  // follow a run until it ends. Redraw only when a check finishes or the step changes (a redraw every
+  // 700 ms dropped focus, selections and clicks); the elapsed time ticks on its own
+  async function follow(job, only, started) {
+    L.job = job; L.rerun = only; L.current = null; L.detail = null; L.started = started || Date.now();
     render();
     const want = L.country;
-    while (L.job === r.job) {
+    let misses = 0, sig = '';
+    while (L.job === job && L.country === want) {
       await new Promise(res => setTimeout(res, 700));
+      if (L.job !== job || L.country !== want) return;
       let j;
-      try { j = await api('/api/launch/job/' + r.job); } catch (e) { continue; }
-      if (L.country !== want) { L.job = null; return; }
+      try { j = await api('/api/launch/job/' + job); misses = 0; }
+      catch (e) {
+        // the photo server restarted and forgot the run (or stopped answering): say so instead of spinning
+        if (e.status === 404 || ++misses > 20) {
+          if (L.job === job) { L.job = null; L.rerun = null; L.current = null; L.detail = null; render(); }
+          toast('The run stopped: the photo server restarted. Run the checks again.', 7000);
+          return;
+        }
+        updateWhen();
+        continue;
+      }
+      if (L.job !== job || L.country !== want) return;
       Object.assign(L.results, j.results || {});
-      L.current = j.current;
-      if (j.state === 'done') { L.job = null; L.rerun = null; L.finished = j.finished; }
-      render();
+      L.current = j.current; L.detail = j.detail || null;
+      if (j.state === 'done') {
+        L.job = null; L.rerun = null; L.current = null; L.detail = null;
+        L.finished = only ? (j.last_finished || L.finished || j.finished) : j.finished;   // a partial re-run is not a new "Last run"
+        if (!only) L.ranRels = j.rels || L.ranRels;
+        render();
+        if (L.pendingRerun) { const p = L.pendingRerun; L.pendingRerun = null; run(p); }
+        return;
+      }
+      const now = Object.keys(j.results || {}).join(',') + '|' + j.current + '|' + (j.detail || '');
+      if (now !== sig) { sig = now; render(); } else updateWhen();
     }
   }
 
   async function loadCountry() {
-    L.results = {}; L.finished = null; L.kevin = { hints: {}, ticks: {} }; L.open = {}; L.plan = 'keep'; L.retire = null;
+    const seq = ++L.loadSeq, want = L.country, stale = () => L.loadSeq !== seq || L.country !== want;
+    L.job = null; L.rerun = null; L.current = null; L.detail = null; L.starting = false; L.pendingRerun = null;
+    L.results = {}; L.finished = null; L.ranRels = null; L.kevin = { hints: {}, ticks: {} }; L.touched = {}; L.open = {};
+    L.plan = 'keep'; L.retire = null; L.loading = { runs: true, hints: true };
     L.tabScroll = 0; L.tabShown = null;                  // a new country starts its tab row at the left
+    if (L.tab !== 'overview' && !art(L.tab)) { L.tab = 'overview'; store.set('tab:' + want, 'overview'); }   // a tab that no longer exists
     render();
+    const body = { rels: rels() };
+    // the hints (review status, titles) take a few seconds: they arrive on their own, after the rest
+    api('/api/launch/kevin', body).then(kev => {
+      if (stale()) return;
+      const t = kev.ticks || {};
+      for (const k of Object.keys(L.touched)) t[k] = L.kevin.ticks[k] || {};     // a tick made while loading wins
+      L.kevin = { hints: kev.hints || {}, ticks: t }; L.loading.hints = false; render();
+    }).catch(() => { if (!stale()) { L.loading.hints = false; render(); } });
     try {
-      const [last, kev, plan] = await Promise.all([api('/api/launch/last', { rels: rels() }), api('/api/launch/kevin', { rels: rels() }),
-                                                   api('/api/launch/plan?country=' + encodeURIComponent(L.country))]);
+      const [last, plan, act] = await Promise.all([api('/api/launch/last', body), api('/api/launch/plan?country=' + encodeURIComponent(want)),
+                                                   api('/api/launch/active', body).catch(() => ({}))]);
+      if (stale()) return;                               // another country was chosen meanwhile: its answers win
       L.plan = plan.field_notes || 'keep';
-      if (pages().some(a => a.kind === 'field-notes')) {          // what retiring does: slow to work out, so after the rest
-        const want = L.country;
-        api('/api/launch/plan?preview=1&country=' + encodeURIComponent(want)).then(d => { if (L.country === want) { L.retire = d.retire || null; render(); } }).catch(() => {});
+      L.results = last.results || {}; L.finished = last.finished || null; L.ranRels = last.rels || null;
+      L.loading.runs = false;
+      if (pages().some(a => a.kind === 'field-notes') && !onlyFieldNotes()) {   // what retiring does: slow, so after the rest
+        L.retire = undefined;
+        api('/api/launch/plan?preview=1&country=' + encodeURIComponent(want))
+          .then(d => { if (!stale()) { L.retire = d.retire || false; render(); } })
+          .catch(() => { if (!stale()) { L.retire = false; render(); } });
       }
-      L.results = last.results || {}; L.finished = last.finished || null;
-      L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} };
-    } catch (e) { toast('The photo server did not answer.'); }
-    render();
+      render();
+      if (act && act.job) follow(act.job, act.only && act.only.length ? act.only : null, act.started ? Date.parse(act.started) : Date.now());
+    } catch (e) { if (!stale()) { L.loading.runs = false; render(); toast('The photo server did not answer.'); } }
   }
 
   async function show() {
@@ -595,7 +713,7 @@
       // open on the country of the article in the editor, else the last one chosen
       let pick = store.get('country');
       try { const cur = window.articleRelPath && await window.articleRelPath(); const c = cur && L.countries.find(x => x.articles.some(a => a.rel === cur)); if (c) pick = c.country; } catch (e) {}
-      L.country = (L.countries.find(x => x.country === pick) || L.countries[0] || {}).country || null;
+      L.country = (L.countries.find(x => x.country === pick) || L.countries.find(x => countryGroup(x) === 'Ready to launch') || L.countries[0] || {}).country || null;
       L.tab = store.get('tab:' + L.country) || 'overview';
       await loadCountry();
       return;
@@ -606,4 +724,7 @@
   }
   window.__launchShow = show;
   window.__launch = L;                                   // test seam
+  // The editor can open straight onto this tab (#launch, or the view it remembers) while this deferred
+  // script is still loading: it found no __launchShow to call and the tab stayed blank. Draw it now.
+  { const la = document.getElementById('app-launch'); if (la && !la.hidden) show(); }
 })();

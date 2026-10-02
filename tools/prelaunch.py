@@ -50,6 +50,16 @@ def _read(p):
     return io.open(p, encoding="utf-8", errors="replace").read()
 
 
+def safe_rel(r):
+    """a page path a request may name: relative, inside the site, an .html file that exists"""
+    if not isinstance(r, str) or not r.endswith(".html") or r.startswith(("/", "\\")) or ":" in r or ".." in r.replace("\\", "/").split("/"):
+        return None
+    return r if (ROOT / r).is_file() else None
+
+
+SAFE_HREF = re.compile(r"^(?:\.\./)*[\w-]+(?:/[\w-]+)*\.html(?:#[\w-]+)?$")
+
+
 def _text(s):
     return re.sub(r"\s+", " ", H.unescape(re.sub(r"<[^>]+>", " ", s or ""))).strip()
 
@@ -76,6 +86,16 @@ def kind_of(rel):
 def title_of(html):
     m = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S)
     return _text(m.group(1)) if m else ""
+
+
+def draft_twins(rel):
+    """the draft paths a live page was launched from"""
+    if rel.startswith("Drafts/"):
+        return []
+    out = ["Drafts/.Full Articles/" + rel]
+    if rel.endswith("/field-notes.html"):
+        out.append("Drafts/" + rel)
+    return out
 
 
 def live_twin(rel):
@@ -112,6 +132,8 @@ def countries():
         if d.is_dir() and d.name not in ("Drafts", "archive", ".tmp", "tools") and idx.is_file() and "country-article-card" in _read(idx):
             for p in sorted(d.glob("*.html")):
                 rel = p.relative_to(ROOT).as_posix()
+                if 'http-equiv="refresh"' in _read(p):        # retired field notes: a redirect, not a page
+                    continue
                 if not any(a["rel"] == rel for a in out.get(d.name, {}).get("articles", [])):
                     add(d.name, rel, "live")
     for c in list(out):                               # a country's LIVE field notes, while it launches its guide
@@ -187,6 +209,11 @@ def result(status, summary, items=None, fix=None, tool=None, note=None):
 
 def count_label(n, one, many=None):
     return "%d %s" % (n, one if n == 1 else (many or one + "s"))
+
+
+def agree(n, one, many):
+    """the verb after count_label(): "1 page states", "2 pages state" """
+    return one if n == 1 else many
 
 
 # ----------------------------------------------------------------------------- relink
@@ -339,7 +366,7 @@ def relink_scan(ctx):
 
 def _title(rel, ctx):
     h = ctx["html"].get(rel) or _read(ROOT / rel)
-    return re.sub(r"^The\s+", "", title_of(h).split("—")[0].split(":")[0].strip()) or Path(rel).stem
+    return re.sub(r"^(?:The\s+)?(?:Ultimate\s+Guide\s+to\s+)?", "", title_of(h).split("—")[0].split(":")[0].strip(), flags=re.I) or Path(rel).stem
 
 
 def relink_apply(items):
@@ -362,6 +389,9 @@ def relink_apply(items):
                 continue
             attrs = tag[2:-1]
             attrs = re.sub(r'\s(?:target|rel)="[^"]*"', "", attrs)
+            if not SAFE_HREF.match(it.get("href") or ""):
+                missed.append(it)
+                continue
             attrs = HREF.sub(lambda _m: 'href="%s"' % it["href"], attrs)
             s = s[:hit] + "<a" + attrs + ">" + s[hit + len(tag):]
             done.append(it)
@@ -453,6 +483,8 @@ def mentions_apply(items):
             if s[a:b] != it["text"]:
                 missed.append(it)
                 continue
+            if not SAFE_HREF.match(it.get("href") or ""):
+                continue
             s = s[:a] + '<a href="%s">%s</a>' % (it["href"], it["text"]) + s[b:]
             done.append(it)
         if s != raw:
@@ -519,7 +551,7 @@ def c_repeats(ctx):
              for k, v in seen.items() if len(v) > 1]
     if not items:
         return result("pass", "No sentence is repeated word for word across these pages.")
-    return result("warn", count_label(len(items), "sentence") + " appear in more than one page.", items[:40],
+    return result("warn", count_label(len(items), "sentence") + " %s in more than one page." % agree(len(items), "appears", "appear"), items[:40],
                   tool={"kind": "editor", "label": "Open in the editor"})
 
 
@@ -538,7 +570,7 @@ def c_mentions(ctx):
     items = mention_scan(ctx)
     if not items:
         return result("pass", "Every page links to the other articles it mentions.")
-    return result("warn", "%s of places you wrote about aren't linked to the article." % count_label(len(items), "mention"),
+    return result("warn", "%s of places you wrote about %s linked to the article." % (count_label(len(items), "mention"), agree(len(items), "isn't", "aren't")),
                   items, fix={"kind": "mentions", "label": "Link them"},
                   note="Only the first mention on a page, and only where the page doesn't link to that article yet.")
 
@@ -601,7 +633,7 @@ def c_maps_search(ctx):
                 items.append({"page": rel, "detail": "Still a search", "value": _text(m.group(2))[:60]})
     if not items:
         return result("pass", "Every Google Maps link opens a place, not a results page.")
-    return result("fail", "%s still drop the reader on a Google search." % count_label(len(items), "map link"), items,
+    return result("fail", "%s still %s the reader on a Google search." % (count_label(len(items), "map link"), agree(len(items), "drops", "drop")), items,
                   tool={"kind": "review", "label": "Resolve in the editor"})
 
 
@@ -684,7 +716,7 @@ def c_dup_photos(ctx):
              for k, v in seen.items() if len(v) > 1]
     if not items:
         return result("pass", "No photo is used in two guides (the itinerary and the top 10 may borrow).")
-    return result("warn", count_label(len(items), "photo") + " appear in more than one article.", items,
+    return result("warn", count_label(len(items), "photo") + " %s in more than one article." % agree(len(items), "appears", "appear"), items,
                   tool={"kind": "editor", "label": "Open in the editor"})
 
 
@@ -746,7 +778,8 @@ def c_seo(ctx):
             items.append({"page": rel, "detail": "No search title", "sev": "high"})
         elif len(title) > 70:
             items.append({"page": rel, "detail": "Search title is %d characters (up to ~70)" % len(title), "value": title})
-        if "field notes" in title.lower():
+        at_publish = rel.startswith("Drafts/") and ctx["kind"][rel] == "field-notes"
+        if "field notes" in title.lower() and not at_publish:
             items.append({"page": rel, "detail": "“Field Notes” in the title is brand, nobody searches it", "value": title})
         if not desc:
             items.append({"page": rel, "detail": "No description", "sev": "high"})
@@ -757,18 +790,19 @@ def c_seo(ctx):
         ogd = _meta(h, "og:description")
         if ogd is not None and ogd != desc:
             items.append({"page": rel, "detail": "og:description differs from the description", "value": ogd[:120]})
-        if ctx["kind"][rel] not in ("country",) and (_meta(h, "og:type") or "") != "article":
+        if ctx["kind"][rel] not in ("country",) and (_meta(h, "og:type") or "") != "article" and not at_publish:
             items.append({"page": rel, "detail": "og:type is %r, an article page is \"article\"" % _meta(h, "og:type")})
         ld = re.search(r'<script[^>]*application/ld\+json[^>]*>(.*?)</script>', h, re.S)
         if ld and '"headline"' in ld.group(1) and not rel.startswith("Drafts/"):
             hm = re.search(r'"headline"\s*:\s*"([^"]*)"', ld.group(1))
             if hm and title and hm.group(1).strip() not in title:
                 items.append({"page": rel, "detail": "The JSON-LD headline does not match the title", "value": hm.group(1)})
-        if ctx["kind"][rel] == "field-notes":
+        if ctx["kind"][rel] == "field-notes" and not at_publish:
             h1 = title_of(h)
             if h1 and not h1.lower().endswith("travel guide"):
                 items.append({"page": rel, "detail": "A country guide headline reads “<Country> Travel Guide”", "value": h1})
-    note = "The canonical link, og:url and the JSON-LD dates are written by the publish (publish_country.py step 8)."
+    note = ("The canonical link, og:url and the JSON-LD dates are written by the publish (publish_country.py step 8), and so "
+            "are a field-notes draft's keyword title, headline and og:type.")
     if not items:
         return result("pass", "Titles, descriptions and share tags are in place and within length.", note=note)
     high = any(i.get("sev") == "high" for i in items)
@@ -786,7 +820,7 @@ def c_dates(ctx):
             items.append({"page": rel, "detail": "The date under the subtitle says %s, dateModified says %s" % (b.group(2), j.group(2))})
     if not items:
         return result("pass", "The date under each subtitle agrees with the page's dateModified.")
-    return result("warn", count_label(len(items), "page") + " state two different dates.", items,
+    return result("warn", count_label(len(items), "page") + " %s two different dates." % agree(len(items), "states", "state"), items,
                   fix={"kind": "dates", "label": "Settle them (article_dates --fix)", "pages": [i["page"] for i in items]})
 
 
@@ -874,7 +908,7 @@ def c_coverage(ctx):
                 out.append({"page": fn.relative_to(ROOT).as_posix(), "detail": "In the field notes, in no article", "value": n})
     if not out:
         return result("pass", "Every place in the field notes made it into an article.")
-    return result("warn", count_label(len(out), "place") + " from the field notes are in no article.", out,
+    return result("warn", count_label(len(out), "place") + " from the field notes %s in no article." % agree(len(out), "is", "are"), out,
                   tool={"kind": "editor", "label": "Open in the editor"})
 
 
@@ -882,9 +916,18 @@ def c_render(ctx):
     """load each page at phone, tablet and desktop width: broken images, sideways scroll, script errors"""
     args = [sys.executable, str(TOOLS / "prelaunch_render.py")] + list(ctx["set"])
     try:
-        r = subprocess.run(args, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
-        data = json.loads((r.stdout or "").strip().splitlines()[-1])
+        pr = subprocess.Popen(args, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                              encoding="utf-8", errors="replace")
+        def follow():                                  # "3/10" lines on stderr: the tab shows the progress
+            for line in pr.stderr:
+                if line.startswith("PROGRESS ") and ctx.get("progress"):
+                    ctx["progress"]("page %s of %s" % tuple(line.split()[1].split("/")))
+        tf = threading.Thread(target=follow, daemon=True); tf.start()
+        out, _ = pr.communicate(timeout=900)
+        data = json.loads((out or "").strip().splitlines()[-1])
     except Exception as e:
+        try: pr.kill()
+        except Exception: pass
         return result("error", "The render check could not run: %s" % str(e)[:160])
     items = []
     at = lambda w: "%s px on a 1x screen" % w[:-3] if w.endswith("@1x") else "%s px" % w
@@ -1065,17 +1108,41 @@ def _ctx(rels, client):
 
 
 def _key(rels):
+    """the last-run file's name: the country plus a hash of the WHOLE page list (it used to be the list's
+    last 120 characters, so two sets that ended alike shared a file and showed each other's results)"""
+    import hashlib
+    rels = sorted(rels)
+    country = rels[0].split("/")[-2] if rels and "/" in rels[0] else "pages"
+    return "%s-%s" % (re.sub(r"[^a-z0-9]+", "-", country.lower()), hashlib.sha1("|".join(rels).encode()).hexdigest()[:12])
+
+
+def _old_key(rels):
     return re.sub(r"[^a-z0-9]+", "-", ("|".join(sorted(rels))).lower())[-120:]
+
+
+def _last_file(rels):
+    """this page set's last run, read from the file an older version of the tab wrote if that is all there is"""
+    f = STATE / ("last-" + _key(rels) + ".json")
+    old = STATE / ("last-" + _old_key(rels) + ".json")
+    if f.is_file() or not old.is_file():
+        return f
+    try:
+        same = sorted(json.loads(old.read_text(encoding="utf-8")).get("rels") or []) == sorted(rels)
+    except Exception:
+        same = False
+    return old if same else f
 
 
 def _run(jid, rels, only, client):
     job = JOBS[jid]
     ctx = _ctx(rels, client)
+    ctx["progress"] = lambda text: job.__setitem__("detail", text)
     per_page = links_per_page(ctx)
     for cid, group, title, why, fn in CLAUDE:
         if only and cid not in only:
             continue
         job["current"] = cid
+        job["detail"] = None
         t0 = time.time()
         try:
             r = fn(ctx)
@@ -1091,10 +1158,14 @@ def _run(jid, rels, only, client):
     job["state"] = "done"
     job["finished"] = datetime.now().isoformat(timespec="seconds")
     STATE.mkdir(parents=True, exist_ok=True)
+    src = _last_file(rels)
     last = STATE / ("last-" + _key(rels) + ".json")
-    prev = json.loads(last.read_text(encoding="utf-8")) if last.is_file() and only else {"results": {}}
+    prev = json.loads(src.read_text(encoding="utf-8")) if src.is_file() and only else {"results": {}}
     prev["results"].update(job["results"])
-    prev.update({"rels": rels, "finished": job["finished"]})
+    prev["rels"] = rels
+    if not only or not prev.get("finished"):          # a partial re-run is not a new "Last run"
+        prev["finished"] = job["finished"]
+    job["last_finished"] = prev["finished"]
     last.write_text(json.dumps(prev, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
@@ -1146,15 +1217,35 @@ def api_run():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True) or {}
-    rels = [r for r in d.get("rels") or [] if isinstance(r, str)]
+    rels = [r for r in (safe_rel(x) for x in d.get("rels") or []) if r]
     if not rels:
         return jsonify({"ok": False, "error": "choose an article"}), 400
+    only = sorted(set(d.get("only") or []))
     jid = uuid.uuid4().hex[:10]
-    JOBS[jid] = {"state": "running", "results": {}, "current": None, "rels": rels,
-                 "started": datetime.now().isoformat(timespec="seconds")}
+    with _lock:
+        for k, j in JOBS.items():                    # a double click, or Run pressed again mid-run
+            if j["state"] == "running" and sorted(j["rels"]) == sorted(rels) and j.get("only", []) == only:
+                return jsonify({"ok": True, "job": k, "joined": True})
+        done = [k for k, j in JOBS.items() if j["state"] == "done"]
+        for k in done[:-20]:                         # keep the last 20 finished jobs
+            JOBS.pop(k, None)
+        JOBS[jid] = {"state": "running", "results": {}, "current": None, "rels": rels, "only": only,
+                     "started": datetime.now().isoformat(timespec="seconds")}
     client = bp_app["app"].test_client()
     threading.Thread(target=_run, args=(jid, rels, set(d.get("only") or []), client), daemon=True).start()
     return jsonify({"ok": True, "job": jid})
+
+
+@bp.route("/api/launch/active", methods=["POST", "OPTIONS"])
+def api_active():
+    """a run still going on these pages (a country re-opened mid-run follows it instead of saying "Not run yet")"""
+    if request.method == "OPTIONS":
+        return "", 204
+    rels = sorted(r for r in (safe_rel(x) for x in (request.get_json(force=True) or {}).get("rels") or []) if r)
+    for k, j in list(JOBS.items()):
+        if j["state"] == "running" and sorted(j["rels"]) == rels:
+            return jsonify({"ok": True, "job": k, "only": j.get("only") or [], "started": j.get("started")})
+    return jsonify({"ok": True, "job": None})
 
 
 @bp.route("/api/launch/job/<jid>")
@@ -1170,7 +1261,7 @@ def api_last():
     if request.method == "OPTIONS":
         return "", 204
     rels = (request.get_json(force=True) or {}).get("rels") or []
-    f = STATE / ("last-" + _key(rels) + ".json")
+    f = _last_file(rels)
     return jsonify(dict(json.loads(f.read_text(encoding="utf-8")), ok=True) if f.is_file() else {"ok": True, "results": {}})
 
 
@@ -1178,9 +1269,13 @@ def api_last():
 def api_kevin():
     if request.method == "OPTIONS":
         return "", 204
-    rels = [r for r in (request.get_json(force=True) or {}).get("rels") or [] if (ROOT / r).is_file()]
+    rels = [r for r in (safe_rel(x) for x in (request.get_json(force=True) or {}).get("rels") or []) if r]
     ctx = _ctx(rels, bp_app["app"].test_client())
     ticks = _ticks()
+    for r in rels:                                    # launched: the draft's ticks carry over to the live page
+        for twin in draft_twins(r):
+            if twin in ticks:
+                ticks[r] = dict(ticks[twin], **ticks.get(r, {}))
     hints = {}
     for r in rels:
         try:
@@ -1195,7 +1290,7 @@ def api_kevin():
         hints["country:" + c] = {"k-destcard": {"text": dc.split("/")[-1] if (ROOT / dc).is_file() else "No destination card yet",
                                                 "ok": (ROOT / dc).is_file(), "img": dc if (ROOT / dc).is_file() else None},
                                  "k-home": {"text": "%s from the home page today" % count_label(n, "link")}}
-    return jsonify({"ok": True, "hints": hints, "ticks": {k: v for k, v in ticks.items() if k in rels or k.split(":", 1)[-1] in countries_}})
+    return jsonify({"ok": True, "hints": hints, "ticks": {k: v for k, v in ticks.items() if k in rels or (k.startswith("country:") and k.split(":", 1)[-1] in countries_)}})
 
 
 @bp.route("/api/launch/plan", methods=["GET", "POST", "OPTIONS"])
@@ -1274,7 +1369,7 @@ def api_fix():
         import urllib.request
         from urllib.parse import quote
         logs, client = [], bp_app["app"].test_client()
-        for p in [p for p in d.get("pages") or [] if (ROOT / p).is_file()]:
+        for p in [p for p in (safe_rel(x) for x in d.get("pages") or []) if p]:
             slots = (client.get("/api/thumbs?rel=" + quote(p)).get_json() or {}).get("slots", [])
             try:
                 req = urllib.request.Request("http://127.0.0.1:5004/recut_share", data=json.dumps({"rel": p, "slots": slots}).encode(),
@@ -1285,7 +1380,7 @@ def api_fix():
             logs.append(r.get("log") or r.get("error") or "")
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": d.get("pages") or []})
     if kind == "dates":
-        pages = [p for p in d.get("pages") or [] if (ROOT / p).is_file()]
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p]
         logs = []
         for p in pages:
             args = [sys.executable, str(TOOLS / "article_dates.py"), "--fix", "--match", p]

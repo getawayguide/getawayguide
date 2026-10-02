@@ -9,7 +9,7 @@ import json
 import sys
 from urllib.parse import quote
 
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
 SITE = "http://127.0.0.1:5003/site/"
 # at the screen densities people read on; 1440 at 1x is an external monitor, where Kevin saw Armenia's
@@ -54,27 +54,43 @@ PROBE = """async () => {
 }"""
 
 
+PARALLEL = 3          # pages at once: about 3x faster, and light enough for the photo server beside the editor
+
+
 def main(rels):
-    out = {}
-    with sync_playwright() as p:
-        b = p.chromium.launch()
-        for rel in rels:
-            out[rel] = {}
+    import asyncio
+    out, done = {}, [0]
+
+    async def one(b, sem, rel):
+        async with sem:
+            res = {}
             for w, h, dpr in WIDTHS:
-                pg = b.new_page(viewport={"width": w, "height": h}, device_scale_factor=dpr)
+                pg = await b.new_page(viewport={"width": w, "height": h}, device_scale_factor=dpr)
                 errs = []
                 pg.on("pageerror", lambda e, errs=errs: errs.append(str(e)))
                 try:
-                    pg.goto(SITE + quote(rel), wait_until="load", timeout=60000)
-                    pg.wait_for_timeout(800)
-                    r = pg.evaluate(PROBE)
+                    await pg.goto(SITE + quote(rel), wait_until="load", timeout=60000)
+                    await pg.wait_for_timeout(800)
+                    r = await pg.evaluate(PROBE)
                     r["errors"] = errs
                 except Exception as e:
                     r = {"error": str(e).splitlines()[0]}
-                out[rel][str(w) + ("@1x" if dpr == 1 else "")] = r
-                pg.close()
-        b.close()
-    sys.stdout.write(json.dumps(out, ensure_ascii=True) + "\n")
+                res[str(w) + ("@1x" if dpr == 1 else "")] = r
+                await pg.close()
+            out[rel] = res
+            done[0] += 1
+            sys.stderr.write("PROGRESS %d/%d %s\n" % (done[0], len(rels), rel))
+            sys.stderr.flush()
+
+    async def run():
+        async with async_playwright() as p:
+            b = await p.chromium.launch()
+            sem = asyncio.Semaphore(PARALLEL)
+            await asyncio.gather(*(one(b, sem, rel) for rel in rels))
+            await b.close()
+
+    asyncio.run(run())
+    sys.stdout.write(json.dumps({rel: out[rel] for rel in rels if rel in out}, ensure_ascii=True) + "\n")
 
 
 if __name__ == "__main__":
