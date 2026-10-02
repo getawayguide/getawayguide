@@ -71,6 +71,8 @@ for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
     r = rel(p)
     if r.startswith(("Drafts/", ".tmp/", ".git/", "archive/")) or os.path.basename(r) in EXCLUDE: continue
     html = open(p, encoding="utf-8").read()
+    if 'http-equiv="refresh"' in html:   # a retired page's redirect stub (retire_field_notes.py) is not content
+        continue
     if "application/ld+json" in html:
         if not FORCE:
             continue

@@ -3,7 +3,7 @@
   "kicker": "ARMENIA",
   "city": "Yerevan",
   "osm": ".tmp/yerevan_osm.json",
-  "article": "armenia/field-notes.html",
+  "article": "armenia/yerevan.html",
   "embed": {
     "pre": "I preferred Kantar</li>\n    </ul>\n",
     "post": "  </div>\n\n  <!-- Day Trips from Yerevan -->"

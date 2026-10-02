@@ -1052,7 +1052,8 @@ JOBS = {}
 
 
 def _ctx(rels, client):
-    rels = [r for r in rels if (ROOT / r).is_file()]
+    # a retired field-notes page is a redirect stub (tools/retire_field_notes.py), not a page to check
+    rels = [r for r in rels if (ROOT / r).is_file() and 'http-equiv="refresh"' not in _read(ROOT / r)]
     cs = sorted({r.split("/")[-2] for r in rels})
     all_country = []
     for c in cs:

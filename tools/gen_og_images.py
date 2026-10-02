@@ -149,6 +149,9 @@ PAGE_SRC = {
     "el-salvador/top-10-el-salvador.html":    "%s/La Ruta de las Flores/Waterfalls/Waterfall Main.JPEG" % ES,
     "el-salvador/el-salvador-itinerary.html": "%s/El Tunco and Taquillo/Taquillo View.JPEG" % ES,
     "el-salvador/el-tunco.html":              "%s/El Tunco and Taquillo/El Tunco/El Tunco Sunset.jpg" % ES,
+    # an In-Depth Guide's country page shares the photo its destinations card shows (Armenia, 2026-10-02);
+    # its articles' share images are cut by the Covers tool from each article's card photo
+    "armenia/index.html":                     "Images/dest-cards/armenia_1.jpg",
 }
 
 

@@ -95,6 +95,19 @@ ASSET = re.compile(r"""(?:src|href)=["']([^"'>]+)["']|url\(['"]?([^)'"]+)['"]?\)
 REMOTE = ("http://", "https://", "//", "mailto:", "tel:", "data:", "javascript:", "#")
 
 
+def _quiet_css(html):
+    """Blank what only LOOKS like a reference inside <style>: CSS comments ("the inline
+    background:url(...jpg) stays as the fallback") and @supports feature tests
+    (`image-set(url("a.webp") type("image/webp"))` asks whether the browser can, it loads
+    nothing). Same length, so offsets and line numbers still point at the real place.
+    Every Armenia hero carries both (2026-10-02 launch)."""
+    blank = lambda m: re.sub(r"[^\n]", " ", m.group(0))
+    def style(m):
+        css = re.sub(r"/\*.*?\*/", blank, m.group(0), flags=re.S)
+        return re.sub(r"@supports\s*\((?:[^(){}]|\((?:[^(){}]|\((?:[^(){}]|\([^(){}]*\))*\))*\))*\)", blank, css)
+    return re.sub(r"<style\b.*?</style>", style, html, flags=re.S)
+
+
 def asset_refs(html):
     """Yield (reference, offset) for every local file a page pulls in.
 
@@ -108,7 +121,7 @@ def asset_refs(html):
     fallback AND four srcsets at "El Tunco Sunset 1-*" variants that were never
     generated, and only the fallback was ever reported.
     """
-    for m in ASSET.finditer(html):
+    for m in ASSET.finditer(_quiet_css(html)):
         if m.group(3) is not None:
             for cand in m.group(3).split(","):
                 cand = cand.strip()
@@ -252,7 +265,7 @@ for path, r in pages():
     # 8. missing title / meta description
     if "<title>" not in html:
         add("meta", r, 1, "missing <title>")
-    if 'name="description"' not in html:
+    if 'name="description"' not in html and 'http-equiv="refresh"' not in html:   # a redirect stub has none
         add("meta", r, 1, "missing meta description")
 
     # 9. nested bold

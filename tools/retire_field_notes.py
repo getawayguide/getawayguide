@@ -17,7 +17,9 @@ Salvador is, and nothing on the site points at the field notes any more:
                          keeps nothing of the old anchor, the country page has none of them
   5. the page itself     becomes a redirect to the country page (noindex, canonical, meta refresh
                          and location.replace), so old links and bookmarks still land somewhere
-  6. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
+  6. posts + count      tools/sync_guides.py: its articles join the posts page's Guides section, its
+                         field-notes card leaves, and the home hero's "N and counting." is recounted
+  7. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
 
 It refuses to run until <slug>/index.html is live: retiring first would point the whole site at a
 page that does not exist yet. archive/ is never touched (see the publish protocol memory).
@@ -35,6 +37,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
+sys.path.insert(0, str(TOOLS))
 DOMAIN = "https://getawayguide.io/"
 NOT_SITE = {"editor.html"}                     # the editor is a tool that lives in the repo, not a page
 
@@ -201,7 +204,11 @@ def apply(slug, dry=False, force=False):
     log.append("%s -> redirect to index.html" % p["page"])
     if not dry:
         io.open(ROOT / p["page"], "w", encoding="utf-8", newline="").write(STUB.format(name=name, domain=DOMAIN, slug=slug))
-    # 6. sitemap + search
+    # 6. the posts page lists the country's articles under Guides (its field-notes card leaves), and the
+    #    home hero's "N and counting." is recounted (tools/sync_guides.py; Kevin, 2026-10-02)
+    import sync_guides
+    log += sync_guides.run(dry)
+    # 7. sitemap + search
     for tool in ("gen_sitemap.py", "gen_search_index.py"):
         if not (TOOLS / tool).is_file():
             continue

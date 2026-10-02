@@ -3,7 +3,7 @@
   "kicker": "ARMENIA",
   "city": "Gyumri",
   "osm": ".tmp/gyumri_osm.json",
-  "article": "Drafts/.Full Articles/armenia/gyumri.html",
+  "article": "armenia/gyumri.html",
   "embed": {
     "pre": "from the main square out to Mother Armenia.</p>",
     "post": "<h3 class=\"article-h3\" id=\"vardanants-square\">"

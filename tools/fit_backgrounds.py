@@ -173,6 +173,10 @@ SRC_CACHE = ROOT / ".tmp" / "bgfit_sources.json"
 
 
 def _open(path, angle):
+    if str(path).lower().endswith((".heic", ".heif")):
+        # the remembered source can be an iPhone original; importing hero_picker registers the HEIC
+        # reader, and a cache hit skips the search that used to import it (Armenia launch, 2026-10-02)
+        import hero_picker  # noqa: F401
     im0 = Image.open(path)
     icc = im0.info.get("icc_profile")
     im = ImageOps.exif_transpose(im0).convert("RGB")

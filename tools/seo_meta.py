@@ -31,8 +31,11 @@ DATES = os.path.join(ROOT, ".tmp", "seo_dates.json")
 def pages():
     out = subprocess.run(["git", "ls-files", "*.html"], capture_output=True, text=True,
                          cwd=ROOT).stdout.split()
+    # a retired page's redirect stub (retire_field_notes.py) carries its own canonical to the page
+    # it sends readers to; giving it one to itself, or Article dates, would undo the redirect's point
     return [f for f in out if not f.startswith(("Drafts/", ".tmp/", "archive/"))
-            and os.path.basename(f) not in ("editor.html", "404.html")]
+            and os.path.basename(f) not in ("editor.html", "404.html")
+            and 'http-equiv="refresh"' not in open(os.path.join(ROOT, f), encoding="utf-8", errors="replace").read()]
 
 
 def canonical_url(s, rel):

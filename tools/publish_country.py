@@ -80,7 +80,7 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
 # Countries that have FULL multi-page guides (not just field notes). They're folded into
 # their continent group in the merged dropdown and flagged with a green dot. (name, iso2,
 # continent, href-to-guide-index). New Zealand's guides are unfinished -> moved to Drafts, omitted.
-FULL_GUIDES = [("El Salvador", "sv", "americas", "el-salvador/index.html")]
+FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
@@ -330,6 +330,11 @@ def main():
         except Exception:
             os.system('rm -rf "%s"' % os.path.join(ROOT, "Drafts", slug))
     log.append("removed Drafts/%s/" % slug)
+
+    # 6b. a new field-notes page is one more article: recount the home hero's "N and counting." and keep
+    #     the posts page's Guides section in step (tools/sync_guides.py; Kevin, 2026-10-02)
+    import sync_guides
+    log += sync_guides.run(DRY)
 
     # 7. rebuild the search index so the new country is searchable
     if not DRY:

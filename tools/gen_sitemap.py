@@ -74,6 +74,8 @@ for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
     if r.startswith(("Drafts/", ".tmp/", ".git/")): continue
     if os.path.basename(r) in EXCLUDE: continue
     if any(r == d or r.startswith(d) for d in DISALLOW): continue
+    # a retired page's redirect stub (retire_field_notes.py) is noindex: the page it sends readers to is listed
+    if 'http-equiv="refresh"' in open(p, encoding="utf-8", errors="replace").read(): continue
     pages.append(r)
 pages.sort(key=lambda r: (r != "index.html", r))   # homepage first
 
