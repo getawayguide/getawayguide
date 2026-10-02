@@ -31,129 +31,148 @@
       "lat": 40.1894674,
       "lon": 44.515414,
       "cat": "see",
-      "match": "cascade"
+      "match": "cascade",
+      "href": "https://www.google.com/maps/place/Cascade+Complex/@40.1873941,44.5154656,15.77z/data=!4m15!1m8!3m7!1s0x406aa2dab8fc8b5b:0x3d1479ae87da526a!2sYerevan,+Armenia!3b1!8m2!3d40.1872023!4d44.515209!16zL20vMDg4OWQ!3m5!1s0x406abd218c0499f7:0x54165e8b3d0b54c3!8m2!3d40.1894674!4d44.515414!16s%2Fm%2F0h_dmlv?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Republic Square",
       "lat": 40.1776945,
       "lon": 44.5126511,
       "cat": "see",
-      "match": "republic square"
+      "match": "republic square",
+      "href": "https://www.google.com/maps/place/Republic+Square/@40.180506,44.5132745,15.77z/data=!4m15!1m8!3m7!1s0x406aa2dab8fc8b5b:0x3d1479ae87da526a!2sYerevan,+Armenia!3b1!8m2!3d40.1872023!4d44.515209!16zL20vMDg4OWQ!3m5!1s0x406abcfa28499691:0x2bde14d127166c74!8m2!3d40.1776945!4d44.5126511!16s%2Fm%2F02r2t03?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "National Gallery of Armenia",
       "lat": 40.1785411,
       "lon": 44.5138396,
       "cat": "see",
-      "match": "national gallery"
+      "match": "national gallery",
+      "href": "https://www.google.com/maps/place/National+Gallery+of+Armenia/@40.1783984,44.5133894,19.46z/data=!4m15!1m8!3m7!1s0x406aa2dab8fc8b5b:0x3d1479ae87da526a!2sYerevan,+Armenia!3b1!8m2!3d40.1872023!4d44.515209!16zL20vMDg4OWQ!3m5!1s0x406abcfa4acffbdb:0xd7edfb185b1b5749!8m2!3d40.1785411!4d44.5138396!16s%2Fm%2F03cn861?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Armenian Genocide Museum",
       "lat": 40.1858285,
       "lon": 44.4884786,
       "cat": "see",
-      "match": "genocide museum"
+      "match": "genocide museum",
+      "href": "https://www.google.com/maps/place/Armenian+Genocide+Museum/@40.1858326,44.4858983,17z/data=!3m1!4b1!4m6!3m5!1s0x406abd007595575b:0x4fce3afab5c85bde!8m2!3d40.1858285!4d44.4884786!16s%2Fg%2F11w1cq8cl3?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Vernissage Market",
       "lat": 40.1758116,
       "lon": 44.5183504,
       "cat": "see",
-      "match": "vernissage"
+      "match": "vernissage",
+      "href": "https://www.google.com/maps/place/Vernissage+Market/@40.1758157,44.5157701,17z/data=!3m1!4b1!4m6!3m5!1s0x406abcfa72380a91:0xb22f51c82a235ca7!8m2!3d40.1758116!4d44.5183504!16s%2Fm%2F0rytwcf?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Blue Mosque",
       "lat": 40.1782416,
       "lon": 44.5055163,
       "cat": "see",
-      "match": "blue mosque"
+      "match": "blue mosque",
+      "href": "https://www.google.com/maps/place/Blue+Mosque/@40.1859005,44.5089716,14.73z/data=!4m14!1m7!3m6!1s0x406abde14ec7549f:0x13709bd6911d0b65!2sMother+Armenia+Monument!8m2!3d40.1951425!4d44.5246767!16zL20vMGc5MTE1!3m5!1s0x406abcff23f49e8d:0x60a4e72d2e92eca8!8m2!3d40.1782416!4d44.5055163!16s%2Fm%2F0274c94?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Mother Armenia Monument",
       "lat": 40.1951425,
       "lon": 44.5246767,
       "cat": "see",
-      "match": "mother armenia"
+      "match": "mother armenia",
+      "href": "https://www.google.com/maps/place/Mother+Armenia+Monument/@40.1951466,44.5220964,17z/data=!3m1!4b1!4m6!3m5!1s0x406abde14ec7549f:0x13709bd6911d0b65!8m2!3d40.1951425!4d44.5246767!16zL20vMGc5MTE1?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Kond Neighborhood",
       "lat": 40.1824159,
       "lon": 44.5016751,
       "cat": "see",
-      "match": "kond neighborhood"
+      "match": "kond neighborhood",
+      "href": "https://www.google.com/maps/place/Kond,+Yerevan,+Armenia/@40.1859005,44.5089716,14.73z/data=!4m14!1m7!3m6!1s0x406abde14ec7549f:0x13709bd6911d0b65!2sMother+Armenia+Monument!8m2!3d40.1951425!4d44.5246767!16zL20vMGc5MTE1!3m5!1s0x406abd01b9619331:0xd42c9f8edb3cdd7e!8m2!3d40.1824159!4d44.5016751!16s%2Fm%2F04cvtjx?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Yerevan Brandy Factory",
       "lat": 40.1765036,
       "lon": 44.4974233,
       "cat": "see",
-      "match": "brandy"
+      "match": "brandy",
+      "href": "https://www.google.com/maps/place/%D0%95%D1%80%D0%B5%D0%B2%D0%B0%D0%BD%D1%81%D0%BA%D0%B8%D0%B9+%D0%BA%D0%BE%D0%BD%D1%8C%D1%8F%D1%87%D0%BD%D1%8B%D0%B9+%D0%B7%D0%B0%D0%B2%D0%BE%D0%B4/@40.1859005,44.5089716,14.73z/data=!4m14!1m7!3m6!1s0x406abde14ec7549f:0x13709bd6911d0b65!2sMother+Armenia+Monument!8m2!3d40.1951425!4d44.5246767!16zL20vMGc5MTE1!3m5!1s0x406abc548fc4e409:0x1c7a78ab4dded93c!8m2!3d40.1765036!4d44.4974233!16zL20vMGcwMHht?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Yerevan Tavern",
       "lat": 40.179007,
       "lon": 44.51008,
       "cat": "eat",
-      "match": "yerevan tavern"
+      "match": "yerevan tavern",
+      "href": "https://www.google.com/maps/place/Tavern+Yerevan/@40.1784945,44.5109912,16z/data=!4m6!3m5!1s0x406abcfbfdb232a1:0xb29458741f4f549f!8m2!3d40.179007!4d44.51008!16s%2Fg%2F1vb9bk33?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Mayrig Yerevan",
       "lat": 40.1802698,
       "lon": 44.5110545,
       "cat": "eat",
-      "match": "mayrig"
+      "match": "mayrig",
+      "href": "https://www.google.com/maps/place/Mayrig+Yerevan/@40.1784945,44.5109912,16z/data=!4m6!3m5!1s0x406abdf98b25b891:0x5d21fbb5784beeb0!8m2!3d40.1802698!4d44.5110545!16s%2Fg%2F11g4c2h4mp?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Anteb Restaurant",
       "lat": 40.1819866,
       "lon": 44.5115891,
       "cat": "eat",
-      "match": "anteb"
+      "match": "anteb",
+      "href": "https://www.google.com/maps/place/Anteb+Restaurant/@40.1819907,44.5090142,16z/data=!3m1!4b1!4m6!3m5!1s0x406abcfce903bda9:0x337e7fbae90f6c33!8m2!3d40.1819866!4d44.5115891!16s%2Fg%2F1tcyjjf4?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
-      "name": "Tumanyan Bakery",
-      "lat": 40.1829206,
-      "lon": 44.5169704,
+      "name": "Tumanyan Khinkali",
+      "lat": 40.1831522,
+      "lon": 44.5160174,
       "cat": "eat",
-      "match": "tumanyan"
+      "match": "tumanyan",
+      "href": "https://www.google.com/maps/place/Tumanyan's+Khinkali/@40.1831522,44.5160174,17z/data=!3m1!4b1!4m6!3m5!1s0x406abce37b0b5a13:0x79d4f924ecd7358!8m2!3d40.1831522!4d44.5160174!16s%2Fg%2F1tc_2l2p?hl=en&entry=ttu&g_ep=EgoyMDI2MDkyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Lumen Coffee 1936",
       "lat": 40.1901999,
       "lon": 44.5184617,
       "cat": "eat",
-      "match": "lumen"
+      "match": "lumen",
+      "href": "https://www.google.com/maps/place/Lumen+Coffee+1936/@40.1901999,44.4803529,14z/data=!4m10!1m2!2m1!1slumen+coffee+yerevan!3m6!1s0x406abd92bce4cf53:0xff4791d7e5878ef7!8m2!3d40.1901999!4d44.5184617!15sChRsdW1lbiBjb2ZmZWUgeWVyZXZhbloWIhRsdW1lbiBjb2ZmZWUgeWVyZXZhbpIBC2NvZmZlZV9zaG9wmgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5UVU5CTWpsTUxUUjNSUkFC4AEA-gEECAAQSw!16s%2Fg%2F11jzdrggfm?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "AfroLab Specialty Coffee",
       "lat": 40.1826419,
       "lon": 44.5130054,
       "cat": "eat",
-      "match": "afrolab"
+      "match": "afrolab",
+      "href": "https://www.google.com/maps/place/AfroLab+Specialty+Coffee+Roastery/@40.1803798,44.510562,16z/data=!4m6!3m5!1s0x406abd6ce82a6e63:0x914d340c9e81edb7!8m2!3d40.1826419!4d44.5130054!16s%2Fg%2F11hjcptb88?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Kantar Hostel",
       "lat": 40.1748457,
       "lon": 44.5108097,
       "cat": "stay",
-      "match": "kantar"
+      "match": "kantar",
+      "href": "https://www.google.com/maps/place/Kantar/@40.174797,44.510766,17z/data=!4m9!3m8!1s0x406abcf8216d891f:0xfbd34095914323ab!5m2!4m1!1i2!8m2!3d40.174797!4d44.510766!16s%2Fg%2F11b6dn_ffx?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "day_trips": [
     {
       "name": "Khor Virap Monastery",
       "time": "Half Day",
-      "match": "khor virap"
+      "match": "khor virap",
+      "href": "https://www.google.com/maps/place/Khor+Virap/@39.878439,44.5735463,17z/data=!3m1!4b1!4m6!3m5!1s0x4015325d369f0d4b:0xeba04cad0e28a010!8m2!3d39.8784349!4d44.5761266!16zL20vMDNucl9u?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Geghard & Garni",
       "time": "Full Day",
-      "match": "geghard"
+      "match": "geghard",
+      "href": "https://www.google.com/maps/place/Geghard/@40.1406916,44.8152322,16z/data=!3m1!4b1!4m6!3m5!1s0x406aaead91206219:0x4003cbe690889756!8m2!3d40.1406875!4d44.8178125!16zL20vMDNudjBz?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Lake Sevan",
       "time": "Full Day",
-      "match": "lake sevan"
+      "match": "lake sevan",
+      "href": "https://www.google.com/maps/place/Sevan,+Armenia/@40.545865,44.9732816,14.09z/data=!4m6!3m5!1s0x404046c39477eb71:0xeb5b902ad8d28d76!8m2!3d40.5484721!4d44.9618132!16s%2Fm%2F025rpdh?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "district_labels": [

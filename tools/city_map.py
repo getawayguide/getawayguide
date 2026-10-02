@@ -87,6 +87,7 @@ PIN = "M0 0 C-3.4 -8 -8 -11.4 -8 -17.7 A8 8 0 1 1 8 -17.7 C8 -11.4 3.4 -8 0 0 Z"
 # each config. w/h/dar/pin_scale/title_px are fixed here and ignored in configs. ----
 DESK_W, DESK_H, DESK_PIN = 760, 470, 1.0        # landscape + floating key
 MOB_W, MOB_H, MOB_PIN, MOB_DAR = 660, 820, 1.6, 0.72   # portrait gesture map
+MOB_RASTER = 3                                           # phone base rendered at 3x (see build)
 TITLE_PX = 34
 ROADW = {"living_street": 1.0, "pedestrian": 1.1, "residential": 1.2, "unclassified": 1.2,
          "tertiary": 1.7, "tertiary_link": 1.2, "secondary": 2.3, "secondary_link": 1.5,
@@ -277,13 +278,13 @@ def landmass_polys(coast, px, W, H, pins, flip=False):
     return [" ".join(f"{a:.1f},{b:.1f}" for a, b in poly) for poly in islands + best if len(poly) >= 3]
 
 
-async def _raster(svg, W, H):
+async def _raster(svg, W, H, dpr=2):
     doc = (f'<!doctype html><meta charset="utf-8"><body style="margin:0">'
            f'<div id="t" style="width:{W}px;height:{H}px">{svg}</div></body>')
     from playwright.async_api import async_playwright
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
-        ctx = await br.new_context(viewport={"width": W, "height": H}, device_scale_factor=2)
+        ctx = await br.new_context(viewport={"width": W, "height": H}, device_scale_factor=dpr)
         pg = await ctx.new_page(); await pg.set_content(doc, wait_until="load"); await pg.wait_for_timeout(400)
         png = await pg.locator("#t").screenshot(); await br.close(); return png
 
@@ -552,10 +553,19 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
         if keep_base:
             png = open(f"{IMGDIR}/{pngname}.png", "rb").read()
         else:
-            png = asyncio.run(_raster(basemap(), W, H))
+            # the phone map opens zoomed in (init_w of its width fills the screen), so on a 3x phone a
+            # 2x base is stretched ~1.3x and its streets go soft (Kevin, 2026-10-02, Armenia launch)
+            png = asyncio.run(_raster(basemap(), W, H, MOB_RASTER if W == MOB_W else 2))
             open(f"{IMGDIR}/{pngname}.png", "wb").write(png)
         b64 = base64.b64encode(png).decode()
         ext_href = f"{up}Images/web/city-maps/{pngname}.png"
+        if W == MOB_W:
+            # the phone page is served a lossless WebP of the 3x base: 1980 px for ~0.5 MB, lighter
+            # than the 2x PNG it replaced. The PNG stays the master the label editor and --keep-base read.
+            mob_webp = f"{IMGDIR}/{pngname}.webp"
+            if not keep_base or not os.path.exists(mob_webp):
+                Image.open(BytesIO(png)).convert("RGB").save(mob_webp, "WEBP", lossless=True, method=6)
+            ext_href = ext_href[:-4] + ".webp"
         # the desktop map is drawn 729 px wide; a 1x screen given the 1520 px render (2.09x) draws it
         # soft, so it gets a 1350 px copy (Kevin, 2026-10-01; tools/city_maps_1x.py)
         one_x = W == DESK_W
