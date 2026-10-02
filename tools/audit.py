@@ -202,6 +202,16 @@ def check_tiers(pages=None, have=None):
             # body image as having no mobile WebP; reading it as mobile unconditionally
             # reported every hero as having no desktop WebP. Both were wrong about half the
             # site, in opposite directions.
+            # tools/fit_backgrounds.py puts one <source> per window band in front of a hero's own
+            # sources, each naming the one file for that band: single-size by design. They are only
+            # checked for being published, and kept out of the reading below, where their min-width
+            # turned the hero's own desktop source into a "mobile" one (Kevin, 2026-10-01).
+            band = [s for s in srcs if "min-width" in s.get("media", "") and re.search(r"-\d+w\.webp$", (s.get("srcset") or "").strip())]
+            for s in band:
+                for f in srcset_files(s.get("srcset", ""), r):
+                    if not have(f):
+                        probs.append(finding("high", "tier-missing", "A window-band file is not published, so it 404s.", f))
+            srcs = [s for s in srcs if s not in band]
             has_min = any("min-width" in s.get("media", "") for s in srcs)
             has_max = any("max-width" in s.get("media", "") for s in srcs)
 

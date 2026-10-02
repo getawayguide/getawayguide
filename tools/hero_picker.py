@@ -548,6 +548,8 @@ def save():
             if abs(float(body.get("angle") or 0)) > 1e-3:
                 args += ["--angle", str(float(body["angle"]))]
             r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=600)
+            if r.returncode == 0:
+                _refit(["Images/web/%s/hero-%s.webp" % (body["country"], slug)], [])
             out.update({"built": r.returncode == 0, "slug": slug,
                         "web": "Images/web/" + body["country"],
                         "log": "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-4:])})
@@ -555,6 +557,22 @@ def save():
 
 
 THUMB_PICKS = SITE / ".tmp" / "thumb_picks.json"
+
+
+def _refit(web_files, pages):
+    """tools/fit_backgrounds.py after a save (Kevin, 2026-10-01: heroes and cards sized to every window
+    width). The photo's size files are cut again at once, since a new photo keeps its name; the pages
+    written are fitted in the background, since that loads each one at fourteen window widths."""
+    import subprocess, sys as _sys
+    tool = str(SITE / "tools" / "fit_backgrounds.py")
+    try:
+        if web_files:
+            subprocess.run([_sys.executable, tool, "--refresh"] + web_files, cwd=str(SITE), capture_output=True, timeout=600)
+        if pages:
+            subprocess.Popen([_sys.executable, tool] + pages, cwd=str(SITE), stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception as e:
+        print("refit after save failed:", e)
 
 def find_card(h, name):
     """(start, end, tag) of the country-article-card element linking to `name`, any attribute order"""
@@ -670,6 +688,7 @@ def save_thumb():
         _share_image(resolve_src(og_path), dst, pos["og"], og_angle)
         og = dst.relative_to(SITE).as_posix()
         _point_og(page, og)
+    _refit(["Images/web/%s/card-%s.webp" % (country, slug)], wrote)
     return jsonify({"ok": True, "card": "Images/web/%s/card-%s.jpg" % (country, slug), "pages": wrote, "og": og,
                     "log": r.stdout.strip().splitlines()[-2:]})
 

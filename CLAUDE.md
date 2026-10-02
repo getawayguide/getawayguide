@@ -109,6 +109,12 @@ shows on a 1x monitor, which is what I review on. Sharpness peaks near 1.9x. So 
 judge image quality at **1x** (`device_scale_factor=1`), not only 2x/3x. The Launch tab's render
 check does. Learned 2026-09-30, when Armenia's photos went soft.
 
+**Heroes and cards** fill the window or scale with it, so no single file is sharp at every width.
+`python tools/fit_backgrounds.py <pages>` measures each hero and card at seven desktop window bands
+and gives it its own files, chosen per band, in a `<style id="bg-fit">` in the page's head, or as
+per-band `<source>`s for an `<img>` hero. Phones are left alone. The Hero Picker re-runs it after
+every save. Run it after adding or changing a hero or card by hand, and before a launch.
+
 **ALWAYS carry the ICC profile through.** These photos are **Display P3**. Pillow's
 `.convert("RGB")` silently drops the profile, and a browser then reads P3 pixel values as
 sRGB, which renders them **visibly desaturated — the photos look grey**. Every tool that
