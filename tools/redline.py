@@ -231,8 +231,8 @@ def slug_for(rel):
 
 def comments_key(rel):
     """comments are per ARTICLE, proposal or not: 'armenia/yerevan.html' -> 'armenia__yerevan'"""
-    parts = [x for x in rel.replace("\\", "/").split("/") if x and x != "Drafts" and not x.startswith(".")]
-    return "__".join(re.sub(r"[^A-Za-z0-9-]+", "-", x.rsplit(".", 1)[0]) for x in parts[-2:])
+    parts = [x for x in rel.replace("\\", "/").split("/") if x and x not in ("Drafts", ".Full Articles")]
+    return "__".join(re.sub(r"[^A-Za-z0-9-]+", "-", x.lstrip(".").rsplit(".", 1)[0]) for x in parts[-2:])
 
 
 def comments_load(key):
@@ -253,8 +253,44 @@ def task_lines():
 
 
 def comments_save(key, data):
+    """Merge a tab's threads into the store (QA 2026-10-02: two tabs on one article overwrote each
+    other's comments). A thread only on disk stays (another tab's), unless this tab deleted it;
+    a thread both have takes this tab's text and resolved flag, every reply from both, and never
+    goes back from answered to sent (Claude's answer may have landed since the tab loaded)."""
     COMMENTS.mkdir(parents=True, exist_ok=True)
-    (COMMENTS / f"{key}.json").write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
+    f = COMMENTS / f"{key}.json"
+    try:
+        cur = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"threads": []}
+    except Exception:
+        cur = {"threads": []}
+    posted = {t["id"]: t for t in data.get("threads", []) if isinstance(t, dict) and t.get("id")}
+    deleted = set(data.get("deleted") or []) | set(cur.get("deleted") or [])
+    DONE = ("answered", "applied", "offered", "proposed", "rejected", "failed")
+    merged, seen = [], set()
+    for t in cur.get("threads", []):
+        tid = t.get("id")
+        if tid in deleted:
+            continue
+        p = posted.get(tid)
+        if p is None:
+            merged.append(t)
+        else:
+            ids = {r.get("id") for r in p.get("replies", [])}
+            extra = [r for r in t.get("replies", []) if r.get("id") not in ids]
+            if extra:
+                p = dict(p, replies=sorted(p.get("replies", []) + extra, key=lambda r: r.get("created", "")))
+            if t.get("status") in DONE and p.get("status") == "sent":
+                p = dict(p, **{k: t[k] for k in ("status", "edit", "edits") if k in t})
+            merged.append(p)
+        seen.add(tid)
+    for tid, p in posted.items():
+        if tid not in seen and tid not in deleted:
+            merged.append(p)
+    out = dict(data, threads=merged, deleted=sorted(deleted)[-300:])
+    tmp = f.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(f)
+    return out
 
 
 def merge_decisions(slug, partial):
@@ -266,7 +302,9 @@ def merge_decisions(slug, partial):
             cur.pop(k, None)
         else:
             cur[k] = bool(v)
-    (d / "decisions.json").write_text(json.dumps(cur, indent=1), encoding="utf-8")
+    tmp = d / "decisions.json.tmp"
+    tmp.write_text(json.dumps(cur, indent=1), encoding="utf-8")
+    tmp.replace(d / "decisions.json")
     return cur
 
 

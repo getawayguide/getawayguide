@@ -257,7 +257,7 @@ def _autofix_preview(log):
         # The APPLY does not, so printing the command while the tree is dirty would hand over
         # a command that is about to refuse. Say what has to happen first instead.
         dirty = subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=str(ROOT),
-                               capture_output=True, text=True, timeout=60).stdout.split()
+                               capture_output=True, text=True, timeout=60).stdout.splitlines()
         if dirty:
             log("   to apply, commit or stash these first: " + ", ".join(dirty[:3])
                 + (" +%d more" % (len(dirty) - 3) if len(dirty) > 3 else ""))

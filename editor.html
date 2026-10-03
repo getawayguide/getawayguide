@@ -100,6 +100,25 @@
       display: flex;
       align-items: center;
       gap: .75rem;
+      flex: 0 0 auto;
+    }
+    .header-left { min-width: 0; }
+    @media (max-width: 1140px) {                 /* QA 2026-10-02: Save was clipped off the right edge at 1024 */
+      .header-actions { gap: .4rem; }
+      .btn { padding: .55rem .7rem; letter-spacing: .1em; white-space: nowrap; }
+      #file-name { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .file-label { display: none; }
+      .editor-wrap { min-width: 0; }
+      #toolbar.toolbar { flex-wrap: wrap; }
+      /* the header's two halves could not shrink (its left half: logo + suite tabs + file name), so the
+         app grid grew to 1118 px and Save was cut off at 1024; the left half now gives way first */
+      body { grid-template-columns: minmax(0, 1fr); }
+      #app-editor, #app-editor > header { min-width: 0; }
+      #app-editor .header-left { flex: 1 1 auto; min-width: 0; overflow: hidden; gap: .5rem; }
+      #app-editor .header-left nav { flex: 0 0 auto; }
+      #app-editor .app-tabs a { padding-left: .5rem; padding-right: .5rem; letter-spacing: 0; }
+      #app-editor .suite-sep { display: none; }
+      #file-name { max-width: 110px; min-width: 72px; flex: 0 1 auto; }
     }
 
     .btn {
@@ -1694,7 +1713,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 </div>
 
 <script src="launch.js?v=756d2d49" defer></script>
-<script src="review.js?v=de7a44fa" defer></script>
+<script src="review.js?v=2a193f51" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1858,7 +1877,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <button class="suite-logo" data-switcher aria-haspopup="true">Photo&nbsp;<b>Library</b><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
   <span class="stat" id="hdr-albums" hidden></span>
   <span class="spacer"></span>
-  <button class="act-btn" id="pick-open" onclick="openPicks()" title="Review everything you've shortlisted" hidden>
+  <button class="act-btn" id="pick-open" onclick="openPicks()" title="Review everything you've shortlisted">
     &#9733; Blog Picks <span id="pick-count"></span>
   </button>
   <button class="act-btn" id="act-open" onclick="openActivity()">
@@ -1951,6 +1970,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <div id="maps-offline" hidden>
     <b>The map editor isn't running.</b><br>
     Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then try again.
+    <br><button type="button" onclick="const f = document.getElementById('maps-frame'); f.dataset.loaded = ''; loadMaps();">Try again</button>
   </div>
 </div>
 
@@ -3131,6 +3151,30 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     return f.textContent.replace(/\u200b/g, '').trim();
   }
   window.__textBetween = textBetween;
+  // QA 2026-10-02: Backspace at the start of the block under a photo (or Delete at the end of the block
+  // above one) let the browser merge the prose INTO the photo frame, or into the heading above it with
+  // the placeholders deleted, and the file was saved that way. At a block edge beside a photo the key
+  // does nothing, as in Word, where the caret just stops at the picture.
+  document.getElementById('editor').addEventListener('keydown', function (e) {
+    if ((e.key !== 'Backspace' && e.key !== 'Delete') || e.isComposing) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return;
+    const r = sel.getRangeAt(0), edEl = this;
+    const at = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
+    if (!at || !edEl.contains(at)) return;
+    let box = at.closest('li');
+    if (!box) { box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement; }
+    if (!box || box === edEl || box.matches(ENTER_OBJ)) return;
+    const edge = document.createRange();
+    if (e.key === 'Backspace') { edge.setStart(box, 0); edge.setEnd(r.startContainer, r.startOffset); }
+    else { edge.setStart(r.startContainer, r.startOffset); edge.setEnd(box, box.childNodes.length); }
+    const f = edge.cloneContents(); f.querySelectorAll('[contenteditable="false"], button').forEach(x => x.remove());
+    if (f.textContent.replace(/\u200b/g, '').trim() || f.querySelector(ENTER_OBJ)) return;   // not at the edge, or an object of its own in between
+    const nb = e.key === 'Backspace' ? box.previousElementSibling : box.nextElementSibling;
+    const isObj = n => n && (n.matches(ENTER_OBJ) || (n.querySelector(ENTER_OBJ) && !n.textContent.replace(/[\u200b×✕\s]/g, '')));
+    if (!isObj(nb)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  }, true);
   document.getElementById('editor').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
     const sel = window.getSelection();
@@ -3152,10 +3196,23 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     e.preventDefault();
     e.stopImmediatePropagation();
     if (window.__History) window.__History.checkpoint();
-    // a bare <div> inside an entry; the save turns it into a <p>, the site's own idiom
-    const blank = document.createElement(obj.parentElement === edEl ? 'p' : 'div');
+    // a bare <div> inside an entry; the save turns it into a <p>, the site's own idiom.
+    // A photo inside a paragraph (<p><span portrait>) is a block-level edit: the paragraph is split
+    // around the photo and the blank <p> goes between (QA 2026-10-02: a <div> inside the <p> was
+    // invalid HTML, and every undo re-parsed it into something else).
+    const host = obj.parentElement;
+    const blank = document.createElement(host === edEl || !host.closest('li') ? 'p' : 'div');
     blank.innerHTML = '<br>';
-    obj.before(blank);
+    if (host !== edEl && !host.closest('li') && host.parentElement === edEl) {
+      const before = []; for (let n = host.firstChild; n && n !== obj; n = n.nextSibling) before.push(n);
+      const hasText = before.some(n => (n.textContent || '').replace(/\u200b/g, '').trim());
+      if (hasText) {                                 // split: text | blank | photo + the rest
+        const tail = host.cloneNode(false); tail.removeAttribute('id');
+        while (obj.nextSibling) tail.appendChild(obj.nextSibling);
+        tail.insertBefore(obj, tail.firstChild);
+        host.after(blank, tail);
+      } else host.before(blank);
+    } else obj.before(blank);
     const c = document.createRange(); c.setStart(blank, 0); c.collapse(true);
     sel.removeAllRanges(); sel.addRange(c);
     setDirty(true);
@@ -3314,10 +3371,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // itself must not reach the page.
     el.querySelectorAll('li[data-li-style]').forEach(li => li.removeAttribute('data-li-style'));
     // a link on the editor's own local address never reaches the page (see unresolveHref)
+    const localLeft = [];
     el.querySelectorAll('a[href]').forEach(a => {
       const h = a.getAttribute('href'), r = unresolveHref(h);
       if (r !== h) { a.setAttribute('href', r); if (!/^https?:/i.test(r)) { a.removeAttribute('target'); a.removeAttribute('rel'); } }
+      else if (/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i.test(h)) localLeft.push(h);
     });
+    if (localLeft.length) setTimeout(() => alert(`${localLeft.length} link${localLeft.length === 1 ? ' points' : 's point'} at this computer, not the site, and will be dead once published:\n` + localLeft.slice(0, 4).join('\n') + (localLeft.length > 4 ? '\n…' : '')), 0);
     // 0. Leftover find-marks (defensive)
     el.querySelectorAll('mark.find-hit').forEach(unwrapEl);
     el.querySelectorAll('mark.lint').forEach(unwrapEl);        // prose-check highlights are editor chrome
@@ -3743,6 +3803,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
     const serializer = new XMLSerializer();
     let newHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    // a page whose table of contents is a template in its own script (not drawn from the headings):
+    // its entries follow the headings' current text (QA 2026-10-02: a renamed heading left it stale)
+    if (newHTML.includes('class="toc-link"')) {
+      const escT = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      editor.querySelectorAll('h2[id], h3[id]').forEach(h => {
+        const t = escT(h.textContent.trim()), id = h.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        newHTML = newHTML.replace(new RegExp('(<a (?:[^>]*\\s)?href="#' + id + '"(?:\\s[^>]*)?class="toc-link"[^>]*>)[^<]*(</a>)', 'g'), '$1' + t + '$2')
+                         .replace(new RegExp('(<a (?:[^>]*\\s)?class="toc-link"(?:\\s[^>]*)?href="#' + id + '"[^>]*>)[^<]*(</a>)', 'g'), '$1' + t + '$2');
+      });
+    }
     return { newHTML, saveEl };
   }
 
@@ -3814,11 +3884,11 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     try {
       const here = location.href.split('#')[0];
       if (h.startsWith(here + '#')) return h.slice(here.length);              // same page: #section
+      const u = new URL(h);
+      if (/^(127\.0\.0\.1|localhost)$/.test(u.hostname) && /^\/(browser|editor)/.test(u.pathname)) return u.hash || h;   // the editor's own page: only its #section means anything
       const base = new URL('.', location.href).href;
       if (h.startsWith(base) && !h.slice(base.length).split(/[?#]/)[0].includes('/')) return h.slice(base.length);   // a sibling article
-      const u = new URL(h);
       if (/^(127\.0\.0\.1|localhost)$/.test(u.hostname)) {                    // any local editor address
-        if (/^\/(browser|editor)/.test(u.pathname)) return u.hash || h;
         const p = decodeURIComponent(u.pathname.replace(/^\/(site\/)?/, ''));
         if (p && !p.includes('/')) return p + u.hash;                             // same folder only; never guess a path
       }
@@ -4642,13 +4712,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const savedScroll = scroller ? scroller.scrollTop : 0;
     const sel = window.getSelection();
     const token = ++_spellWalkToken;   // cancels any earlier walk still running
+    const kept = sel && sel.rangeCount && editor.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;   // where the caret was
+    const putBack = () => { if (!kept) return; try { sel.removeAllRanges(); sel.addRange(kept); } catch (e) {} };
     editor.focus();
     // The walk moves the caret every 30 ms for blocks x 30 ms (3.4 s on a long
     // field note). Anything the user did in that window was sprayed across
     // whatever block the walk was on, and the final step then threw the caret
     // to the top. The first key, click, wheel or touch now ends the walk where
     // it is; squiggles simply stop at that block.
-    const cancel = () => { if (token === _spellWalkToken) _spellWalkToken++; };
+    const cancel = () => { if (token === _spellWalkToken) { _spellWalkToken++; putBack(); } };
     ['keydown', 'mousedown', 'pointerdown', 'touchstart', 'wheel'].forEach(ev =>
       document.addEventListener(ev, cancel, { capture: true, once: true, passive: true }));
 
@@ -4662,6 +4734,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           r.selectNodeContents(editor); r.collapse(true);
           sel.removeAllRanges(); sel.addRange(r);
         } catch (e) {}
+        putBack();                                   // the walk is done: the caret goes back where it was
         pin();
         return;
       }
@@ -5425,9 +5498,11 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (!country) return '';
     const lc = country.toLowerCase();
     const want = ALBUM_ALIAS[lc] || lc;
-    return names.find(a => albumKey(a) === want)
-        || names.find(a => albumKey(a).startsWith(want))
-        || names.find(a => a.toLowerCase().startsWith(lc))
+    const year = a => +((a.match(/\((\d{4})\)/) || [])[1] || 0);
+    const newest = xs => xs.slice().sort((a, b) => year(b) - year(a))[0] || '';
+    return newest(names.filter(a => albumKey(a) === want))
+        || newest(names.filter(a => albumKey(a).startsWith(want)))
+        || newest(names.filter(a => a.toLowerCase().startsWith(lc)))
         || '';
   }
 
@@ -5668,9 +5743,22 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (next === PK.place) return;
     PK.place = next; $('#pk-place').value = next; pkRender();
   };
+  // thumbnails for the picks grid, three in flight (QA 2026-10-02: 149 at once starved the photo
+  // server for minutes; the library grid already had this cap)
+  const PKQ = { q: [], n: 0 };
+  function pkQueueThumb(im, url) { PKQ.q.push({ im, url }); clearTimeout(PKQ.t); PKQ.t = setTimeout(pkPump, 0); }   // after the tiles are in the grid
+  function pkPump() {
+    while (PKQ.n < 3 && PKQ.q.length) {
+      const { im, url } = PKQ.q.shift();
+      if (!im.isConnected) continue;                             // the grid was redrawn: skip stale tiles
+      PKQ.n++;
+      const done = () => { PKQ.n--; im.onload = im.onerror = null; pkPump(); };
+      im.onload = done; im.onerror = done; im.src = url;
+    }
+  }
   function pkRender() {
     const g = $('#pk-grid');
-    g.innerHTML = '';
+    g.innerHTML = ''; PKQ.q.length = 0;
     const used = pkUsedNames();
     const items = PK.place && PK.geo
       ? PK.items.filter(p => placeHit(PK.geo.photos[p.n], PK.place))
@@ -5685,7 +5773,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         div.title = where + (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.'; }
       const im = document.createElement('img');
       im.loading = 'lazy';
-      im.src = API + '/thumb?root=' + PK.root + '&path=' + encodeURIComponent(rel);
+      pkQueueThumb(im, API + '/thumb?root=' + PK.root + '&path=' + encodeURIComponent(rel));
       div.appendChild(im);
       if (pick.note) {
         const n = document.createElement('div');
@@ -5776,6 +5864,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   async function plBrowse(retry = 2) {
     let d;
     const root = PL.root, path = PL.path;      // what THIS call is listing
+    if (retry === 2) {                          // QA 2026-10-02: the previous album stayed on screen under the new name
+      $('#pl-grid').innerHTML = '<div style="padding:1.2rem .5rem;font-size:.8rem;color:#8a8f8c">Loading…</div>';
+      PL.items = []; PL.total = 0; PL.rendered = 0;
+    }
     try {
       d = await (await fetch(`${API}/api/browse?root=${root}&path=${encodeURIComponent(path)}`)).json();
       // the user clicked another tab or folder while this one was loading
@@ -5788,6 +5880,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       // showing nothing
       if (retry > 0) { await new Promise(r => setTimeout(r, 400 * (3 - retry))); return plBrowse(retry - 1); }
       $('#pl-crumbs').textContent = 'Could not list this folder — click its tab to retry.';
+      $('#pl-grid').innerHTML = '<div style="padding:1.2rem .5rem;font-size:.8rem;color:#B4553C">Could not list this folder. Pick it again to retry.</div>';
       return;
     }
     const crumbs = $('#pl-crumbs');
@@ -6118,12 +6211,18 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   }
 
   async function plFetchMore() {
+    if (PL._more) return;                        // QA 2026-10-02: a second click mid-fetch appended the page twice
+    PL._more = true;
+    const root = PL.root, path = PL.path, offset = PL.items.length;
     try {
-      const d = await (await fetch(`${API}/api/browse?root=${PL.root}&path=${encodeURIComponent(PL.path)}&offset=${PL.items.length}`)).json();
-      PL.items = PL.items.concat(d.photos);
+      const d = await (await fetch(`${API}/api/browse?root=${root}&path=${encodeURIComponent(path)}&offset=${offset}`)).json();
+      if (root !== PL.root || path !== PL.path || offset !== PL.items.length) return;   // the album changed meanwhile
+      const key = x => x.rel || x.name || x.path || JSON.stringify(x), seen = new Set(PL.items.map(key));
+      PL.items = PL.items.concat((d.photos || []).filter(x => !seen.has(key(x))));
       PL.total = d.total;
       plRenderMore();
     } catch (e) { /* next click retries */ }
+    finally { PL._more = false; }
   }
 
   // Thumbnails load only when a tile scrolls into view, and AT MOST THREE at
@@ -6194,20 +6293,24 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   async function plPaintPicks(refetch) {
     const album = PL.path && !PL.path.includes('/') ? PL.path : null;
     if (!album) return;
+    const paint = () => {
+      if (PL.path !== album) return;
+      document.querySelectorAll('#pl-grid .pl-ph').forEach(div => {
+        const on = SBP.set.has(div.dataset.name);
+        div.classList.toggle('picked', on);
+        let st = div.querySelector('.pl-pick');
+        if (on && !st) { st = document.createElement('span'); st.className = 'pl-pick'; st.textContent = '★'; div.appendChild(st); }
+        if (!on && st) st.remove();
+      });
+    };
+    if (SBP.album === album) paint();            // the stars known so far, at once; the re-read below refreshes them
     if (refetch || SBP.album !== album) {
       try {
         const d = await (await fetch(API + '/api/picks?album=' + encodeURIComponent(album), { cache: 'no-store' })).json();
         SBP.album = album; SBP.set = new Set((d.picks || []).map(p => p.n));
       } catch (e) { return; }
     }
-    if (PL.path !== album) return;
-    document.querySelectorAll('#pl-grid .pl-ph').forEach(div => {
-      const on = SBP.set.has(div.dataset.name);
-      div.classList.toggle('picked', on);
-      let st = div.querySelector('.pl-pick');
-      if (on && !st) { st = document.createElement('span'); st.className = 'pl-pick'; st.textContent = '★'; div.appendChild(st); }
-      if (!on && st) st.remove();
-    });
+    paint();
   }
   window.__plPaintPicks = plPaintPicks;
 
@@ -6640,7 +6743,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       go.disabled = false;
     }
     function finish(el) {
-      History.touch();
+      History.checkpoint();                      // one undo step for the insert (touch() left a no-op on top)
       setDirty(true);
       closeCropModal();
       go.disabled = false;
@@ -9197,7 +9300,7 @@ async function loadAlbums() {
     // What the card SHOWS: the album's items counted the way the iPhone counts
     // them. Backup files can differ (an original + its edited copy share one
     // file), and showing those read as short on albums that matched the phone.
-    const items = (ver && ver.albumItems) || a.inAlbumItems || files;
+    const items = files ? ((ver && ver.albumItems) || a.inAlbumItems || files) : 0;   // nothing on disk: nothing backed up
     const exp = a.expected || 0;
     // what the album is measured against: your iPhone first, then the album
     // folder, then the photo-only count as a last resort
@@ -9961,7 +10064,7 @@ async function renderSuite() {
   const box = $('#act-ctl');
   let d;
   try { d = await (await fetch(API + '/api/suite')).json(); }
-  catch (e) { box.innerHTML = ''; return; }
+  catch (e) { box.innerHTML = '<div class="act-card" style="margin-bottom:.6rem;color:#8a8f8c">The suite controls did not answer; they come back when the photo server does.</div>'; return; }
   const st = d.status || {}, job = d.job || {};
   const busy = job.name && !job.done;
   const dot = ok => `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;background:${ok ? '#6EC99A' : '#c9694b'}"></span>`;
@@ -10027,15 +10130,19 @@ async function suiteAction(action) {
 }
 
 async function renderActivity() {
+  if (renderActivity._busy) return;                       // QA 2026-10-02: polls piled up 5 deep under load
+  renderActivity._busy = true;
   let d;
   try { d = await (await fetch(API + '/api/backup_activity')).json(); }
   catch (e) {
+    renderActivity._busy = false;
     $('#act-body').innerHTML = '<div id="act-empty">Cannot reach the photo server - retrying every 2s.<br>If this persists, double-click <b>Editor Suite.cmd</b>.</div>';
     return;
   }
 
   // header dot: amber+pulsing while a pass is actively running, green if the
   // watcher is alive but between albums, grey if the watcher itself is dead
+  renderActivity._busy = false;
   const dot = $('#act-dot');
   dot.className = 'pulse' + (d.running ? ' busy' : '');
   dot.style.background = !d.watcherAlive ? '#9a9a9a' : d.running ? '#d9a441' : '#6EC99A';
@@ -10184,7 +10291,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     heroesAlive = false;
     off.hidden = true;
     frame.style.display = '';
-    frame.src = HEROES + '/?embed=1';
+    try { frame.contentWindow.location.replace(HEROES + '/?embed=1'); } catch (e) { frame.src = HEROES + '/?embed=1'; }   // no history entry of its own
     frame.dataset.loaded = '1';
     clearTimeout(heroesProbe);
     heroesProbe = setTimeout(async () => {
@@ -10306,7 +10413,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   function loadMaps() {
     const frame = document.getElementById('maps-frame'), off = document.getElementById('maps-offline');
     if (frame.dataset.loaded) return;
-    frame.src = 'http://127.0.0.1:5002/?suite=1'; frame.dataset.loaded = '1';
+    try { frame.contentWindow.location.replace('http://127.0.0.1:5002/?suite=1'); } catch (e) { frame.src = 'http://127.0.0.1:5002/?suite=1'; } frame.dataset.loaded = '1';
     fetch('http://127.0.0.1:5002/api/maps', { mode: 'no-cors', cache: 'no-store' })
       .then(() => { off.hidden = true; frame.style.display = ''; })
       .catch(() => { off.hidden = false; frame.style.display = 'none'; frame.dataset.loaded = ''; });
@@ -10327,7 +10434,8 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     if (v === 'maps') loadMaps();
     if (v === 'launch' && window.__launchShow) __launchShow();
     try { localStorage.setItem('tb:view', v); } catch (e) {}
-    if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+    if (location.hash !== '#' + v) history[showView._booted ? 'pushState' : 'replaceState'](null, '', '#' + v);   // a step Back can return to
+    showView._booted = true;
     document.querySelectorAll('#applist a').forEach(a =>
       a.classList.toggle('on', a.dataset.view === v));
     if (window.__paintTabs) __paintTabs(v);
@@ -10399,6 +10507,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   window.addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
     if (VIEWS.includes(h)) showView(h);
+    else { const cur = document.querySelector('.app-tabs a.on'); if (cur) history.replaceState(null, '', '#' + cur.dataset.view); }
   });
   const h = location.hash.slice(1);
   let v = VIEWS.includes(h) ? h : null;
@@ -10544,7 +10653,8 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     box.classList.add('soft');
     const big = bigUrl(t);
     const pre = new Image(); pre.onload = () => { if (my === gen) { img.src = big; box.classList.remove('soft'); } }; pre.src = big;   // then the sharp one
-    [i - 1, i + 1].forEach(k => { const n = tiles[(k + tiles.length) % tiles.length]; if (n) new Image().src = bigUrl(n); });   // the neighbors, so the arrows land on sharp photos
+    clearTimeout(show._pre);                                       // the neighbors, once you have rested on a photo
+    show._pre = setTimeout(() => { if (my !== gen) return; [i - 1, i + 1].forEach(k => { const n = tiles[(k + tiles.length) % tiles.length]; if (n) new Image().src = bigUrl(n); }); }, 450);
     box.querySelector('.sbl-name').textContent = m.name || '';
     paintPick();
     box.querySelector('.sbl-pos').textContent = (i + 1) + ' of ' + tiles.length;
@@ -10593,7 +10703,7 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     else if (window.__plPaintPicks) window.__plPaintPicks(true);
   };
   function open(t) { loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
-  function close() { box.hidden = true; img.removeAttribute('src'); PICKED = null; if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {} }   // picks may have changed
+  function close() { box.hidden = true; img.removeAttribute('src'); PICKED = null; clearTimeout(show._pre); try { const e = document.getElementById('editor'); if (e && e.isContentEditable) e.focus({ preventScroll: true }); } catch (e) {} if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {} }   // picks may have changed
   function use() {
     const t = tiles[i]; close();
     if (t.classList.contains('pk-ph')) { if (t.onclick) t.onclick(); return; }           // the Blog Picks path, unchanged

@@ -1387,9 +1387,9 @@ def comments(key):
         abort(400)
     if request.method == "POST":
         data = request.get_json(force=True) or {"threads": []}
-        _redline.comments_save(key, data)
+        data = _redline.comments_save(key, data)
         _answer_tasks(key, data)
-        return jsonify({"ok": True})
+        return jsonify({"ok": True, "threads": data.get("threads", [])})
     return jsonify(_redline.comments_load(key))
 
 
@@ -1529,6 +1529,20 @@ class _ClaudeWorker:
 _worker = _ClaudeWorker()
 
 
+def _answer_safely(key, tid):
+    """the worker's errors reach the thread as a failed status instead of a silent forever-wait"""
+    try:
+        _worker.answer(key, tid)
+    except Exception as e:
+        try:
+            import claude_answer
+            claude_answer.write_answer(key, tid, "Couldn't answer this one: %s. Edit the comment and send it again." % str(e)[:140], status="failed")
+        except Exception:
+            pass
+    finally:
+        _answering.discard(tid)
+
+
 def _answer_tasks(key, data):
     """A thread sent to Claude is answered here: through the API when .env holds
     ANTHROPIC_API_KEY (tools/claude_answer.py --ask), else by the warm Claude Code worker.
@@ -1541,7 +1555,7 @@ def _answer_tasks(key, data):
                 subprocess.Popen([sys.executable, str(Path(ROOT) / "tools" / "claude_answer.py"), key, t["id"], "--ask"],
                                  cwd=str(ROOT), stdout=log, stderr=log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             else:
-                threading.Thread(target=_worker.answer, args=(key, t["id"]), daemon=True).start()
+                threading.Thread(target=_answer_safely, args=(key, t["id"]), daemon=True).start()
 
 
 def _task_watch():
@@ -1614,7 +1628,7 @@ def _backup_activity_compute():
     in_flight = []
     if BACKUP.is_dir():
         for d in BACKUP.iterdir():
-            if not d.is_dir() or d.name.startswith("_"):
+            if not d.is_dir() or d.name.startswith("_") or d.name.endswith(".replacing"):   # ingest staging is not an album
                 continue
             for sub, album in ((d, d.name), (d / "videos", d.name)):
                 if not sub.is_dir():
@@ -1777,7 +1791,7 @@ def _compute_backup_status():
     out = []
     names = set(st.get("albums", {}))
     if BACKUP.is_dir():
-        names |= {d.name for d in BACKUP.iterdir() if d.is_dir() and not d.name.startswith("_")}
+        names |= {d.name for d in BACKUP.iterdir() if d.is_dir() and not d.name.startswith("_") and not d.name.endswith(".replacing")}
     if shared.is_dir():
         names |= {d.name for d in shared.iterdir()
                   if d.is_dir() and d.name not in
@@ -2539,7 +2553,10 @@ def _run_pipeline(page):
         r = subprocess.run([sys.executable, str(ROOT / "tools" / "draft_images.py"), page],
                            capture_output=True, text=True, cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
         tail = "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-12:])
-        return r.returncode == 0, "$ draft_images.py\n" + tail
+        log = ["$ draft_images.py\n" + tail]
+        if r.returncode == 0:
+            _fit_page(page, log)
+        return r.returncode == 0, "\n\n".join(log)
     log = []
     for tool in PIPELINE:
         args = [sys.executable, str(ROOT / "tools" / tool)]
@@ -2550,7 +2567,22 @@ def _run_pipeline(page):
         log.append(f"$ {tool}\n" + "\n".join(tail))
         if r.returncode != 0:
             return False, "\n\n".join(log)
+    _fit_page(page, log)
     return True, "\n\n".join(log)
+
+
+def _fit_page(page, log):
+    """the two fitters after the six tools (CLAUDE.md image steps 5-6 and the heroes rule): each body
+    photo cut at the width this page draws it, and the hero's per-window files (a hero built in Covers
+    had none until the page was fitted; QA 2026-10-02). Their failures are logged, not fatal."""
+    for tool in ("fit_image_tiers.py", "fit_backgrounds.py"):
+        try:
+            r = subprocess.run([sys.executable, str(ROOT / "tools" / tool), page], capture_output=True, text=True,
+                               cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
+            tail = (r.stdout or r.stderr or "").strip().splitlines()[-2:]
+            log.append(f"$ {tool}\n" + "\n".join(tail))
+        except Exception as e:
+            log.append(f"$ {tool}\nskipped: {e}")
 
 
 # ---- compression after you leave the article -------------------------------------------
@@ -2782,6 +2814,8 @@ def _articles_inventory():
         if r:
             rows.append(r)
     for p in sorted((root / "Drafts" / ".Full Articles").glob("*/*.html")):
+        if p.parts[len(root.parts) + 2].startswith("."):      # a dot-folder is scratch, not a country
+            continue
         r = _article_row(p, p.relative_to(root).as_posix(), "draft")
         if r:
             rows.append(r)
@@ -2821,8 +2855,18 @@ def api_articles():
     """Every article under the Travel Blog folder, live and draft, for the editor's Articles
     panel: no more walking the Windows folder tree to find a page (Kevin, 2026-09-26)."""
     now = time.time()
-    if now - _articles_cache["at"] > 20:
+    if not _articles_cache["rows"]:                              # first ask: build it now
         _articles_cache.update(rows=_articles_inventory(), at=now)
+    elif now - _articles_cache["at"] > 20 and not _articles_cache.get("busy"):
+        # QA 2026-10-02: the panel waited 11-32 s on a re-read of every page; the last list is
+        # served at once and refreshed behind it
+        _articles_cache["busy"] = True
+        def _refresh():
+            try:
+                _articles_cache.update(rows=_articles_inventory(), at=time.time())
+            finally:
+                _articles_cache["busy"] = False
+        threading.Thread(target=_refresh, daemon=True, name="articles-refresh").start()
     return jsonify({"articles": _articles_cache["rows"], "root": str(ROOT)})
 
 

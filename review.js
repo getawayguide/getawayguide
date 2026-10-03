@@ -170,7 +170,7 @@
     // (Kevin, 2026-09-26: "default to photos bar open unless there are any comments to review")
     const pendingReview = state.changes.some(c => state.last[c.id] === undefined) || state.comments.threads.some(t => !t.resolved);
     if (pendingReview) toggle(true);
-    else if (!document.body.classList.contains('photos-open') && typeof window.togglePhotoPanel === 'function') { toggle(false); window.togglePhotoPanel(); }
+    else if (![...document.body.classList].some(k => /-open$/.test(k)) && typeof window.togglePhotoPanel === 'function') { toggle(false); window.togglePhotoPanel(); }
     if (state.changes.length) toast(`${state.changes.length} proposed changes to review`, 4000);
   }
 
@@ -217,7 +217,13 @@
       const i = html.indexOf(key);
       // a find that starts inside a tag (an href, an alt) cannot be wrapped in <del>/<ins>:
       // the marks would land inside the tag and mangle it. It is applied whole instead.
-      if (html.lastIndexOf('<', i) > html.lastIndexOf('>', i)) c.struct = true;
+      if (html.lastIndexOf('<', i) > html.lastIndexOf('>', i)) {
+        // QA 2026-10-02: the chip used to be spliced at the match start, i.e. inside the href, and the
+        // saved file carried the mangled tag. The marked span now starts at the tag's own "<".
+        c.struct = true;
+        spans.push([html.lastIndexOf('<', i), i + key.length, c, key]);
+        continue;
+      }
       spans.push([i, i + key.length, c, key]);
     }
     spans.sort((a, b) => a[0] - b[0] || (b[1] - b[0]) - (a[1] - a[0]));
@@ -315,7 +321,10 @@
   function decide(id, accept, silent) {
     const c = byId(id); if (!c) return;
     const marks = [...ed().querySelectorAll(`[data-id="${id}"]`)];
-    if (!marks.length) { state.st[id] = accept; post(id, accept); if (!silent) renderAll(); return; }
+    if (!marks.length) {
+      if (accept && !silent) { toast('This change is not in the open text, so there is nothing to apply. Reject it, or make the edit by hand.', 6000); return; }
+      state.st[id] = accept; post(id, accept); if (!silent) renderAll(); return;
+    }
     if (H()) H().checkpoint();
     const holder = marks[0].closest('p,li,div.copy,div');
     const ref = marks[0].previousElementSibling || marks[0].parentElement;   // where the change was, once its marks are gone
@@ -392,6 +401,13 @@
     catch (e) { toast('Could not save the decision (server?)'); }
   }
   function syncFromDom() {                   // after undo/redo the DOM is the truth
+    // marks of a change this round no longer tracks (it was accepted, saved and committed): an undo
+    // brought them back, but the file already has the change, so it stays applied here too
+    const orphan = [...ed().querySelectorAll('[data-id]')].filter(m => (m.matches('ins.rl,del.rl,sup.rl-n')) && !byId(m.dataset.id));
+    if (orphan.length) {
+      for (const m of orphan) { if (m.tagName === 'DEL') m.remove(); else if (m.tagName === 'INS') unwrap(m); else m.remove(); }
+      toast('That change is already saved and committed, so it stays. To take it back, open List, show the decided changes and choose Reject instead.', 7000);
+    }
     const changed = {};
     for (const c of state.changes) {
       const present = inDom(c.id);
@@ -410,7 +426,7 @@
     // article leap on each Accept, even when the next change was already on screen
     if (marks[0] && !fromDoc) reveal(marks[0]);
     renderAll();
-    const card = document.querySelector(`.rv-card[data-id="${id}"]`); if (card && state.view === 'list') card.scrollIntoView({ block: 'nearest' });
+    const card = document.querySelector(`.rv-card[data-id="${id}"]`); if (card) card.scrollIntoView({ block: 'nearest' });
   }
   function reveal(el) {                      // the smallest scroll that brings the change into view, with some context
     const sc = document.querySelector('.editor-scroll'); if (!sc) { el.scrollIntoView({ block: 'center' }); return; }
@@ -477,8 +493,17 @@
   // ------------------------------------------------------------------ comments
   let _range = null;
   function captureSelection() { const s = window.getSelection(); if (s && s.rangeCount && !s.isCollapsed && ed().contains(s.anchorNode)) _range = s.getRangeAt(0).cloneRange(); else _range = null; }
+  function rangeText(range) {                 // what findRange() will look for: sup.rl-n and ins.rl left out
+    const w = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT); let out = '', n;
+    while ((n = w.nextNode())) {
+      if (!range.intersectsNode(n) || n.parentElement.closest('sup.rl-n,ins.rl')) continue;
+      const a = n === range.startContainer ? range.startOffset : 0, b = n === range.endContainer ? range.endOffset : n.nodeValue.length;
+      out += n.nodeValue.slice(a, b);
+    }
+    return out;
+  }
   function textAround(range) {
-    const quote = range.toString();
+    const quote = rangeText(range) || range.toString();
     const pre = range.cloneRange(); pre.collapse(true); pre.setStart(ed(), 0);
     const post = range.cloneRange(); post.collapse(false); post.setEnd(ed(), ed().childNodes.length);
     return { quote, before: pre.toString().slice(-40), after: post.toString().slice(0, 40) };
@@ -604,7 +629,7 @@
     let needNote = false;
     document.querySelectorAll('#review-pane .chip.sent .age').forEach(a => {
       const sec = ageSec(a.dataset.since); a.textContent = ' · ' + ageText(sec);
-      if (sec > 90 && !a.closest('.rv-card').querySelector('.wait-note')) needNote = true;
+      if (sec > 120 && !a.closest('.rv-card').querySelector('.wait-note')) needNote = true;
     });
     if (needNote && !state.draft) renderAll();
   }
@@ -637,7 +662,7 @@
       // a task this tab has never seen (another tab, or added while it was closed) may arrive
       // already answered: take it in and let the code below apply its edit in the same pass
       if (!t) {
-        if (!isTask(st)) continue;
+        if (!isTask(st)) { state.comments.threads.push(st); touched = true; continue; }   // another tab's comment
         t = Object.assign({}, st, { status: (st.edit || st.edits) && !['applied', 'rejected', 'offered'].includes(st.status) ? 'sent' : st.status });
         state.comments.threads.push(t); touched = true;
       }
@@ -781,7 +806,7 @@
   }
   function thread(id) { return state.comments.threads.find(t => t.id === id); }
   function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
-  function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); unwrapMark(id); saveComments(); renderAll(); }
+  function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
   function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
   function editText(id, rid, text) { const t = thread(id); if (!t) return; if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
   function editInPlace(tx, text, save) {    // swap the comment text for a box, in the card, no dialog
@@ -839,7 +864,7 @@
   // each level with the text it belongs to. List is Word's Comments pane: everything, scrolling.
   function items() {
     const out = [];
-    const showCh = state.filter !== 'comments' && !ed().classList.contains('rl-final');
+    const showCh = state.filter !== 'comments';
     const showCm = state.filter !== 'changes';
     // only merge when the margin is showing both; filtering to one or the other
     // is a request to see that one on its own
@@ -926,7 +951,8 @@
       host.appendChild(h);
       if (state.showDecided) [...dec].sort((a, b) => a.round === b.round ? a.n - b.n : (a.round < b.round ? 1 : -1)).forEach(x => host.appendChild(decidedCard(x)));
     }
-    if (lost) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${lost} more not found in the open text · see List`; host.appendChild(n); }
+    const lostCh = state.view !== 'list' && state.filter !== 'comments' ? state.hidden.filter(id => state.st[id] === undefined).length : 0;
+    if (lost || lostCh) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${[lostCh && `${lostCh} change${lostCh === 1 ? '' : 's'}`, lost && `${lost} comment${lost === 1 ? '' : 's'}`].filter(Boolean).join(' and ')} not found in the open text · see List`; host.appendChild(n); }
     if (!host.querySelector(':scope > :not(.rv-note):not(.rv-dec-h)')) {
       const e = document.createElement('div'); e.className = 'rv-empty';
       e.textContent = state.slug && !pend.length && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
@@ -1030,7 +1056,7 @@
     if (t.draft) {
       d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
         <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
-      d.querySelector('[data-a="post"]').onclick = () => postDraft(d.querySelector('textarea').value);
+      d.querySelector('[data-a="post"]').onclick = () => { const v = d.querySelector('textarea').value; if (!v.trim()) return toast('Write the comment first.'); postDraft(v); };
       d.querySelector('[data-a="send"]').onclick = () => postDraft(d.querySelector('textarea').value, true);
       d.querySelector('[data-a="cancel"]').onclick = cancelDraft;
       d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') postDraft(e.target.value, e.shiftKey); if (e.key === 'Escape') cancelDraft(); };

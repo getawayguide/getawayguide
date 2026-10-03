@@ -245,6 +245,8 @@ def build(cfg):
             pts = to_canvas(ring); A = cx = cy = 0.0
             for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]):
                 c = x1 * y2 - x2 * y1; A += c; cx += (x1 + x2) * c; cy += (y1 + y2) * c
+            if not A:                             # no such lake loaded (name, or the geojson is missing): no label
+                continue
             wx, wy = cx / (3 * A), cy / (3 * A)
         wx += wl.get("dx", 0) * AFS; wy += wl.get("dy", 0) * AFS
         fs = wl.get("size", 12)

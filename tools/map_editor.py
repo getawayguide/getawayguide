@@ -105,8 +105,11 @@ def _city_render(cfg_path, embed=False, article=None):
     slug0 = json.loads(Path(cfg_path).read_text(encoding="utf-8"))["slug"]
     rasters = [ROOT / "Images" / "web" / "city-maps" / (slug0 + x) for x in (".png", "-mobile.png")]
     keep = {r: r.read_bytes() for r in rasters if r.is_file()} if not embed else {}
+    # a preview only moves pins and labels: the published street raster is reused (QA 2026-10-02:
+    # every open/drag re-rendered it in headless Chromium, 2-5 minutes each)
+    keep_base = (not embed) and all(r.is_file() for r in rasters)
     try:
-        cm.build(str(cfg_path), embed=embed, article=article)
+        cm.build(str(cfg_path), embed=embed, article=article, keep_base=keep_base)
     finally:
         # a PREVIEW must not rewrite the tracked base rasters: build() always regenerates
         # them, and a fresher OSM extract makes every pixel differ. Only a Save keeps them.
@@ -264,15 +267,26 @@ def font_file(name):
 
 @app.route("/api/map/<slug>")
 def api_map(slug):
-    cfg = load_cfg(slug)
-    svg, afs = edit_svg(cfg)
+    try:
+        cfg = load_cfg(slug)
+    except FileNotFoundError:
+        return jsonify(error="No map called " + slug), 404
+    try:
+        svg, afs = edit_svg(cfg)
+    except (ValueError, KeyError, ZeroDivisionError) as e:
+        return jsonify(error="could not build %s: %s" % (slug, e)), 400
     return jsonify(config=cfg, svg=svg, afs=afs, page=page_for(slug))
 
 
 @app.route("/api/preview/<slug>", methods=["POST"])
 def api_preview(slug):
-    cfg = request.get_json()["config"]
-    svg, afs = edit_svg(cfg)
+    cfg = (request.get_json(silent=True) or {}).get("config")
+    if not isinstance(cfg, dict) or not cfg.get("stops"):
+        return jsonify(error="a config with stops is needed"), 400
+    try:
+        svg, afs = edit_svg(cfg)
+    except (ValueError, KeyError, ZeroDivisionError) as e:
+        return jsonify(error="could not build %s: %s" % (slug, e)), 400
     return jsonify(svg=svg, afs=afs)
 
 
@@ -338,7 +352,10 @@ def api_city(slug):
 
 @app.route("/api/city/<slug>/preview", methods=["POST"])
 def api_city_preview(slug):
-    cfg = request.get_json()["config"]
+    cfg = (request.get_json(silent=True) or {}).get("config")
+    if not isinstance(cfg, dict) or not cfg.get("pois"):
+        return jsonify(error="a config with pois is needed"), 400
+    cfg["slug"] = slug                            # the URL names the map; the JSON cannot point at another
     tmp = PREV / f"_edit-{slug}.json"
     PREV.mkdir(parents=True, exist_ok=True)
     tmp.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
@@ -423,7 +440,7 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   .mapbtn.active{background:rgba(45,107,80,.08);color:var(--green);font-weight:600;border-left-color:var(--green)}
   #main{flex:1;display:flex;flex-direction:column;min-width:0}
   #bar{flex:none;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line)}
-  #bar .title{font-weight:600;text-transform:capitalize;font-size:15px}
+  #bar .title{font-weight:600;font-size:15px}
   #bar button{font:inherit;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:999px;padding:8px 16px;cursor:pointer}
   #bar button.ghost{background:#fff;color:var(--ink);border-color:rgba(28,40,33,.16)}
   #bar button.ghost:hover:not(:disabled){background:#F3F2EC}
@@ -522,10 +539,13 @@ function mark(btn){
 
 // ---- city maps: the base raster with the pin overlay; district labels drag, pin labels
 // (orientation maps) click through n -> e -> s -> w; Save rebuilds and re-embeds.
+var GEN=0;   // QA 2026-10-02: every select/preview answer is checked against the map chosen since
 function selectCity(m){
-  cityMode=true;
+  cityMode=true; const my=++GEN;
   ttl.textContent='loading '+m.replace(/-/g,' ')+'… (a first open fetches the map data from OpenStreetMap, up to a minute)';
+  stage.innerHTML='<div id="empty">loading…</div>';
   fetch('/api/city/'+m+'?page='+encodeURIComponent(PAGE)).then(r=>r.json()).then(d=>{
+    if(my!==GEN) return;
     if(d.error){ ttl.textContent='cannot open this map'; stage.innerHTML='<div id="empty">'+d.error.replace(/</g,'&lt;')+'</div>'; return; }
     slug=m; cfg=d.config; dirty=false;
     ttl.textContent=m.replace(/-/g,' ')+' (city map)'; statusEl.textContent='';
@@ -573,15 +593,19 @@ function renderCity(desk){
   root.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
 }
 function previewCity(){
-  statusEl.textContent='rendering…';
+  statusEl.textContent='rendering…'; const my=GEN, s=slug;
   fetch('/api/city/'+slug+'/preview',{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ renderCity(d.desk); statusEl.textContent='unsaved changes'; });
+    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } renderCity(d.desk); statusEl.textContent='unsaved changes'; })
+    .catch(()=>{ if(my===GEN) statusEl.textContent='could not render (server?)'; });
 }
 
 function selectMap(m,btn){
   cityMode=false; document.getElementById('hint').textContent='drag any label or pill · double-click a place label to flip its side';
-  mark(btn);
+  mark(btn); const my=++GEN;
+  ttl.textContent='loading '+m.replace(/-/g,' ')+'…'; stage.innerHTML='<div id="empty">loading…</div>';
   fetch('/api/map/'+m).then(r=>r.json()).then(d=>{
+    if(my!==GEN) return;
+    if(d.error){ ttl.textContent='cannot open this map'; stage.innerHTML='<div id="empty">'+d.error.replace(/</g,'&lt;')+'</div>'; return; }
     slug=m; cfg=d.config; afs=d.afs; dirty=false;
     ttl.textContent=m.replace(/-/g,' '); statusEl.textContent='';
     render(d.svg); saveBtn.disabled=true; resetBtn.disabled=false;
@@ -651,8 +675,10 @@ function flipAnchor(e){
 function markDirty(){ dirty=true; saveBtn.disabled=false; statusEl.textContent='unsaved changes'; }
 
 function preview(){
+  const my=GEN, s=slug; statusEl.textContent='rendering…';
   fetch('/api/preview/'+slug,{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{afs=d.afs; render(d.svg);});
+    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } afs=d.afs; render(d.svg); statusEl.textContent='unsaved changes'; })
+    .catch(()=>{ if(my===GEN) statusEl.textContent='could not render (server?)'; });
 }
 
 saveBtn.onclick=()=>{

@@ -141,6 +141,9 @@ HERO_MIN = 2880          # native px across the crop for a sharp 1440 hero at 2x
 HERO_FAIR = 1920         # below this it is visibly soft even at 1x
 THUMB_W = 340            # strip thumbnail width
 POOL = ThreadPoolExecutor(max_workers=min(8, (os.cpu_count() or 6)))
+# QA 2026-10-02: scan_album() blocked the /photos request behind every warm() job already queued
+# (thousands after a few albums), so a changed album never loaded. Scans measure on their own pool.
+SCAN_POOL = ThreadPoolExecutor(max_workers=3)
 
 # album folder stem -> country page it feeds
 ALBUM_COUNTRY = {
@@ -198,7 +201,7 @@ def albums():
     starred = read_stars()
     out = []
     for p in sorted(BACKUP.iterdir()):
-        if not p.is_dir() or p.name.startswith("_"):
+        if not p.is_dir() or p.name.startswith("_") or p.name.endswith(".replacing"):
             continue
         stem = p.name.split("(")[0].strip().lower()
         # B8: an unmapped folder used its FULL name (year included) as the
@@ -428,7 +431,7 @@ def scan_album(folder, stamp, idx, mapper=None):
              if f.suffix.lower() in EXT and f.is_file()
              and not is_stray_thumb(f.name)]
     fresh = [f for f in files if f.relative_to(BACKUP).as_posix() not in known]
-    new = {r["path"]: r for r in (mapper or POOL.map)(measure, fresh) if r}
+    new = {r["path"]: r for r in (mapper or SCAN_POOL.map)(measure, fresh) if r}
     rows = [known.get(p) or new.get(p) for p in (f.relative_to(BACKUP).as_posix() for f in files)]
     rows = sorted((r for r in rows if r), key=lambda r: r["name"])
     _PHOTO_CACHE[folder.name] = (stamp, rows)
@@ -540,7 +543,7 @@ def save():
     if article and slug:
         import re as _re, subprocess, sys as _sys
         slug = _re.sub(r"[^a-z0-9-]", "", slug.lower())
-        web = SITE / "Images" / "web" / body["country"]
+        web = SITE / "Images" / "web" / _web_country(body["country"])
         src = resolve_src(body["path"])
         if src.is_file() and slug:
             args = [_sys.executable, str(SITE / "tools" / "gen_hero_variants.py"), str(src),
@@ -557,6 +560,18 @@ def save():
 
 
 THUMB_PICKS = SITE / ".tmp" / "thumb_picks.json"
+
+
+def _web_country(name):
+    """the Images/web/<Country> folder this country already has, accents and case aside (Türkiye's
+    album is "Türkiye", its folder "Turkiye"; QA 2026-10-02)"""
+    import unicodedata
+    fold = lambda s: unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+    web = SITE / "Images" / "web"
+    for d in (web.iterdir() if web.is_dir() else []):
+        if d.is_dir() and fold(d.name) == fold(name):
+            return d.name
+    return name
 
 
 def _refit(web_files, pages):
@@ -1006,7 +1021,7 @@ def _current(rel, slot_list):
         elif k == "list" and "not on the home page" in (sl.get("note") or ""):
             out["xy"][k] = _pos_xy(tpos.get("list", "50% 50%"))
         else:
-            out["xy"][k] = _pos_xy(sl.get("pos") or tpos.get(k) or "50% 50%")
+            out["xy"][k] = _pos_xy((tpos.get(k) if not sl.get("img") else None) or sl.get("pos") or tpos.get(k) or "50% 50%")
     card_ar = None
     if crop:                                     # the site's crops are on the card image, not the photo
         try:
@@ -1578,7 +1593,9 @@ window.addEventListener('message', async ev => {
 function articleAlbum() {
   const d = ARTICLE;
   if (!d || !$('album').options.length) { applyArticle(); return; }
-  const opt = d.country && [...$('album').options].find(o => (o.dataset.country || '').toLowerCase() === d.country.toLowerCase());
+  const fold = s => (s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();   // Türkiye = Turkiye
+  const opts = [...$('album').options].filter(o => o.value !== '__article__');
+  const opt = d.country && (opts.find(o => fold(o.dataset.country) === fold(d.country)) || opts.find(o => fold(o.value).startsWith(fold(d.country))));
   if (opt && $('album').value !== opt.value) { $('album').value = opt.value; loadStrip(); }
   else applyArticle();
 }
@@ -1635,6 +1652,12 @@ async function loadStrip() {
   if (!STRIP_CACHE) { STRIP_CACHE = new Map(); STRIP_GEN = 0; }
   if (album === '__article__') { country = ARTICLE ? ARTICLE.country : country; STRIP_CACHE.delete('__article__'); }
   const my = ++STRIP_GEN, want = album;
+  const ctx = want + '|' + (ARTICLE ? ARTICLE.rel : '');
+  if (window.__stripCtx !== undefined && window.__stripCtx !== ctx) {   // another album or article: the old photo is not its pick
+    cur = null; picW = 0; crops = { desktop: 50, laptop: 50, phone: 50 }; if (angle) setAngle(0);
+    document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
+  }
+  window.__stripCtx = ctx;
   if (STRIP_CACHE.has(want)) { ALL = STRIP_CACHE.get(want); render(true); }
   else $('strip').textContent = 'Loading…';
   let rows;
@@ -1903,6 +1926,7 @@ function pick(t, allSlots) {
   document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
   t.classList.add('on');
   OG = null;                     // the share image is the cards' photo (Kevin, 2026-09-30)
+  if (angle) setAngle(0);        // a tilt belongs to one photo (QA 2026-10-02: it carried over); a saved pick sets its own after this
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
           tier: t.dataset.tier, ar: tileAr(t) };
   crops = { desktop: 50, laptop: 50, phone: 50 };
@@ -2184,7 +2208,7 @@ $('save').onclick = async () => {
       toast('Hero built. The article editor has the new hero; save the article to keep it.');
     }
   }
-  toast('Saved to ' + r.saved);
+  if (!(r && r.built)) toast(ARTICLE ? 'Pick saved.' : 'Pick saved for ' + country + '.');   // a built hero keeps its own message
   const keep = $('album').value;
   await loadAlbums.reload(keep);
 };

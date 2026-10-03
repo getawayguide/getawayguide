@@ -37,12 +37,15 @@ PATTERNS = Path.home() / ".claude/projects/c--Users-kevin-OneDrive-Documents-Tra
 
 def article_for(key):
     """'armenia__orgov-observatory' -> the draft or live file"""
+    if "__" not in key:
+        raise ValueError("comments key %r names no country folder" % key)
     country, stem = key.split("__", 1)
-    for p in (ROOT / "Drafts" / ".Full Articles" / country / (stem + ".html"),
-              ROOT / "Drafts" / country / (stem + ".html"), ROOT / country / (stem + ".html")):
-        if p.exists():
-            return p
-    raise SystemExit("no article for " + key)
+    for c in (country, "." + country):                     # a dot-folder keeps its name in the key, minus the dot
+        for p in (ROOT / "Drafts" / ".Full Articles" / c / (stem + ".html"),
+                  ROOT / "Drafts" / c / (stem + ".html"), ROOT / c / (stem + ".html")):
+            if p.exists():
+                return p
+    raise ValueError("no article for " + key)
 
 
 def env_key(name):

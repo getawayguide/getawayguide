@@ -61,7 +61,7 @@ def find_feature(gj, iso3):
         codes = {props.get(k) for k in ("ADM0_A3", "ISO_A3", "SOV_A3", "GU_A3")}
         if iso3 in codes:
             return feat
-    raise SystemExit(f"Country code {iso3} not found in dataset")
+    raise ValueError(f"Country code {iso3} not found in dataset")
 
 
 def extract_rings(feat):
