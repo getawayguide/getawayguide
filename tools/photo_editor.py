@@ -931,9 +931,13 @@ def api_sources_remove():
 def api_photo_meta():
     p = source_path(request.args["root"], request.args["path"])
     try:
-        with Image.open(p) as im:
-            im = ImageOps.exif_transpose(im)
+        with Image.open(p) as im:            # the header only: exif_transpose() decoded the whole HEIC (1-8 s)
             w, h = im.size
+            try:
+                if int(im.getexif().get(0x0112, 1) or 1) in (5, 6, 7, 8):
+                    w, h = h, w                  # stored sideways: upright it is the other way round
+            except Exception:
+                pass
     except Exception:
         return jsonify({"error": "unreadable"}), 415
     out = {"w": w, "h": h,
@@ -1003,11 +1007,21 @@ def thumb():
     flip = request.args.get("flip") or None
     key = f"{p}-{p.stat().st_mtime_ns}-{size}-{rot}-{flip}"
     cache = THUMBS / (re.sub(r"\W", "_", key)[-120:] + ".jpg")
+    # A backed-up photo is decoded ONCE, into the library's 400 px copy, and every smaller grid tile
+    # is cut from that (Kevin, 2026-10-02: 13,773 of the albums' photos are HEIC originals with no JPEG
+    # twin, and the sidebar's 320 px tile and the library's 400 px one each decoded the full 24 MP file)
+    shared = None
+    if size <= 2000 and not rot and not flip:
+        try:
+            if BACKUP.resolve() in p.parents:
+                shared = _build_bthumb(p, 400 if size <= 400 else 2000)
+        except Exception:
+            shared = None
     if not cache.exists():
         with _thumb_gate:
             if not cache.exists():
                 try:
-                    im = ImageOps.exif_transpose(Image.open(p))
+                    im = Image.open(shared) if shared else ImageOps.exif_transpose(Image.open(p))
                 except Exception:
                     abort(415)
                 icc = im.info.get("icc_profile")

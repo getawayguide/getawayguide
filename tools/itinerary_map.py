@@ -77,6 +77,55 @@ def load_geojson():
         return _GEOJSON_CACHE
 
 
+_OUTLINES = {}
+_LAKES_CACHE = None
+
+
+def _outline(iso3, keep, kc, simplify):
+    """(K, simplified rings) for a country outline: the costly part of a build (77 s of a 78 s Australia
+    render was Douglas-Peucker), cached in memory and in .tmp/outline_cache/ by everything that shapes it
+    and the dataset's own time, so a re-render or a map editor drag never simplifies the same coast twice."""
+    import hashlib
+    src = DATA_10M if os.path.exists(DATA_10M) else None
+    stamp = os.path.getmtime(src) if src and os.path.exists(src) else 0
+    key = hashlib.sha1(json.dumps([iso3.upper(), keep, kc, simplify, stamp]).encode()).hexdigest()[:16]
+    if key in _OUTLINES:
+        return _OUTLINES[key]
+    disk = os.path.join(ROOT, ".tmp", "outline_cache", key + ".json")
+    if os.path.exists(disk):
+        try:
+            d = json.load(open(disk, encoding="utf-8"))
+            _OUTLINES[key] = (d["K"], [[tuple(pt) for pt in r] for r in d["rings"]])
+            return _OUTLINES[key]
+        except Exception:
+            pass
+    gj = load_geojson()
+    feat = co.find_feature(gj, iso3)
+    rings = co.extract_rings(feat)
+    areas = [co.ring_area(r) for r in rings]
+    big = max(areas)
+    rings = [r for r, a in zip(rings, areas) if a >= big * keep]
+    # keep_containing: [lat, lon] — keep only the island whose bbox holds this
+    # point (drops every other landmass, e.g. show Bali alone within IDN).
+    if kc:
+        klat, klon = kc
+        sel = [r for r in rings
+               if min(p[0] for p in r) <= klon <= max(p[0] for p in r)
+               and min(p[1] for p in r) <= klat <= max(p[1] for p in r)]
+        rings = sel or rings
+    lats = [pt[1] for r in rings for pt in r]
+    K = math.cos(math.radians((max(lats) + min(lats)) / 2.0))
+    pr = [[(pt[0] * K, -pt[1]) for pt in r] for r in rings]
+    pr = co.simplify_rings(pr, simplify)
+    _OUTLINES[key] = (K, pr)
+    try:
+        os.makedirs(os.path.dirname(disk), exist_ok=True)
+        json.dump({"K": K, "rings": pr}, open(disk, "w", encoding="utf-8"))
+    except Exception:
+        pass
+    return K, pr
+
+
 def build(cfg):
     P = dict(DEFAULT_PALETTE, **cfg.get("palette", {}))
     country_w = cfg.get("country_width", 780)
@@ -85,27 +134,9 @@ def build(cfg):
     simplify = cfg.get("simplify", 150)
     smooth = cfg.get("smooth", True)
 
-    gj = load_geojson()
-    feat = co.find_feature(gj, cfg["iso3"])
-    rings = co.extract_rings(feat)
-    areas = [co.ring_area(r) for r in rings]
-    big = max(areas)
     keep = cfg.get("area_keep", co.AREA_KEEP_RATIO)  # lower to keep small islands
-    rings = [r for r, a in zip(rings, areas) if a >= big * keep]
-    # keep_containing: [lat, lon] — keep only the island whose bbox holds this
-    # point (drops every other landmass, e.g. show Bali alone within IDN).
     kc = cfg.get("keep_containing")
-    if kc:
-        klat, klon = kc
-        sel = [r for r in rings
-               if min(p[0] for p in r) <= klon <= max(p[0] for p in r)
-               and min(p[1] for p in r) <= klat <= max(p[1] for p in r)]
-        rings = sel or rings
-
-    lats = [pt[1] for r in rings for pt in r]
-    K = math.cos(math.radians((max(lats) + min(lats)) / 2.0))
-    pr = [[(pt[0] * K, -pt[1]) for pt in r] for r in rings]
-    pr = co.simplify_rings(pr, simplify)
+    K, pr = _outline(cfg["iso3"], keep, kc, simplify)
 
     xs = [p[0] for r in pr for p in r]; ys = [p[1] for r in pr for p in r]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
@@ -227,7 +258,10 @@ def build(cfg):
     _lake_rings = {}
     if cfg.get("lakes") and os.path.exists(LAKES):
         want = {n.lower() for n in cfg["lakes"]}
-        for f in json.load(open(LAKES, encoding="utf-8"))["features"]:
+        global _LAKES_CACHE
+        if _LAKES_CACHE is None:                  # 5 MB: parsed once per process, not once per build
+            _LAKES_CACHE = json.load(open(LAKES, encoding="utf-8"))["features"]
+        for f in _LAKES_CACHE:
             if (f["properties"].get("name") or "").lower() not in want:
                 continue
             g = f["geometry"]

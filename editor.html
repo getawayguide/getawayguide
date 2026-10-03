@@ -6262,9 +6262,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   }
   function badge(div, rel) {
+    // the V / H letter this fed is gone (mark() returns at once), so no request: each one fully
+    // decoded a HEIC on the server and a "Use this photo" queued behind them (2026-10-02)
     if (PL.meta[rel]) return mark(div, PL.meta[rel]);
-    metaQ.push({ div, rel });
-    pumpMeta();
   }
   function mark(div, m) {
     if (div.querySelector('.b')) return;
@@ -7374,8 +7374,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       glSetup(full, dispW, dispH);
       init(natW, natH, dispW, dispH);
       $('#crop-backdrop').classList.add('open');
+      cropOpening(false);
     };
-    full.onerror = () => alert('Could not load the full image for cropping.');
+    full.onerror = () => { cropOpening(false); alert('Could not load the full image for cropping.'); };
     full.src = src;
   }
 
@@ -8470,11 +8471,25 @@ void main(){
 
   // Edit a photo dropped from the library — cropped first, inserted on confirm
   window.openCropForPhoto = openCropForPhoto;
+  // "Opening the photo…" from the click until the crop editor is up (it used to be 8+ s of nothing)
+  function cropOpening(on) {
+    let n = document.getElementById('crop-opening');
+    if (!on) { if (n) n.remove(); clearTimeout(cropOpening._t); return; }
+    if (!n) {
+      n = document.createElement('div'); n.id = 'crop-opening'; n.setAttribute('role', 'status');
+      n.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3000;background:rgba(28,40,33,.92);color:#fff;font:500 .82rem Hanken Grotesk,sans-serif;padding:.8rem 1.2rem;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.25)';
+      document.body.appendChild(n);
+    }
+    n.textContent = 'Opening the photo…';
+    clearTimeout(cropOpening._t); cropOpening._t = setTimeout(() => cropOpening(false), 60000);
+  }
+  window.cropOpening = cropOpening;
   window.dropModes = dropModes;
   let _cropOpenGen = 0;            // last CLICK wins, not last meta response
   async function openCropForPhoto(photo, drop) {
     const cropGen = ++_cropOpenGen;
     if (!fileHandle) { alert('Open an article first.'); return; }
+    cropOpening(true);
     // a stage image for the PREVIOUS photo that is still loading is stale now: without this it
     // landed while this one's metadata was on its way and put that photo (and its file name as
     // the alt text) back in the dialog (2026-09-28)
@@ -8620,7 +8635,7 @@ void main(){
     const prevAngleBaked = keep ? !!CM.angleBaked : false;
     const prevMasks = keep && CM.masks ? CM.masks.map(m => ({ ...m })) : [];
     const src = `${API}/thumb?root=${photo.root}&path=${encodeURIComponent(photo.path)}` +
-                `&s=2200&rot=${rot}${flip ? '&flip=' + flip : ''}`;
+                `&s=2000&rot=${rot}${flip ? '&flip=' + flip : ''}`;   // the preview's cached size; the insert uses the original
     openStage(src, (natW, natH, dispW, dispH) => {
       const modes = dropModes(drop);
       const onImage = !!modes;

@@ -140,7 +140,8 @@ def pick_crops(pick):
 HERO_MIN = 2880          # native px across the crop for a sharp 1440 hero at 2x
 HERO_FAIR = 1920         # below this it is visibly soft even at 1x
 THUMB_W = 340            # strip thumbnail width
-POOL = ThreadPoolExecutor(max_workers=min(8, (os.cpu_count() or 6)))
+POOL = ThreadPoolExecutor(max_workers=min(4, (os.cpu_count() or 4)))   # was 8: decodes starved the requests
+_ACTIVE = {"album": None}            # the album on screen: warm-up for any other is skipped
 # QA 2026-10-02: scan_album() blocked the /photos request behind every warm() job already queued
 # (thousands after a few albums), so a changed album never loaded. Scans measure on their own pool.
 SCAN_POOL = ThreadPoolExecutor(max_workers=3)
@@ -306,8 +307,15 @@ _QLOCK = threading.Lock()
 
 
 def warm(folder, rows):
-    """Cut every thumbnail and score every frame, off the request thread."""
+    """Cut every thumbnail and score every frame, off the request thread, for the album on screen
+    only: a job for an album you have left is dropped when its turn comes (2026-10-02)."""
+    _ACTIVE["album"] = folder
     def one(r):
+        if _ACTIVE["album"] != folder:
+            return
+        with _QLOCK:
+            if r["path"] in _QUALITY.get(folder, {}):
+                return                                   # scored already (a revisit)
         src = BACKUP / r["path"]
         try:
             # focus_score builds the ONE uncropped thumb the strip also serves;
