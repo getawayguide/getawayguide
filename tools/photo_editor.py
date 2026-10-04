@@ -1591,7 +1591,9 @@ def _task_watch():
         time.sleep(2)
 
 
-if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
+# only as the server: a tool that imports this module for its helpers (the ingest, the backup) must
+# not answer comments or compress pages on the side (2026-10-03)
+if __name__ == "__main__" and os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
     threading.Thread(target=_task_watch, daemon=True, name="task-watch").start()
     if not _env_key("ANTHROPIC_API_KEY"):
         threading.Thread(target=_worker.warm, daemon=True, name="claude-warm").start()   # boot the worker with the editor
@@ -2616,7 +2618,7 @@ def _fit_page(page, log):
 # restart does not forget it.
 OPEN_GRACE = 75
 _cq_lock = threading.Lock()
-_cq_open = {}                                   # rel -> time of the last heartbeat
+_cq_open = {}                                   # rel -> {tab id: time of that tab's last heartbeat}
 _cq_state = {"running": None, "last": None}
 CQ_FILE = photo_suite.META / "compress_queue.json"
 
@@ -2637,7 +2639,9 @@ def _cq_save(q):
 
 
 def _cq_is_open(rel, now):
-    return now - _cq_open.get(rel, 0) < OPEN_GRACE
+    # open while ANY tab still reports it: one tab closing used to release a page a second tab
+    # (the review tab, a test run) still had open, and its photos were re-cut under it (2026-10-03)
+    return any(now - t < OPEN_GRACE for t in _cq_open.get(rel, {}).values())
 
 
 def _cq_ready(rel, q, now):
@@ -2688,7 +2692,9 @@ def _cq_worker():
                                  "log": "worker error: %s" % e}
 
 
-if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
+# only as the server, which is the one process that knows which article is open: the iCloud ingest
+# imports this module, and its copy of the worker compressed a page under the open editor (2026-10-03)
+if __name__ == "__main__" and os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
     threading.Thread(target=_cq_worker, daemon=True, name="compress-queue").start()
 
 
@@ -2697,14 +2703,15 @@ def api_pipeline_queue():
     """The editor's save: note the page, compress later."""
     if request.method == "OPTIONS":
         return "", 204
-    page = (request.get_json(force=True) or {}).get("page") or ""
+    body = request.get_json(force=True) or {}
+    page = body.get("page") or ""
     if not page or ".." in page or not (ROOT / page).is_file():
         abort(400)
     with _cq_lock:
         q = _cq_load()
         q[page] = {"queued": time.time(), "tries": 0}
         _cq_save(q)
-        _cq_open[page] = time.time()             # the save came from the open editor
+        _cq_open.setdefault(page, {})[str(body.get("tab") or "_")] = time.time()   # the save came from the open editor
     return jsonify({"ok": True, "queued": sorted(q)})
 
 
@@ -2715,12 +2722,14 @@ def api_editor_open():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True, silent=True) or {}
-    page = d.get("page") or ""
+    page, tab = d.get("page") or "", str(d.get("tab") or "_")
     with _cq_lock:
         if d.get("closing"):
-            _cq_open.pop(page, None)
+            _cq_open.get(page, {}).pop(tab, None)        # this tab only; another may still have it
+            if not _cq_open.get(page):
+                _cq_open.pop(page, None)
         elif page:
-            _cq_open[page] = time.time()
+            _cq_open.setdefault(page, {})[tab] = time.time()
             _note_recent(page)
     return jsonify({"ok": True, "compressing": _cq_state["running"] == page})
 

@@ -289,8 +289,22 @@ def comments_save(key, data):
     out = dict(data, threads=merged, deleted=sorted(deleted)[-300:])
     tmp = f.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
-    tmp.replace(f)
+    _swap(tmp, f)
     return out
+
+
+def _swap(tmp, dest):
+    """tmp -> dest, retried: OneDrive (or a reader) can hold dest for a moment, and the one
+    PermissionError that caused turned a comment save into a 500 (2026-10-03)"""
+    import time
+    for i in range(6):
+        try:
+            tmp.replace(dest)
+            return
+        except PermissionError:
+            if i == 5:
+                raise
+            time.sleep(0.15 * (i + 1))
 
 
 def merge_decisions(slug, partial):
@@ -304,7 +318,7 @@ def merge_decisions(slug, partial):
             cur[k] = bool(v)
     tmp = d / "decisions.json.tmp"
     tmp.write_text(json.dumps(cur, indent=1), encoding="utf-8")
-    tmp.replace(d / "decisions.json")
+    _swap(tmp, d / "decisions.json")
     return cur
 
 

@@ -2949,6 +2949,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           const blob = await fileH.getFile();
           img.src = URL.createObjectURL(blob);
           shown = true;
+          // the blob is a snapshot of the file: if the file is rewritten before a lazy photo is
+          // drawn (a recompress), the snapshot is dead and the frame stays empty, so re-read it
+          // from the photo server, which serves the file as it is now
+          img.addEventListener('error', () => {
+            img.src = 'http://127.0.0.1:5003/site/' + decodeURIComponent(rawSrc).replace(/^(\.\.\/)+/, '')
+              .split('/').map(encodeURIComponent).join('/');
+          }, { once: true });
         } catch(e) { /* fall through to the server */ }
       }
       if (!shown) {
@@ -4783,7 +4790,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     try {
       const r = await (await fetch(API + '/api/pipeline/queue', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page: rel })
+        body: JSON.stringify({ page: rel, tab: window.__tabId })
       })).json();
       if (!r.ok) throw new Error('not queued');
       const status = document.getElementById('save-status');
@@ -4800,10 +4807,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // switch to another article releases the previous one at once; closing the tab releases
   // it with a beacon (a fetch would be cancelled with the page). The beacon goes as
   // text/plain because a JSON beacon to another origin is refused without a preflight.
+  // Each tab reports under its own id: closing one of two tabs on the same article (the review
+  // tab is a second one) must not release the page while the other still has it (2026-10-03).
+  window.__tabId = window.__tabId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
   (function editorHeartbeat() {
     let cur = null;
+    const TAB = window.__tabId;
     const send = body => fetch(API + '/api/editor/open', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ tab: TAB }, body)) }).catch(() => {});
     async function beat() {
       if (!fileHandle || typeof window.articleRelPath !== 'function') return;
       let rel; try { rel = await window.articleRelPath(); } catch (e) { return; }
@@ -4816,7 +4827,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     document.addEventListener('article-loaded', () => setTimeout(beat, 300));
     window.addEventListener('pagehide', () => {
       if (cur) navigator.sendBeacon(API + '/api/editor/open',
-        new Blob([JSON.stringify({ page: cur, closing: true })], { type: 'text/plain' }));
+        new Blob([JSON.stringify({ page: cur, closing: true, tab: TAB })], { type: 'text/plain' }));
     });
   })();
 
