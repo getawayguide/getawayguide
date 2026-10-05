@@ -2767,6 +2767,36 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   }
   window.__applyMasthead = applyMasthead;
+  // After a save that did NOT redraw the banner (the caret was in it): what the page says now is
+  // what was just written, so the next save must compare against that, not the text from before.
+  // Without this the next save found nothing to replace and the banner fell back to the half-typed
+  // title the earlier save had caught (2026-10-04).
+  function syncMastheadOrig(html) {
+    const m = document.getElementById('ed-masthead');
+    if (!m || m.hidden || !m.__orig) return;
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const h1 = doc.querySelector('h1');
+    if (!h1) return;
+    const hero = h1.closest('.article-hero, .ah-banner, section, header') || null;
+    const lead = (hero || doc).querySelector('.article-lead, .artsub, .fn-hero-sub, .country-hero-desc');
+    m.__orig = { title: h1.textContent.replace(/\s+/g, ' ').trim(), lead: lead ? leadHTML(lead) : null };
+  }
+  window.__syncMastheadOrig = syncMastheadOrig;
+  // A redraw from somewhere else (Covers changing the photo) keeps a title or subtitle that has
+  // been typed but not saved: call before the redraw, then call what it returns.
+  window.__mastheadDraft = function () {
+    const m = document.getElementById('ed-masthead');
+    if (!m || m.hidden || !m.__orig) return null;
+    const h = m.querySelector('[data-mh="title"]'), l = m.querySelector('[data-mh="lead"]');
+    const t = h ? h.textContent : null, ld = l ? l.innerHTML : null;
+    const tc = h && t.replace(/\s+/g, ' ').trim() !== m.__orig.title, lc = l && m.__orig.lead != null && leadHTML(l) !== m.__orig.lead;
+    if (!tc && !lc) return null;
+    return () => {
+      const h2 = m.querySelector('[data-mh="title"]'), l2 = m.querySelector('[data-mh="lead"]');
+      if (tc && h2) h2.textContent = t;
+      if (lc && l2) l2.innerHTML = ld;
+    };
+  };
   // typing in the hero is an edit like any other: Enter does not make a new line
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.closest && e.target.closest('#ed-masthead [data-mh]')) { e.preventDefault(); e.target.blur(); }
@@ -3844,7 +3874,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       setTimeout(() => { window.__saving = false; }, 1500);
       originalHTML = newHTML;
       setDirty(false);
-      { const m = document.getElementById('ed-masthead'); if (m && !m.hidden && window.__renderMasthead && !m.contains(document.activeElement)) __renderMasthead(newHTML); }
+      { const m = document.getElementById('ed-masthead');
+        if (m && !m.hidden && window.__renderMasthead) { if (!m.contains(document.activeElement)) __renderMasthead(newHTML); else window.__syncMastheadOrig(newHTML); } }
       { const sp = document.getElementById('seo-panel'); if (window.__loadSeo && !(sp && sp.contains(document.activeElement))) __loadSeo(new DOMParser().parseFromString(newHTML, 'text/html')); }   // the Search tab shows the saved dates
       // the accepted changes are now in the file; commit the half the editor cannot do
       // itself, the destination side of accepted moves, which live in other articles
@@ -10429,7 +10460,9 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
       html = html.replace(/<\/head>/, '<style id="hero-tiers">\n' + rules + '</style>\n</head>');
     if (html === before) { alert('The picker built the hero files, but this page has no hero block I recognise; nothing changed.'); return; }
     window.__setOriginalHTML(html);
-    if (window.__renderMasthead) __renderMasthead(html);
+    { const keep = window.__mastheadDraft && window.__mastheadDraft();     // a title being typed survives the new photo
+      if (window.__renderMasthead) __renderMasthead(html);
+      if (keep) keep(); }
     setDirty(true);
     const status = document.getElementById('save-status');
     status.textContent = '● Unsaved · hero updated from the picker';
