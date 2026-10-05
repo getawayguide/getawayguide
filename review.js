@@ -34,6 +34,14 @@
   const REVIEWER = 'Claude';
   const $ = id => document.getElementById(id);
   const ed = () => $('editor');
+  // The title and subtitle in the hero banner take comments too (2026-10-04). A thread anchored
+  // there carries anchor.where = 'title' | 'lead'; its highlight lives in the banner, which is
+  // never serialised into the page, so nothing of it can reach the saved article.
+  const mhZone = z => document.querySelector('#ed-masthead [data-mh="' + z + '"]');
+  const zoneOf = n => { const e = n && (n.nodeType === 3 ? n.parentElement : n); const m = e && e.closest ? e.closest('#ed-masthead [data-mh]') : null; return m ? m.dataset.mh : null; };
+  const rootOf = n => { const z = zoneOf(n); return (z && mhZone(z)) || ed(); };
+  const cmQ = sel => ed().querySelector(sel) || document.querySelector('#ed-masthead ' + sel);
+  const cmQA = sel => [...ed().querySelectorAll(sel), ...document.querySelectorAll('#ed-masthead ' + sel)];
 
   const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] }, lint: [], decided: [],
                   active: null, filter: 'all', view: 'contextual', draft: null, hidden: [], hover: null };
@@ -106,6 +114,12 @@
     ed().addEventListener('click', e => {
       const m = e.target.closest('[data-id]'); if (m && (m.classList.contains('rl') || m.classList.contains('rl-n'))) { jump(m.dataset.id, true); return; }
       const c = e.target.closest('mark.cm'); if (c) { focusThread(c.dataset.cm, true); }
+    });
+    document.addEventListener('click', e => {           // a highlight in the title or subtitle opens its thread
+      const c = e.target.closest && e.target.closest('#ed-masthead mark.cm'); if (c) focusThread(c.dataset.cm, true);
+    });
+    document.addEventListener('input', e => {           // typing in the banner moves the text the cards sit beside
+      if (e.target.closest && e.target.closest('#ed-masthead')) { clearTimeout(state._lt); state._lt = setTimeout(layout, 120); }
     });
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.altKey && (e.key === 'm' || e.key === 'M')) { e.preventDefault(); captureSelection(); newComment(); }
@@ -492,9 +506,14 @@
 
   // ------------------------------------------------------------------ comments
   let _range = null;
-  function captureSelection() { const s = window.getSelection(); if (s && s.rangeCount && !s.isCollapsed && ed().contains(s.anchorNode)) _range = s.getRangeAt(0).cloneRange(); else _range = null; }
+  function captureSelection() {
+    const s = window.getSelection();
+    const z = s && s.rangeCount ? zoneOf(s.anchorNode) : null;
+    const ok = s && s.rangeCount && !s.isCollapsed && (z ? zoneOf(s.focusNode) === z : ed().contains(s.anchorNode));   // a banner selection stays in its line
+    _range = ok ? s.getRangeAt(0).cloneRange() : null;
+  }
   function rangeText(range) {                 // what findRange() will look for: sup.rl-n and ins.rl left out
-    const w = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT); let out = '', n;
+    const w = document.createTreeWalker(rootOf(range.startContainer), NodeFilter.SHOW_TEXT); let out = '', n;
     while ((n = w.nextNode())) {
       if (!range.intersectsNode(n) || n.parentElement.closest('sup.rl-n,ins.rl')) continue;
       const a = n === range.startContainer ? range.startOffset : 0, b = n === range.endContainer ? range.endOffset : n.nodeValue.length;
@@ -504,9 +523,12 @@
   }
   function textAround(range) {
     const quote = rangeText(range) || range.toString();
-    const pre = range.cloneRange(); pre.collapse(true); pre.setStart(ed(), 0);
-    const post = range.cloneRange(); post.collapse(false); post.setEnd(ed(), ed().childNodes.length);
-    return { quote, before: pre.toString().slice(-40), after: post.toString().slice(0, 40) };
+    const root = rootOf(range.startContainer), z = zoneOf(range.startContainer);
+    const pre = range.cloneRange(); pre.collapse(true); pre.setStart(root, 0);
+    const post = range.cloneRange(); post.collapse(false); post.setEnd(root, root.childNodes.length);
+    const a = { quote, before: pre.toString().slice(-40), after: post.toString().slice(0, 40) };
+    if (z) a.where = z;                        // 'title' | 'lead': the hero banner, not the article body
+    return a;
   }
   function newComment() {
     if (state.draft) { toast('Another comment is in progress.'); return; }
@@ -520,7 +542,7 @@
   }
   function wrapRange(range, id, draft, kind) {   // one <mark> per text node, so the article's own structure is never touched
     kind = kind || 'cm';
-    const walker = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(rootOf(range.startContainer), NodeFilter.SHOW_TEXT);
     const nodes = []; let n, first = null;
     while ((n = walker.nextNode())) if (range.intersectsNode(n) && n.nodeValue.trim() && !n.parentElement.closest('sup.rl-n')) nodes.push(n);
     for (let t of nodes) {
@@ -533,10 +555,11 @@
     }
     return first;
   }
-  function unwrapMark(id) { ed().querySelectorAll(`mark.cm[data-cm="${id}"]`).forEach(unwrap); }
+  function unwrapMark(id) { cmQA(`mark.cm[data-cm="${id}"]`).forEach(unwrap); }
   function postDraft(text, toClaude) {
     const d = state.draft; if (!d || !text.trim()) return;
-    const m = ed().querySelector(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
+    if (toClaude && d.anchor && d.anchor.where) { toClaude = false; toast('Title and subtitle: left as a comment (live edits work in the article text only).', 4500); }
+    const m = cmQ(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
     const t = { id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] };
     if (toClaude) { t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); }
     state.comments.threads.push(t);
@@ -549,7 +572,7 @@
   // highlight sits in (a whole list when it spans items), marks stripped. And the article is
   // saved first, so the answerer's copy of the rest of the page matches the screen too.
   function liveContext(id) {
-    const marks = [...ed().querySelectorAll(`mark.cm[data-cm="${id}"]`)];
+    const marks = [...cmQA(`mark.cm[data-cm="${id}"]`)];
     if (!marks.length) return '';
     const blocks = [];
     for (const m of marks) {
@@ -585,6 +608,7 @@
                  ['Synonym', 'synonym'], ['Link this', 'link this (Maps pin for a place, my article if I have one)'],
                  ['Look this up', 'look this up and fill it in, with the source in the reply']];
   function quickTask(text, range) {
+    if (zoneOf(range.startContainer)) { _range = range; newComment(); toast('Title and subtitle: left as a comment (live edits work in the article text only).', 4500); return; }
     const a = textAround(range), id = 'c' + Date.now().toString(36);
     wrapRange(range, id, false);
     const t = { id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [],
@@ -610,8 +634,9 @@
     setTimeout(() => document.addEventListener('mousedown', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('mousedown', off); } }), 0);
   }
   document.addEventListener('contextmenu', e => {
-    if (!ed() || !ed().contains(e.target) || !state.rel) return;
-    const s = getSelection(); if (!s.rangeCount || s.isCollapsed || !ed().contains(s.anchorNode)) return;
+    const inBanner = !!(e.target.closest && e.target.closest('#ed-masthead [data-mh]'));
+    if (!ed() || !(ed().contains(e.target) || inBanner) || !state.rel) return;
+    const s = getSelection(); if (!s.rangeCount || s.isCollapsed || !(ed().contains(s.anchorNode) || (inBanner && zoneOf(s.anchorNode) && zoneOf(s.anchorNode) === zoneOf(s.focusNode)))) return;
     e.preventDefault();
     quickMenu(e.clientX, e.clientY, s.getRangeAt(0).cloneRange());
   });
@@ -619,6 +644,7 @@
   const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
+    if (t.anchor && t.anchor.where) { toast('A title or subtitle comment is answered in the next round, not live.', 4500); return; }
     t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit; delete t.edits;
     beforeSend(t).then(saveComments).then(pollTasks); renderAll(); toast('Sent to Claude.');
   }
@@ -757,7 +783,7 @@
     return true;
   }
   function useTaskEdit(t) {
-    const marks = [...ed().querySelectorAll(`mark.cm[data-cm="${t.id}"]`)];
+    const marks = [...cmQA(`mark.cm[data-cm="${t.id}"]`)];
     if (H()) H().checkpoint();
     if (marks.length) {
       marks[0].innerHTML = t.edit.replace; marks.slice(1).forEach(m => { m.textContent = ''; }); marks.forEach(unwrap);
@@ -778,14 +804,25 @@
     catch (e) { toast('Could not save comments (server?)'); }
   }
   function anchorComments() {               // find each unresolved thread's quote in the text and highlight it
-    ed().querySelectorAll('mark.cm:not(.draft)').forEach(unwrap);
+    cmQA('mark.cm:not(.draft)').forEach(unwrap);
     for (const t of state.comments.threads) {
       t.unanchored = false; if (t.resolved) continue;
       const r = findRange(t.anchor); if (r) wrapRange(r, t.id, false); else t.unanchored = true;
     }
   }
+  function anchorBanner() {                // the banner was redrawn (a save, a new hero photo): its highlights are gone, put them back
+    if (!state.comments || !state.comments.threads) return;
+    document.querySelectorAll('#ed-masthead mark.cm:not(.draft)').forEach(unwrap);
+    for (const t of state.comments.threads) {
+      if (t.resolved || !t.anchor || !t.anchor.where) continue;
+      const r = findRange(t.anchor); t.unanchored = !r; if (r) wrapRange(r, t.id, false);
+    }
+    queueLayout();
+  }
   function findRange(anchor) {
-    const walker = document.createTreeWalker(ed(), NodeFilter.SHOW_TEXT);
+    const root = anchor.where ? mhZone(anchor.where) : ed();      // a title/subtitle thread is looked for in the banner only
+    if (!root) return null;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const nodes = []; let text = ''; let n;
     while ((n = walker.nextNode())) { if (n.parentElement.closest('sup.rl-n,ins.rl')) continue; nodes.push([n, text.length]); text += n.nodeValue; }
     let i = -1;
@@ -800,8 +837,8 @@
   }
   function focusThread(id, fromDoc) {
     state.active = id; if (state.filter === 'changes') setFilter('all'); toggle(true);
-    ed().querySelectorAll('mark.cm.cm-hit').forEach(x => x.classList.remove('cm-hit'));
-    const m = ed().querySelector(`mark.cm[data-cm="${id}"]`); if (m) { m.classList.add('cm-hit'); if (!fromDoc) m.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+    cmQA('mark.cm.cm-hit').forEach(x => x.classList.remove('cm-hit'));
+    const m = cmQ(`mark.cm[data-cm="${id}"]`); if (m) { m.classList.add('cm-hit'); if (!fromDoc) m.scrollIntoView({ block: 'center', behavior: 'auto' }); }
     renderAll();
   }
   function thread(id) { return state.comments.threads.find(t => t.id === id); }
@@ -831,7 +868,7 @@
   // two actually overlap in the text, not merely share a paragraph, so the test
   // is a range intersection and never a guess.
   function spanOf(sel) {
-    const els = [...ed().querySelectorAll(sel)];
+    const els = [...ed().querySelectorAll(sel)];      // (the banner is left out on purpose: no tracked change lives there to pair with)
     if (!els.length) return null;
     const r = document.createRange();
     try { r.setStartBefore(els[0]); r.setEndAfter(els[els.length - 1]); } catch (e) { return null; }
@@ -871,8 +908,8 @@
     const { map: paired, taken } = pairUp(showCh && showCm);
     if (showCh) for (const c of pending()) out.push({ kind: 'change', id: c.id, c, threads: paired.get(c.id), el: ed().querySelector(`[data-id="${c.id}"]`) });
     if (showCm) {
-      if (state.draft) out.push({ kind: 'draft', id: state.draft.id, el: ed().querySelector(`mark.cm[data-cm="${state.draft.id}"]`) });
-      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: ed().querySelector(`mark.cm[data-cm="${t.id}"]`) });
+      if (state.draft) out.push({ kind: 'draft', id: state.draft.id, el: cmQ(`mark.cm[data-cm="${state.draft.id}"]`) });
+      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: cmQ(`mark.cm[data-cm="${t.id}"]`) });
     }
     if (showCh && state.view === 'list') for (const id of state.hidden) if (state.st[id] === undefined) out.push({ kind: 'change', id, c: byId(id), dim: true, el: null });
     if (state.filter !== 'changes') for (const f of state.lint) out.push({ kind: 'lint', id: f.id, f, el: f.anchor ? ed().querySelector(`mark.lint[data-lint="${f.id}"]`) : null });
@@ -906,7 +943,7 @@
                            const s = getSelection(); s.removeAllRanges(); s.addRange(r); n.parentElement.scrollIntoView({ block: 'center' }); }
       else if (k === 'photo') ed().querySelector('.img-slot-empty').scrollIntoView({ block: 'center' });
       else if (k === 'maps') mapsPlaceholders()[0].scrollIntoView({ block: 'center' });
-      else if (k === 'wait') { const t = waiting[0]; const m = ed().querySelector(`mark.cm[data-cm="${t.id}"]`); if (m) m.scrollIntoView({ block: 'center' }); }
+      else if (k === 'wait') { const t = waiting[0]; const m = cmQ(`mark.cm[data-cm="${t.id}"]`); if (m) m.scrollIntoView({ block: 'center' }); }
     });
   }
   function renderAll() {
@@ -1089,17 +1126,17 @@
     d.querySelectorAll('[data-a="edit-r"]').forEach(b => b.onclick = e => { e.stopPropagation(); const rp = b.closest('.rp'); const r = t.replies.find(x => x.id === rp.dataset.rid); editInPlace(rp.querySelector('.tx'), r.text, nt => editText(t.id, r.id, nt)); });
     const ta = d.querySelector('.reply textarea');
     if (ta) { on('reply', () => reply(t.id, ta.value)); ta.onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') reply(t.id, ta.value); }; ta.oninput = () => { (state.replyDrafts = state.replyDrafts || {})[t.id] = ta.value; queueLayout(); }; }
-    d.onmouseenter = () => { state.hover = t.id; const m = ed().querySelector(`mark.cm[data-cm="${t.id}"]`); if (m) m.classList.add('cm-hover'); drawLines(); };
-    d.onmouseleave = () => { state.hover = null; ed().querySelectorAll('mark.cm.cm-hover').forEach(m => m.classList.remove('cm-hover')); drawLines(); };
+    d.onmouseenter = () => { state.hover = t.id; const m = cmQ(`mark.cm[data-cm="${t.id}"]`); if (m) m.classList.add('cm-hover'); drawLines(); };
+    d.onmouseleave = () => { state.hover = null; cmQA('mark.cm.cm-hover').forEach(m => m.classList.remove('cm-hover')); drawLines(); };
     return d;
   }
   // ------------------------------------------------------------------ margin geometry
   const anchorOf = card => card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
-                         : card.dataset.cm ? ed().querySelector(`mark.cm[data-cm="${card.dataset.cm}"]`)
+                         : card.dataset.cm ? cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`)
                          : card.dataset.lint ? ed().querySelector(`mark.lint[data-lint="${card.dataset.lint}"]`) : null;
   function anchorRect(card) {                // first on-page box of the anchor; a hover preview may hide one of its marks
     const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : card.dataset.cm ? `mark.cm[data-cm="${card.dataset.cm}"]` : `mark.lint[data-lint="${card.dataset.lint}"]`;
-    for (const el of ed().querySelectorAll(sel)) { const r = el.getClientRects()[0]; if (r) return r; }
+    for (const el of (card.dataset.cm ? cmQA(sel) : ed().querySelectorAll(sel))) { const r = el.getClientRects()[0]; if (r) return r; }
     return null;
   }
   function queueLayout() { if (state._raf) return; state._raf = requestAnimationFrame(() => { state._raf = 0; layout(); }); }
@@ -1336,7 +1373,7 @@
   }
   window.review = {
     resnapshot: () => state.rel && snapshotDisk(state.rel),
-    toggle, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
+    toggle, anchorBanner, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
     // test seam: open an article body under a given repo path without a folder handle
     loadFor(rel, html) { state.relOverride = rel; const e = ed(); e.style.display = ''; e.contentEditable = 'true'; e.innerHTML = html; return boot(rel); }
   };
@@ -1475,6 +1512,9 @@ body.review-open #rv-lines{display:block}
 #editor ins.rl-pv-yes,#editor del.rl-pv-no{color:inherit!important;text-decoration:none!important;background:#E3F0E8!important}
 #editor del.rl-pv-no{background:#FBEFC2!important}
 #editor mark.cm{background:#F1EFE8;color:inherit;border-bottom:2px solid #D9BE63;cursor:pointer}
+#ed-masthead mark.cm{background:rgba(245,217,106,.30);color:inherit;border-bottom:2px solid #F5D96A;cursor:pointer;border-radius:1px}
+#ed-masthead mark.cm.draft{background:rgba(126,212,168,.34);border-bottom-color:#7ED4A8}
+#ed-masthead mark.cm.cm-hit,#ed-masthead mark.cm.cm-hover{background:rgba(245,217,106,.62)}
 #editor mark.cm.draft{background:#E3F0E8;border-bottom-color:#2D6B50}
 #editor mark.cm.cm-hit,#editor mark.cm.cm-hover{background:#F5D96A}
 #editor mark.lint{background:#FBEFC2;color:inherit;border-bottom:2px solid #E8C86A;cursor:pointer}
