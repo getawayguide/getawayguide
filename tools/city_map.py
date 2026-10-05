@@ -878,6 +878,8 @@ function setup(cm){
  cm.querySelectorAll('.cmpin').forEach(function(g){var a=g.closest('a');if(a)a.addEventListener('click',function(e){e.preventDefault();});});
  var bub=document.createElement('div'); bub.className='cmbubble'; cm.appendChild(bub);
  var armed=null, armedHref=null;
+ /*  a painted map's pins link to sections of the same article (#id): jump there in this tab */
+ function go(h){if(h.charAt(0)==='#'){var t=document.getElementById(h.slice(1));hideBub();if(t){t.scrollIntoView({behavior:'smooth',block:'start'});try{history.replaceState(null,'',h);}catch(e){}}}else window.open(h,'_blank');}
  function clearAct(){cm.querySelectorAll('.cmpin.active').forEach(function(e){e.classList.remove('active')});}
  function hideBub(){bub.style.display='none';armed=null;armedHref=null;clearAct();}
  function showBub(g){var i=g.getAttribute('data-i'),a=g.closest('a');armedHref=a?a.getAttribute('href'):null;armed=i;
@@ -892,9 +894,9 @@ function setup(cm){
  /*  Tapping the bubble opens the link. Mouse only for 'click' — after a touch the browser */
  /*  replays a compatibility click whose target can be the just-repositioned bubble, which */
  /*  would open a link the user never asked for. Touch is handled explicitly instead. */
- bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)window.open(armedHref,'_blank');});
+ bub.addEventListener('click',function(){if(fromTouch())return;if(armedHref)go(armedHref);});
  bub.addEventListener('touchend',function(e){e.stopPropagation();e.preventDefault();lastTouch=Date.now();
-   if(armedHref)window.open(armedHref,'_blank');},{passive:false});
+   if(armedHref)go(armedHref);},{passive:false});
  function pinAt(cx,cy){var n=document.elementFromPoint(cx,cy); return n&&n.closest?n.closest('.cmpin'):null;}
  /*  ---- momentum ---- */
  var vX=0,vY=0,raf=null;
@@ -951,7 +953,7 @@ function setup(cm){
    else if(moved<10){                           /*  a tap: pin -> name / open, empty map -> double-tap zooms */
      var c=e.changedTouches[0], g=pinAt(c.clientX,c.clientY), now=Date.now();
      if(g){var i=g.getAttribute('data-i');
-       if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+       if(armed===i){if(armedHref)go(armedHref);} else showBub(g);}
      else{
        var p=rel(c);
        if(now-tapT<300&&Math.hypot(p.x-tapX,p.y-tapY)<32){zoomAt(s*1.9,p.x,p.y);tapT=0;}
@@ -973,7 +975,7 @@ function setup(cm){
  window.addEventListener('mouseup',function(e){
    if(fromTouch()){md=false;return;}
    if(md&&moved<6){var g=pinAt(e.clientX,e.clientY);
-     if(g){var i=g.getAttribute('data-i'); if(armed===i){if(armedHref)window.open(armedHref,'_blank');} else showBub(g);}
+     if(g){var i=g.getAttribute('data-i'); if(armed===i){if(armedHref)go(armedHref);} else showBub(g);}
      else hideBub();}
    md=false;});
  vp.addEventListener('wheel',function(e){e.preventDefault();stopGlide();
