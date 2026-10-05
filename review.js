@@ -42,6 +42,25 @@
   const rootOf = n => { const z = zoneOf(n); return (z && mhZone(z)) || ed(); };
   const cmQ = sel => ed().querySelector(sel) || document.querySelector('#ed-masthead ' + sel);
   const cmQA = sel => [...ed().querySelectorAll(sel), ...document.querySelectorAll('#ed-masthead ' + sel)];
+  // General comments (2026-10-04): no text highlighted. anchor.where = 'general', pinned to a section heading
+  // (anchor.section = its id, anchor.sectionText = its text) or, with neither, to the whole article.
+  const isGeneral = a => !!(a && a.where === 'general');
+  const HEADS = 'h2, h3, h4, .fn-sub-hd';
+  function generalEl(a) {
+    if (!a) return null;
+    const e = ed();
+    if (a.section) { const h = e.querySelector('#' + CSS.escape(a.section)); if (h) return h; }
+    if (a.sectionText) { const h = [...e.querySelectorAll(HEADS)].find(x => x.textContent.replace(/\s+/g, ' ').trim() === a.sectionText); if (h) return h; }
+    return e.firstElementChild && !e.firstElementChild.classList.contains('ed-toc') ? e.firstElementChild : (e.querySelector(':scope > :not(.ed-toc)') || e);
+  }
+  function sectionAt(node) {                   // the heading the caret sits under (the heading itself if it is on one)
+    const e = ed(); let el = node && (node.nodeType === 3 ? node.parentElement : node);
+    if (!el || !e.contains(el)) return null;
+    while (el.parentElement && el.parentElement !== e) el = el.parentElement;   // the top-level block
+    for (let n = el; n; n = n.previousElementSibling) if (n.matches && n.matches(HEADS)) return n;
+    return null;
+  }
+  let _caret = null;
 
   const state = { rel: null, slug: null, key: null, changes: [], st: {}, last: {}, comments: { threads: [] }, lint: [], decided: [],
                   active: null, filter: 'all', view: 'contextual', draft: null, hidden: [], hover: null };
@@ -511,6 +530,7 @@
     const z = s && s.rangeCount ? zoneOf(s.anchorNode) : null;
     const ok = s && s.rangeCount && !s.isCollapsed && (z ? zoneOf(s.focusNode) === z : ed().contains(s.anchorNode));   // a banner selection stays in its line
     _range = ok ? s.getRangeAt(0).cloneRange() : null;
+    _caret = s && s.rangeCount && ed().contains(s.anchorNode) ? s.anchorNode : null;
   }
   function rangeText(range) {                 // what findRange() will look for: sup.rl-n and ins.rl left out
     const w = document.createTreeWalker(rootOf(range.startContainer), NodeFilter.SHOW_TEXT); let out = '', n;
@@ -532,12 +552,23 @@
   }
   function newComment() {
     if (state.draft) { toast('Another comment is in progress.'); return; }
-    if (!_range || !_range.toString().trim()) { toast('Select some text to comment on first.'); return; }
+    if (!_range || !_range.toString().trim()) return newGeneral();
     if (state.filter === 'changes') setFilter('all'); toggle(true);
     state.draft = { range: _range, anchor: textAround(_range), id: 'c' + Date.now().toString(36) };
     // Word highlights the anchor while the draft is open
     wrapRange(_range, state.draft.id, true);
     renderAll();
+    setTimeout(() => { const ta = document.querySelector('.rv-cm.draft textarea'); if (ta) ta.focus(); }, 0);
+  }
+  function newGeneral() {                     // nothing selected: a comment on the section the caret is in, or on the article
+    if (state.filter === 'changes') setFilter('all'); toggle(true);
+    const h = sectionAt(_caret);
+    const anchor = { quote: '', before: '', after: '', where: 'general' };
+    if (h) { anchor.section = h.id || ''; anchor.sectionText = h.textContent.replace(/\s+/g, ' ').trim(); }
+    state.draft = { anchor, id: 'c' + Date.now().toString(36), general: true };
+    _caret = null;
+    renderAll();
+    const el = generalEl(anchor); if (el && el.scrollIntoView) { const r = el.getBoundingClientRect(); if (r.top < 0 || r.top > innerHeight) el.scrollIntoView({ block: 'start' }); }
     setTimeout(() => { const ta = document.querySelector('.rv-cm.draft textarea'); if (ta) ta.focus(); }, 0);
   }
   function wrapRange(range, id, draft, kind) {   // one <mark> per text node, so the article's own structure is never touched
@@ -558,6 +589,7 @@
   function unwrapMark(id) { cmQA(`mark.cm[data-cm="${id}"]`).forEach(unwrap); }
   function postDraft(text, toClaude) {
     const d = state.draft; if (!d || !text.trim()) return;
+    if (toClaude && isGeneral(d.anchor)) { toClaude = false; toast('A general comment is answered in the next round, not as a live edit.', 4500); }
     if (toClaude && d.anchor && d.anchor.where) { toClaude = false; toast('Title and subtitle: left as a comment (live edits work in the article text only).', 4500); }
     const m = cmQ(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
     const t = { id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] };
@@ -644,7 +676,7 @@
   const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
-    if (t.anchor && t.anchor.where) { toast('A title or subtitle comment is answered in the next round, not live.', 4500); return; }
+    if (t.anchor && t.anchor.where) { toast((isGeneral(t.anchor) ? 'A general' : 'A title or subtitle') + ' comment is answered in the next round, not live.', 4500); return; }
     t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit; delete t.edits;
     beforeSend(t).then(saveComments).then(pollTasks); renderAll(); toast('Sent to Claude.');
   }
@@ -806,7 +838,7 @@
   function anchorComments() {               // find each unresolved thread's quote in the text and highlight it
     cmQA('mark.cm:not(.draft)').forEach(unwrap);
     for (const t of state.comments.threads) {
-      t.unanchored = false; if (t.resolved) continue;
+      t.unanchored = false; if (t.resolved || isGeneral(t.anchor)) continue;
       const r = findRange(t.anchor); if (r) wrapRange(r, t.id, false); else t.unanchored = true;
     }
   }
@@ -814,7 +846,7 @@
     if (!state.comments || !state.comments.threads) return;
     document.querySelectorAll('#ed-masthead mark.cm:not(.draft)').forEach(unwrap);
     for (const t of state.comments.threads) {
-      if (t.resolved || !t.anchor || !t.anchor.where) continue;
+      if (t.resolved || !t.anchor || !t.anchor.where || isGeneral(t.anchor)) continue;
       const r = findRange(t.anchor); t.unanchored = !r; if (r) wrapRange(r, t.id, false);
     }
     queueLayout();
@@ -839,10 +871,11 @@
     state.active = id; if (state.filter === 'changes') setFilter('all'); toggle(true);
     cmQA('mark.cm.cm-hit').forEach(x => x.classList.remove('cm-hit'));
     const m = cmQ(`mark.cm[data-cm="${id}"]`); if (m) { m.classList.add('cm-hit'); if (!fromDoc) m.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+    else if (!fromDoc) { const t = thread(id), g = t && isGeneral(t.anchor) ? generalEl(t.anchor) : null; if (g) g.scrollIntoView({ block: 'start', behavior: 'auto' }); }
     renderAll();
   }
   function thread(id) { return state.comments.threads.find(t => t.id === id); }
-  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
+  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
   function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
   function editText(id, rid, text) { const t = thread(id); if (!t) return; if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
@@ -908,8 +941,8 @@
     const { map: paired, taken } = pairUp(showCh && showCm);
     if (showCh) for (const c of pending()) out.push({ kind: 'change', id: c.id, c, threads: paired.get(c.id), el: ed().querySelector(`[data-id="${c.id}"]`) });
     if (showCm) {
-      if (state.draft) out.push({ kind: 'draft', id: state.draft.id, el: cmQ(`mark.cm[data-cm="${state.draft.id}"]`) });
-      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: cmQ(`mark.cm[data-cm="${t.id}"]`) });
+      if (state.draft) out.push({ kind: 'draft', id: state.draft.id, el: isGeneral(state.draft.anchor) ? generalEl(state.draft.anchor) : cmQ(`mark.cm[data-cm="${state.draft.id}"]`) });
+      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: isGeneral(t.anchor) ? generalEl(t.anchor) : cmQ(`mark.cm[data-cm="${t.id}"]`) });
     }
     if (showCh && state.view === 'list') for (const id of state.hidden) if (state.st[id] === undefined) out.push({ kind: 'change', id, c: byId(id), dim: true, el: null });
     if (state.filter !== 'changes') for (const f of state.lint) out.push({ kind: 'lint', id: f.id, f, el: f.anchor ? ed().querySelector(`mark.lint[data-lint="${f.id}"]`) : null });
@@ -993,7 +1026,7 @@
     if (!host.querySelector(':scope > :not(.rv-note):not(.rv-dec-h)')) {
       const e = document.createElement('div'); e.className = 'rv-empty';
       e.textContent = state.slug && !pend.length && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
-                    : state.filter === 'changes' ? 'No changes to review.' : 'Select text and choose + Comment (Ctrl+Alt+M).';
+                    : state.filter === 'changes' ? 'No changes to review.' : 'Select text and choose + Comment (Ctrl+Alt+M), or choose it with nothing selected for a general comment on the section.';
       host.appendChild(e);
     }
     layout();
@@ -1090,8 +1123,11 @@
     const d = document.createElement('div');
     d.className = 'rv-card rv-cm' + (t.draft ? ' draft' : '') + (t.resolved ? ' resolved' : '') + (state.active === t.id ? ' active' : '') + (t.author && t.author !== AUTHOR ? ' other' : '');
     d.dataset.cm = t.id;
+    const gen = isGeneral(t.anchor);
+    if (gen) d.dataset.gen = '1';
+    const genLbl = !gen ? '' : `<div class="lbl gen">General comment · ${t.anchor.sectionText ? 'on <b>' + esc(t.anchor.sectionText) + '</b>' : 'the whole article'}</div>`;
     if (t.draft) {
-      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div><textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
+      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div>${genLbl}<textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
         <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
       d.querySelector('[data-a="post"]').onclick = () => { const v = d.querySelector('textarea').value; if (!v.trim()) return toast('Write the comment first.'); postDraft(v); };
       d.querySelector('[data-a="send"]').onclick = () => postDraft(d.querySelector('textarea').value, true);
@@ -1113,7 +1149,7 @@
         <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
           <span class="menu"><button class="ico" data-a="more" title="More thread actions">&#8943;</button>
           <div class="dd">${t.resolved ? '<button data-a="reopen">Reopen</button>' : '<button data-a="resolve2">Resolve thread</button>'}${t.author === AUTHOR ? '<button data-a="edit">Edit</button>' : ''}<button data-a="del">Delete thread</button></div></span></span></div>
-      ${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}${waitNote}
+      ${genLbl}${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}${waitNote}
       <div class="tx">${esc(t.text)}</div>${replies}
       ${t.status === 'offered' && t.edit ? `<div class="alt"><button class="use" data-a="use" title="Put Claude's version in the text">Use</button><span>${esc(plain(t.edit.replace)).slice(0, 700)}</span></div>` : ''}
       ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
@@ -1131,10 +1167,12 @@
     return d;
   }
   // ------------------------------------------------------------------ margin geometry
-  const anchorOf = card => card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
+  const genOf = card => { if (!card.dataset.gen) return null; const t = thread(card.dataset.cm); return generalEl(t ? t.anchor : (state.draft && state.draft.anchor)); };
+  const anchorOf = card => card.dataset.gen ? genOf(card) : card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
                          : card.dataset.cm ? cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`)
                          : card.dataset.lint ? ed().querySelector(`mark.lint[data-lint="${card.dataset.lint}"]`) : null;
   function anchorRect(card) {                // first on-page box of the anchor; a hover preview may hide one of its marks
+    if (card.dataset.gen) { const g = genOf(card); return g ? g.getBoundingClientRect() : null; }
     const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : card.dataset.cm ? `mark.cm[data-cm="${card.dataset.cm}"]` : `mark.lint[data-lint="${card.dataset.lint}"]`;
     for (const el of (card.dataset.cm ? cmQA(sel) : ed().querySelectorAll(sel))) { const r = el.getClientRects()[0]; if (r) return r; }
     return null;
@@ -1512,6 +1550,8 @@ body.review-open #rv-lines{display:block}
 #editor ins.rl-pv-yes,#editor del.rl-pv-no{color:inherit!important;text-decoration:none!important;background:#E3F0E8!important}
 #editor del.rl-pv-no{background:#FBEFC2!important}
 #editor mark.cm{background:#F1EFE8;color:inherit;border-bottom:2px solid #D9BE63;cursor:pointer}
+.rv-cm .lbl.gen{font-size:11px;color:#2D6B50;margin:2px 0 6px;letter-spacing:.01em}
+.rv-cm .lbl.gen b{font-weight:600}
 #ed-masthead mark.cm{background:rgba(245,217,106,.30);color:inherit;border-bottom:2px solid #F5D96A;cursor:pointer;border-radius:1px}
 #ed-masthead mark.cm.draft{background:rgba(126,212,168,.34);border-bottom-color:#7ED4A8}
 #ed-masthead mark.cm.cm-hit,#ed-masthead mark.cm.cm-hover{background:rgba(245,217,106,.62)}

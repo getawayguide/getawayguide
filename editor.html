@@ -1713,7 +1713,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 </div>
 
 <script src="launch.js?v=756d2d49" defer></script>
-<script src="review.js?v=62f92025" defer></script>
+<script src="review.js?v=ea5135bd" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -7161,9 +7161,28 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
      way to put a photo slot into an article, so a single portrait or a landscape
      meant inserting a pair and deleting half of it. `shape` is 'portrait' (the
      2:3 the pair cells use) or 'landscape' (the 3:2 .img-landscape block). */
+  // The empty line the caret sits on when a photo button is pressed: it is replaced by the photo block
+  // instead of staying above it as a blank line (Kevin, 2026-10-04: "it adds a line on top and one on bottom").
+  function emptyLineAtCaret() {
+    restoreSelection();
+    const s = window.getSelection(), ed = $('#editor');
+    if (!s || !s.rangeCount || !ed.contains(s.anchorNode)) return null;
+    const n = s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentElement;
+    const p = n && n.closest ? n.closest('p, div:not(.img-pair):not(.img-landscape):not(#editor)') : null;
+    if (!p || p === ed || !ed.contains(p) || p.closest('li, .img-pair, .img-landscape, figure')) return null;
+    return !p.textContent.replace(/[\s\u200b]/g, '') && !p.querySelector('img, picture, svg, iframe, video, .photo-ph, .img-slot-empty') ? p : null;
+  }
+  // a blank line after the block only when nothing follows it (somewhere to keep typing at the end)
+  function lineAfterIfLast(block) {
+    if (block.nextElementSibling) return;
+    const after = document.createElement('p');
+    after.innerHTML = '<br>';
+    block.parentElement.insertBefore(after, block.nextSibling);
+  }
   window.insertPhotoSlot = function insertPhotoSlot(shape) {
     if (!fileHandle) { alert('Open an article first.'); return; }
     History.checkpoint();
+    const blankLine = emptyLineAtCaret();
     const slot = emptySlot();
     let block = slot;
     if (shape === 'landscape') {
@@ -7183,16 +7202,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // had been added. A slot that gets filled is replaced by the photo anyway,
     // so this only ever affects the ones still waiting.
     slot.dataset.ph = '1';
-    insertBlockAtCaret(block);
-    // A trailing empty paragraph is "somewhere to keep typing" after a photo in
-    // running prose. Between two halves of a split bullet list it is just a
-    // blank gap, so it is only added when the neighbour is not a list.
-    const nxt = block.nextElementSibling;
-    if (!nxt || !/^(UL|OL)$/.test(nxt.tagName)) {
-      const after = document.createElement('p');
-      after.innerHTML = '<br>';
-      block.parentElement.insertBefore(after, block.nextSibling);
-    }
+    if (blankLine) blankLine.replaceWith(block); else insertBlockAtCaret(block);
+    // A trailing empty paragraph is "somewhere to keep typing", and only needed when the block
+    // is the last thing there: anywhere else it was a stray blank line under the photo.
+    lineAfterIfLast(block);
     History.touch();
     setDirty(true);
     block.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -7253,15 +7266,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // same reasoning as insertPhotoSlot(): "fill it later" has to survive a save,
     // and stripEmptySlots() only keeps a slot that carries data-ph
     pair.querySelectorAll('.img-slot-empty').forEach(s => { s.dataset.ph = '1'; });
+    const blankLine = emptyLineAtCaret();
     // Put it where the CARET is - see insertBlockAtCaret(). Climbing to the
     // editor's direct child (what this did first) lands the pair after the whole
     // section on a field-notes page, which is how it kept ending up under the
     // bullets and the city map.
-    insertBlockAtCaret(pair);
-    // a paragraph after it, so there is somewhere to keep typing
-    const after = document.createElement('p');
-    after.innerHTML = '<br>';
-    pair.parentElement.insertBefore(after, pair.nextSibling);
+    if (blankLine) blankLine.replaceWith(pair); else insertBlockAtCaret(pair);
+    lineAfterIfLast(pair);                         // somewhere to keep typing, only at the end
     History.touch();
     setDirty(true);
     pair.scrollIntoView({ block: 'center', behavior: 'smooth' });
