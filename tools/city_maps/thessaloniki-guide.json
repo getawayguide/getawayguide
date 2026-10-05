@@ -1,0 +1,134 @@
+{
+  "slug": "thessaloniki-guide",
+  "kicker": "Greece",
+  "city": "Thessaloniki",
+  "osm": ".tmp/thessaloniki_osm.json",
+  "article": "Drafts/.Full Articles/greece/thessaloniki.html",
+  "embed": {
+    "pre": "Here are the best activities to fill 48 hours in Thessaloniki:</p>\n",
+    "post": "  <h3 class=\"article-h3\" id=\"wander-around-thessaloniki\">"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.35
+  },
+  "mobile": {
+    "pad": 2.1,
+    "init_w": 0.7,
+    "init_x": 0.52,
+    "init_y": 0.2
+  },
+  "pois": [
+    {
+      "name": "Platia Aristotelous",
+      "cat": "see",
+      "lat": 40.632346,
+      "lon": 22.940837,
+      "href": "https://www.google.com/maps/place/Aristotelous+Square/@40.6366154,22.9408574,15z/data=!4m14!1m7!3m6!1s0x14a83991a68dff8d:0x274120b7197e5e41!2zzqTOsSDOvM65zrrPgc6sIM6azrHOu8-NzrLOuc6x!8m2!3d40.6366154!4d22.9511571!16s%2Fg%2F11k89874yd!3m5!1s0x14a8390885a99cbd:0xe39e3d18ec8160ab!8m2!3d40.6323456!4d22.9408366!16zL20vMGcwanl6?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "White Tower & Museum",
+      "cat": "see",
+      "lat": 40.626448,
+      "lon": 22.948381,
+      "href": "https://www.google.com/maps/place/White+Tower+of+Thessaloniki/@40.6293201,22.9451489,15z/data=!4m14!1m7!3m6!1s0x14a83991a68dff8d:0x274120b7197e5e41!2zzqTOsSDOvM65zrrPgc6sIM6azrHOu8-NzrLOuc6x!8m2!3d40.6366154!4d22.9511571!16s%2Fg%2F11k89874yd!3m5!1s0x14a839af2548cc69:0xef18309d80742d16!8m2!3d40.6264478!4d22.9483815!16zL20vMDF4eGd0?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Hagia Sophia of Thessaloniki",
+      "cat": "see",
+      "lat": 40.632809,
+      "lon": 22.946954,
+      "href": "https://www.google.com/maps/place/Holy+Cathedral+Church+of+Hagia+Sophia/@40.6358349,22.9325722,15z/data=!3m1!5s0x14a8390737092447:0xa21ce18e06aa2df!4m9!1m2!2m1!1smarket!3m5!1s0x14a83907391d6a89:0x29bd6b3ffe046964!8m2!3d40.6328094!4d22.9469536!16s%2Fm%2F02qyjmk?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Holy Church of St. Demetrius",
+      "cat": "see",
+      "lat": 40.638889,
+      "lon": 22.947611,
+      "href": "https://www.google.com/maps/place/Holy+Church+of+Saint+Demetrius,+Agiou+Dimitriou,+Thessaloniki,+Greece/@40.6358349,22.9325722,15z/data=!4m5!3m4!1s0x14a839a9555261d5:0x9adb6b6586b26aab!8m2!3d40.6388887!4d22.9476111?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Arch of Galerius",
+      "cat": "see",
+      "lat": 40.632224,
+      "lon": 22.951751,
+      "href": "https://www.google.com/maps/place/Arch+of+Galerius/@40.6358349,22.9325722,15z/data=!4m6!3m5!1s0x14a839a92a802431:0xa31f707df819cbc2!8m2!3d40.6322237!4d22.9517511!16zL20vMDF4eDNk?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Palace of Galerius",
+      "cat": "see",
+      "lat": 40.630423,
+      "lon": 22.94941,
+      "href": "https://www.google.com/maps/place/Palace+of+Galerius/@40.6304233,22.9494103,17z/data=!3m1!4b1!4m6!3m5!1s0x14a839fcf294ba47:0x50ca56c7f2f6c03d!8m2!3d40.6304233!4d22.9494103!16s%2Fg%2F11n03ft9bz?hl=en&entry=ttu&g_ep=EgoyMDI2MDkyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Rotonda",
+      "cat": "see",
+      "lat": 40.633346,
+      "lon": 22.952855,
+      "href": "https://www.google.com/maps/place/Rotonda/@40.632785,22.9523029,17z/data=!4m10!1m2!2m1!1sRotunda+of+Galerius+Thessaloniki!3m6!1s0x14a8390056ba88cf:0x1e132d029db9e4f2!8m2!3d40.6333463!4d22.9528548!15sCiBSb3R1bmRhIG9mIEdhbGVyaXVzIFRoZXNzYWxvbmlraVoiIiByb3R1bmRhIG9mIGdhbGVyaXVzIHRoZXNzYWxvbmlraZIBE2hpc3RvcmljYWxfbGFuZG1hcmuaAURDaTlEUVVsUlFVTnZaRU5vZEhsalJqbHZUMnBvZVZJeVZuTlVibXhKVkZaa2ExTjZXbXBVUjJSYVpESjNlbVJJWXhBQuABAPoBBAgAEEw!16s%2Fg%2F121sxhxy?hl=en&entry=ttu&g_ep=EgoyMDI2MDkyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Kapani Market",
+      "cat": "see",
+      "lat": 40.635835,
+      "lon": 22.942872,
+      "href": "https://www.google.com/maps/place/Kapani+Market/@40.6358349,22.9325722,15z/data=!3m1!5s0x14a839a81bde66ef:0x79b645991d12f204!4m6!3m5!1s0x14a839a92a802431:0xc12b9ab5b7a0644d!8m2!3d40.6358349!4d22.9428719!16s%2Fg%2F1218f8b1?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Athonos Square",
+      "cat": "see",
+      "lat": 40.634653,
+      "lon": 22.94492,
+      "href": "https://www.google.com/maps/place/Athonos+Square/@40.6346525,22.9449205,17z/data=!3m1!4b1!4m6!3m5!1s0x14a839a9d5efc98f:0xe2b142ccecf81b42!8m2!3d40.6346525!4d22.9449205!16s%2Fg%2F11g68yz6hz?hl=en&entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Modiano Market",
+      "cat": "see",
+      "lat": 40.63468,
+      "lon": 22.941557,
+      "href": "https://www.google.com/maps/place/Agora+Modiano/@40.6346798,22.9415566,17z/data=!3m1!4b1!4m6!3m5!1s0x14a839a92a802431:0x1c1d0c0a4f2c48d8!8m2!3d40.6346798!4d22.9415566!16s%2Fm%2F0_l422g?hl=en&entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Τα μικρά Καλύβια",
+      "cat": "eat",
+      "lat": 40.636615,
+      "lon": 22.951157,
+      "href": "https://www.google.com/maps/place/%CE%A4%CE%B1+%CE%BC%CE%B9%CE%BA%CF%81%CE%AC+%CE%9A%CE%B1%CE%BB%CF%8D%CE%B2%CE%B9%CE%B1,+Agiou+Dimitriou,+Thessaloniki,+Greece/@37.450113,25.3275156,16z/data=!4m5!3m4!1s0x14a83991a68dff8d:0x274120b7197e5e41!8m2!3d40.6366154!4d22.9511571?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Stratos Bakery & Pastry Shop",
+      "cat": "eat",
+      "lat": 40.631892,
+      "lon": 22.951222,
+      "href": "https://www.google.com/maps/place/Stratos+Bakery+%26+Pastry+Shop/@40.6318924,22.9512217,19z/data=!3m1!4b1!4m6!3m5!1s0x14a83937a4fdbef3:0x191352d44b39ecab!8m2!3d40.6318924!4d22.9512217!16s%2Fg%2F11wp56v7_c?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Yellow The Bakerist",
+      "cat": "eat",
+      "lat": 40.634048,
+      "lon": 22.942792,
+      "href": "https://www.google.com/maps/place/Yellow+The+Bakerist/@40.6340485,22.9402117,17z/data=!3m1!4b1!4m6!3m5!1s0x14a839954b50b5dd:0x459566f5353dff3!8m2!3d40.6340485!4d22.942792!16s%2Fg%2F11y_brt0zz?entry=ttu&g_ep=EgoyMDI2MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 40.6334,
+    "lon": 22.9471
+  },
+  "sea_bg": true,
+  "district_labels": [
+    {
+      "text": "CITY CENTER",
+      "lat": 40.6378,
+      "lon": 22.943
+    },
+    {
+      "text": "WATERFRONT",
+      "lat": 40.629,
+      "lon": 22.9418
+    }
+  ]
+}
