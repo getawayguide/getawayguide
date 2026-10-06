@@ -48,6 +48,19 @@ _pyc = Path(sys.executable).with_name("python.exe")
 PYW = str(_pyc if _pyc.exists() else Path(sys.executable))   # (name kept: every launch site uses it)
 
 CREATE_NO_WINDOW = 0x08000000
+
+# The safety net: while this file runs windowless (the shortcut's pythonw), anything it starts without
+# saying otherwise gets CREATE_NO_WINDOW. A bare subprocess.run(["git", ...]) in the tidy-up preview still
+# opened a "git.exe" window after the first fix (2026-10-05); this way the next one cannot.
+if sys.platform == "win32" and Path(sys.executable).name.lower() == "pythonw.exe":
+    _popen_init = subprocess.Popen.__init__
+
+    def _windowless_init(self, *a, **kw):
+        if not kw.get("creationflags"):
+            kw["creationflags"] = CREATE_NO_WINDOW
+        _popen_init(self, *a, **kw)
+    subprocess.Popen.__init__ = _windowless_init
+
 DETACHED = 0x08000000 | 0x00000200          # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP (was DETACHED_PROCESS:
                                             # no console at all, which is what made the windows appear)
 
@@ -261,7 +274,8 @@ def _autofix_preview(log):
         # The APPLY does not, so printing the command while the tree is dirty would hand over
         # a command that is about to refuse. Say what has to happen first instead.
         dirty = subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=str(ROOT),
-                               capture_output=True, text=True, timeout=60).stdout.splitlines()
+                               capture_output=True, text=True, timeout=60,
+                               creationflags=CREATE_NO_WINDOW).stdout.splitlines()
         if dirty:
             log("   to apply, commit or stash these first: " + ", ".join(dirty[:3])
                 + (" +%d more" % (len(dirty) - 3) if len(dirty) > 3 else ""))
