@@ -40,12 +40,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 META = Path.home() / "Backup" / "_meta"
 
-# the same interpreter the launcher used to run this file, but windowless
-_pyw = Path(sys.executable).with_name("pythonw.exe")
-PYW = str(_pyw if _pyw.exists() else Path(sys.executable))
+# The helpers run as python.exe with an INVISIBLE console (CREATE_NO_WINDOW), not as pythonw.
+# pythonw has no console at all, and Windows then gives every console program it starts (git,
+# PowerShell, node) a new VISIBLE console window: "a command window opens every time I open"
+# (Kevin, 2026-10-05). Under a hidden console, children share it and nothing ever shows.
+_pyc = Path(sys.executable).with_name("python.exe")
+PYW = str(_pyc if _pyc.exists() else Path(sys.executable))   # (name kept: every launch site uses it)
 
 CREATE_NO_WINDOW = 0x08000000
-DETACHED = 0x00000008 | 0x00000200          # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+DETACHED = 0x08000000 | 0x00000200          # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP (was DETACHED_PROCESS:
+                                            # no console at all, which is what made the windows appear)
 
 SERVICES = {
     "server":  {"label": "photo server",   "port": 5003,
@@ -220,8 +224,8 @@ def autofix_preview(log=print):
 
 def _autofix_preview(log):
     try:
-        r = subprocess.run([sys.executable, str(ROOT / "tools" / "autofix.py"), "--dry-run"],
-                           cwd=str(ROOT), capture_output=True, timeout=240)
+        r = subprocess.run([PYW, str(ROOT / "tools" / "autofix.py"), "--dry-run"],
+                           cwd=str(ROOT), capture_output=True, timeout=240, creationflags=CREATE_NO_WINDOW)
         out = (r.stdout or b"").decode("utf-8", "replace")
         # Each fixer prints its own tally, and a tally of zero is not work. Counting the
         # CLASSES it ran and calling that "would tidy 4 things" was the first version, which
@@ -308,8 +312,9 @@ def start_all(open_editor_window=True, log=print):
         # from cache: edit review.js, reload, and still be running the old one. Restamping
         # the content hashes here means the desktop shortcut always picks up a code change.
         try:
-            r = subprocess.run([sys.executable, str(ROOT / "tools" / "stamp_assets.py")],
-                               cwd=str(ROOT), capture_output=True, text=True, timeout=30)
+            r = subprocess.run([PYW, str(ROOT / "tools" / "stamp_assets.py")],
+                               cwd=str(ROOT), capture_output=True, text=True, timeout=30,
+                               creationflags=CREATE_NO_WINDOW)
             for line in r.stdout.splitlines():
                 if "->" in line or "restamped" in line:
                     log(line.strip())

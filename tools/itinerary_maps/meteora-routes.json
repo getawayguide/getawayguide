@@ -1,24 +1,94 @@
 {
-  "iso3": "GRC",
-  "slug": "meteora-routes",
   "area_keep": 0.0008,
-  "simplify": 3000,
-  "smooth": false,
+  "crop_bounds": [
+    19.25,
+    36.3,
+    26.7,
+    41.8
+  ],
+  "crop_pad": 24,
+  "dots": [
+    {
+      "name": "Trikala, change buses",
+      "lat": 39.5557,
+      "lon": 21.7679,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 14
+    }
+  ],
   "focus": true,
   "focus_span": 420,
-  "crop_bounds": [20.9, 37.7, 24.2, 41.0],
-  "crop_pad": 36,
-  "pin_scale": 1.3,
-  "stops": [
-    {"n": 1, "name": "Meteora|(Kalambaka & Kastraki)", "lat": 39.7047, "lon": 21.6276, "days": "", "anchor": "end", "dx": -16, "dy": -16, "no_number": true, "marker": "star", "href": "#getting-there"},
-    {"n": 2, "name": "Trikala", "lat": 39.5557, "lon": 21.7679, "days": "change buses", "anchor": "start", "dx": 16, "dy": 10, "no_number": true},
-    {"n": 3, "name": "Thessaloniki", "lat": 40.6401, "lon": 22.9444, "days": "", "anchor": "start", "dx": 14, "dy": -6, "no_number": true, "href": "thessaloniki.html"},
-    {"n": 4, "name": "Athens", "lat": 37.9838, "lon": 23.7275, "days": "", "anchor": "start", "dx": 14, "dy": 4, "no_number": true, "href": "athens.html"}
-  ],
-  "dots": [],
+  "iso3": "GRC",
   "legs": [
-    {"a": 2, "b": 1, "label": "Bus · 3 hr", "chip_off": 0, "chip_side": 0},
-    {"a": 3, "b": 1, "label": "Bus · 4.5 hr", "chip_off": 0, "chip_side": 0},
-    {"a": 1, "b": 0, "label": "Bus · 30 min", "chip_off": 0, "chip_side": 0, "chip_dx": -34, "chip_dy": 36}
-  ]
+    {
+      "a": 1,
+      "b": "dot:Trikala, change buses",
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 3 hr"
+    },
+    {
+      "a": 2,
+      "b": "dot:Trikala, change buses",
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 4.5 hr",
+      "chip_dx": 0,
+      "chip_dy": -2.9
+    },
+    {
+      "a": "dot:Trikala, change buses",
+      "b": 0,
+      "chip_dx": -45.4,
+      "chip_dy": 14.6,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 30 min"
+    }
+  ],
+  "pin_scale": 1.3,
+  "simplify": 3000,
+  "slug": "meteora-routes",
+  "smooth": false,
+  "stops": [
+    {
+      "anchor": "end",
+      "days": "",
+      "dx": -16,
+      "dy": -22,
+      "href": "#getting-there",
+      "lat": 39.7047,
+      "lon": 21.6276,
+      "marker": "star",
+      "n": 1,
+      "name": "Meteora|(Kalambaka & Kastraki)",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "days": "",
+      "dx": 14,
+      "dy": -6,
+      "href": "thessaloniki.html",
+      "lat": 40.6401,
+      "lon": 22.9444,
+      "n": 3,
+      "name": "Thessaloniki",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "days": "",
+      "dx": 14,
+      "dy": 4,
+      "href": "athens.html",
+      "lat": 37.9838,
+      "lon": 23.7275,
+      "n": 4,
+      "name": "Athens",
+      "no_number": true
+    }
+  ],
+  "page": "Drafts/.Full Articles/greece/meteora.html"
 }

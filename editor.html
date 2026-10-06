@@ -9653,9 +9653,25 @@ async function loadPhotos() {
   if (sig !== _photosSig || _photosAlbum !== album) {
     // the 6 s tick on an idle album used to rebuild all 1082 tiles for
     // nothing: 400 ms main-thread stalls, and scrolling stuttered on every one
+    const sameAlbum = _photosAlbum === album;
+    const sameList = sameAlbum && PHOTOS.length === photos.length && photos.every((p, i) => PHOTOS[i].n === p.n);
     _photosSig = sig; _photosAlbum = album;
-    PHOTOS = photos;
-    render();
+    if (sameList && !(FILTER === 'picks' && photos.some((p, i) => !!p.picked !== !!PHOTOS[i].picked))) {
+      // the same photos with a pick, note or rating changed (the preview's own edits come back this way):
+      // repaint those tiles where they are. A rebuild emptied the grid and threw the album back to the
+      // top, which is what you saw on closing the preview (Kevin, 2026-10-05)
+      photos.forEach((p, i) => {
+        const o = PHOTOS[i];
+        if (!!o.picked === !!p.picked && (o.note || '') === (p.note || '') && (o.rating | 0) === (p.rating | 0)) { Object.assign(o, p); return; }
+        if (IDX >= 0 && VIEW[IDX] === o && document.activeElement === $('#light-note')) p.note = o.note;   // never stomp a note being typed
+        Object.assign(o, p); paintTile(o); paintRating(o);
+        if (IDX >= 0 && VIEW[IDX] === o) paintPick(o);
+      });
+      { const n = PHOTOS.filter(p => p.picked).length, c = document.getElementById('f-picks-n'); if (c) c.textContent = n ? n : ''; }
+    } else {
+      PHOTOS = photos;
+      render({ keep: sameAlbum });
+    }
   }
   loadGeo();
 }
@@ -9688,7 +9704,7 @@ async function loadGeo() {
   sel.value = PLACE;
   if (sel.value !== PLACE) { PLACE = ''; sel.value = ''; }   // the chosen place no longer exists
   sel.style.display = '';
-  render();
+  render({ keep: same });
 }
 $('#f-place').onchange = function () { PLACE = this.value; render(); };
 
@@ -9732,10 +9748,12 @@ function _pumpThumbs() {
   }
 }
 
-function render() {
+function render(opts) {
   _libObserver.disconnect();   // tiles from the previous render are gone; drop them
   _thumbQ.length = 0;
   const g = $('#grid');
+  // a rebuild the 6 s refresh asks for keeps your place in the album; a filter you change starts at the top
+  const sc = g.closest('main'), keepTop = opts && opts.keep && sc ? sc.scrollTop : null;
   g.innerHTML = '';
   let list = PHOTOS;
   if (FILTER === 'picks') list = list.filter(p => p.picked);
@@ -9791,12 +9809,14 @@ function render() {
     p._el = el;   // repaint this tile alone; see paintTile()
     g.appendChild(el);
   });
+  if (keepTop !== null) sc.scrollTop = keepTop;
 }
 
 // --- Photo viewer: arrows, picking, and the note ---------------------------
-let _lightT = null, _lightLast = 0;
+let _lightT = null, _lightLast = 0, _lightPin = null;
 function openLight(i) {
   if (i < 0 || i >= VIEW.length) return;
+  if (!$('#light').classList.contains('open')) { const sc = $('#grid').closest('main'); _lightPin = sc ? { sc, top: sc.scrollTop } : null; }
   IDX = i;
   const p = VIEW[i];
   // Holding an arrow key fired a 2000px build for every photo passed over,
@@ -9835,8 +9855,12 @@ function step(d) {
 
 function closeLight() {
   flushNote();
+  const cur = VIEW[IDX] && VIEW[IDX]._el;
   $('#light').classList.remove('open');
   IDX = -1;
+  // the album stays where you were (Kevin, 2026-10-05), with the photo you ended on in view
+  if (_lightPin && window.keepGridPlace) keepGridPlace(_lightPin.sc, _lightPin.top, cur);
+  _lightPin = null;
 }
 
 function togglePick() {
@@ -10835,7 +10859,27 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     else if (window.__plPaintPicks) window.__plPaintPicks(true);
   };
   let caret = null;                         // the article selection when the viewer opened, put back on close
+  let pin = null;                           // the grid and its scroll when the viewer opened, put back on close
+  window.keepGridPlace = function (grid, top, cur) {   // shared with the Photo Library's preview
+    if (!grid || !grid.isConnected) return;
+    let moved = false;
+    const mark = () => { moved = true; };
+    ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => grid.addEventListener(ev, mark, { once: true, passive: true }));
+    const put = () => {
+      if (moved || !grid.isConnected) return;
+      grid.scrollTop = top;
+      // arrowing past what was on screen: show the photo you ended on rather than a stale spot
+      if (cur && cur.isConnected) {
+        const g = grid.getBoundingClientRect(), r = cur.getBoundingClientRect();
+        if (r.bottom < g.top || r.top > g.bottom) cur.scrollIntoView({ block: 'nearest' });
+      }
+    };
+    put(); requestAnimationFrame(put);
+    setTimeout(put, 450);                   // after the section-follow (350 ms) and an in-place picks refresh
+    setTimeout(() => ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => grid.removeEventListener(ev, mark)), 1500);
+  };
   function open(t) {
+    pin = { grid: t.parentElement, top: t.parentElement.scrollTop };
     loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')];
     try { const s = getSelection(), e = document.getElementById('editor');
       caret = s && s.rangeCount && e && e.contains(s.anchorNode) ? s.getRangeAt(0).cloneRange() : null; } catch (e) { caret = null; }
@@ -10848,7 +10892,11 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     try { const e = document.getElementById('editor');
       if (caret && e && e.isContentEditable) { e.focus({ preventScroll: true }); const s = getSelection(); s.removeAllRanges(); s.addRange(caret); } } catch (e) {}
     caret = null;
+    const last = tiles[i];
     if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {}   // picks may have changed (updates in place)
+    if (pin) { const key = last && (last.dataset.key || last.dataset.rel);   // the same photo's tile, even if the grid re-made it
+      const cur = key ? [...pin.grid.querySelectorAll('.pk-ph, .pl-ph')].find(d => (d.dataset.key || d.dataset.rel) === key) : null;
+      keepGridPlace(pin.grid, pin.top, cur || last); pin = null; }
   }
   function use() {
     const t = tiles[i]; close();

@@ -153,6 +153,15 @@ def _cors(resp):
 
 
 def page_for(slug):
+    # a config can name its own page ("page": repo path): a route map that is not a country's
+    # field notes (Meteora's bus map) was looked for at <slug>/field-notes.html, so its Edit
+    # button found no map and a save re-embedded nowhere (Kevin, 2026-10-05)
+    try:
+        own = load_cfg(slug).get("page")
+    except (OSError, ValueError):
+        own = None
+    if own:
+        return own
     if slug in PAGES:
         return PAGES[slug]
     # prefer the live page; fall back to the Drafts/ copy if not yet published
@@ -293,6 +302,12 @@ def api_preview(slug):
 @app.route("/api/map/<slug>", methods=["POST"])
 def api_save(slug):
     cfg = request.get_json()["config"]
+    try:                                       # never lose the page the config names
+        old = load_cfg(slug)
+        if old.get("page") and not cfg.get("page"):
+            cfg["page"] = old["page"]
+    except (OSError, ValueError):
+        pass
     (CFG_DIR / f"{slug}.json").write_text(
         json.dumps(cfg, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     # rebuild the standalone SVG (final render, with the height/afs treatment)
