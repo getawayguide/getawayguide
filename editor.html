@@ -3934,7 +3934,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       if (h.startsWith(base) && !h.slice(base.length).split(/[?#]/)[0].includes('/')) return h.slice(base.length);   // a sibling article
       if (/^(127\.0\.0\.1|localhost)$/.test(u.hostname)) {                    // any local editor address
         const p = decodeURIComponent(u.pathname.replace(/^\/(site\/)?/, ''));
-        if (p && !p.includes('/')) return p + u.hash;                             // same folder only; never guess a path
+        if (p && !p.includes('/')) return p + u.hash;                             // same folder only
+        // a site page by its live address, "greece/field-notes.html": relative to where this article sits
+        // (a draft is three folders down). The one shape that is safe to guess; anything else stays and is reported.
+        if (/^[a-z0-9-]+\/[a-z0-9-]+\.html$/.test(p) && window.__articleRel) {
+          const depth = window.__articleRel.split('/').length - 1;
+          return '../'.repeat(depth) + p + u.hash;
+        }
       }
     } catch (e) {}
     return h;
@@ -5744,6 +5750,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     } catch (e) { $('#pk-empty').textContent = 'Photo server not running.'; return; }
     PK.items = d.picks || [];
     if (!PK.items.length) { $('#pk-empty').textContent = 'Nothing shortlisted in this album.'; return; }
+    sbWarmThumbs(PK.album, PK.items.map(p => p.n), true);          // the picks' tiles, built ahead of the scroll
     pkLoadGeo();
     pkRender();
   };
@@ -5848,9 +5855,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       div.draggable = true;
       { const gp = PK.geo && PK.geo.photos[pick.n]; const where = gp && gp.place ? '📍 ' + gp.place + '\n' : ''; 
         div.title = where + (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.'; }
-      const im = document.createElement('img');
-      im.loading = 'lazy';
-      pkQueueThumb(im, API + '/thumb?root=' + PK.root + '&path=' + encodeURIComponent(rel));
+      const im = document.createElement('img');                 // not loading="lazy": the pump holds a slot until the
+      pkQueueThumb(im, sbTileUrl(PK.root, rel));                // image loads, and a lazy tile below the fold never did
       div.appendChild(im);
       if (pick.note) {
         const n = document.createElement('div');
@@ -6302,6 +6308,23 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     finally { PL._more = false; }
   }
 
+  // A sidebar tile's image. A photo in a backed-up album ("Album (2026)/IMG.HEIC") is the library's own
+  // 400 px file (/bthumb), the one the Photo Library warms for a whole album the moment it opens: the sidebar
+  // used to ask /thumb for a 320 px file cut from that 400, one more write per tile, and never warmed the
+  // album (Kevin, 2026-10-05: the library was much faster). Anything else still goes through /thumb.
+  window.sbTileUrl = function (root, rel) {
+    const k = (rel || '').indexOf('/');
+    const backup = String(root) === String(PL.backupRoot) || (typeof PK !== 'undefined' && PK && String(root) === String(PK.root));
+    if (backup && k > 0 && rel.indexOf('/', k + 1) < 0)
+      return `${API}/bthumb?album=${encodeURIComponent(rel.slice(0, k))}&name=${encodeURIComponent(rel.slice(k + 1))}&s=400`;
+    return `${API}/thumb?root=${root}&path=${encodeURIComponent(rel)}`;
+  };
+  // and the album's tiles get built in the background, names on screen first
+  window.sbWarmThumbs = function (album, names, only) {
+    if (!album) return;
+    fetch(API + '/api/warm_thumbs', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ album, names: (names || []).slice(0, 600), only: !!only }) }).catch(() => {});
+  };
   // Thumbnails load only when a tile scrolls into view, and AT MOST THREE at
   // a time: the browser has ~6 connections per host, and iCloud-placeholder
   // originals can take minutes to download for their first thumbnail — let
@@ -6358,7 +6381,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       const im = div.querySelector('img');
       if (im && !im.src && !im.dataset.queued) {
         im.dataset.queued = '1';
-        thumbQ.push({ div, rel, url: `${API}/thumb?root=${div.dataset.root}&path=${encodeURIComponent(rel)}` });
+        thumbQ.push({ div, rel, url: sbTileUrl(div.dataset.root, rel) });
         pumpThumbs();
         badge(div, rel);
       }
@@ -6422,7 +6445,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           c.remove();
           const im2 = div.querySelector('img');
           im2.dataset.queued = '1';
-          thumbQ.push({ div, rel, url: `${API}/thumb?root=${div.dataset.root}&path=${encodeURIComponent(rel)}` });
+          thumbQ.push({ div, rel, url: sbTileUrl(div.dataset.root, rel) });
           pumpThumbs();
           badge(div, rel);
         };
@@ -6440,9 +6463,12 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // and makes sure the alt-text session is running: starting one takes up to a minute
     if (PL.rendered === slice.length) fetch(API + '/api/alt_warm', { method: 'POST' }).catch(() => {});
     // have the server prepare these photos' large viewer images in the background (2026-09-28)
-    if (PL.path && !PL.path.includes('/') && slice.length)
+    if (PL.path && !PL.path.includes('/') && slice.length) {
+      if (String(PL.root) === String(PL.backupRoot))                                      // the tiles themselves, whole album
+        sbWarmThumbs(PL.path, PL.items.map(x => typeof x === 'string' ? x : (x.name || x.rel || x.path || '')));
       fetch(API + '/api/warm_previews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ album: PL.path, names: slice.slice(0, 120) }) }).catch(() => {});
+    }
     const remaining = (PL.total || PL.items.length) - PL.rendered;
     if (remaining > 0) {
       const btn = document.createElement('button');
@@ -10747,7 +10773,8 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
   let tiles = [], i = 0, gen = 0;
   const TILE = '#pl-grid .pl-ph, #pk-grid .pk-ph';
   const info = t => t.classList.contains('pk-ph')
-    ? { thumb: t.querySelector('img') && t.querySelector('img').src, name: (t.querySelector('img') && decodeURIComponent((t.querySelector('img').src.split('path=')[1] || '').split('&')[0]).split('/').pop()) || '' }
+    ? { thumb: t.querySelector('img') && t.querySelector('img').src,
+        name: (t.dataset.key || '').split('/').pop() || (t.querySelector('img') && decodeURIComponent((t.querySelector('img').src.split(/[?&](?:name|path)=/)[1] || '').split('&')[0]).split('/').pop()) || '' }
     : { root: t.dataset.root, path: t.dataset.rel, name: t.dataset.name };
   function show(k) {
     if (!tiles.length) return;

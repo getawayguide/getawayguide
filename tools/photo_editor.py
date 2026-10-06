@@ -1055,7 +1055,9 @@ def thumb():
                 kw = {"quality": 82}
                 if icc:
                     kw["icc_profile"] = icc
-                im.convert("RGB").save(cache, "JPEG", **kw)
+                tmp = cache.with_name(cache.stem + ".part" + cache.suffix)
+                im.convert("RGB").save(tmp, "JPEG", **kw)
+                os.replace(tmp, cache)                        # never a half-written file for another reader
     return send_file(cache, mimetype="image/jpeg")
 
 
@@ -2408,10 +2410,14 @@ def _build_bthumb(p, size):
         if icc:
             kw["icc_profile"] = icc
         im = im.convert("RGB")
-        im.save(cache, "JPEG", **kw)
-        if small is not None:                                 # a 2000 px preview was decoded: the 400 is free
+        tmp = cache.with_name(cache.stem + ".part" + cache.suffix)
+        im.save(tmp, "JPEG", **kw)
+        os.replace(tmp, cache)                                # atomic: a reader never sees a half-written file
+        if small is not None and not small.exists():          # a 2000 px preview was decoded: the 400 is free
             s4 = im.copy(); s4.thumbnail((400, 400), reducing_gap=2.0)
-            s4.save(small, "JPEG", **kw)
+            t4 = small.with_name(small.stem + ".part" + small.suffix)
+            s4.save(t4, "JPEG", **kw)
+            os.replace(t4, small)
     return cache
 
 
@@ -2497,6 +2503,34 @@ def api_alt_status():
 
 _preview_warm_pool = ThreadPoolExecutor(max_workers=1)   # one: background work, never in your way
 _preview_queued = set()
+
+
+_warm_thumbs_queued = set()
+
+
+@app.route("/api/warm_thumbs", methods=["POST", "OPTIONS"])
+def api_warm_thumbs():
+    """The editor's sidebar shows an album (the library grid or the picks): build its 400 px tiles in the
+    background, the way the Photo Library has always had done for it, so scrolling is instant (2026-10-05).
+    Names first (what is on screen), then the rest of the album; live tile requests still go first."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    body = request.get_json(silent=True) or {}
+    album = clean_dirname(body.get("album", ""))
+    d = BACKUP / album
+    if not album or not d.is_dir():
+        return jsonify(ok=False), 404
+    names = [os.path.basename(n) for n in (body.get("names") or [])[:600]]
+    rest = [] if body.get("only") else sorted(p.name for p in d.iterdir() if p.is_file() and p.suffix.lower() in IMG_EXTS and not is_stray_thumb(p.name))
+    todo = []
+    for n in names + [n for n in rest if n not in set(names)]:
+        p = (d / n).resolve()
+        if BACKUP.resolve() not in p.parents or not p.is_file() or p in _warm_thumbs_queued or bthumb_path(p, 400).exists():
+            continue
+        _warm_thumbs_queued.add(p); todo.append(p)
+    if todo:
+        _lib_warm_pool.submit(_warm_library_album, album, todo)
+    return jsonify(ok=True, queued=len(todo))
 
 
 @app.route("/api/warm_previews", methods=["POST", "OPTIONS"])
