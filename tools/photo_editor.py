@@ -984,7 +984,31 @@ def api_geo():
 
 
 _preview_gate = threading.Semaphore(2)   # the 2000px viewer images: their own lane (2026-09-28)
-_thumb_gate = threading.Semaphore(4)   # decode a few at a time; a burst of iCloud
+# Thumbnails come first. A thumbnail being built for a request raises this; background work that
+# decodes the same kind of file (the preview warm-up) waits while it is up, so the grid you are
+# looking at never shares the CPU with viewer images you have not opened (2026-10-05).
+_thumb_live = 0
+_thumb_live_lock = threading.Lock()
+
+
+class _ThumbLive:
+    def __enter__(self):
+        global _thumb_live
+        with _thumb_live_lock:
+            _thumb_live += 1
+
+    def __exit__(self, *a):
+        global _thumb_live
+        with _thumb_live_lock:
+            _thumb_live -= 1
+
+
+def _yield_to_thumbs(max_wait=30.0):
+    """Background decodes call this first: while a thumbnail request is in flight they sleep."""
+    t0 = time.time()
+    while _thumb_live > 0 and time.time() - t0 < max_wait:
+        time.sleep(0.05)
+_thumb_gate = threading.Semaphore(6)   # decode a few at a time (6: HEIC decoding scales to 8 on 16 threads, 2026-10-05); a burst of iCloud
                                        # HEICs must not starve browse/import calls
 
 
@@ -1014,11 +1038,12 @@ def thumb():
     if size <= 2000 and not rot and not flip:
         try:
             if BACKUP.resolve() in p.parents:
-                shared = _build_bthumb(p, 400 if size <= 400 else 2000)
+                with _ThumbLive():
+                    shared = _build_bthumb(p, 400 if size <= 400 else 2000)
         except Exception:
             shared = None
     if not cache.exists():
-        with _thumb_gate:
+        with _ThumbLive(), _thumb_gate:
             if not cache.exists():
                 try:
                     im = Image.open(shared) if shared else ImageOps.exif_transpose(Image.open(p))
@@ -2363,6 +2388,9 @@ def _build_bthumb(p, size):
     with gate:
         if cache.exists():
             return cache
+        small = bthumb_path(p, 400) if size > 400 else None   # the grid's size, written from the same decode
+        if small is not None and small.exists():
+            small = None
         src = Image.open(p)
         icc = src.info.get("icc_profile")
         try:
@@ -2379,7 +2407,11 @@ def _build_bthumb(p, size):
         kw = {"quality": 82}
         if icc:
             kw["icc_profile"] = icc
-        im.convert("RGB").save(cache, "JPEG", **kw)
+        im = im.convert("RGB")
+        im.save(cache, "JPEG", **kw)
+        if small is not None:                                 # a 2000 px preview was decoded: the 400 is free
+            s4 = im.copy(); s4.thumbnail((400, 400), reducing_gap=2.0)
+            s4.save(small, "JPEG", **kw)
     return cache
 
 
@@ -2393,6 +2425,7 @@ _lib_warm_lock = threading.Lock()
 def _warm_library_album(album, paths):
     for p in paths:
         try:
+            _yield_to_thumbs()                                # the grid's own requests come first
             _build_bthumb(p, 400)
         except Exception:
             pass
@@ -2480,7 +2513,7 @@ def api_warm_previews():
         if BACKUP.resolve() not in p.parents or not p.is_file() or p in _preview_queued or bthumb_path(p, 2000).exists():
             continue
         _preview_queued.add(p); queued += 1
-        _preview_warm_pool.submit(lambda q=p: (_build_bthumb(q, 2000) if not bthumb_path(q, 2000).exists() else None))
+        _preview_warm_pool.submit(lambda q=p: (_yield_to_thumbs(), _build_bthumb(q, 2000) if not bthumb_path(q, 2000).exists() else None))
     return jsonify(ok=True, queued=queued)
 
 
@@ -2494,7 +2527,11 @@ def bthumb():
         abort(404)
     size = int(request.args.get("s", 320))
     try:
-        cache = _build_bthumb(p, size)
+        if size < 1000:                                       # a grid tile: background decodes wait for it
+            with _ThumbLive():
+                cache = _build_bthumb(p, size)
+        else:
+            cache = _build_bthumb(p, size)
     except Exception:
         abort(415)
     return send_file(cache, mimetype="image/jpeg")

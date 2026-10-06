@@ -341,21 +341,48 @@ def places_index():
         if sig != _index["sig"]:
             _index["places"], _index["cities"] = _build()
             _index["sig"] = sig
+            # a coarse grid over the places (0.1 deg cells), so a photo only looks at the places near it:
+            # assign() used to scan all ~2,000 places for every photo, 1.7 s of a 3.7 s /api/geo call
+            # that the editor repeats every 6 s (2026-10-05)
+            grid = {}
+            for pl in _index["places"]:
+                grid.setdefault((int(pl["lat"] // 0.1), int(pl["lon"] // 0.13)), []).append(pl)
+            _index["grid"] = grid
+            _assign_cache.clear()
         _index["built"] = now
         return _index["places"], _index["cities"]
+
+
+_assign_cache = {}                 # (lat, lon rounded to ~10 m) -> (place, city); cleared when the index rebuilds
 
 
 def assign(lat, lon):
     """(place, city) for a coordinate: nearest named place inside its radius,
     else 'Elsewhere in <city>' for the nearest city inside its radius."""
     places, cities = places_index()
+    key = (round(lat, 4), round(lon, 4))
+    hit = _assign_cache.get(key)
+    if hit is not None:
+        return hit
+    r = _assign(lat, lon, cities)
+    if len(_assign_cache) > 50000:
+        _assign_cache.clear()
+    _assign_cache[key] = r
+    return r
+
+
+def _assign(lat, lon, cities):
+    grid = _index.get("grid") or {}
+    gy, gx = int(lat // 0.1), int(lon // 0.13)
     best = None
-    for p in places:
-        if abs(p["lat"] - lat) > 0.1 or abs(p["lon"] - lon) > 0.13:     # cheap prefilter (~10 km)
-            continue
-        d = _hav(lat, lon, p["lat"], p["lon"])
-        if d <= p["r"] and (best is None or d < best[0]):
-            best = (d, p)
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            for p in grid.get((gy + dy, gx + dx), ()):
+                if abs(p["lat"] - lat) > 0.1 or abs(p["lon"] - lon) > 0.13:     # cheap prefilter (~10 km)
+                    continue
+                d = _hav(lat, lon, p["lat"], p["lon"])
+                if d <= p["r"] and (best is None or d < best[0]):
+                    best = (d, p)
     if best:
         return best[1]["name"], best[1]["city"]
     cb = None

@@ -5804,7 +5804,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   const PKQ = { q: [], n: 0 };
   function pkQueueThumb(im, url) { PKQ.q.push({ im, url }); clearTimeout(PKQ.t); PKQ.t = setTimeout(pkPump, 0); }   // after the tiles are in the grid
   function pkPump() {
-    while (PKQ.n < 3 && PKQ.q.length) {
+    while (PKQ.n < 6 && PKQ.q.length) {                       // 6 in flight: the server decodes 6 at once
       const { im, url } = PKQ.q.shift();
       if (!im.isConnected) continue;                             // the grid was redrawn: skip stale tiles
       PKQ.n++;
@@ -6289,7 +6289,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   const thumbQ = [];
   let thumbsInFlight = 0;
   function pumpThumbs() {
-    while (thumbsInFlight < 3 && thumbQ.length) {
+    while (thumbsInFlight < 6 && thumbQ.length) {             // 6 in flight: the server decodes 6 at once
       const job = thumbQ.shift();
       if (!job.div.isConnected) continue;          // tile was re-rendered away
       thumbsInFlight++;
