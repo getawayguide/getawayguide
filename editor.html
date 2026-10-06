@@ -5735,7 +5735,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   window.pkLoad = async function () {
     PK.album = $('#pk-album').value;
     const g = $('#pk-grid');
-    g.innerHTML = '';
+    if (PK.shown !== PK.album) { g.innerHTML = ''; PKQ.q.length = 0; }   // another album: start clean; the same one updates in place
+    PK.shown = PK.album;
     $('#pk-empty').textContent = '';
     let d;
     try {
@@ -5814,16 +5815,36 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   }
   function pkRender() {
     const g = $('#pk-grid');
-    g.innerHTML = ''; PKQ.q.length = 0;
     const used = pkUsedNames();
     const items = PK.place && PK.geo
       ? PK.items.filter(p => placeHit(PK.geo.photos[p.n], PK.place))
       : PK.items;
     $('#pk-empty').textContent = items.length ? '' : 'No picks at this place.';
+    // In place: a tile that is still picked keeps its image and its spot (a rebuild blanked every
+    // tile and scrolled the grid to the top each time a pick changed, so the photo you had just
+    // viewed "disappeared", 2026-10-05). Only tiles for new picks are made; dropped ones go.
+    const keep = new Map([...g.querySelectorAll('.pk-ph[data-key]')].map(d => [d.dataset.key, d]));
+    const want = new Set(items.map(p => p.album + '/' + p.n));
+    keep.forEach((d, k) => { if (!want.has(k)) { d.remove(); keep.delete(k); } });
+    PKQ.q = PKQ.q.filter(x => x.im.isConnected);
+    let cursor = g.firstElementChild;
     items.forEach(pick => {
       const rel = pick.album + '/' + pick.n;
+      const old = keep.get(rel);
+      if (old) {
+        old.classList.toggle('used', used.has(pkStem(pick.n)));
+        { const gp = PK.geo && PK.geo.photos[pick.n]; const where = gp && gp.place ? '📍 ' + gp.place + '\n' : '';
+          old.title = where + (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.'; }
+        const nt = old.querySelector('.nt');
+        if (pick.note && !nt) { const n = document.createElement('div'); n.className = 'nt'; n.textContent = pick.note; old.appendChild(n); }
+        else if (pick.note && nt && nt.textContent !== pick.note) nt.textContent = pick.note;
+        else if (!pick.note && nt) nt.remove();
+        if (old !== cursor) g.insertBefore(old, cursor); else cursor = cursor.nextElementSibling;
+        return;
+      }
       const div = document.createElement('div');
       div.className = 'pk-ph';
+      div.dataset.key = rel;
       div.draggable = true;
       { const gp = PK.geo && PK.geo.photos[pick.n]; const where = gp && gp.place ? '📍 ' + gp.place + '\n' : ''; 
         div.title = where + (pick.note || pick.n) + '\n\nDrag into the article, or click to place it at the end.'; }
@@ -5856,7 +5877,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           : { el: slot, where: 'slot' };
         openCropForPhoto({ root: PK.root, path: rel, name: pick.n }, target);
       };
-      g.appendChild(div);
+      g.insertBefore(div, cursor);
     });
   }
 
@@ -10786,8 +10807,22 @@ window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refresh
     if (!ok) { PICKED[key] = !on; paintPick(); alert("Couldn't save the pick: the photo server didn't answer."); }
     else if (window.__plPaintPicks) window.__plPaintPicks(true);
   };
-  function open(t) { loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')]; box.hidden = false; show(tiles.indexOf(t)); }
-  function close() { box.hidden = true; img.removeAttribute('src'); PICKED = null; clearTimeout(show._pre); try { const e = document.getElementById('editor'); if (e && e.isContentEditable) e.focus({ preventScroll: true }); } catch (e) {} if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {} }   // picks may have changed
+  let caret = null;                         // the article selection when the viewer opened, put back on close
+  function open(t) {
+    loadPicked(); tiles = [...t.parentElement.querySelectorAll(t.classList.contains('pk-ph') ? '.pk-ph' : '.pl-ph')];
+    try { const s = getSelection(), e = document.getElementById('editor');
+      caret = s && s.rangeCount && e && e.contains(s.anchorNode) ? s.getRangeAt(0).cloneRange() : null; } catch (e) { caret = null; }
+    box.hidden = false; show(tiles.indexOf(t));
+  }
+  function close() {
+    box.hidden = true; img.removeAttribute('src'); PICKED = null; clearTimeout(show._pre);
+    // back to writing where you were; with no caret in the article there is nothing to restore, and a
+    // bare focus() would have put it at the top (which re-filtered the picks to the intro's place)
+    try { const e = document.getElementById('editor');
+      if (caret && e && e.isContentEditable) { e.focus({ preventScroll: true }); const s = getSelection(); s.removeAllRanges(); s.addRange(caret); } } catch (e) {}
+    caret = null;
+    if (window.pkLoad && document.getElementById('pk-panel') && document.getElementById('pk-panel').style.display !== 'none') try { pkLoad(); } catch (e) {}   // picks may have changed (updates in place)
+  }
   function use() {
     const t = tiles[i]; close();
     if (t.classList.contains('pk-ph')) { if (t.onclick) t.onclick(); return; }           // the Blog Picks path, unchanged
