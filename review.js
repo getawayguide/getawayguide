@@ -875,6 +875,22 @@
     renderAll();
   }
   function thread(id) { return state.comments.threads.find(t => t.id === id); }
+  // A comment whose quoted text is gone (rewritten, or edited away) still gets a card: beside the block where
+  // the text used to be, found by the words just before or after it, else at the top of the article. With no
+  // card there was nothing to click to delete or resolve it (Kevin, 2026-10-06).
+  function lostEl(t) {
+    if (!t || !t.anchor || t.anchor.where || isGeneral(t.anchor)) return null;
+    const norm = s => (s || '').replace(/\s+/g, ' ').trim();
+    const blocks = [...ed().querySelectorAll('p, li, h2, h3, h4, blockquote')].filter(x => !x.closest('.rv-card'));
+    for (const n of [36, 20]) {
+      for (const key of [norm(t.anchor.before).slice(-n), norm(t.anchor.after).slice(0, n)]) {
+        if (key.length < 12) continue;
+        const hit = blocks.filter(x => norm(x.textContent).includes(key)).pop();   // the innermost block that has it
+        if (hit) return hit;
+      }
+    }
+    return generalEl({});
+  }
   function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
   function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
@@ -942,7 +958,7 @@
     if (showCh) for (const c of pending()) out.push({ kind: 'change', id: c.id, c, threads: paired.get(c.id), el: ed().querySelector(`[data-id="${c.id}"]`) });
     if (showCm) {
       if (state.draft) out.push({ kind: 'draft', id: state.draft.id, el: isGeneral(state.draft.anchor) ? generalEl(state.draft.anchor) : cmQ(`mark.cm[data-cm="${state.draft.id}"]`) });
-      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: isGeneral(t.anchor) ? generalEl(t.anchor) : cmQ(`mark.cm[data-cm="${t.id}"]`) });
+      for (const t of state.comments.threads) if ((!t.resolved || (state.view === 'list' && state.showResolved)) && !taken.has(t.id)) out.push({ kind: 'comment', id: t.id, t, el: isGeneral(t.anchor) ? generalEl(t.anchor) : (cmQ(`mark.cm[data-cm="${t.id}"]`) || (t.resolved ? null : lostEl(t))) });
     }
     if (showCh && state.view === 'list') for (const id of state.hidden) if (state.st[id] === undefined) out.push({ kind: 'change', id, c: byId(id), dim: true, el: null });
     if (state.filter !== 'changes') for (const f of state.lint) out.push({ kind: 'lint', id: f.id, f, el: f.anchor ? ed().querySelector(`mark.lint[data-lint="${f.id}"]`) : null });
@@ -1169,12 +1185,13 @@
   // ------------------------------------------------------------------ margin geometry
   const genOf = card => { if (!card.dataset.gen) return null; const t = thread(card.dataset.cm); return generalEl(t ? t.anchor : (state.draft && state.draft.anchor)); };
   const anchorOf = card => card.dataset.gen ? genOf(card) : card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
-                         : card.dataset.cm ? cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`)
+                         : card.dataset.cm ? (cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`) || lostEl(thread(card.dataset.cm)))
                          : card.dataset.lint ? ed().querySelector(`mark.lint[data-lint="${card.dataset.lint}"]`) : null;
   function anchorRect(card) {                // first on-page box of the anchor; a hover preview may hide one of its marks
     if (card.dataset.gen) { const g = genOf(card); return g ? g.getBoundingClientRect() : null; }
     const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : card.dataset.cm ? `mark.cm[data-cm="${card.dataset.cm}"]` : `mark.lint[data-lint="${card.dataset.lint}"]`;
     for (const el of (card.dataset.cm ? cmQA(sel) : ed().querySelectorAll(sel))) { const r = el.getClientRects()[0]; if (r) return r; }
+    if (card.dataset.cm) { const t = thread(card.dataset.cm), l = t && !t.resolved && lostEl(t); if (l) return l.getBoundingClientRect(); }
     return null;
   }
   function queueLayout() { if (state._raf) return; state._raf = requestAnimationFrame(() => { state._raf = 0; layout(); }); }
