@@ -173,7 +173,9 @@ def fragment(cfg, w1, wfull):
     hint = "<br>".join(E(l) for l in m.get("hint", ["Drag to explore, pinch to zoom", "Tap a pin for its name, tap again to jump to it"]))
     credit = f'<div class="cmcredit">{E(cfg["credit"])}</div>' if cfg.get("credit") else ""
     head = (f'<div class="cm-mobhead"><div class="cm-ov-kick">{E(cfg["kicker"])}</div><div class="cm-ov-title">{E(cfg["city"])}</div><div class="cm-ov-hint">{hint}</div></div>')
-    fig = (f'<figure class="citymap-fig cm-painted" data-painted="{E(slug)}">'
+    # an id lets the article link to the map ("see map above", Kevin 2026-10-06); kept on every re-embed
+    fid = f' id="{E(cfg["figure_id"])}"' if cfg.get("figure_id") else ""
+    fig = (f'<figure class="citymap-fig cm-painted" data-painted="{E(slug)}"{fid}>'
            f'<div class="citymap desk"><div class="cmmap">{desk_img}{overlay(cfg, False)}</div>{legend(cfg, False)}</div>'
            f'{head}<div class="citymap mob" data-dar="{aspect}" data-iw="{iw}" data-ix="{m.get("init_x", 0.12)}" data-iy="0.5">'
            f'<div class="cmmap"><div class="cmworld">{mob_img}{overlay(cfg, True)}</div></div></div>'
@@ -187,7 +189,7 @@ def embed(cfg, css, fig):
     CSS + this map's own, and the page ends with the CURRENT city-map script (in-page links need it)."""
     p = os.path.join(ROOT, cfg["article"])
     s = io.open(p, encoding="utf-8", newline="").read()
-    mine = re.search(r'<figure class="citymap-fig cm-painted" data-painted="%s">.*?</figure>' % re.escape(cfg["slug"]), s, re.S)
+    mine = re.search(r'<figure class="citymap-fig cm-painted" data-painted="%s"[^>]*>.*?</figure>' % re.escape(cfg["slug"]), s, re.S)
     old = mine or re.search(r'<figure class="citymap-fig">.*?</figure>', s, re.S)
     if not old:
         raise SystemExit("embed aborted: no city-map figure in " + cfg["article"])

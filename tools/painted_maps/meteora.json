@@ -1,6 +1,7 @@
 {
  "_about": "Kevin's arrangement of the official Meteora painting (artifact 'Copy settings', 2026-10-04). Positions are in the 760 x 470 frame. Rebuild + re-embed: python tools/painted_map.py tools/painted_maps/meteora.json --embed",
  "slug": "meteora-painted",
+ "figure_id": "meteora-map",
  "kicker": "Greece",
  "city": "Meteora",
  "source": "Images/Greece/Meteora/meteora-official-map.webp",
