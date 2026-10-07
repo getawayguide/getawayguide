@@ -2520,6 +2520,42 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     document.body.appendChild(b);
   }
 
+  // A photo the server did not serve is not proof the server is down: a missing file (a 404) looked exactly
+  // the same and raised "the photo server isn't running" over a running server (Kevin, 2026-10-06, one
+  // photo in the Meteora draft pointed at a file that did not exist). Ask the server first; if it answers,
+  // name the missing photo(s) instead. The article's own markup is never touched.
+  const _missing = new Set();
+  let _probe = null;
+  function photoFailed(path) {
+    _probe = _probe || (async () => {
+      const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 4000);
+      try { return (await fetch('http://127.0.0.1:5003/api/suite', { cache: 'no-store', signal: ac.signal })).ok; }
+      catch (e) { return false; } finally { clearTimeout(t); }
+    })();
+    _probe.then(up => {
+      _probe = null;
+      if (!up) { photoServerDown(); return; }
+      _missing.add(path);
+      let b = document.getElementById('photo-missing-banner');
+      if (!b) {
+        b = document.createElement('div');
+        b.id = 'photo-missing-banner';
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;' +
+          'justify-content:center;gap:1rem;padding:.55rem 1rem;background:#faf3e3;color:#6b5418;' +
+          'border-bottom:1px solid #e6d3a3;font-family:Hanken Grotesk,sans-serif;font-size:.8rem';
+        b.innerHTML = '<span class="pm-text"></span><button style="background:none;border:1px solid #c9ad6a;color:#6b5418;' +
+          'border-radius:3px;padding:.2rem .7rem;cursor:pointer;font-family:Hanken Grotesk,sans-serif;font-size:.7rem">Dismiss</button>';
+        b.querySelector('button').onclick = () => b.remove();
+        document.body.appendChild(b);
+      }
+      const list = [..._missing];
+      b.querySelector('.pm-text').innerHTML = '<b>' + (list.length > 1 ? list.length + ' photos aren’t' : 'A photo isn’t') +
+        ' in the site folder</b>: ' + list.slice(0, 3).map(p => pmEsc(p)).join(', ') + (list.length > 3 ? ' and more' : '') +
+        '. Re-add ' + (list.length > 1 ? 'them' : 'it') + ' from the photo sidebar.';
+    });
+  }
+  function pmEsc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
   function showReconnectBanner() {
     if (document.getElementById('reconnect-banner')) return;
     const b = document.createElement('div');
@@ -3003,7 +3039,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         // If the server is down, this src fails silently and the article shows
         // empty frames with no clue why - which is exactly how it looked when
         // the photo server had quietly died. Say so instead.
-        img.addEventListener('error', () => photoServerDown(), { once: true });
+        img.addEventListener('error', () => photoFailed(repoPath), { once: true });
       }
     }));
 
