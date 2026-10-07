@@ -4010,7 +4010,37 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   }
 
+  // The toolbar's image button (Kevin, 2026-10-06: "add photos using the image button on the tool bar instead
+  // of only the side bar"). It used to guess a path, Images/<file name>, without copying the file, so a photo
+  // from outside the site folder pointed at nothing. Now the file goes to the photo server and through the
+  // sidebar's own crop-and-insert step, so it is archived and cut like any other photo.
   async function insertImage() {
+    const caretDrop = window.dropAtCaret ? dropAtCaret() : { el: null, where: 'end' };   // before the picker takes focus
+    let handle;
+    try {
+      [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'Photos', accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'] } }],
+        multiple: false
+      });
+    } catch (e) { if (e.name !== 'AbortError') alert('Error: ' + e.message); return; }
+    const file = await handle.getFile();
+    let up = null;
+    try {
+      const r = await fetch(API + '/api/upload_photo?name=' + encodeURIComponent(file.name), { method: 'POST', body: file });
+      up = await r.json();
+      if (!r.ok || !up.ok) throw new Error(up.error || 'HTTP ' + r.status);
+    } catch (e) {
+      alert("Couldn't add the photo: " + (e instanceof TypeError ? "the photo server isn't answering." : e.message));
+      return;
+    }
+    // a photo placeholder you clicked first gets the photo, the same as the sidebar's "Use this photo"
+    const slot = window.takePendingSlot ? takePendingSlot() : null;
+    const target = !slot ? caretDrop : slot.tagName === 'IMG' ? { el: slot, where: 'image', swap: true } : { el: slot, where: 'slot' };
+    openCropForPhoto({ root: up.root, path: up.path, name: up.name }, target);
+  }
+
+  // the old path-guessing dialog, kept only for its modal wiring (confirmInsertImage); nothing opens it now
+  async function insertImageByPath() {
     const editor = document.getElementById('editor');
     const sel = window.getSelection();
     _imgSavedRange = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;

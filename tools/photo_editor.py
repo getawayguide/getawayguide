@@ -2238,6 +2238,47 @@ def api_pick():
     return jsonify({"ok": True, "picked": True, "note": rec["note"]})
 
 
+UPLOADS = ROOT / ".tmp" / "photo_editor" / "uploads"
+
+
+def ensure_uploads_source():
+    """Index of the toolbar's upload folder in SOURCES, registering it if absent (the Backup's pattern): a photo
+    picked with the toolbar's image button is staged here, then goes through the same crop/import as any other
+    photo, which copies it into Images/<Country>/<City>/. Staging only; .tmp is disposable."""
+    UPLOADS.mkdir(parents=True, exist_ok=True)
+    for i, s in enumerate(SOURCES):
+        if Path(s["path"]).resolve() == UPLOADS.resolve():
+            return i
+    SOURCES.append({"label": "Uploaded photos", "path": str(UPLOADS)})
+    try:
+        SRC_CFG.write_text(json.dumps(SOURCES, indent=2), encoding="utf-8")
+    except OSError:
+        pass
+    return len(SOURCES) - 1
+
+
+@app.route("/api/upload_photo", methods=["POST", "OPTIONS"])
+def api_upload_photo():
+    """The toolbar's image button (Kevin, 2026-10-06): the picked file's bytes, as they are, into the upload
+    folder under its own name (never overwriting); the editor then opens the crop step on {root, path}."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    raw = os.path.basename(request.args.get("name", "") or "photo.jpg")
+    ext = Path(raw).suffix.lower()
+    if ext not in IMG_EXTS:
+        return jsonify(ok=False, error="not a photo file (%s)" % (ext or "no extension")), 415
+    data = request.get_data(cache=False)
+    if not data:
+        return jsonify(ok=False, error="empty file"), 400
+    root = ensure_uploads_source()
+    base = clean_name(Path(raw).stem) or "photo"
+    dest, n = UPLOADS / f"{base}{ext}", 2
+    while dest.exists():
+        dest, n = UPLOADS / f"{base}-{n}{ext}", n + 1
+    dest.write_bytes(data)
+    return jsonify(ok=True, root=root, path=dest.name, name=dest.name)
+
+
 def ensure_backup_source():
     """Index of the ~/Backup root in SOURCES, registering it if absent.
 
