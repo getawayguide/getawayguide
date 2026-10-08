@@ -4132,3 +4132,23 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 @media (max-width:768px) {
   .country-article-card[style*="--pm"], .card-img[style*="--pm"] { background-position: var(--pm) !important; }
 }
+
+/* ONE PORTRAIT PHOTO ON ITS OWN (Kevin, 2026-10-07: "on mobile, the varlaam photo and taverna gardenia photo are
+   not centered in the article ... fix for all single vertical photos of that same format"). A lone portrait is an
+   .img-pair holding one photo (the editor writes it with an inline one-column grid, its own width and auto
+   margins, which is centered on desktop). On a phone the pair rules above force EVERY pair to two full-bleed
+   columns with !important, so a lone photo sat in the left column, 98px off center. One photo gets one column,
+   centered, at the width the page's own sizes="56vw" already assumes (about what it was drawn at before).
+   (0,3,0) on purpose: it has to beat `.article-body .img-pair` and live's bare `.img-pair{...!important}`. */
+@media (max-width:768px) {
+  :is(.article-body, .artbody, .fn-section) .img-pair:has(> :only-child) {
+    grid-template-columns:1fr !important; width:56% !important; max-width:none !important;
+    margin-left:auto !important; margin-right:auto !important;
+  }
+}
+
+/* A one-shot / day-shot photo keeps its own proportions (Kevin, 2026-10-07: "the san salvador photo looks
+   stretched"). The rule above gives the img width:100% and nothing for the height, so the height="374"
+   attribute stayed in force: an 800x374 photo drawn 576 wide came out 576x374, squeezed to 1.54:1 from
+   2.14:1. The pre-redesign site set height:auto inline. Cropped shots size their img inside .fr; leave them. */
+:is(.one-shot, .day-shot):not(.cropped) img { height:auto; }
