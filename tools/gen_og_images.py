@@ -152,6 +152,11 @@ PAGE_SRC = {
     # an In-Depth Guide's country page shares the photo its destinations card shows (Armenia, 2026-10-02);
     # its articles' share images are cut by the Covers tool from each article's card photo
     "armenia/index.html":                     "Images/dest-cards/armenia_1.jpg",
+    # Greece launched 2026-10-07 with two articles and its field notes kept live: the country page shares its
+    # destinations card's photo, each article its card photo (the hero), until Covers cuts dedicated ones
+    "greece/index.html":                      "Images/dest-cards/greece_1.jpeg",
+    "greece/meteora.html":                    "Images/web/Greece/hero-meteora.jpg",
+    "greece/thessaloniki.html":               "Images/web/Greece/hero-thessaloniki-2x.jpg",
 }
 
 

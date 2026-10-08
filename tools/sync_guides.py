@@ -122,6 +122,8 @@ def sync_posts(dry=False):
     order, log, used = [], [], set()
     for name, slug in guides():
         for c in country_cards(slug):
+            if c["href"].endswith("field-notes.html"):   # a guide that keeps its field notes: they are not a guide article
+                continue
             href = "%s/%s" % (slug, c["href"])
             if href in have:
                 order.append(have[href])
@@ -135,10 +137,14 @@ def sync_posts(dry=False):
                 used.add(href)
     order += [card for href, card in have.items() if href not in used]
     new = raw[:gs] + "".join(order) + raw[ge:]
-    # a guide country's field notes are retired: its card leaves the Field notes section
+    # a guide country whose field notes are retired: its card leaves the Field notes section (one that keeps
+    # its notes live, like Greece in 2026-10, keeps the card)
     n0 = new.index('<div class="sec pad gg-notes">')
     notes = new[n0:]
     for _name, slug in guides():
+        fn = ROOT / slug / "field-notes.html"
+        if fn.is_file() and not is_stub(_read(slug + "/field-notes.html")):
+            continue
         rx = re.compile(r'<a href="%s/(?:field-notes|index)\.html"><div class="card-img bg[^"]*"[^>]*></div>.*?</a>' % re.escape(slug), re.S)
         notes, k = rx.subn("", notes, count=1)
         if k:

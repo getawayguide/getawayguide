@@ -82,7 +82,7 @@
       "days": "",
       "dx": 14,
       "dy": 4,
-      "href": "athens.html",
+      "href": "field-notes.html#athens",
       "lat": 37.9838,
       "lon": 23.7275,
       "n": 4,
@@ -90,5 +90,5 @@
       "no_number": true
     }
   ],
-  "page": "Drafts/.Full Articles/greece/meteora.html"
+  "page": "greece/meteora.html"
 }

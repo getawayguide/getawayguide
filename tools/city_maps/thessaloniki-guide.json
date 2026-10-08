@@ -3,7 +3,7 @@
   "kicker": "Greece",
   "city": "Thessaloniki",
   "osm": ".tmp/thessaloniki_osm.json",
-  "article": "Drafts/.Full Articles/greece/thessaloniki.html",
+  "article": "greece/thessaloniki.html",
   "embed": {
     "pre": "Here are the best activities to fill 48 hours in Thessaloniki:</p>\n",
     "post": "  <h3 class=\"article-h3\" id=\"wander-around-thessaloniki\">"

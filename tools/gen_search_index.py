@@ -84,26 +84,45 @@ def rel(p):
 def main():
     index_html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
 
-    # 1) Countries + flags from the nav dropdown (single source of truth)
-    countries, seen = [], set()
-    for href, flag, name in re.findall(
-            r'<a href="([^"]+)" class="nav-dropdown-item">'
-            r'<img[^>]*flags/([a-z]+)\.png[^>]*>'
-            r'<span class="country-name">([^<]+)</span>', index_html):
-        url = href.lstrip("./")
-        if url in seen:
-            continue
-        seen.add(url)
-        kind = "guide" if url.endswith("index.html") else "field-notes"
-        countries.append({"name": unescape(name.strip()), "url": url,
-                          "flag": flag, "kind": kind})
+    # 1) Countries + flags. The nav dropdown markup this used to read was replaced by the mega-menu in the
+    #    2026-07 redesign, and the regex has matched nothing since (0 countries; found at the Greece launch,
+    #    2026-10-07). Read the nav's own sources instead: destinations.html for the field-notes countries and
+    #    publish_country.FULL_GUIDES for the In-Depth Guides (a guide is listed once, as the guide).
+    import sys
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    from publish_country import parse_countries, FULL_GUIDES
+    guide_slugs = {g[3].split("/")[0] for g in FULL_GUIDES}
+    countries = []
+    dest_html = open(os.path.join(ROOT, "destinations.html"), encoding="utf-8").read()
+    for _cont, items in parse_countries(dest_html).items():
+        for name, iso2, slug in items:
+            if slug not in guide_slugs and os.path.exists(os.path.join(ROOT, slug, "field-notes.html")):
+                countries.append({"name": unescape(name), "url": "%s/field-notes.html" % slug, "flag": iso2, "kind": "field-notes"})
+    for name, iso2, _cont, href in FULL_GUIDES:
+        if os.path.exists(os.path.join(ROOT, href.replace("/", os.sep))):
+            countries.append({"name": name, "url": href, "flag": iso2, "kind": "guide"})
+    countries.sort(key=lambda c: c["name"].lower())
 
-    # 2) Articles from the CMS content file (published only)
+    # 2) Articles: the CMS content file (published only), plus every In-Depth Guide's articles as its country
+    #    page lists them (Armenia's and Greece's never reached articles.json, so they were not searchable)
     arts = json.load(open(os.path.join(ROOT, "_content", "articles.json"), encoding="utf-8"))
     articles = [{"title": unescape(a["title"]), "url": a["path"].lstrip("./"),
                  "country": a.get("country", ""), "tag": a.get("tag", ""),
                  "date": a.get("date", "")}
                 for a in arts["articles"] if a.get("status") == "published"]
+    have = {a["url"] for a in articles}
+    from sync_guides import country_cards
+    for name, _iso2, _cont, href in FULL_GUIDES:
+        slug = href.split("/")[0]
+        if not os.path.exists(os.path.join(ROOT, slug, "index.html")):
+            continue
+        for c in country_cards(slug):
+            url = "%s/%s" % (slug, c["href"])
+            if c["href"].endswith("field-notes.html") or url in have or not os.path.exists(os.path.join(ROOT, slug, c["href"])):
+                continue
+            have.add(url)
+            articles.append({"title": unescape(re.sub(r"<[^>]+>", "", c["title"])).strip(), "url": url,
+                             "country": name, "tag": c["tag"], "date": ""})
 
     # 3) Body text of every content page (field-notes + article pages) for Mentions
     content_paths = sorted(glob.glob(os.path.join(ROOT, "*", "field-notes.html")))

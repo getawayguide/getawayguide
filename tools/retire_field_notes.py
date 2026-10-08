@@ -24,8 +24,13 @@ Salvador is, and nothing on the site points at the field notes any more:
 It refuses to run until <slug>/index.html is live: retiring first would point the whole site at a
 page that does not exist yet. archive/ is never touched (see the publish protocol memory).
 
+--keep-field-notes (Kevin, 2026-10-07, Greece: "the only greek articles that are live are field notes, meteora
+and thessaloniki"): the country becomes an In-Depth Guide (steps 1, 2, 3, 6, 7) but its field notes stay a live
+page that the site keeps linking to (steps 4 and 5 are skipped). That is the "Keep the field notes live" launch.
+
     python tools/retire_field_notes.py armenia --dry-run     # what it would change (the tab shows this)
     python tools/retire_field_notes.py armenia               # at launch, after the guide is live
+    python tools/retire_field_notes.py greece --keep-field-notes   # a guide launch that keeps the notes live
 """
 import io
 import json
@@ -127,9 +132,9 @@ STUB = """<!DOCTYPE html>
 """
 
 
-def apply(slug, dry=False, force=False):
+def apply(slug, dry=False, force=False, keep=False):
     p = plan(slug)
-    if p["retired"]:
+    if p["retired"] and not keep:
         return ["%s is already retired" % p["page"]]
     if not p["country_page_live"] and not force and not dry:
         raise SystemExit("%s is not live yet: publish the country page first, then retire the field notes" % p["country_page"])
@@ -185,6 +190,9 @@ def apply(slug, dry=False, force=False):
         log.append("nav regenerated on %d pages" % n)
     else:
         log.append("nav regenerated on the %d pages that carry it" % p["nav_pages"])
+    if keep:                                          # the field notes stay a live page: links to them stay
+        log.append("field notes kept live: other links and %s left as they are" % p["page"])
+        return log + _finish(dry)
     # 4. every other link
     rx = link_re(slug)
     moved = 0
@@ -204,8 +212,13 @@ def apply(slug, dry=False, force=False):
     log.append("%s -> redirect to index.html" % p["page"])
     if not dry:
         io.open(ROOT / p["page"], "w", encoding="utf-8", newline="").write(STUB.format(name=name, domain=DOMAIN, slug=slug))
-    # 6. the posts page lists the country's articles under Guides (its field-notes card leaves), and the
-    #    home hero's "N and counting." is recounted (tools/sync_guides.py; Kevin, 2026-10-02)
+    return log + _finish(dry)
+
+
+def _finish(dry):
+    log = []
+    # 6. the posts page lists the country's articles under Guides (a retired country's field-notes card
+    #    leaves), and the home hero's "N and counting." is recounted (tools/sync_guides.py; Kevin, 2026-10-02)
     import sync_guides
     log += sync_guides.run(dry)
     # 7. sitemap + search
@@ -227,7 +240,7 @@ def main():
     if "--json" in sys.argv:
         sys.stdout.buffer.write(json.dumps(plan(slug), ensure_ascii=False).encode("utf-8"))
         return 0
-    for line in apply(slug, dry=dry, force="--force" in sys.argv):
+    for line in apply(slug, dry=dry, force="--force" in sys.argv, keep="--keep-field-notes" in sys.argv):
         print(("[dry] " if dry else "") + line)
     return 0
 

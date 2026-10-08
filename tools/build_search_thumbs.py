@@ -75,6 +75,33 @@ def card_class_for(url, home_html):
     return m.group(1) if m else None
 
 
+def card_inline_for(url, html):
+    """(photo, position) from the card's own inline style. Since the 2026 redesign the home/posts cards set
+    their photo inline (background-image + background-position) and no .img-* class exists, so the class
+    lookup found nothing for any article (none had a search thumbnail; found at the Greece launch)."""
+    m = re.search(r'<a href="' + re.escape(url) + r'"[^>]*>\s*<div class="card-img[^"]*"[^>]*?style="([^"]*)"', html)
+    if not m:
+        return None
+    img = re.search(r"background-image:url\('([^']+)'\)", m.group(1))
+    pos = re.search(r"background-position:([^;\"]+)", m.group(1))
+    return (img.group(1), pos.group(1).strip() if pos else "center") if img else None
+
+
+def country_card_for(url):
+    """(photo, position) from the article's card on its own country page (El Salvador's home/posts cards
+    take their photo from style rules, not inline)"""
+    import sys as _s
+    _s.path.insert(0, str(SITE / "tools"))
+    from sync_guides import country_cards
+    slug, page = url.split("/", 1) if "/" in url else ("", url)
+    if not slug or not (SITE / slug / "index.html").exists():
+        return None
+    for c in country_cards(slug):
+        if c["href"] == page and c["img"]:
+            return (re.sub(r"^(\.\./)+", "", c["img"]), c["pos"])
+    return None
+
+
 def cut(src, dst, dry):
     """cover-crop to the thumbnail box, ICC profile carried through"""
     if dst.exists():
@@ -117,10 +144,14 @@ def main():
 
     for art in idx.get("articles", []):
         cls = card_class_for(art["url"], home) or card_class_for(art["url"], posts)
-        if not cls or cls not in imgs:
+        inline = card_inline_for(art["url"], home) or card_inline_for(art["url"], posts) or country_card_for(art["url"])
+        if cls and cls in imgs:
+            original, pos = imgs[cls]
+        elif inline:
+            original, pos = inline
+        else:
             print(f"  no card image for {art['url']}", file=sys.stderr)
             continue
-        original, pos = imgs[cls]
         src = SITE / original
         if not src.exists():
             print(f"  missing original {original}", file=sys.stderr)

@@ -80,7 +80,7 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
 # Countries that have FULL multi-page guides (not just field notes). They're folded into
 # their continent group in the merged dropdown and flagged with a green dot. (name, iso2,
 # continent, href-to-guide-index). New Zealand's guides are unfinished -> moved to Drafts, omitted.
-FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html")]
+FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html"), ("Greece", "gr", "europe", "greece/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
