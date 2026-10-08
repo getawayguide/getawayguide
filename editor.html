@@ -1112,6 +1112,12 @@ aside{background:#fff;border-right:1px solid var(--line);overflow-y:auto}
 .alb.fin .bar{display:none}          /* a done album: name, count, and one line of what it holds */
 .alb .ck{display:inline-flex;align-items:center;gap:.3rem;color:#8a8a8a}
 .alb .ck svg{color:#2D6B50}
+.alb .moon{border:0;background:none;padding:0 .15rem 0 0;margin:0;cursor:pointer;color:#b08a2e;
+           font-size:.8rem;line-height:1}
+.alb .moon:hover{color:#8a6d24}
+.alb .moon:focus-visible{outline:2px solid #2D6B50;outline-offset:1px;border-radius:2px}
+.alb .moon-pop{font-family:Hanken Grotesk,sans-serif;font-size:.6rem;line-height:1.45;margin-top:.3rem;
+               padding:.3rem .45rem;border-radius:3px;background:#faf3e3;color:#8a6d24}
 /* the iPhone count, inline after the backed-up count */
 .alb .cnt{display:inline-flex;align-items:baseline;gap:.2rem;color:#6b6b6b;font-variant-numeric:tabular-nums}
 .alb .cnt .exp{width:2.9em;font:inherit;font-size:.82rem;text-align:left;padding:0 .15rem;border:0;
@@ -9497,6 +9503,10 @@ async function loadAlbums() {
     // file), and showing those read as short on albums that matched the phone.
     const items = files ? ((ver && ver.albumItems) || a.inAlbumItems || files) : 0;   // nothing on disk: nothing backed up
     const exp = a.expected || 0;
+    // backed up only as the shared album's copy, not the full-res original
+    const nOP = a.notOrigPhotos || 0, nOV = a.notOrigVideos || 0, notOrig = nOP + nOV;
+    const origWhat = `(${[nOP && `${nOP} photo${nOP > 1 ? 's' : ''}`, nOV && `${nOV} video${nOV > 1 ? 's' : ''}`]
+      .filter(Boolean).join(', ')}) ${notOrig > 1 ? 'are' : 'is'}`;
     // what the album is measured against: your iPhone first, then the album
     // folder, then the photo-only count as a last resort
     const goal = exp || (ver && ver.albumItems) || inAlbum;
@@ -9612,10 +9622,15 @@ async function loadAlbums() {
           : '');
     // the count: backed up, then (until the album is ticked off) the iPhone's count to check it against
     const CHECK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+    // ◐ beside the count when part of the backup is shared-album copies; the
+    // explanation opens on click so the list stays quiet (Kevin, 2026-09-29)
+    const moon = notOrig > 0 && !a.held;
+    const moonBtn = moon ? `<button class="moon" type="button" title="${notOrig} not originals: click for details" ` +
+      `aria-label="${notOrig} items are shared-album copies, not originals">◐</button>` : '';
     const count = archived
-      ? `<span class="ck" title="Backed up and ticked off">${CHECK}${items}</span>`
+      ? `<span class="ck" title="Backed up and ticked off">${moonBtn}${CHECK}${items}</span>`
       : a.held ? `<span class="cnt" title="In the album (not backed up)">${a.inAlbumItems || inAlbum}</span>`
-      : `<span class="cnt" title="In the album / the count on your iPhone">${items}<span>/</span>` +
+      : `<span class="cnt" title="In the album / the count on your iPhone">${moonBtn}${items}<span>/</span>` +
         `<input class="exp" type="number" min="1" step="1" placeholder="iPhone" value="${a.expected || ''}" ` +
         `aria-label="The item count your iPhone shows for this album"></span>`;
     if (archived) el.classList.add('fin');
@@ -9623,10 +9638,19 @@ async function loadAlbums() {
     el.innerHTML = `<div class="nm"><span class="anm">${window.flagImg ? flagImg(a.name) : ''}<span>${esc(window.albumLabel ? albumLabel(a.name) : a.name)}</span></span>${count}</div>` +
       `<div class="sub">${sub}</div>` +
       `<div class="bar${barCls}"><i style="width:${syncing ? 100 : pct}%"></i></div>` +
-      chk + tail;
+      chk +
+      (moon ? `<div class="moon-pop" hidden>◐ <b>${notOrig}</b> ${origWhat} backed up as shared-album copies, ` +
+              `not originals. Deleting the album loses nothing: the originals are in your iCloud ` +
+              `library and can still be fetched into the backup.</div>` : '') +
+      tail;
     el.onclick = e => {
       // clicks on the controls are edits, not a request to open the album
-      if (e.target.closest('.exp, .del, .undo')) return;
+      if (e.target.closest('.moon')) {
+        const pop = el.querySelector('.moon-pop');
+        if (pop) pop.hidden = !pop.hidden;
+        return;
+      }
+      if (e.target.closest('.exp, .del, .undo, .moon-pop')) return;
       CUR = a.name; loadAlbums(); loadPhotos();
     };
     const setArchived = async done => {
