@@ -2492,8 +2492,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   async function folderIsThisRepo(h) {
     try {
       const token = 'check-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-      const tmp = await h.getDirectoryHandle('.tmp', { create: true });
-      const fh = await tmp.getFileHandle('folder-check.txt', { create: true });
+      let tmp, fh;
+      try {
+        tmp = await h.getDirectoryHandle('.tmp', { create: true });
+        fh = await tmp.getFileHandle('folder-check.txt', { create: true });
+      } catch (e) {
+        if (e && e.name === 'NotFoundError') return false;   // the folder itself is gone (the OneDrive copy was deleted)
+        throw e;
+      }
       const w = await fh.createWritable(); await w.write(token); await w.close();
       let r;
       try { r = await fetch('http://127.0.0.1:5003/site/.tmp/folder-check.txt?t=' + Date.now(), { cache: 'no-store' }); }
@@ -2502,12 +2508,36 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       return (await r.text()).trim() === token;
     } catch (e) { return null; }
   }
+  const REPO_PATH = 'C:\\Users\\kevin\\Projects\\Travel Blog';
   async function forgetWrongFolder() {
     folderHandle = null;
     try { await saveFolderHandle(null); } catch (e) {}
     try { updateFolderUI(); } catch (e) {}
-    alert('The editor was still connected to the old copy of the Travel Blog folder (in OneDrive).\n\n' +
-          'Reconnect it to C:\\Users\\kevin\\Projects\\Travel Blog (Articles, Connect folder) so your edits are saved in the right place.');
+    showWrongFolderBanner();
+  }
+  // One click, no dialog: the banner names the folder (click the path to copy it, then paste it into the
+  // picker's address bar) and its Connect button opens the picker (Kevin, 2026-10-08: "I still get this error").
+  function showWrongFolderBanner() {
+    if (document.getElementById('wrong-folder-banner')) return;
+    const b = document.createElement('div');
+    b.id = 'wrong-folder-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;' +
+      'justify-content:center;gap:.8rem;flex-wrap:wrap;padding:.55rem 1rem;background:#12514B;color:#fff;' +
+      "font-family:Hanken Grotesk,sans-serif;font-size:.8rem";
+    b.innerHTML = '<span>The Travel Blog moved. Connect the editor to its new folder: ' +
+      '<code id="wrong-folder-path" title="Click to copy" style="cursor:pointer;background:rgba(255,255,255,.14);' +
+      'padding:.1rem .4rem;border-radius:3px;font-size:.78rem">' + REPO_PATH + '</code> ' +
+      '<span id="wrong-folder-copied" style="opacity:.8"></span></span>' +
+      '<button id="wrong-folder-connect" style="border:0;border-radius:4px;padding:.35rem .9rem;font:inherit;' +
+      'font-weight:600;cursor:pointer;background:#fff;color:#12514B">Connect folder</button>';
+    document.body.appendChild(b);
+    b.querySelector('#wrong-folder-path').onclick = async () => {
+      try { await navigator.clipboard.writeText(REPO_PATH); b.querySelector('#wrong-folder-copied').textContent = 'copied, paste it into the picker'; } catch (e) {}
+    };
+    b.querySelector('#wrong-folder-connect').onclick = async () => {
+      await connectFolder();
+      if (folderHandle) b.remove();
+    };
   }
 
   // On load: restore stored handle and check permission
@@ -2627,12 +2657,20 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   async function connectFolder() {
     try {
       const h = await window.showDirectoryPicker({
-        id: 'travel-blog',
+        id: 'travel-blog-projects',               // a new id: Chrome kept reopening the OneDrive folder under the old one
         mode: 'readwrite',
-        startIn: lastFileHandle || 'documents'
+        startIn: lastFileHandle || 'desktop'      // 'documents' is the OneDrive folder on this PC
       });
+      if ((await folderIsThisRepo(h)) === false) {   // picked the old copy again: say so, keep nothing
+        showWrongFolderBanner();
+        const c = document.getElementById('wrong-folder-copied');
+        if (c) c.textContent = 'that folder is the old copy, pick ' + REPO_PATH;
+        return;
+      }
       folderHandle = h;
+      h._checked = true;
       await saveFolderHandle(h);
+      const wb = document.getElementById('wrong-folder-banner'); if (wb) wb.remove();
       updateFolderUI();
       refreshArticleList();
       mirrorTodo();                 // connecting is consent to write here
