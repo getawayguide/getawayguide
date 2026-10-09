@@ -2,7 +2,7 @@
 # N x N tiles, fetch each with retries, save .tmp/<slug>_osm_tile_<i>_<j>.json; merge with
 # tools/merge_osm_tiles.py afterwards. Usage: tools/fetch_citymap_osm_tiled.ps1 <slug> <N>
 param([string]$slug, [int]$N = 3)
-Set-Location "C:\Users\kevin\OneDrive\Documents\Travel Blog"
+Set-Location "C:\Users\kevin\Projects\Travel Blog"
 $bboxText = (& python tools/city_map.py "tools/city_maps/$slug.json" --bbox | Select-Object -Last 1).Trim()
 $b = $bboxText.Split(",") | ForEach-Object { [double]$_ }
 $S, $W, $Nn, $E = $b

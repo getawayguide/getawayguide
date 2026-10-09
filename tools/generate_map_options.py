@@ -16,7 +16,7 @@ except ImportError:
     print("Pillow not installed. Run: pip install pillow")
     sys.exit(1)
 
-OUTPUT_DIR = r"c:\Users\kevin\OneDrive\Documents\Travel Blog\Images\web"
+OUTPUT_DIR = r"c:\Users\kevin\Projects\Travel Blog\Images\web"
 TILE_URL = "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
 HEADERS = {"User-Agent": "Mozilla/5.0 (travel-blog static-map-generator)"}
 

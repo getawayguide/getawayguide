@@ -60,10 +60,10 @@ RESTART = (
     # reports success but Get-CimInstance shows nothing actually running.
     # Tested and confirmed. A single pre-quoted argument STRING works - do
     # not revert this to an array without re-testing end to end.
-    "$argStr = '\"C:\\Users\\kevin\\OneDrive\\Documents\\Travel Blog\\tools\\photo_backup.py\" "
+    "$argStr = '\"C:\\Users\\kevin\\Projects\\Travel Blog\\tools\\photo_backup.py\" "
     "--watch --workers 4 --interval 90';"
     "Start-Process $pyw -WindowStyle Hidden -ArgumentList $argStr "
-    "-WorkingDirectory 'C:\\Users\\kevin\\OneDrive\\Documents\\Travel Blog'"
+    "-WorkingDirectory 'C:\\Users\\kevin\\Projects\\Travel Blog'"
 )
 
 

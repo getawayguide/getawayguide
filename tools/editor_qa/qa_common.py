@@ -3,7 +3,7 @@ import asyncio, json, pathlib, sys, time
 from playwright.async_api import async_playwright
 
 API = "http://127.0.0.1:5003"
-ROOT = pathlib.Path(r"c:\Users\kevin\OneDrive\Documents\Travel Blog")
+ROOT = pathlib.Path(r"c:\Users\kevin\Projects\Travel Blog")
 QA = ROOT / ".tmp" / "editor-qa"
 SHOTS = ROOT / ".tmp" / "qa"
 SHOTS.mkdir(parents=True, exist_ok=True)

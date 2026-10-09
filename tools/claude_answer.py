@@ -31,8 +31,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import redline  # noqa: E402
 
-GUIDE = Path.home() / ".claude/projects/c--Users-kevin-OneDrive-Documents-Travel-Blog/memory/user_writing_style.md"
-PATTERNS = Path.home() / ".claude/projects/c--Users-kevin-OneDrive-Documents-Travel-Blog/memory/feedback_draft_from_review_patterns.md"
+GUIDE = Path.home() / ".claude/projects/c--Users-kevin-Projects-Travel-Blog/memory/user_writing_style.md"
+PATTERNS = Path.home() / ".claude/projects/c--Users-kevin-Projects-Travel-Blog/memory/feedback_draft_from_review_patterns.md"
 
 
 def article_for(key):

@@ -11,7 +11,7 @@ Updates destinations.html and site-wide nav for the 5 destinations tasks:
 
 import os, re
 
-ROOT = r'c:\Users\kevin\OneDrive\Documents\Travel Blog'
+ROOT = r'c:\Users\kevin\Projects\Travel Blog'
 
 # ──────────────────────────────────────────────────────────────────────────────
 # DESTINATIONS.HTML

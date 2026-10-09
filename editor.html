@@ -2486,6 +2486,30 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     });
   }
 
+  // Is this handle the folder the photo server serves? (Kevin, 2026-10-08: the projects moved out of OneDrive and
+  // Chrome still remembered the OneDrive copy, so articles would have been opened and saved there.) A token
+  // written through the handle must come back from the server. true / false, or null when the server can't say.
+  async function folderIsThisRepo(h) {
+    try {
+      const token = 'check-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      const tmp = await h.getDirectoryHandle('.tmp', { create: true });
+      const fh = await tmp.getFileHandle('folder-check.txt', { create: true });
+      const w = await fh.createWritable(); await w.write(token); await w.close();
+      let r;
+      try { r = await fetch('http://127.0.0.1:5003/site/.tmp/folder-check.txt?t=' + Date.now(), { cache: 'no-store' }); }
+      catch (e) { return null; }                       // server down: no verdict, keep the folder
+      if (!r.ok) return r.status === 404 ? false : null;
+      return (await r.text()).trim() === token;
+    } catch (e) { return null; }
+  }
+  async function forgetWrongFolder() {
+    folderHandle = null;
+    try { await saveFolderHandle(null); } catch (e) {}
+    try { updateFolderUI(); } catch (e) {}
+    alert('The editor was still connected to the old copy of the Travel Blog folder (in OneDrive).\n\n' +
+          'Reconnect it to C:\\Users\\kevin\\Projects\\Travel Blog (Articles, Connect folder) so your edits are saved in the right place.');
+  }
+
   // On load: restore stored handle and check permission
   (async () => {
     try {
@@ -2493,6 +2517,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       if (stored) {
         folderHandle = stored;
         const perm = await stored.queryPermission({ mode: 'readwrite' });
+        if (perm === 'granted' && (await folderIsThisRepo(stored)) === false) { await forgetWrongFolder(); return; }
         if (perm === 'granted') updateFolderUI();
         // Chrome downgrades a stored handle to 'prompt' after a restart, and
         // requestPermission needs a user gesture -- so the on-load mirror
@@ -2588,10 +2613,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
   async function ensureFolderHandle() {
     if (!folderHandle) return false;
-    const perm = await folderHandle.queryPermission({ mode: 'readwrite' });
-    if (perm === 'granted') return true;
-    const granted = await folderHandle.requestPermission({ mode: 'readwrite' });
-    return granted === 'granted';
+    let perm = await folderHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await folderHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return false;
+    if (!folderHandle._checked) {                       // once per session: never write into another copy of the repo
+      const same = await folderIsThisRepo(folderHandle);
+      if (same === false) { await forgetWrongFolder(); return false; }
+      if (same === true) folderHandle._checked = true;
+    }
+    return true;
   }
 
   async function connectFolder() {

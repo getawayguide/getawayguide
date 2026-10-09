@@ -4,7 +4,7 @@ elsewhere on the page during map gestures (the 'can't pan after zoom' bug).
 """
 import http.server, socketserver, threading, os, sys, time
 
-os.chdir(r"c:/Users/kevin/OneDrive/Documents/Travel Blog")
+os.chdir(r"c:/Users/kevin/Projects/Travel Blog")
 PORT = 8807
 
 from playwright.sync_api import sync_playwright
