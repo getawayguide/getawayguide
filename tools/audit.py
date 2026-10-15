@@ -188,6 +188,16 @@ def check_tiers(pages=None, have=None):
             if not fallback:
                 continue
             name = fallback.rsplit("/", 1)[-1]
+            if 'class="cmbase"' in blk:
+                # a city map: a WebP for it, and every file it names published. The desktop/phone
+                # split is the figure's .citymap.desk/.mob, and the phone map is one zoomable file.
+                if not any(attrs(x).get("type") == "image/webp" for x in SOURCE.findall(blk)):
+                    probs.append(finding("medium", "webp-missing", "The city map has no WebP source.", name))
+                for x in SOURCE.findall(blk):
+                    for f in srcset_files(attrs(x).get("srcset", ""), r):
+                        if not have(f):
+                            probs.append(finding("high", "tier-missing", "A city-map file is not published, so it 404s.", f))
+                continue
             # Two shapes are in use and both are correct. A body image names the desktop
             # source with `media="(min-width:769px)"`; a HERO leaves the desktop source with
             # no media at all and narrows the mobile one with `max-width:768px`. Keying on
@@ -558,12 +568,17 @@ def load_ignores():
     return rules
 
 
-def ignored_by(rules, section, page, rule):
+def ignored_by(rules, section, page, rule, value=""):
+    """The page column can also name the finding's file, "page@glob": a ruling on one photo
+    then does not mute every later finding of that kind on the page (2026-10-09)."""
     import fnmatch
     for r_rule, r_page, reason in rules:
         if r_rule not in ("*", rule, section):
             continue
+        r_page, _, r_value = r_page.partition("@")
         if r_page != "*" and not fnmatch.fnmatch(page, r_page):
+            continue
+        if r_value and not fnmatch.fnmatch(value or "", r_value):
             continue
         return reason or "(no reason given)"
     return None
@@ -580,7 +595,7 @@ def run(names, use_ignores=True):
         keep = []
         for g in groups:
             fresh = [f for f in g.get("findings", [])
-                     if not ignored_by(rules, TITLES.get(n, n), g["name"], f.get("rule", ""))]
+                     if not ignored_by(rules, TITLES.get(n, n), g["name"], f.get("rule", ""), f.get("value", ""))]
             skipped += len(g.get("findings", [])) - len(fresh)
             if fresh:
                 keep.append({**g, "findings": fresh})
