@@ -21,13 +21,15 @@ name: Link rot
 # the body instead of making you open a log, and the issue closes itself on the
 # next clean run, so the inbox item is the work item.
 
+# PAUSED 2026-10-15 (Kevin: "let's just stop the link checking for now, it is too
+# messy, we can revisit it later"). About 103 of its 106 "dead" links were bot walls
+# (403/429/406 from GetYourGuide, AllTrails, Viator, Expedia, TripAdvisor...), which
+# refuse even a real headless browser from Kevin's own PC; only 3 were real 404s.
+# Fixing it means splitting dead from could-not-verify before an issue is opened.
+# The Run workflow button still works. To resume, restore the schedule:
+#   schedule:
+#     - cron: "37 15 */2 * *"   # off the hour: GitHub started "0 15" runs 3-7 h late
 on:
-  schedule:
-    # Every 2 days at 15:00 UTC = 8am Pacific during PDT, 7am once PST starts in
-    # November. Cron has no true "every 48h", so this is odd days of the month
-    # (1,3,5...31); the only wrinkle is a back-to-back run across a 31-day
-    # boundary, which is harmless for a read-only check.
-    - cron: "0 15 */2 * *"
   workflow_dispatch:
 
 permissions:
