@@ -1,0 +1,146 @@
+{
+ "slug": "fethiye-guide",
+ "kicker": "Türkiye",
+ "city": "Fethiye",
+ "osm": ".tmp/fethiye-guide_osm.json",
+ "article": "turkiye/fethiye-oludeniz.html",
+ "embed": {
+  "pre": "",
+  "post": ""
+ },
+ "hint": [
+  "Touch to explore",
+  "Double-tap to open in Google Maps"
+ ],
+ "desktop": {
+  "pad": 1.25
+ },
+ "mobile": {
+  "pad": 1.2,
+  "init_w": 0.82,
+  "init_x": 0.5,
+  "init_y": 0.5
+ },
+ "pois": [
+  {
+   "name": "Fethiye Old Town",
+   "cat": "see",
+   "match": "fethiye old town",
+   "lat": 36.620272,
+   "lon": 29.109314,
+   "href": "https://www.google.com/maps/place/Paspatur,+Fethiye%2FMu%C4%9Fla,+T%C3%BCrkiye"
+  },
+  {
+   "name": "Ancient City of Telmessos",
+   "cat": "see",
+   "match": "ancient city of telmes",
+   "lat": 36.618214,
+   "lon": 29.117753
+  },
+  {
+   "name": "Fethiye Promenade",
+   "cat": "see",
+   "match": "waterfront promenade",
+   "lat": 36.632178,
+   "lon": 29.11895,
+   "href": "https://www.google.com/maps/place/Fethiye+Kordon/@36.6102853,29.1082014,12z/data=!4m10!1m2!2m1!1sWalk+along+the+promenade+and+watch+the+sunset+Fethiye!3m6!1s0x14c043f6cfee0ce1:0x2fbe150c0df6d975!8m2!3d36.6321782!4d29.1189502!15sCjVXYWxrIGFsb25nIHRoZSBwcm9tZW5hZGUgYW5kIHdhdGNoIHRoZSBzdW5zZXQgRmV0aGl5ZVo3IjV3YWxrIGFsb25nIHRoZSBwcm9tZW5hZGUgYW5kIHdhdGNoIHRoZSBzdW5zZXQgZmV0aGl5ZZIBC2hpa2luZ19hcmVhmgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVVJsTUZweVYycDNSUkFC4AEA-gEECDIQSQ!16s%2Fg%2F11h07v5z90?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Fethiye Fish Market",
+   "cat": "see",
+   "match": "fish market",
+   "lat": 36.6208496,
+   "lon": 29.1113058,
+   "href": "https://www.google.com/maps/place/Fethiye+Fish+Market+-+Bal%C4%B1k+Pazar%C4%B1/@36.640768,29.1231778,14z/data=!4m10!1m2!2m1!1sFethiye+Fish+Market!3m6!1s0x14c0412e1871cf67:0x1835f999c6db8689!8m2!3d36.6208496!4d29.1113058!15sChNGZXRoaXllIEZpc2ggTWFya2V0WhUiE2ZldGhpeWUgZmlzaCBtYXJrZXSSAQpmaXNoX3N0b3JlmgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDI1d1NWcEZOVlJoVkZKTVdsWktkVlpZVm5kVk1sazFUbXBqZVUxc1JSQULgAQD6AQQIABA4!16s%2Fg%2F11h32zb9r9?hl=en&entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Çalış Beach",
+   "cat": "see",
+   "match": "çalış beach",
+   "lat": 36.6690608,
+   "lon": 29.1040858,
+   "href": "https://www.google.com/maps/place/%C3%87al%C4%B1%C5%9F+Beach/@36.6667351,29.0999865,14z/data=!3m1!4b1!4m6!3m5!1s0x14c04307671d9175:0x31cad76a7a86d646!8m2!3d36.6690608!4d29.1040858!16s%2Fg%2F11byl4fwgh?hl=en&entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Şövalye Island",
+   "cat": "see",
+   "match": "şövalye island",
+   "lat": 36.6506474,
+   "lon": 29.1005337,
+   "href": "https://www.google.com/maps/place/Fethiye+Island/@36.6497477,29.1023376,16z/data=!4m10!1m2!2m1!1s%C5%9E%C3%B6valye+Island+Fethiye!3m6!1s0x14c043b6ebabd2bb:0xb45a48fc2a711d18!8m2!3d36.6506474!4d29.1005337!15sChjFnsO2dmFseWUgSXNsYW5kIEZldGhpeWWSAQZpc2xhbmTgAQA!16s%2Fg%2F1tf8h_vb?hl=en&entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Belcekız Beach",
+   "cat": "see",
+   "match": "belcekız beach",
+   "lat": 36.5446281,
+   "lon": 29.1240937,
+   "href": "https://www.google.com/maps/place/Belcek%C4%B1z+Plaj%C4%B1/@36.5446276,29.1240937,15z/data=!3m1!4b1!4m6!3m5!1s0x14c0418a370eed91:0xf607c37035513334!8m2!3d36.5446281!4d29.1240937!16s%2Fg%2F11ghncm8x3?hl=en&entry=ttu&g_ep=EgoyMDI2MTAxMy4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Yeşil Asma Yaprağı Ev Yemekleri & Meze",
+   "cat": "eat",
+   "match": "yeşil asma yaprağı ev ",
+   "lat": 36.655153,
+   "lon": 29.122514,
+   "href": "https://www.google.com/maps/place/Ye%C5%9Fil+Asma+Yapra%C4%9F%C4%B1+Ev+Yemekleri+%26+Meze,+Fethiye"
+  },
+  {
+   "name": "Doc Coffee Company",
+   "cat": "eat",
+   "match": "doc coffee company",
+   "lat": 36.65838,
+   "lon": 29.121234
+  },
+  {
+   "name": "Lokum Kokoreç",
+   "cat": "eat",
+   "match": "lokum kokoreç",
+   "lat": 36.656697,
+   "lon": 29.122341
+  },
+  {
+   "name": "El Camino Pub & Hostel",
+   "cat": "stay",
+   "match": "el camino pub & ho",
+   "lat": 36.6214285,
+   "lon": 29.1028959,
+   "href": "https://www.google.com/maps/place/El+Camino+Pub%26Hostel/@36.621457,29.1028043,17z/data=!4m9!3m8!1s0x14c0417ca28ab155:0x300021e8fe969460!5m2!4m1!1i2!8m2!3d36.621457!4d29.1028043!16s%2Fg%2F11cny0zp19?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+  }
+ ],
+ "sea_bg": true,
+ "center": {
+  "lat": 36.637824,
+  "lon": 29.118485
+ },
+ "multi_day_trips": [
+  {
+   "name": "The Lycian Way",
+   "time": ""
+  }
+ ],
+ "district_labels": [
+  {
+   "text": "FETHIYE",
+   "lat": 36.6555,
+   "lon": 29.117
+  },
+  {
+   "text": "ÖLÜDENİZ",
+   "lat": 36.5545,
+   "lon": 29.1335
+  }
+ ],
+ "day_trips": [
+  {
+   "name": "Ölüdeniz & the Blue Lagoon",
+   "time": "20 min by dolmuş",
+   "href": "https://www.google.com/maps/place/Kumburnu+Plaj%C4%B1/@36.5516696,29.1132799,15z/data=!4m15!1m8!3m7!1s0x14c04098bb416971:0x3ed8d9c9cbf81ec9!2zw5Zsw7xkZW5peiwgNDgzMDAgRmV0aGl5ZS9NdcSfbGEsIFTDvHJraXll!3b1!8m2!3d36.570407!4d29.140454!16s%2Fm%2F025vp92!3m5!1s0x14c040a3e0d5cec9:0xaec33dca3481406d!8m2!3d36.5494673!4d29.1107953!16s%2Fg%2F113g6ycn0?entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D"
+  },
+  {
+   "name": "Paragliding off Babadağ",
+   "time": "half a day",
+   "href": "https://www.google.com/maps/place/Sky+Star+Paragliding/@36.5417588,29.1273052,16.02z/data=!4m15!1m8!3m7!1s0x14c1da54a506cf4d:0xcfbf502fb3cb4db3!2zS2HFnywgQW5kaWZsaSwgMDc1ODAgS2HFny9BbnRhbHlhLCBUw7xya2l5ZQ!3b1!8m2!3d36.199913!4d29.63955!16zL20vMGJqOXFs!3m5!1s0x14c0415fbfffffff:0x310c0df8414ec8bb!8m2!3d36.5444613!4d29.1255449!16s%2Fg%2F11c558yqzx?entry=ttu&g_ep=EgoyMDI2MDYyMi4wIKXMDSoASAFQAw%3D%3D"
+  }
+ ]
+}

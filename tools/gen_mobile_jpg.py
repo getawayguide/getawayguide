@@ -39,13 +39,16 @@ IMAGES = BASE / "Images"
 WEB = IMAGES / "web"
 EXCLUDE = {"web", "Index", "Bio", "dest-cards"}
 DRY = "--dry-run" in sys.argv
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index("--page") + 1] if "--page" in sys.argv[:-1] else None
 
 MOB_W = 461          # matches the shipped -mob-2x variants
 QUALITY = 88
 
 
 def article_pages():
-    for p in sorted(BASE.glob("*/*.html")):
+    for p in ([BASE / PAGE] if PAGE else sorted(BASE.glob("*/*.html"))):
         try:
             t = p.read_text(encoding="utf-8")
         except OSError:

@@ -2,31 +2,28 @@
 
     python tools/photo_suite.py            start what isn't running, open the editor
     python tools/photo_suite.py status     what is up
-    python tools/photo_suite.py pause      stop the backup watcher (photos stay put)
-    python tools/photo_suite.py resume     start the watcher again
-    python tools/photo_suite.py fix        restart Apple's iCloud photo services
     python tools/photo_suite.py stop       stop everything the suite started
+    python tools/photo_suite.py keep       the keeper: restart a server that died (start runs it)
     python tools/photo_suite.py site       preview the live site (the photo server
                                            serves the whole repo at /site/)
 
 `Editor Suite.cmd` in the repo root is a one-line wrapper around this, and
-tools/photo_editor.py exposes the same actions at /api/suite so the Live
-Activity panel in editor.html can drive them. This replaced three separate
-launchers (Start Photo Tools / Pause Backup / Fix Shared Albums).
+tools/photo_editor.py reports the same status at /api/suite for the Live
+Activity panel in editor.html.
 
-The three helpers:
+The helpers:
   * photo server  (port 5003)  photos + library + picks for editor.html
   * hero picker   (port 5004)  choosing hero banners, opens from the editor
-  * backup watcher             pulls full-res originals for each Shared Album
+  * map editor    (port 5002)  moving labels on route and city maps
+  * keeper        (port 5009)  restarts any of the three servers that dies (see keep())
 
 Every helper runs under pythonw with -u and its output appended to
 ~/Backup/_meta/<name>.log|.err: under a bare pythonw a crash is SILENT, and
 when the server dies every photo in the editor just stops loading.
 
-backup_watchdog.py is deliberately NOT started. Restarting the watcher
-abandons its in-flight copies, and those keep their place in iCloud's
-hydration queue as ghosts, so every restart pushed fresh workers further back
-in line. The watcher waits slow hydrations out itself.
+The shared-album backup watcher (photo_backup.py) and the iCloud sync fix were
+removed on 2026-10-12: albums come from icloud.com downloads
+(tools/ingest_icloud_download.py), so nothing copies in the background.
 """
 import re
 import os
@@ -65,6 +62,10 @@ DETACHED = 0x08000000 | 0x00000200          # CREATE_NO_WINDOW | CREATE_NEW_PROC
                                             # no console at all, which is what made the windows appear)
 
 SERVICES = {
+    # FIRST, so `stop` takes the keeper down before the servers it would otherwise bring back.
+    # It holds port 5009 only as a lock (one keeper at a time) and serves nothing.
+    "keeper":  {"label": "keeper",         "port": 5009,
+                "args": ["-u", "tools/photo_suite.py", "keep"],    "log": "keeper"},
     "server":  {"label": "photo server",   "port": 5003,
                 "args": ["-u", "tools/photo_editor.py"],            "log": "editor"},
     "heroes":  {"label": "covers",         "port": 5004,
@@ -73,9 +74,6 @@ SERVICES = {
     # suite now because the article editor's Edit button on a map opens it in place
     "maps":    {"label": "map editor",     "port": 5002,
                 "args": ["-u", "tools/map_editor.py"],              "log": "maps"},
-    "watcher": {"label": "backup watcher", "match": "photo_backup",
-                "args": ["-u", "tools/photo_backup.py", "--watch",
-                         "--workers", "4", "--interval", "90"],     "log": "watcher"},
 }
 
 
@@ -93,23 +91,44 @@ def port_open(port):
         return s.connect_ex(("127.0.0.1", port)) == 0
 
 
+def http_answers(port, timeout=5.0):
+    """Does the server answer HTTP at all, with any status? A TCP connect proves nothing: Windows completes
+    it even when the server app answers nothing (stress test 2026-10-09). The path is one no server has,
+    so the answer is a cheap 404 that touches nothing."""
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=timeout) as c:
+            c.settimeout(timeout)
+            c.sendall(b"GET /__keeper HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n")
+            got = b""
+            while len(got) < 5:
+                more = c.recv(64)
+                if not more:
+                    break
+                got += more
+            return got.startswith(b"HTTP/")
+    except OSError:
+        return False
+
+
 def port_pids(port):
-    out = _ps(f"Get-NetTCPConnection -LocalPort {port} -State Listen -ErrorAction SilentlyContinue "
-              "| Select-Object -ExpandProperty OwningProcess")
-    return sorted({int(x) for x in out.split() if x.strip().isdigit()})
-
-
-def watcher_pids():
-    """PIDs of python processes running photo_backup.py (the watcher)."""
-    out = _ps("Get-CimInstance Win32_Process -Filter \"Name='python.exe' or Name='pythonw.exe'\" "
-              "| Where-Object { $_.CommandLine -match 'photo_backup' } "
-              "| Select-Object -ExpandProperty ProcessId")
-    return sorted({int(x) for x in out.split() if x.strip().isdigit()})
+    """PIDs listening on a local port. netstat, not Get-NetTCPConnection: on this box that took 9 s
+    warm and often hit the 20 s timeout, which made `stop` raise halfway through (QA 2026-10-08)."""
+    try:
+        out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True,
+                             timeout=15, creationflags=CREATE_NO_WINDOW).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    pids = set()
+    for line in out.splitlines():
+        f = line.split()
+        if len(f) >= 5 and f[0] == "TCP" and f[3] == "LISTENING" and f[1].rsplit(":", 1)[-1] == str(port):
+            if f[4].isdigit() and f[4] != "0":
+                pids.add(int(f[4]))
+    return sorted(pids)
 
 
 def is_up(name):
-    s = SERVICES[name]
-    return port_open(s["port"]) if "port" in s else bool(watcher_pids())
+    return port_open(SERVICES[name]["port"])
 
 
 def start(name):
@@ -118,11 +137,26 @@ def start(name):
         return False
     s = SERVICES[name]
     META.mkdir(parents=True, exist_ok=True)
+    for ext in ("log", "err"):
+        _rotate(META / f"{s['log']}.{ext}")
     out = open(META / f"{s['log']}.log", "ab")
     err = open(META / f"{s['log']}.err", "ab")
     subprocess.Popen([PYW] + s["args"], cwd=str(ROOT), stdout=out, stderr=err,
                      stdin=subprocess.DEVNULL, creationflags=DETACHED, close_fds=True)
     return True
+
+
+def _rotate(path, limit=20 * 1024 * 1024):
+    """A server's .err holds every request line and only grew: the photo server's reached 59 MB (stress
+    test 2026-10-09). Past 20 MB it becomes <name>.1 when the server next starts; one old copy is kept."""
+    try:
+        if path.exists() and path.stat().st_size > limit:
+            old = path.with_name(path.name + ".1")
+            if old.exists():
+                old.unlink()
+            path.rename(old)
+    except OSError:
+        pass
 
 
 def _kill(pids):
@@ -133,45 +167,272 @@ def _kill(pids):
             pass
 
 
-def pause():
-    """Stop the watcher. Nothing is lost: every photo already downloaded
-    stays put, and resume picks up exactly where this left off."""
-    pids = watcher_pids()
-    _kill(pids)
-    return pids
-
-
-def resume():
-    return start("watcher")
-
-
 def stop_all():
     """Stop everything the suite started (not iCloud itself)."""
     stopped = {}
     for name, s in SERVICES.items():
-        pids = port_pids(s["port"]) if "port" in s else watcher_pids()
+        try:                    # one slow lookup must not leave the rest running
+            pids = port_pids(s["port"])
+        except Exception:
+            pids = []
         _kill(pids)
         stopped[name] = pids
     return stopped
 
 
-def fix_icloud(log=print):
-    """Restart ApplePhotoStreams + iCloudPhotos (see tools/icloud_fix.ps1),
-    streaming each line to `log`. Takes about a minute. Returns the exit
-    code: 0 healthy, 2 still idle (run again), 1 iCloud not installed."""
-    p = subprocess.Popen(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                          "-File", str(ROOT / "tools" / "icloud_fix.ps1")],
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                         creationflags=CREATE_NO_WINDOW)
-    for line in p.stdout:
-        log(line.rstrip())
-    return p.wait()
-
-
 def status():
-    w = watcher_pids()
-    return {"server": port_open(5003), "heroes": port_open(5004), "maps": port_open(5002),
-            "watcher": bool(w), "watcherPids": w}
+    # an HTTP answer, not a TCP connect: Windows completes the connect even when the app answers nothing, so a
+    # hung server showed as up in Live Activity (stress test 2026-10-23). The keeper has no HTTP; its lock port stays.
+    return {"server": http_answers(5003, 2.0), "heroes": http_answers(5004, 2.0), "maps": http_answers(5002, 2.0),
+            "keeper": port_open(5009)}
+
+
+# ---------------------------------------------------------------- the keeper
+# A dead photo server used to stay dead until Kevin noticed: every photo in the editor stopped
+# loading and a red banner told him to double-click a .cmd and reload. The keeper checks the
+# three servers every KEEP_EVERY seconds and starts one that is down.
+#  * Two misses in a row before it acts: a session restarting a server by hand (kill the port's
+#    pid, start it again) is back within a few seconds, and the keeper must not race it.
+#  * Three restarts of one server inside ten minutes means it is crashing on start (a session
+#    halfway through editing it, say). It is then left alone for ten minutes instead of looping.
+#  * `stop` kills the keeper first (it is first in SERVICES), so a stop stays stopped.
+# Every restart is a line in ~/Backup/_meta/keeper.log and an entry in keeper.json with the tail
+# of the server's .err log, which is where the cause of the crash is.
+KEPT = ("server", "heroes", "maps")
+KEEP_EVERY = 10
+# After a restart, this long before the port is checked again. A server that takes longer than two
+# checks to bind looked dead again, and the keeper started a second and a third copy; Windows lets
+# them all bind the same port, and the newest takes the connections (QA 2026-10-08). The photo
+# server binds in about a second; 60 s is room for a slow disk.
+KEEP_GRACE = 60
+# A server that does not answer but is still LISTENING is busy or hung, not dead. Starting a second
+# copy then would bind the same port (Windows allows it) and take the connections with none of the
+# first one's state. It is left alone. It is stopped and started fresh only when it has not answered
+# HTTP for KEEP_HUNG while ANOTHER server answered in the last 90 s.
+# Why both: the stress test (2026-10-09) found that a burst of connections freezes ALL loopback HTTP
+# on this machine for 4 to 5 minutes (Norton's network filter is the suspect). Every server goes quiet
+# at once and comes back by itself. A server that is silent alone, for 10 minutes, is really stuck.
+KEEP_HUNG = 600
+KEEP_HTTP_EVERY = 3          # rounds between HTTP probes (one 404 line in each server's log per probe)
+# Restarts count toward the ten-minute hold only when the server died soon after the keeper started
+# it. A server that ran for an hour and was then killed is not crashing on start.
+KEEP_QUICK = 150
+KEEPER_STATE = META / "keeper.json"
+
+
+def _err_tail(name, n=8):
+    try:
+        with open(META / f"{SERVICES[name]['log']}.err", "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 6000))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except OSError:
+        return []
+    # the request log shares the .err file; the crash is in what is not a request line
+    return [l for l in lines if '" 200 -' not in l and '" 304 -' not in l and "/__keeper" not in l][-n:]
+
+
+def _alive(pid):
+    """Is this process still running? netstat lists a killed server's socket for a moment after the
+    kill, and the keeper must not take that for a busy one. (Never os.kill(pid, 0) on Windows: any
+    signal but the two console ones TERMINATES the process.)"""
+    if sys.platform != "win32":
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+    import ctypes
+    k32 = ctypes.windll.kernel32
+    h = k32.OpenProcess(0x1000, False, int(pid))          # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h:
+        return False
+    try:
+        code = ctypes.c_ulong()
+        return bool(k32.GetExitCodeProcess(h, ctypes.byref(code))) and code.value == 259   # STILL_ACTIVE
+    finally:
+        k32.CloseHandle(h)
+
+
+def keeper_restarts():
+    """Restarts the keeper has made, newest last ([] if none or no file)."""
+    try:
+        import json
+        return json.loads(KEEPER_STATE.read_text(encoding="utf-8")).get("restarts", [])
+    except (OSError, ValueError):
+        return []
+
+
+def _keeper_note(entry):
+    import json
+    restarts = (keeper_restarts() + [entry])[-50:]
+    try:
+        META.mkdir(parents=True, exist_ok=True)
+        KEEPER_STATE.write_text(json.dumps({"restarts": restarts}, indent=1), encoding="utf-8")
+    except OSError:
+        pass
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), entry["service"], entry["what"], flush=True)
+
+
+def keep(every=KEEP_EVERY, rounds=None):
+    """Run the keeper (blocks). Returns False at once if another keeper holds the lock.
+    `rounds` limits the loop for tests."""
+    lock = socket.socket()
+    try:
+        lock.bind(("127.0.0.1", SERVICES["keeper"]["port"]))
+        lock.listen(5)
+    except OSError:
+        lock.close()
+        return False
+    # status() and the suite panel probe the lock port to see the keeper; a connection nobody accepts
+    # sits in the backlog and the probes after it time out, so the keeper read as down. Accept and
+    # close each one as it comes.
+    # The accept waits at most half a second, so the keeper can stop it: a close() on Windows does not
+    # break a blocked accept(), and the port stayed taken after the keeper had finished.
+    import threading
+    stop = threading.Event()
+    lock.settimeout(0.5)
+
+    def _answer():
+        while not stop.is_set():
+            try:
+                c, _a = lock.accept()
+                c.close()
+            except socket.timeout:
+                continue
+            except OSError:
+                return
+    answerer = threading.Thread(target=_answer, daemon=True)
+    answerer.start()
+    misses = {n: 0 for n in KEPT}
+    recent = {n: [] for n in KEPT}
+    hold = {n: 0.0 for n in KEPT}
+    grace = {n: 0.0 for n in KEPT}
+    t0 = time.time()
+    answered = {n: t0 for n in KEPT}              # silence runs from here: keeper start, a restart, an answer
+    heard = {n: 0.0 for n in KEPT}                # the last REAL answer
+    started_at = {n: 0.0 for n in KEPT}           # the last time the keeper started it
+    noted = {n: False for n in KEPT}              # "busy, left running" is said once per spell
+    # the map editor and Covers are restarted when their code changed (stress test 2026-10-23: :5002 ran code from
+    # the 16th for a week and its Save embedded a degraded map). Their work is short, so a restart ten minutes after
+    # the last edit to their files cuts nothing off; the photo server (queue, imports) is restarted by hand.
+    CODE = {"maps": ["tools/map_editor.py", "tools/itinerary_map.py", "tools/city_map.py", "tools/embed_itinerary_map.py", "tools/country_outline.py"],
+            "heroes": ["tools/hero_picker.py", "tools/gen_hero_variants.py", "tools/fit_backgrounds.py"]}
+    def code_mtime(n):
+        try:
+            return max(os.path.getmtime(ROOT / f) for f in CODE.get(n, []) if (ROOT / f).exists())
+        except ValueError:
+            return 0.0
+    code_seen = {n: code_mtime(n) for n in CODE}   # what the running processes are assumed to carry (they are started fresh with the keeper)
+
+    def stuck(n, now):
+        """silent over HTTP for KEEP_HUNG while another server answered lately: this server, not the box"""
+        return now - answered[n] >= KEEP_HUNG and any(now - heard[m] < 90 for m in KEPT if m != n)
+
+    def stop_stuck(n, pids, now):
+        _kill(pids)
+        time.sleep(1)
+        _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                      "what": "no answer for %d s while the other servers answered: stopped pid %s"
+                              % (now - answered[n], pids),
+                      "err": _err_tail(n)})
+
+    def live_pids(n):
+        try:
+            return [pid for pid in port_pids(SERVICES[n]["port"]) if _alive(pid)]
+        except Exception:
+            return []
+
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), "keeper up, watching", ", ".join(KEPT), flush=True)
+    i = 0
+    while rounds is None or i < rounds:
+        i += 1
+        probe = (i - 1) % KEEP_HTTP_EVERY == 0
+        for n in KEPT:
+            now = time.time()
+            port = SERVICES[n]["port"]
+            if n in CODE and port_open(port) and now >= hold[n]:
+                newest = code_mtime(n)
+                if newest > code_seen[n] + 1 and now - newest > 600:
+                    pids = live_pids(n)
+                    if pids:
+                        _kill(pids)
+                        time.sleep(1)
+                    code_seen[n] = newest
+                    try:
+                        started = start(n)
+                    except Exception as e:
+                        started = False
+                    started_at[n] = now
+                    answered[n] = now + KEEP_GRACE
+                    grace[n] = now + KEEP_GRACE
+                    misses[n] = 0
+                    _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                                  "what": "restarted for new code (%s changed)" % ", ".join(f.split("/")[-1] for f in CODE[n] if (ROOT / f).exists() and os.path.getmtime(ROOT / f) > now - 86400),
+                                  "err": [] if started else ["start failed"]})
+                    continue
+            if port_open(port):
+                misses[n] = 0
+                grace[n] = 0.0
+                if not probe:
+                    continue
+                if http_answers(port):
+                    answered[n] = heard[n] = time.time()
+                    noted[n] = False
+                    continue
+                now = time.time()
+                if now < hold[n] or not stuck(n, now):
+                    continue
+                pids = live_pids(n)
+                if not pids:
+                    continue
+                stop_stuck(n, pids, now)                # then started fresh, below
+            else:
+                if now < grace[n]:
+                    continue                            # just started, may still be binding
+                misses[n] += 1
+                if misses[n] < 2 or now < hold[n]:
+                    continue
+                pids = live_pids(n)
+                if pids:
+                    if not noted[n]:
+                        noted[n] = True
+                        _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                                      "what": "not answering but still listening (pid %s): left running" % pids,
+                                      "err": []})
+                    if not stuck(n, now):
+                        continue
+                    stop_stuck(n, pids, now)
+            recent[n] = [t for t in recent[n] if now - t < 600]
+            if started_at[n] and now - started_at[n] < KEEP_QUICK:
+                recent[n].append(now)                   # it died soon after the keeper started it
+            if len(recent[n]) >= 3:
+                hold[n] = now + 600
+                recent[n] = []
+                started_at[n] = 0.0
+                _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                              "what": "keeps crashing on start: left alone for 10 minutes",
+                              "err": _err_tail(n)})
+                continue
+            err = _err_tail(n)
+            try:
+                started = start(n)
+            except Exception as e:                       # the keeper must outlive a failed start
+                started = False
+                err = err + ["start failed: %s" % e]
+            started_at[n] = now
+            answered[n] = now + KEEP_GRACE              # time to come up before silence counts
+            noted[n] = False
+            misses[n] = 0
+            grace[n] = now + KEEP_GRACE
+            _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                          "what": "restarted" if started else "was back before the restart",
+                          "err": err})
+        time.sleep(every)
+    stop.set()
+    answerer.join(timeout=2)
+    lock.close()
+    return True
 
 
 CHROME = next((p for p in (
@@ -357,14 +618,6 @@ def main(argv):
     elif cmd == "status":
         for k, v in status().items():
             print(f"{k:12} {v}")
-    elif cmd == "pause":
-        pids = pause()
-        print(f"Backup paused (stopped {len(pids)} process(es)). "
-              "Run `Editor Suite.cmd resume` or use the editor's Live Activity panel to resume.")
-    elif cmd == "resume":
-        print("Backup watcher started." if resume() else "Backup watcher was already running.")
-    elif cmd == "fix":
-        sys.exit(fix_icloud())
     elif cmd == "site":
         # what serve.ps1 used to do with its own listener on :8080; the photo
         # server already serves every file in the repo under /site/
@@ -374,6 +627,9 @@ def main(argv):
                 break
             time.sleep(0.25)
         os.startfile("http://127.0.0.1:5003/site/index.html")
+    elif cmd == "keep":
+        if not keep():
+            print("A keeper is already running.")
     elif cmd == "stop":
         for name, pids in stop_all().items():
             print(f"{SERVICES[name]['label']}: stopped {pids or 'nothing'}")

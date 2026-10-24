@@ -80,7 +80,7 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
 # Countries that have FULL multi-page guides (not just field notes). They're folded into
 # their continent group in the merged dropdown and flagged with a green dot. (name, iso2,
 # continent, href-to-guide-index). New Zealand's guides are unfinished -> moved to Drafts, omitted.
-FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html"), ("Greece", "gr", "europe", "greece/index.html")]
+FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html"), ("Greece", "gr", "europe", "greece/index.html"), ("Türkiye", "tr", "asia", "turkiye/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
@@ -346,6 +346,17 @@ def main():
             log.append("WARN: search index not rebuilt (%s) — run tools/gen_search_index.py" % e)
     else:
         log.append("would rebuild search-index.js")
+
+    # 7a. Explore More (Kevin, 2026-10-23): a new page changes which three cards every live page shows, and
+    #     the new page gets its own three
+    try:
+        import explore_more as xm
+        cat, pins, n = xm.catalog(), xm.load_pins(), 0
+        for r in xm.live_pages():
+            n += xm.apply_page(r, cat, pins, DRY)[1] == "ok"
+        log.append("%sExplore More cards picked again on %d pages" % ("would: " if DRY else "", n))
+    except Exception as e:
+        log.append("WARN: Explore More not rebuilt (%s) — run tools/explore_more.py" % e)
 
     # 7b. City-map drift (Kevin's 2026-07-31 rule): articles gain bullets after their city map
     #     was built, and the editor can strip the mobile pin overlay. Warn if the live article

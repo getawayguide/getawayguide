@@ -1,130 +1,131 @@
 {
-  "iso3": "ARM",
-  "slug": "orgov-loop",
-  "margins": {
-    "l": 260,
-    "r": 340,
-    "t": 200,
-    "b": 200
+ "iso3": "ARM",
+ "slug": "orgov-loop",
+ "margins": {
+  "l": 260,
+  "r": 340,
+  "t": 200,
+  "b": 200
+ },
+ "simplify": 110,
+ "smooth": true,
+ "stops": [
+  {
+   "n": 1,
+   "name": "Yerevan",
+   "lat": 40.1792,
+   "lon": 44.4991,
+   "days": "start · 10 a.m.",
+   "anchor": "end",
+   "dx": -14,
+   "dy": 8,
+   "days2": "end · 6 p.m.",
+   "href": "yerevan.html"
   },
-  "simplify": 110,
-  "smooth": true,
-  "stops": [
-    {
-      "n": 1,
-      "name": "Yerevan",
-      "lat": 40.1792,
-      "lon": 44.4991,
-      "days": "start · 10 a.m.",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 8,
-      "days2": "end · 6 p.m.",
-      "href": "yerevan.html"
-    },
-    {
-      "n": 2,
-      "name": "The Black Wall",
-      "lat": 40.3754,
-      "lon": 44.7021,
-      "days": "20 min",
-      "anchor": "start",
-      "dx": 14,
-      "dy": 12,
-      "href": "#black-wall"
-    },
-    {
-      "n": 3,
-      "name": "Abandoned plane",
-      "lat": 40.5058,
-      "lon": 44.7433,
-      "days": "20 min",
-      "anchor": "end",
-      "dx": -14,
-      "dy": -6,
-      "href": "#abandoned-plane"
-    },
-    {
-      "n": 4,
-      "name": "Sevanavank|Monastery",
-      "lat": 40.5639,
-      "lon": 45.011,
-      "days": "lunch at Tsovagyugh",
-      "anchor": "middle",
-      "dx": 0,
-      "dy": -86,
-      "href": "#lake-sevan"
-    },
-    {
-      "n": 5,
-      "name": "Orgov Observatory",
-      "lat": 40.3509,
-      "lon": 44.2418,
-      "days": "2–3 hrs",
-      "anchor": "end",
-      "dx": -14,
-      "dy": 2,
-      "href": "#overview"
-    }
-  ],
-  "dots": [],
-  "legs": [
-    {
-      "a": 0,
-      "b": 1,
-      "label": "",
-      "chip_off": 18,
-      "chip_side": 1
-    },
-    {
-      "a": 1,
-      "b": 2,
-      "label": "",
-      "chip_off": 14,
-      "chip_side": -1
-    },
-    {
-      "a": 2,
-      "b": 3,
-      "label": "",
-      "chip_off": 12,
-      "chip_side": 1
-    },
-    {
-      "a": 3,
-      "b": 4,
-      "label": "",
-      "chip_off": 16,
-      "chip_side": 1
-    },
-    {
-      "a": 4,
-      "b": 0,
-      "label": "",
-      "chip_off": 14,
-      "chip_side": -1
-    }
-  ],
-  "focus": true,
-  "focus_span": 360,
-  "crop_pad": 56,
-  "pin_scale": 1.4,
-  "lakes": [
-    "Lake Sevan"
-  ],
-  "crop_bounds": [
-    44.12,
-    39.98,
-    45.66,
-    40.66
-  ],
-  "water_labels": [
-    {
-      "name": "Lake Sevan",
-      "size": 12,
-      "href": "#lake-sevan",
-      "dx": 26,
-      "dy": 28
-    }
-  ]
+  {
+   "n": 2,
+   "name": "The Black Wall",
+   "lat": 40.3754,
+   "lon": 44.7021,
+   "days": "20 min",
+   "anchor": "start",
+   "dx": 14,
+   "dy": 12,
+   "href": "#black-wall"
+  },
+  {
+   "n": 3,
+   "name": "Abandoned plane",
+   "lat": 40.5058,
+   "lon": 44.7433,
+   "days": "20 min",
+   "anchor": "end",
+   "dx": -14,
+   "dy": -6,
+   "href": "#abandoned-plane"
+  },
+  {
+   "n": 4,
+   "name": "Sevanavank|Monastery",
+   "lat": 40.5639,
+   "lon": 45.011,
+   "days": "lunch at Tsovagyugh",
+   "anchor": "middle",
+   "dx": 0,
+   "dy": -86,
+   "href": "#lake-sevan"
+  },
+  {
+   "n": 5,
+   "name": "Orgov Observatory",
+   "lat": 40.3509,
+   "lon": 44.2418,
+   "days": "2–3 hrs",
+   "anchor": "end",
+   "dx": -14,
+   "dy": 2,
+   "href": "#overview"
+  }
+ ],
+ "dots": [],
+ "legs": [
+  {
+   "a": 0,
+   "b": 1,
+   "label": "",
+   "chip_off": 18,
+   "chip_side": 1
+  },
+  {
+   "a": 1,
+   "b": 2,
+   "label": "",
+   "chip_off": 14,
+   "chip_side": -1
+  },
+  {
+   "a": 2,
+   "b": 3,
+   "label": "",
+   "chip_off": 12,
+   "chip_side": 1
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "label": "",
+   "chip_off": 16,
+   "chip_side": 1
+  },
+  {
+   "a": 4,
+   "b": 0,
+   "label": "",
+   "chip_off": 14,
+   "chip_side": -1
+  }
+ ],
+ "focus": true,
+ "focus_span": 360,
+ "crop_pad": 56,
+ "pin_scale": 1.4,
+ "lakes": [
+  "Lake Sevan"
+ ],
+ "crop_bounds": [
+  44.12,
+  39.98,
+  45.66,
+  40.66
+ ],
+ "water_labels": [
+  {
+   "name": "Lake Sevan",
+   "size": 12,
+   "href": "#lake-sevan",
+   "dx": 26,
+   "dy": 28
+  }
+ ],
+ "page": "armenia/orgov-observatory.html"
 }

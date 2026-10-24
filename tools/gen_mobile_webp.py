@@ -24,6 +24,9 @@ import glob, html as htmlmod, os, re, sys, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index("--page") + 1] if "--page" in sys.argv[:-1] else None
 # 85, not 80: measured against the jpg it replaces, q80 is 42% smaller but +0.46 mean
 # error (visibly lossier than the fallback), while q85 is still 31% smaller at EXACTLY
 # the jpg's fidelity. Free bytes, no quality cost - q80 was trading quality for size on
@@ -94,6 +97,13 @@ def encode(jpg, force=False):
 def main():
     jpgs = sorted(glob.glob(os.path.join(ROOT, "Images", "web", "**", "*-mob-*.jpg"),
                             recursive=True))
+    if PAGE:
+        # the page's own mobile files: every -mob- jpg it names, resolved from the page's folder
+        pg = os.path.join(ROOT, PAGE)
+        txt = open(pg, encoding="utf-8").read()
+        mine = {os.path.normcase(os.path.normpath(os.path.join(os.path.dirname(pg), urllib.parse.unquote(u).replace("/", os.sep))))
+                for u in re.findall(r'[^\s"\',]+-mob-\dx\.jpg', txt)}
+        jpgs = [j for j in jpgs if os.path.normcase(os.path.normpath(j)) in mine]
     made = saved = 0
     for j in jpgs:
         ok, s = encode(j)
@@ -103,7 +113,7 @@ def main():
           % ("[dry] " if DRY else "", made, len(jpgs), saved / 1024))
 
     # ---- rewrite the <picture> blocks -------------------------------------------------
-    pages = sorted(glob.glob(os.path.join(ROOT, "*", "*.html")))
+    pages = [os.path.join(ROOT, PAGE)] if PAGE else sorted(glob.glob(os.path.join(ROOT, "*", "*.html")))
     tot_src = tot_ws = 0
     for p in pages:
         rel = os.path.relpath(p, ROOT).replace("\\", "/")

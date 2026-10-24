@@ -340,6 +340,11 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
     LABELS = bool(cfg.get("labels"))
     SHOW_KEY = cfg.get("legend", True) is not False
     LABPOS = {p["name"]: p.get("lab", "s") for p in cfg["pois"]}
+    # "icon": "plane" draws an airplane in the pin instead of its number or dot (airports on a
+    # regional map; Kevin, 2026-10-11: "add plane markers for airports")
+    ICON = {p["name"]: p.get("icon") for p in cfg["pois"]}
+    PLANE = ("M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 "
+             "3.5 1v-1.5L13 19v-5.5l8 2.5z")
 
     # resolve each pin's Google-Maps link: explicit href > a matching link in the
     # article > a generic maps search for "<name> <city>"
@@ -569,7 +574,9 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
         # the desktop map is drawn 729 px wide; a 1x screen given the 1520 px render (2.09x) draws it
         # soft, so it gets a 1350 px copy (Kevin, 2026-10-01; tools/city_maps_1x.py)
         one_x = W == DESK_W
-        if one_x:
+        # with keep_base the base raster is the one already published, so its 1x copy exists already:
+        # a preview rewrote it on every open or drag (QA 2026-10-08)
+        if one_x and not (keep_base and os.path.exists(f"{IMGDIR}/{pngname}-1x.webp")):
             import city_maps_1x
             city_maps_1x.write_1x(png, f"{IMGDIR}/{pngname}-1x.webp")
 
@@ -618,7 +625,10 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
         for d in dls:
             lx, ly = px(d["lat"], d["lon"])
             tw = len(d["text"]) * 10.0 * pin_scale; th = 11 * pin_scale
-            if _cost(lx, ly, tw, th) > 0.03:
+            # "fixed": true keeps a label exactly where the config puts it. An ISLAND name (RHODES on the
+            # Turkish Riviera map) is land but narrower than the mobile label, so the water test could
+            # never pass and the nudge carried it to the mainland, next to Marmaris (2026-10-20).
+            if not d.get("fixed") and _cost(lx, ly, tw, th) > 0.03:
                 best, best_w = (lx, ly), _cost(lx, ly, tw, th)
                 for R in range(6, 181, 6):
                     ring = [(dx, dy) for dx in range(-R, R + 1, 6) for dy in range(-R, R + 1, 6)
@@ -681,6 +691,8 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
                 # a key reference to a key that is not there
                 mk = (f'<circle cx="0" cy="-17.7" r="6.4" fill="#fff"/><text x="0" y="-17.7" text-anchor="middle" dominant-baseline="central" font-size="8.6" font-weight="700" fill="{nt}">{i}</text>'
                       if show_num and not LABELS else '<circle cx="0" cy="-17.7" r="3.1" fill="#fff"/>')
+                if ICON.get(name) == "plane":
+                    mk = f'<path d="{PLANE}" fill="#fff" transform="translate(-5.3 -23) scale(0.44)"/>'
                 lab = ""
                 if LABELS:
                     # the name rides beside its own pin instead of in a key. The halo is a
@@ -745,7 +757,9 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
                 f'<div class="cm-ov"><div class="cm-ov-kick">{html.escape(kicker)}</div><div class="cm-ov-title">{html.escape(city)}</div>'
                 f'<div class="cm-ov-hint">{hint}</div></div></div>')
 
-    frag = f'<style>\n{CSS}</style>\n<figure class="citymap-fig">{maps_html(external=True)}</figure>\n{JS}\n'
+    # "extra_css": a rule or two for this map alone, inside its own <style> (the figure tag itself stays
+    # exactly '<figure class="citymap-fig">', which the re-embed looks for)
+    frag = f'<style>\n{CSS}{cfg.get("extra_css", "")}</style>\n<figure class="citymap-fig">{maps_html(external=True)}</figure>\n{JS}\n'
     open(f"{PREV}/{slug}-city-embed.html", "w", encoding="utf-8").write(frag)
 
     def page(demo=None, note=""):

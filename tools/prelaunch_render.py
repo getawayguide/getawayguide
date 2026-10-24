@@ -22,8 +22,13 @@ PROBE = """async () => {
   const imgs = [...document.images];
   await Promise.race([Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))),
                       new Promise(r => setTimeout(r, 12000))]);
-  const broken = imgs.filter(i => i.complete && i.naturalWidth === 0 && (i.currentSrc || i.src) && !/^data:/.test(i.src))
-                     .map(i => decodeURIComponent((i.currentSrc || i.src).split('/').pop()));
+  const first = imgs.filter(i => i.complete && i.naturalWidth === 0 && (i.currentSrc || i.src) && !/^data:/.test(i.src));
+  const again = await Promise.all(first.map(i => new Promise(res => {
+    const u = i.currentSrc || i.src, t = new Image(), done = ok => res(ok ? null : u);
+    t.onload = () => done(t.naturalWidth > 0); t.onerror = () => done(false); setTimeout(() => done(false), 10000);
+    t.src = u + (u.includes('?') ? '&' : '?') + 'retry=' + Date.now();
+  })));
+  const broken = again.filter(Boolean).map(u => decodeURIComponent(u.split('?')[0].split('/').pop()));
   const W = document.documentElement.clientWidth, over = document.documentElement.scrollWidth - W;
   let wide = '';
   if (over > 1) {

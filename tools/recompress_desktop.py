@@ -24,6 +24,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 from PIL import Image
 
 BASE    = Path(__file__).resolve().parent.parent
@@ -33,6 +34,9 @@ EXCLUDE = {'web', 'Index', 'Bio', 'dest-cards'}   # site assets, not article ima
 
 DRY = '--dry-run' in sys.argv
 NEW_ONLY = '--new-only' in sys.argv
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index('--page') + 1] if '--page' in sys.argv[:-1] else None
 
 _dir_cache = {}
 def real_name(directory, name):
@@ -97,7 +101,7 @@ for country in ([] if NEW_ONLY else sorted(countries)):
 # ---- Pass B: create web versions for new body images ----
 print('\n== Pass B: create missing web versions referenced by article bodies ==')
 IMG_REF = re.compile(r'<img[^>]+src="\.\./Images/(?!web/)([^"/]+)/([^"]+)"')
-for page in sorted(BASE.glob('*/*.html')):
+for page in ([BASE / PAGE] if PAGE else sorted(BASE.glob('*/*.html'))):
     html = page.read_text(encoding='utf-8')
     i = html.find('class="article-body"')
     if i < 0:
@@ -108,10 +112,12 @@ for page in sorted(BASE.glob('*/*.html')):
         before = body[:m.start()]
         if before.rfind('<picture') > before.rfind('</picture'):
             continue
-        country, relfile = m.group(1), m.group(2)
+        # the folder is URL-encoded too: the editor writes ../Images/El%20Salvador/..., and an encoded country
+        # looked for its original under Images/El%20Salvador/ and never made the desktop copy (2026-10-16)
+        country, relfile = unquote(m.group(1)), m.group(2)
         if country in EXCLUDE:
             continue
-        rel_path = Path(relfile.replace('%20', ' '))
+        rel_path = Path(unquote(relfile))
         web_file = WEB / country / rel_path.parent / (rel_path.stem + '.jpg')
         if web_file.exists():
             continue   # pass A already refreshed it

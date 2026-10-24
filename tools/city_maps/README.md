@@ -28,7 +28,7 @@ PNGs are written to `Images/web/city-maps/<slug>.png` and `<slug>-mobile.png`.
 | `osm` | path (repo-relative) to a pre-fetched Overpass export — see below |
 | `article` | page to resolve pin links from + (with `--embed`) to embed into |
 | `embed.pre` / `embed.post` | exact strings; the map replaces whatever is between them |
-| `district_label` | optional faint neighborhood/district label baked onto the map `{text,lat,lon}` — add one whenever the article names a district (old town, downtown); place it in that district but clear of the top-right key |
+| `district_label` | optional faint neighborhood/district label baked onto the map `{text,lat,lon,fixed?}` (`fixed: true` = never nudged off water, for an island name such as RHODES) — add one whenever the article names a district (old town, downtown); place it in that district but clear of the top-right key |
 | `hint` | mobile instruction lines (array; joined with `<br>`) |
 | `desktop` / `mobile` | framing knobs only (see below) |
 | `pois[]` | `{name, lat, lon, cat: see\|eat\|stay, match, href?}` in article order (earlier = lower number, drawn on top). `match` finds the pin's Google-Maps link in the article by link text; `href` overrides. `cat` = the article sub-section (What to Do→see, Where to Eat→eat, Where to Stay→stay). Pick up bullet subjects + named places listed inside a top-level bullet; skip incidental links buried in a sub-bullet's prose. |

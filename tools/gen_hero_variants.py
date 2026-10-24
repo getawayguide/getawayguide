@@ -46,6 +46,19 @@ SIZES = [(2000, ""), (2561, "-2x"), (1206, "-mob"), (603, "-mob-1x")]
 JPEG_Q, WEBP_Q = 86, 82
 
 
+def sharpen(im, amount):
+    """The cover picker's Sharpen slider, 0-100 (0 = off). An unsharp mask applied AFTER a resize, at the size
+    the file is served, so the edges it brings out are the ones the screen draws. 100 = 150% at a 0.8 px radius;
+    the threshold of 2 leaves smooth sky and water alone, so it does not add noise there. Kevin, 2026-10-15,
+    after Adobe Firefly's upscale of the Fethiye hero came back smaller, softer and redrawn: a light sharpen
+    of the served copies measured 26-37% more fine detail and invents nothing."""
+    a = max(0.0, min(100.0, float(amount or 0)))
+    if a < 1:
+        return im
+    from PIL import ImageFilter
+    return im.filter(ImageFilter.UnsharpMask(radius=0.8, percent=round(a * 1.5), threshold=2))
+
+
 def out(s=""):
     sys.stdout.buffer.write((s + "\n").encode("utf-8", "replace"))
     sys.stdout.buffer.flush()
@@ -61,6 +74,9 @@ def main():
     ap.add_argument("--angle", type=float, default=0.0,
                     help="straighten first: degrees, counter-clockwise for positive, cut to the largest "
                          "frame with no blank corners (what the hero picker's Straighten slider shows)")
+    ap.add_argument("--flip", default="", help="mirror first: h (left-right), v (top-bottom) or hv")
+    ap.add_argument("--sharpen", type=float, default=0.0,
+                    help="0-100, the cover picker's Sharpen slider: an unsharp mask on each file after its resize")
     a = ap.parse_args()
 
     src_path = (ROOT / a.original) if not Path(a.original).is_absolute() else Path(a.original)
@@ -72,6 +88,11 @@ def main():
 
     src = ImageOps.exif_transpose(Image.open(src_path))
     icc = src.info.get("icc_profile")          # grab BEFORE convert()
+    flip = "".join(c for c in (a.flip or "").lower() if c in "hv")
+    if "h" in flip:                             # mirror BEFORE the straighten, as the picker previews it
+        src = ImageOps.mirror(src)
+    if "v" in flip:
+        src = ImageOps.flip(src)
     if abs(a.angle) > 1e-3:
         # the same rotate-and-inscribe the photo editor and the hero picker use, so the
         # slider's preview and this cut agree to the pixel
@@ -106,6 +127,7 @@ def main():
             continue
         done.add(size)
         im = rgb if scale == 1.0 else rgb.resize(size, Image.LANCZOS)
+        im = sharpen(im, a.sharpen)
         for ext, kw in ((".jpg", dict(quality=JPEG_Q, optimize=True, progressive=True)),
                         (".webp", dict(quality=WEBP_Q, method=6))):
             dst = outdir / ("hero-%s%s%s" % (a.slug, suffix, ext))

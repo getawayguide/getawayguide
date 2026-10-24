@@ -37,6 +37,8 @@ import os
 import re
 import shutil
 import sys
+import threading
+import time
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -48,25 +50,101 @@ MAPS = re.compile(r'href="(https://www\.google\.com/maps/place/[^"]+)"')
 
 
 # ============================================================== store
+# Every write to a round's files (decisions, progress, applied) holds this lock and goes through a temp
+# file named for its writer. Thirty decision writers plus commits and prechecks shared one
+# "decisions.json.tmp" and tore the file ("Extra data line 40"); the round then answered 400 to
+# everything until it was repaired by hand (stress test 2026-10-09).
+_store_lock = threading.RLock()
+
+
+class _flock:
+    """A lock across processes: the photo server and a `redline.py` / `claude_answer.py` process both
+    read-modify-write the same store, and each other's threads were dropped (418 of 1260, stress test
+    2026-10-09; the in-process lock cannot see the other process). An exclusive-create lock file, waited
+    for up to 15 s; one older than 60 s belongs to a process that died and is taken over."""
+
+    def __init__(self, path):
+        self.path = Path(str(path) + ".lock")
+
+    def __enter__(self):
+        t0 = time.time()
+        while True:
+            try:
+                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fd, str(os.getpid()).encode()); os.close(fd)
+                return self
+            except (FileExistsError, PermissionError):
+                # Windows answers EACCES, not EEXIST, for a lock file another process is deleting at that
+                # moment: 2 of 250 concurrent saves raised straight through (stress test 2026-10-15)
+                try:
+                    if time.time() - self.path.stat().st_mtime > 60:
+                        self.path.unlink()
+                        continue
+                except OSError:
+                    pass
+                if time.time() - t0 > 15:
+                    raise TimeoutError("the store %s is locked by another process" % self.path.name)
+                time.sleep(0.02 + 0.03 * ((time.time() * 1000) % 3))
+
+    def __exit__(self, *a):
+        try:
+            self.path.unlink()
+        except OSError:
+            pass
+
+
+def _read_json(path, default, strict=False):
+    """A store file, read with patience (a writer may be replacing it) and without letting a torn one
+    lock the round: it is set aside as <name>.corrupt-<time> and treated as empty. strict: a file that
+    stays locked is an error, never "empty" (a comment save that read the store as empty while another
+    process replaced it wrote the empty store back; stress test 2026-10-09)."""
+    for i in range(8):
+        try:
+            if not path.exists():
+                return default
+            return json.loads(path.read_text(encoding="utf-8"))
+        except PermissionError:
+            if strict and i == 7:
+                raise
+            time.sleep(0.05 * (i + 1))
+        except ValueError:
+            # one copy per torn file, not one per read
+            if not any(c.stat().st_mtime >= path.stat().st_mtime for c in path.parent.glob(path.name + ".corrupt-*")):
+                try:
+                    shutil.copy2(path, path.with_name(path.name + ".corrupt-%d" % int(time.time())))
+                except OSError:
+                    pass
+            if strict:
+                # a torn comment store read as "empty" let the next save write the empty store back, and every
+                # thread survived only in the .corrupt copy (stress test 2026-10-15). An error keeps them.
+                raise ValueError("%s is unreadable (torn JSON); a copy is beside it as %s.corrupt-*" % (path.name, path.name))
+            print("redline: %s was unreadable and is treated as empty (a copy was kept)" % path, file=sys.stderr)
+            return default
+    return default
+
+
+def _write_json(path, obj):
+    tmp = path.with_name("%s.%d.%d.tmp" % (path.name, os.getpid(), threading.get_ident()))
+    tmp.write_text(json.dumps(obj, indent=1), encoding="utf-8")
+    _swap(tmp, path)
+
+
 def load(slug):
     d = STORE / slug
     p = json.loads((d / "proposal.json").read_text(encoding="utf-8"))
     p["_dir"] = d
-    dec = d / "decisions.json"
-    p["decisions"] = json.loads(dec.read_text(encoding="utf-8")) if dec.exists() else {}
-    app = d / "applied.json"
-    p["applied"] = json.loads(app.read_text(encoding="utf-8")) if app.exists() else None
+    p["decisions"] = _read_json(d / "decisions.json", {})
+    p["applied"] = _read_json(d / "applied.json", None)
     # a round saved in more than one sitting keeps its running tally in progress.json;
     # commit() used to start from p["applied"] alone, so every save after the first
     # threw the earlier one's ids away and a round could only complete in one go
-    prog = d / "progress.json"
-    p["progress"] = json.loads(prog.read_text(encoding="utf-8")) if prog.exists() else None
+    p["progress"] = _read_json(d / "progress.json", None)
     return p
 
 
 def save_decisions(slug, decisions):
-    d = STORE / slug
-    (d / "decisions.json").write_text(json.dumps(decisions, indent=1), encoding="utf-8")
+    with _store_lock:
+        _write_json(STORE / slug / "decisions.json", decisions)
 
 
 def pending():
@@ -213,7 +291,7 @@ COMMENTS = STORE / "_comments"
 
 def slug_for(rel):
     """slug of the pending proposal for this repo-relative article path, else None"""
-    rel = rel.replace("\\", "/").lstrip("./")
+    rel = re.sub(r"^(?:\./|/)+", "", rel.replace("\\", "/"))   # not lstrip("./"): it ate the dot of ".tmp"
     # The NEWEST open round wins. This returned the first match in directory order, so a round
     # with one change left undecided (yerevan-r7's hero subtitle) kept counting as open and was
     # served in place of the round written after it: the new tab showed two stale changes and
@@ -236,8 +314,12 @@ def comments_key(rel):
 
 
 def comments_load(key):
-    f = COMMENTS / f"{key}.json"
-    return json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"threads": []}
+    # retried: a read that met a save replacing the file was a PermissionError, a 500 to the editor
+    # (4.7% of reads under 50 writers, stress test 2026-10-09)
+    d = _read_json(COMMENTS / f"{key}.json", None, strict=True) or {"threads": []}
+    if not isinstance(d, dict) or not isinstance(d.get("threads"), list):
+        raise ValueError("%s.json is not a comment store (expected {\"threads\": [...]}); repair it by hand" % key)
+    return d
 
 
 def task_lines():
@@ -252,19 +334,51 @@ def task_lines():
     return out
 
 
+# one lock per article: a single lock for every article queued 50 writers on 50 different articles
+# behind each other (p50 1.7 s, stress test 2026-10-09)
+_comments_locks, _comments_locks_guard = {}, threading.Lock()
+
+
+def _comments_lock_for(key):
+    with _comments_locks_guard:
+        return _comments_locks.setdefault(key, threading.Lock())
+
+
 def comments_save(key, data):
     """Merge a tab's threads into the store (QA 2026-10-02: two tabs on one article overwrote each
     other's comments). A thread only on disk stays (another tab's), unless this tab deleted it;
     a thread both have takes this tab's text and resolved flag, every reply from both, and never
     goes back from answered to sent (Claude's answer may have landed since the tab loaded)."""
+    # one save at a time: this is read-modify-write, and two tabs saving together each merged into the
+    # same old file, so one tab's new threads were dropped (QA 2026-10-08: 4 of 100 lost)
+    COMMENTS.mkdir(parents=True, exist_ok=True)
+    with _comments_lock_for(key), _flock(COMMENTS / f"{key}.json"):
+        return _comments_save(key, data)
+
+
+def _comments_save(key, data):
     COMMENTS.mkdir(parents=True, exist_ok=True)
     f = COMMENTS / f"{key}.json"
-    try:
-        cur = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"threads": []}
-    except Exception:
-        cur = {"threads": []}
-    posted = {t["id"]: t for t in data.get("threads", []) if isinstance(t, dict) and t.get("id")}
-    deleted = set(data.get("deleted") or []) | set(cur.get("deleted") or [])
+    cur = _read_json(f, None, strict=True) or {"threads": []}      # a locked store is an error, never empty
+    if not isinstance(cur, dict) or not isinstance(cur.get("threads"), list):
+        raise ValueError("%s is not a comment store; repair it by hand" % f.name)
+    def _tidy(t):                             # one malformed thread wedged an article's store (stress test 2026-10-15/16)
+        t["replies"] = [r for r in (t.get("replies") or []) if isinstance(r, dict)]
+        for k in ("at", "created", "status", "text", "kind"):
+            if k in t and t[k] is not None and not isinstance(t[k], str):
+                t[k] = str(t[k])
+        for r in t["replies"]:
+            for k in ("id", "created", "edited", "text", "author"):
+                if k in r and r[k] is not None and not isinstance(r[k], str):
+                    r[k] = str(r[k])
+    cur["threads"] = [t for t in cur["threads"] if isinstance(t, dict)]
+    for t in cur["threads"]:
+        _tidy(t)
+    posted = {t["id"]: t for t in (data.get("threads") or []) if isinstance(t, dict) and t.get("id")}
+    for t in posted.values():
+        _tidy(t)
+    dl_posted = [x for x in (data.get("deleted") if isinstance(data.get("deleted"), list) else []) if isinstance(x, str)]   # a string was taken letter by letter
+    deleted = set(dl_posted) | set(x for x in (cur.get("deleted") or []) if isinstance(x, str))
     DONE = ("answered", "applied", "offered", "proposed", "rejected", "failed")
     merged, seen = [], set()
     for t in cur.get("threads", []):
@@ -275,19 +389,41 @@ def comments_save(key, data):
         if p is None:
             merged.append(t)
         else:
-            ids = {r.get("id") for r in p.get("replies", [])}
-            extra = [r for r in t.get("replies", []) if r.get("id") not in ids]
-            if extra:
-                p = dict(p, replies=sorted(p.get("replies", []) + extra, key=lambda r: r.get("created", "")))
-            if t.get("status") in DONE and p.get("status") == "sent":
-                p = dict(p, **{k: t[k] for k in ("status", "edit", "edits") if k in t})
+            # a thread another tab changed more recently (resolved, reopened, edited) keeps that tab's
+            # version; it used to be whichever tab saved last (QA 2026-10-08)
+            if (t.get("at") or "") > (p.get("at") or ""):
+                # ...including what it did with Claude's answer: a stale tab's save put "offered" back over
+                # another tab's "applied" (stress test 2026-10-09)
+                p = dict(p, **{k: t[k] for k in ("text", "resolved", "at", "status", "edit", "edits", "kind", "anchor") if k in t})
+            # replies: the union by id; one both have keeps the newer edit of it
+            mine = {r.get("id"): r for r in p.get("replies", []) if isinstance(r, dict)}
+            changed = False
+            for r in t.get("replies", []):
+                rid = r.get("id")
+                if rid not in mine:
+                    mine[rid] = r; changed = True
+                elif (r.get("edited") or "") > (mine[rid].get("edited") or ""):
+                    mine[rid] = r; changed = True
+            if changed:
+                p = dict(p, replies=sorted(mine.values(), key=lambda r: r.get("created", "")))
+            if t.get("status") in DONE and p.get("status") in (None, "sent"):
+                # ...or that has never heard it was sent at all: a stale tab's save stripped kind, status and
+                # the edit, and the asking tab waited forever (stress test 2026-10-09)
+                p = dict(p, **{k: t[k] for k in ("status", "edit", "edits", "kind", "sentAt") if k in t})
             merged.append(p)
         seen.add(tid)
     for tid, p in posted.items():
         if tid not in seen and tid not in deleted:
             merged.append(p)
-    out = dict(data, threads=merged, deleted=sorted(deleted)[-300:])
-    tmp = f.with_suffix(".json.tmp")
+    # deletions newest-last: the oldest fall off at 300, not whichever ids sort first
+    dl = [x for x in (cur.get("deleted") or []) if isinstance(x, str)]
+    for x in dl_posted:
+        if x not in dl:
+            dl.append(x)
+    out = {"threads": merged, "deleted": dl[-300:]}
+    # a temp name per writer: a shared one let one save's replace() take the file another was about to
+    # move, which raised FileNotFoundError (a 500) in the other
+    tmp = f.with_name("%s.%d-%d.tmp" % (f.name, os.getpid(), __import__("threading").get_ident()))
     tmp.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
     _swap(tmp, f)
     return out
@@ -308,30 +444,35 @@ def _swap(tmp, dest):
 
 
 def merge_decisions(slug, partial):
-    """decisions arrive one at a time from the editor; null means undecided again (an undo)"""
+    """decisions arrive one at a time from the editor; null means undecided again (an undo). With nothing
+    to merge it only READS: precheck and commit call it that way, and used to rewrite the file each time."""
     d = STORE / slug
-    cur = json.loads((d / "decisions.json").read_text(encoding="utf-8")) if (d / "decisions.json").exists() else {}
-    for k, v in (partial or {}).items():
-        if v is None:
-            cur.pop(k, None)
-        else:
-            cur[k] = bool(v)
-    tmp = d / "decisions.json.tmp"
-    tmp.write_text(json.dumps(cur, indent=1), encoding="utf-8")
-    _swap(tmp, d / "decisions.json")
-    return cur
+    with _store_lock, _flock(d / "decisions.json"):
+        cur = _read_json(d / "decisions.json", {})
+        if not partial:
+            return cur
+        for k, v in partial.items():
+            if v is None:
+                cur.pop(k, None)
+            else:
+                cur[k] = bool(v)
+        _write_json(d / "decisions.json", cur)
+        return cur
 
 
-def commit(slug, accepted_ids):
-    """After the editor saved the article with these changes accepted in its text: apply the
-    destination side of any accepted MOVE (insert or replace in another file, with backups and
-    the Maps-link guard), then record them as applied. Grammar fixes and the source side of every
-    cut are already in the saved file, so nothing is written to the article itself."""
+def _commit_plan(slug, accepted_ids, article_text=None):
+    """What a commit of these accepted changes would write, without writing it: the destination side
+    of each accepted MOVE, the moves that cannot be placed (their anchor is missing or doubled), and
+    the Maps links the baseline had that would be on no page afterwards. `article_text` is the article
+    as it will be saved; by default, as it is on disk."""
     p = load(slug)
     arts = ROOT / p["article_dir"]
     by_id = {c["id"]: c for c in p["changes"]}
     acc = [by_id[i] for i in accepted_ids if i in by_id]
-    applied = p["applied"] or p["progress"] or {"ids": [], "moves": [], "log": []}
+    applied = p["applied"] or p["progress"] or {}
+    # an applied.json written by apply() (the server-side round) has no "ids": every save after one
+    # failed with KeyError: 'ids' (QA 2026-10-08)
+    applied = {"ids": [], "moves": [], "log": [], **applied}
     todo = [c for c in acc if c["kind"] == "cut" and c.get("dest_file") and c["id"] not in applied["ids"]]
     files, problems, plan = {}, [], []
     get = lambda f: files.setdefault(f, (arts / f).read_text(encoding="utf-8", newline=""))
@@ -345,43 +486,71 @@ def commit(slug, accepted_ids):
             continue                                     # already there (a re-save)
         if c.get("dest_replaces"):
             if t.count(c["dest_replaces"]) != 1:
-                problems.append(f'{c["id"]}: replace target appears {t.count(c["dest_replaces"])}x in {c["dest_file"]}'); continue
+                problems.append({"id": c["id"], "why": f'replace target appears {t.count(c["dest_replaces"])}x in {c["dest_file"]}'}); continue
             plan.append((c["dest_file"], c["dest_replaces"], incoming, c["id"]))
         else:
             a = c.get("dest_after", "")
             if t.count(a) != 1:
-                problems.append(f'{c["id"]}: anchor appears {t.count(a)}x in {c["dest_file"]}'); continue
+                problems.append({"id": c["id"], "why": f'anchor appears {t.count(a)}x in {c["dest_file"]}'}); continue
             plan.append((c["dest_file"], a, a + " " + incoming, c["id"]))
-    if problems:
-        return {"ok": False, "problems": problems}
     for f, a, b, _ in plan:
         files[f] = files[f].replace(a, b, 1)
-    # the article was just saved by the editor with its cut sentences gone: every Maps link the
-    # baseline had must still exist somewhere across the saved article and the updated files
     base = (p["_dir"] / "baseline" / p["article"]).read_text(encoding="utf-8")
-    have = set(MAPS.findall((arts / p["article"]).read_text(encoding="utf-8", newline="")))
+    art = article_text if article_text is not None else (arts / p["article"]).read_text(encoding="utf-8", newline="")
+    have = set(MAPS.findall(art))
     for f in p["files"]:
         if f != p["article"]:
             have |= set(MAPS.findall(files.get(f) or (arts / f).read_text(encoding="utf-8", newline="")))
     lost = sorted(set(MAPS.findall(base)) - have)
-    if lost:
-        return {"ok": False, "problems": ["these Maps links would disappear from the site: " + ", ".join(u[:80] for u in lost)]}
+    return {"p": p, "arts": arts, "by_id": by_id, "acc": acc, "applied": applied, "files": files,
+            "plan": plan, "problems": problems, "lost": lost}
+
+
+def precheck(slug, accepted_ids, article_html):
+    """Before the editor writes the article: would this save strand a moved sentence or take a Maps
+    link off the site? The editor asks first and does not write when it would (QA 2026-10-08: the
+    check ran AFTER the article was saved, refused the commit, and the moved sentence was then in
+    neither article)."""
+    k = _commit_plan(slug, accepted_ids, article_html)
+    return {"ok": not k["problems"] and not k["lost"], "problems": k["problems"],
+            "lost": [u[:120] for u in k["lost"]]}
+
+
+def commit(slug, accepted_ids):
+    """After the editor saved the article with these changes accepted in its text: apply the
+    destination side of any accepted MOVE (insert or replace in another file, with backups), then
+    record them as applied. Grammar fixes and the source side of every cut are already in the saved
+    file, so nothing is written to the article itself.
+
+    The article is already saved when this runs, so a move that can be placed is ALWAYS written: the
+    old all-or-nothing refusal left a moved sentence in neither article. A move that cannot be placed
+    stays unapplied (its sentence is in before-apply/ and the round), and is reported; so are Maps
+    links that are now on no page. precheck() is what stops those before the save."""
+    k = _commit_plan(slug, accepted_ids)
+    p, arts, by_id, acc, applied, files, plan = k["p"], k["arts"], k["by_id"], k["acc"], k["applied"], k["files"], k["plan"]
+    stuck = {x["id"] for x in k["problems"]}
     bdir = p["_dir"] / "before-apply"; bdir.mkdir(exist_ok=True)
-    for f, s in files.items():
-        if s != (arts / f).read_text(encoding="utf-8", newline=""):
+    for f, s_ in files.items():
+        if s_ != (arts / f).read_text(encoding="utf-8", newline=""):
             shutil.copy2(arts / f, bdir / f)
-            (arts / f).write_text(s, encoding="utf-8", newline="")
-    applied["ids"] = sorted(set(applied["ids"]) | {c["id"] for c in acc})
+            (arts / f).write_text(s_, encoding="utf-8", newline="")
+    done_ids = {c["id"] for c in acc} - stuck
+    applied["ids"] = sorted(set(applied["ids"]) | done_ids)
     applied["moves"] = sorted(set(applied["moves"]) | {i for _, _, _, i in plan})
-    applied["log"].append({"at": datetime.now().isoformat(timespec="seconds"), "accepted": [c["id"] for c in acc],
-                           "destination_writes": [i for _, _, _, i in plan]})
+    applied["log"].append({"at": datetime.now().isoformat(timespec="seconds"), "accepted": sorted(done_ids),
+                           "destination_writes": [i for _, _, _, i in plan], "stuck": sorted(stuck),
+                           "lost_maps_links": k["lost"]})
     decisions = merge_decisions(slug, {})
     done = all((cid in applied["ids"]) or (decisions.get(cid) is False) for cid in by_id)
     applied["complete"] = done
-    (p["_dir"] / ("applied.json" if done else "progress.json")).write_text(json.dumps(applied, indent=1), encoding="utf-8")
+    with _store_lock, _flock(p["_dir"] / "progress.json"):   # written whole: a kill mid-write left progress.json at 0 bytes
+        _write_json(p["_dir"] / ("applied.json" if done else "progress.json"), applied)
     if done and (p["_dir"] / "progress.json").exists():
         (p["_dir"] / "progress.json").unlink()
-    return {"ok": True, "applied": len(acc), "destination_writes": len(plan), "complete": done}
+    problems = [f'{x["id"]}: {x["why"]}' for x in k["problems"]]
+    warnings = ["these Maps links are now on no page: " + ", ".join(u[:80] for u in k["lost"])] if k["lost"] else []
+    return {"ok": not problems, "applied": len(done_ids), "destination_writes": len(plan), "complete": done,
+            "problems": problems, "warnings": warnings}
 
 
 def decided_changes(p, only=None):
@@ -400,7 +569,7 @@ def decided_changes(p, only=None):
 
 def last_closed(rel):
     """slug of the newest round for this article that is closed (applied.json), else None"""
-    rel = rel.replace("\\", "/").lstrip("./")
+    rel = re.sub(r"^(?:\./|/)+", "", rel.replace("\\", "/"))   # not lstrip("./"): it ate the dot of ".tmp"
     best = None
     for d in STORE.glob("*/applied.json"):
         pj = d.parent / "proposal.json"

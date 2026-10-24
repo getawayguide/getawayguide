@@ -13,7 +13,9 @@ This script:
 
 import re
 import os
+import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 BASE = Path(__file__).resolve().parent.parent
 
@@ -36,7 +38,9 @@ def fix_src(src: str) -> str:
     if not src.startswith('../Images/'):
         return src
     rel = src[3:]  # strip ../   → Images/El Salvador/X/Y.JPG
-    path = BASE / rel
+    # decoded for the disk: the editor writes El%20Salvador, and an encoded path was never found, so a
+    # space-named country's photos were reported MISSING and never case-checked (2026-10-16)
+    path = BASE / unquote(rel)
     directory = path.parent
     name = path.name
     real = real_filename(directory, name)
@@ -44,13 +48,17 @@ def fix_src(src: str) -> str:
         print(f'  MISSING: {src}')
         return src
     if real != name:
-        corrected = f'../{rel[:-len(name)]}{real}'
+        enc_name = src.rsplit('/', 1)[1]
+        corrected = src[:-len(enc_name)] + real.replace(' ', '%20')
         print(f'  FIXED: {name!r} -> {real!r}')
         return corrected
     return src
 
 
-pages = list(BASE.glob('*/*.html'))   # all country/article pages
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index('--page') + 1] if '--page' in sys.argv[:-1] else None
+pages = [BASE / PAGE] if PAGE else list(BASE.glob('*/*.html'))   # all country/article pages
 SRC_PAT = re.compile(r'src="(\.\./Images/[^"]+)"')
 
 total_fixed = 0

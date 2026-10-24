@@ -77,7 +77,9 @@ def main():
     # the text still lands at Egypt's px size after this cap
     w = args.width or round(K * vw * min(1.0, MAX_VH / vh))
     p = pathlib.Path(args.target)
-    html = p.read_text(encoding="utf-8")
+    # newline="" both ways: the default turned an LF article into CRLF on Windows at every re-embed
+    with open(p, encoding="utf-8", newline="") as fh:
+        html = fh.read()
     html, mont_added = ensure_montserrat(html)
 
     existing = re.search(r'<figure class="itinerary-map"[^>]*>', html)
@@ -97,10 +99,11 @@ def main():
     elif args.after:
         if html.count(args.after) != 1:
             sys.exit(f"! --after anchor must occur exactly once (found {html.count(args.after)})")
-        title = "" if args.no_title else (
-            f'\n    <div class="fn-sub-hd" style="{TITLE_STYLE.format(w=w)}">{args.title}</div>')
-        fig = (title +
-               f'\n    <figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>')
+        # the caption is .rm-h, the centered serif every route map uses; .fn-sub-hd is a section sub-head and
+        # draws the accent bar down its left edge (Kevin, 2026-10-20: "the title shouldn't have the green bar")
+        title = "" if args.no_title else f'\n    <div class="serif rm-h">{args.title}</div>'
+        fig = ('\n  <div class="route-map">' + title +
+               f'\n    <figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n  </div>')
         html = html.replace(args.after, args.after + fig, 1)
         action = "inserted"
     else:
@@ -119,13 +122,15 @@ def main():
         ins = gstart + min(cands)
         ls = html.rfind("\n", 0, ins) + 1
         indent = html[ls:ins]
-        title = "" if args.no_title else (
-            f'{indent}<div class="fn-sub-hd" style="{TITLE_STYLE.format(w=w)}">{args.title}</div>\n')
-        block = title + f'{indent}<figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n'
+        title = "" if args.no_title else f'{indent}  <div class="serif rm-h">{args.title}</div>\n'
+        block = (f'{indent}<div class="route-map">\n' + title +
+                 f'{indent}  <figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n'
+                 f'{indent}</div>\n')
         html = html[:ls] + block + html[ls:]
         action = "auto-inserted"
 
-    p.write_text(html, encoding="utf-8")
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        fh.write(html)
     print(f"{action}: {args.target}  vw={vw:.0f} vh={vh:.0f}  max-width={w}px  "
           f"height~{round(w*vh/vw)}px  montserrat={'added' if mont_added else 'ok'}")
 

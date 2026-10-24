@@ -22,5 +22,9 @@
   {
     "label": "Backup (blog picks)",
     "path": "C:\\Users\\kevin\\Backup"
+  },
+  {
+    "label": "Uploaded photos",
+    "path": "C:\\Users\\kevin\\Projects\\Travel Blog\\.tmp\\photo_editor\\uploads"
   }
 ]

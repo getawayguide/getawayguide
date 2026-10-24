@@ -15,6 +15,8 @@ The canvas shows each map exactly as it will appear on the page (height-capped,
 annotations at the standard font size), so what you arrange is what you get.
 """
 import json
+import os
+import re
 import sys
 import subprocess
 from pathlib import Path
@@ -65,7 +67,7 @@ exit 1
 """
 
 
-def ensure_osm(cfg_path):
+def _ensure_osm_now(cfg_path):
     """The OSM extract a city map is drawn from lives in .tmp, which is disposable, so it is
     often gone. Fetch it again from Overpass (bbox computed by city_map itself) before a
     build; return None when present or fetched, else the reason."""
@@ -81,14 +83,66 @@ def ensure_osm(cfg_path):
     ps = (ROOT / ".tmp" / f"_fetch_osm_{cfg['slug']}.ps1")
     ps.write_text(OVERPASS_PS.replace("__BBOX__", bbox).replace("__OUT__", str(osm).replace("'", "''")), encoding="utf-8")
     r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps)],
-                       capture_output=True, text=True, timeout=1500)
+                       capture_output=True, text=True, timeout=1500, creationflags=_NOWIN)
     if r.returncode != 0 or not osm.is_file():
         return "Overpass fetch failed for " + cfg["slug"] + ": " + (r.stdout + r.stderr).strip()[-400:]
     return None
 
 
 import threading as _th
+
+# every child gets a hidden console of its own: under the pythonw launcher a console program
+# (git, PowerShell, python.exe) otherwise opens a visible window (QA 2026-10-08)
+_NOWIN = 0x08000000 if __import__("sys").platform == "win32" else 0
 _CITY_LOCK = _th.Lock()   # one build at a time: they share the preview files and the rasters
+_OSM_LOCKS, _OSM_GUARD = {}, _th.Lock()
+IMG = ROOT / "Images" / "web" / "city-maps"
+PREV_PNG = ROOT / ".tmp" / "previews" / "city-png"   # base rasters a preview had to draw (never published)
+
+
+def ensure_osm(cfg_path):
+    """One Overpass fetch per city at a time: two opens of a city with no extract started two
+    PowerShell fetches of up to 25 minutes each (stress test 2026-10-09). The second waits for the
+    first and then finds the file."""
+    key = Path(cfg_path).stem
+    with _OSM_GUARD:
+        lk = _OSM_LOCKS.setdefault(key, _th.Lock())
+    with lk:
+        return _ensure_osm_now(cfg_path)
+
+
+def has_base(slug):
+    """the published street rasters a preview reuses (then no OSM data is needed at all)"""
+    return all((IMG / (slug + x)).is_file() for x in (".png", "-mobile.png"))
+
+
+def _write_cfg(path, cfg):
+    """a map config, written whole (temp file, then replace)"""
+    tmp = path.with_name("%s.%d.tmp" % (path.name, _th.get_ident()))
+    tmp.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def _wrong_kind(slug, cfg, kind):
+    """A Save names a map and carries a config, and both must be this kind. Save pressed while another
+    map was loading posted armenia's ROUTE config to /api/city/armenia, and yerevan's CITY config to
+    /api/map/yerevan; both used to be written into the catalog before anything was checked (stress test
+    2026-10-09). Every route config has "stops" and every city config "pois", never both."""
+    if not isinstance(cfg, dict):
+        return "no map config was sent"
+    if kind == "route":
+        if not (CFG_DIR / f"{slug}.json").is_file():
+            return f"there is no route map called {slug}"
+        if not isinstance(cfg.get("stops"), list) or "pois" in cfg:
+            return "that is not a route map's config"
+    else:
+        if not (CITY_DIR / f"{slug}.json").is_file():
+            return f"there is no city map called {slug}"
+        if not isinstance(cfg.get("pois"), list) or "stops" in cfg:
+            return "that is not a city map's config"
+        if cfg.get("slug", slug) != slug:
+            return f"that config is for {cfg.get('slug')}, not {slug}"
+    return None
 
 
 def city_render(cfg_path, embed=False, article=None):
@@ -103,22 +157,47 @@ def _city_render(cfg_path, embed=False, article=None):
     another origin needs."""
     import re as _re, shutil as _sh
     slug0 = json.loads(Path(cfg_path).read_text(encoding="utf-8"))["slug"]
-    rasters = [ROOT / "Images" / "web" / "city-maps" / (slug0 + x) for x in (".png", "-mobile.png")]
-    keep = {r: r.read_bytes() for r in rasters if r.is_file()} if not embed else {}
+    # every file build() can write for this map. A preview used to leave new ones behind: the phone
+    # WebP that 129 of the 133 maps do not have yet, and all four for a map never published
+    # (stress test 2026-10-09)
+    files = [IMG / (slug0 + x) for x in (".png", "-mobile.png", "-mobile.webp", "-1x.webp")]
+    keep = {r: r.read_bytes() for r in files if r.is_file()} if not embed else {}
     # a preview only moves pins and labels: the published street raster is reused (QA 2026-10-02:
     # every open/drag re-rendered it in headless Chromium, 2-5 minutes each)
-    keep_base = (not embed) and all(r.is_file() for r in rasters)
+    keep_base = (not embed) and has_base(slug0)
     try:
         cm.build(str(cfg_path), embed=embed, article=article, keep_base=keep_base)
     finally:
         # a PREVIEW must not rewrite the tracked base rasters: build() always regenerates
         # them, and a fresher OSM extract makes every pixel differ. Only a Save keeps them.
-        for r, data in keep.items():
-            r.write_bytes(data)
+        for r in (files if not embed else []):
+            data = keep.get(r)
+            if data is None:
+                # new: it goes to .tmp, where /city-png still finds it for this preview
+                if r.is_file():
+                    try:
+                        PREV_PNG.mkdir(parents=True, exist_ok=True)
+                        os.replace(r, PREV_PNG / r.name)
+                    except OSError:
+                        pass
+                continue
+            # only when it changed, and by replace: the same bytes rewritten on every open or drag was a
+            # non-atomic write to a file the site serves (QA 2026-10-08)
+            try:
+                if r.is_file() and r.read_bytes() == data:
+                    continue
+            except OSError:
+                pass
+            tmp = r.with_name(r.name + ".restore.tmp")
+            tmp.write_bytes(data)
+            os.replace(tmp, r)
     slug = __import__("json").loads(Path(cfg_path).read_text(encoding="utf-8"))["slug"]
     frag = (PREV / f"{slug}-city-embed.html").read_text(encoding="utf-8")   # external hrefs, as embedded
     desk = _re.search(r'<div class="citymap desk"><div class="cmmap">(.*?)</div>', frag, _re.S).group(1)
     desk = _re.sub(r'src="[^"]*Images/web/city-maps/([^"]+)"', r'src="/city-png/\1"', desk, count=1)
+    # the base image's srcset/sizes still named the site's files, which 404 here, and srcset wins over src:
+    # the city editor showed a blank card with the alt text (stress test 2026-10-16)
+    desk = _re.sub(r'(<img class="cmbase"[^>]*?)\s(?:srcset|sizes)="[^"]*"', r'\1', desk, count=2)
     desk_svg = _re.search(r'<div class="citymap desk"><div class="cmmap">.*?(<svg.*?</svg>)', frag, _re.S).group(1)
     mob_svg = _re.search(r'<div class="cmworld">.*?(<svg.*?</svg>)', frag, _re.S).group(1)
     return desk, desk_svg, mob_svg
@@ -150,6 +229,18 @@ def _cors(resp):
     Edit button shows the offline panel over a server that is running."""
     resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
+
+
+def pages_for(slug):
+    """every page this config is embedded in: "pages" (a list) when the same map sits on a live field-notes page
+    AND a draft itinerary (Kevin, 2026-10-23), else the one page page_for finds"""
+    try:
+        own = load_cfg(slug).get("pages")
+    except (OSError, ValueError):
+        own = None
+    if isinstance(own, list) and own:
+        return [p for p in own if isinstance(p, str)]
+    return [page_for(slug)]
 
 
 def page_for(slug):
@@ -301,26 +392,52 @@ def api_preview(slug):
 
 @app.route("/api/map/<slug>", methods=["POST"])
 def api_save(slug):
-    cfg = request.get_json()["config"]
+    cfg = (request.get_json(silent=True) or {}).get("config")
+    why = _wrong_kind(slug, cfg, "route")
+    if why:
+        return jsonify(ok=False, error=why), 400
     try:                                       # never lose the page the config names
         old = load_cfg(slug)
         if old.get("page") and not cfg.get("page"):
             cfg["page"] = old["page"]
     except (OSError, ValueError):
         pass
-    (CFG_DIR / f"{slug}.json").write_text(
-        json.dumps(cfg, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_cfg(CFG_DIR / f"{slug}.json", cfg)
     # rebuild the standalone SVG (final render, with the height/afs treatment)
     svg, cw, ch = im.render(cfg)
     (ROOT / ".tmp" / "previews").mkdir(parents=True, exist_ok=True)
     (ROOT / ".tmp" / "previews" / f"{slug}-map.svg").write_text(svg, encoding="utf-8")
-    # re-embed into the article page
-    page = page_for(slug)
-    r = subprocess.run([sys.executable, str(ROOT / "tools" / "embed_itinerary_map.py"),
-                        slug, page], cwd=str(ROOT), capture_output=True, text=True)
-    ok = r.returncode == 0
+    # re-embed into every page that carries this map (the page the editor opened from is first, so the figure
+    # handed back is that page's)
+    asked = (request.args.get("page") or "").replace("\\", "/").lstrip("./")
+    pages = pages_for(slug)
+    if asked in pages:
+        pages = [asked] + [p for p in pages if p != asked]
+    page = pages[0]
+    ok, out = True, []
+    for pg in pages:
+        if not (ROOT / pg).is_file():
+            out.append("%s: no such page" % pg); ok = False; continue
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "embed_itinerary_map.py"),
+                            slug, pg], cwd=str(ROOT), capture_output=True, text=True, creationflags=_NOWIN)
+        out.append((r.stdout + r.stderr).strip())
+        ok = ok and r.returncode == 0
+    class _R:                                       # the shape the rest of this handler reads
+        stdout, stderr = "\n".join(out), ""
+    r = _R()
     esvg, afs = edit_svg(cfg)
-    return jsonify(ok=ok, log=(r.stdout + r.stderr).strip(), svg=esvg, afs=afs, page=page)
+    # the figure exactly as embed_itinerary_map.py wrote it into the page. The editor used to put the
+    # EDITING svg into its copy (labels as drag handles, place links dropped), and the article's next
+    # Save wrote that over the embed (QA 2026-10-08: meteora's 3 map links became 0).
+    figure = None
+    if ok:
+        try:
+            ph = (ROOT / page).read_text(encoding="utf-8")
+            m = re.search(r'<figure class="itinerary-map"[^>]*>.*?</figure>', ph, re.S)
+            figure = m.group(0) if m else None
+        except (OSError, TypeError):
+            figure = None
+    return jsonify(ok=ok, log=(r.stdout + r.stderr).strip(), svg=esvg, afs=afs, page=page, figure=figure)
 
 
 @app.route("/api/slug-for")
@@ -329,7 +446,7 @@ def api_slug_for():
     itinerary maps by the page their config embeds into, city maps by the marker their
     embedded fragment carries (city-maps/<slug>.png), in the order they appear on the page"""
     page = (request.args.get("page") or "").replace("\\", "/").lstrip("./")
-    itin = [p.stem for p in sorted(CFG_DIR.glob("*.json")) if page_for(p.stem) == page]
+    itin = [p.stem for p in sorted(CFG_DIR.glob("*.json")) if page in pages_for(p.stem)]
     city = []
     f = ROOT / page
     if f.is_file():
@@ -342,9 +459,11 @@ def api_slug_for():
 @app.route("/city-png/<path:name>")
 def city_png(name):
     """the base raster for the editor's canvas (the page keeps it inline as a data URI)"""
-    f = (ROOT / "Images" / "web" / "city-maps" / name).resolve()
-    if (ROOT / "Images" / "web" / "city-maps").resolve() not in f.parents or not f.is_file():
-        return "", 404
+    f = (IMG / name).resolve()
+    if IMG.resolve() not in f.parents or not f.is_file():
+        f = (PREV_PNG / name).resolve()             # a map not published yet: the preview's own raster
+        if PREV_PNG.resolve() not in f.parents or not f.is_file():
+            return "", 404
     from flask import send_file
     r = send_file(f, mimetype="image/png"); r.headers["Cache-Control"] = "no-store"; return r
 
@@ -355,7 +474,9 @@ def api_city(slug):
     if not cfg_path.is_file():
         return jsonify(error="no such city map"), 404
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-    why = ensure_osm(cfg_path)
+    # with the published rasters the preview needs no OSM data: selecting any of the 113 maps whose
+    # extract is not in .tmp started a PowerShell Overpass fetch of up to 25 minutes (stress test 2026-10-09)
+    why = None if has_base(slug) else ensure_osm(cfg_path)
     if why:
         return jsonify(error=why), 502
     try:
@@ -371,23 +492,36 @@ def api_city_preview(slug):
     if not isinstance(cfg, dict) or not cfg.get("pois"):
         return jsonify(error="a config with pois is needed"), 400
     cfg["slug"] = slug                            # the URL names the map; the JSON cannot point at another
-    tmp = PREV / f"_edit-{slug}.json"
+    # one temp config per request: two previews shared "_edit-<slug>.json", written outside the build
+    # lock, so one build could read the other's labels (stress test 2026-10-09)
+    tmp = PREV / f"_edit-{slug}-{_th.get_ident()}.json"
     PREV.mkdir(parents=True, exist_ok=True)
     tmp.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
     try:
         desk, _, _ = city_render(tmp)
     except Exception as e:
         return jsonify(error=str(e)), 500
+    finally:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
     return jsonify(desk=desk)
 
 
 @app.route("/api/city/<slug>", methods=["POST"])
 def api_city_save(slug):
-    d = request.get_json()
-    cfg, page = d["config"], d.get("page")
+    d = request.get_json(silent=True) or {}
+    cfg, page = d.get("config"), d.get("page")
+    why = _wrong_kind(slug, cfg, "city")
+    if why:
+        return jsonify(ok=False, error=why), 400
     cfg_path = CITY_DIR / f"{slug}.json"
-    cfg_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_cfg(cfg_path, cfg)
     target = city_page_for(slug, page)
+    why = ensure_osm(cfg_path)                    # a Save redraws the streets, so it needs the extract
+    if why:
+        return jsonify(ok=False, log="The label moves are saved, but the map could not be redrawn: " + why, page=target)
     try:
         _, desk_svg, mob_svg = city_render(cfg_path, embed=True, article=target)
         return jsonify(ok=True, desk_svg=desk_svg, mob_svg=mob_svg, page=target)
@@ -471,6 +605,11 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
   #canvas.city svg{position:absolute;inset:0;width:100%;height:100%}
   #canvas.city text.cmdl:hover,#canvas.city text.cmlab:hover{fill:#2D6B50}
   .eh{cursor:grab}
+  .legpick{cursor:copy}
+  .legpick:hover{stroke:rgba(45,107,80,.18)}
+  .vh circle{cursor:grab}
+  .vh:hover circle{stroke:#2D6B50;stroke-width:2.2}
+  .vh>.hit{display:none}
   .eh:hover>.hit{stroke:var(--green);stroke-dasharray:3 3;stroke-width:1}
   .eh.drag{cursor:grabbing}
   .eh.drag>.hit{stroke:var(--green);stroke-dasharray:none;stroke-width:1.4}
@@ -486,7 +625,7 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
 <div id="main">
   <div id="bar">
     <span class="title" id="ttl">Select a map</span>
-    <span id="hint">drag any label or pill · double-click a place label to flip its side</span>
+    <span id="hint">drag any label or pill · double-click a place label to flip its side · click a route to add a waypoint, drag it, double-click to remove</span>
     <button class="ghost" id="reset" disabled>Revert</button>
     <button id="save" disabled>Save &amp; embed</button>
     <button class="ghost" id="done" title="Back to the article">Done</button>
@@ -518,9 +657,20 @@ const ttl=document.getElementById('ttl'), statusEl=document.getElementById('stat
 // The sidebar goes, the map comes up already selected, and Done hands control back.
 const Q=new URLSearchParams(location.search), EMBED=Q.has('embed'), WANT=Q.get('slug'), CITY=Q.get('city'), PAGE=Q.get('page')||'';
 let cityMode=false;
+// kind is set with slug and cfg when a map's answer lands, so Save always posts a config to its own
+// kind's endpoint. cityMode flipped at the click, and Save pressed while the next map loaded posted
+// armenia's route config to /api/city/armenia (stress test 2026-10-09).
+let kind=null, loading=false, PSEQ=0, EDITS=0;
 if(EMBED) document.body.classList.add('embed');
 const tell=(msg)=>{ if(window.parent!==window) window.parent.postMessage(Object.assign({source:'map-editor'},msg),'*'); };
-document.getElementById('done').onclick=()=>{ if(dirty && !confirm('Discard the unsaved label moves?')) return; dirty=false; tell({type:'map-done',slug}); };
+document.getElementById('done').onclick=()=>{ if(dirty && !confirm('Discard the unsaved map edits?')) return; dirty=false; tell({type:'map-done',slug}); };
+if(EMBED){
+  // Escape with the focus in here never reached the article editor's handler (QA 2026-10-08)
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.preventDefault(); document.getElementById('done').click(); } });
+  // the article editor asks before closing (a backdrop click closed it with label moves unsaved):
+  // say we heard, then run Done's own check
+  window.addEventListener('message',e=>{ if(e.data&&e.data.type==='map-close-request'){ tell({type:'map-close-ack'}); setTimeout(()=>document.getElementById('done').click(),0); } });
+}
 
 fetch('/api/catalog').then(r=>r.json()).then(cat=>{
   cat.forEach(g=>{
@@ -533,7 +683,7 @@ fetch('/api/catalog').then(r=>r.json()).then(cat=>{
     g.maps.forEach(m=>{
       const b=document.createElement('button'); b.className='mapbtn'; b.dataset.slug=m.kind+':'+m.slug;
       b.innerHTML=m.label.replace(/</g,'&lt;')+'<i>'+(m.kind==='city'?'city':'route')+'</i>';
-      b.onclick=()=>{ if(dirty && !confirm('Discard the unsaved label moves?')) return; if(m.kind==='city'){ mark(b); selectCity(m.slug); } else selectMap(m.slug,b); };
+      b.onclick=()=>{ if(dirty && !confirm('Discard the unsaved map edits?')) return; if(m.kind==='city'){ mark(b); selectCity(m.slug); } else selectMap(m.slug,b); };
       box.appendChild(b);
     });
     grp.append(h,box); listEl.appendChild(grp);
@@ -555,18 +705,35 @@ function mark(btn){
 // ---- city maps: the base raster with the pin overlay; district labels drag, pin labels
 // (orientation maps) click through n -> e -> s -> w; Save rebuilds and re-embeds.
 var GEN=0;   // QA 2026-10-02: every select/preview answer is checked against the map chosen since
+// A map is being chosen: nothing can be saved or reverted until its answer lands, and the old map's
+// unsaved moves are gone (Discard was confirmed). Opening fails visibly, with a way to try again.
+function beginSelect(){
+  const my=++GEN; PSEQ++; loading=true; dirty=false; kind=null;
+  saveBtn.disabled=true; resetBtn.disabled=true; statusEl.textContent='';
+  return my;
+}
+function failSelect(my,m,why,again){
+  if(my!==GEN) return;
+  loading=false; slug=null; cfg=null; kind=null; saveBtn.disabled=true; resetBtn.disabled=true;
+  ttl.textContent='cannot open this map';
+  stage.innerHTML='<div id="empty">'+String(why).replace(/</g,'&lt;')+'<br><button type="button" id="retry">Try again</button></div>';
+  document.getElementById('retry').onclick=()=>again(m);
+}
 function selectCity(m){
-  cityMode=true; const my=++GEN;
+  cityMode=true; const my=beginSelect();
   ttl.textContent='loading '+m.replace(/-/g,' ')+'… (a first open fetches the map data from OpenStreetMap, up to a minute)';
   stage.innerHTML='<div id="empty">loading…</div>';
+  // a short pause first: 100 quick clicks down the list made 100 server builds (stress test 2026-10-09)
+  setTimeout(()=>{ if(my!==GEN) return;
   fetch('/api/city/'+m+'?page='+encodeURIComponent(PAGE)).then(r=>r.json()).then(d=>{
     if(my!==GEN) return;
-    if(d.error){ ttl.textContent='cannot open this map'; stage.innerHTML='<div id="empty">'+d.error.replace(/</g,'&lt;')+'</div>'; return; }
-    slug=m; cfg=d.config; dirty=false;
+    if(d.error){ failSelect(my,m,d.error,selectCity); return; }
+    slug=m; cfg=d.config; kind='city'; loading=false; dirty=false;
     ttl.textContent=m.replace(/-/g,' ')+' (city map)'; statusEl.textContent='';
     document.getElementById('hint').textContent='drag a district label · click a place name to move it round its pin';
     renderCity(d.desk); saveBtn.disabled=true; resetBtn.disabled=false;
-  });
+  }).catch(()=>failSelect(my,m,'The map editor did not answer.',selectCity));
+  },120);
 }
 function renderCity(desk){
   stage.innerHTML='<div id="canvas" class="city">'+desk+'</div>';
@@ -607,24 +774,28 @@ function renderCity(desk){
   });
   root.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
 }
+// PSEQ: only the newest preview is drawn. Two drags answered out of order drew the first one's
+// labels over the second's, and the next drag committed from that stale drawing (stress test 2026-10-09)
 function previewCity(){
-  statusEl.textContent='rendering…'; const my=GEN, s=slug;
+  statusEl.textContent='rendering…'; const my=GEN, s=slug, p=++PSEQ;
   fetch('/api/city/'+slug+'/preview',{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } renderCity(d.desk); statusEl.textContent='unsaved changes'; })
-    .catch(()=>{ if(my===GEN) statusEl.textContent='could not render (server?)'; });
+    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug||p!==PSEQ) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } renderCity(d.desk); statusEl.textContent='unsaved changes'; })
+    .catch(()=>{ if(my===GEN&&p===PSEQ) statusEl.textContent='could not render (server?)'; });
 }
 
 function selectMap(m,btn){
   cityMode=false; document.getElementById('hint').textContent='drag any label or pill · double-click a place label to flip its side';
-  mark(btn); const my=++GEN;
+  if(btn) mark(btn); const my=beginSelect();
   ttl.textContent='loading '+m.replace(/-/g,' ')+'…'; stage.innerHTML='<div id="empty">loading…</div>';
+  setTimeout(()=>{ if(my!==GEN) return;
   fetch('/api/map/'+m).then(r=>r.json()).then(d=>{
     if(my!==GEN) return;
-    if(d.error){ ttl.textContent='cannot open this map'; stage.innerHTML='<div id="empty">'+d.error.replace(/</g,'&lt;')+'</div>'; return; }
-    slug=m; cfg=d.config; afs=d.afs; dirty=false;
+    if(d.error){ failSelect(my,m,d.error,x=>selectMap(x)); return; }
+    slug=m; cfg=d.config; afs=d.afs; kind='route'; loading=false; dirty=false;
     ttl.textContent=m.replace(/-/g,' '); statusEl.textContent='';
     render(d.svg); saveBtn.disabled=true; resetBtn.disabled=false;
-  });
+  }).catch(()=>failSelect(my,m,'The map editor did not answer.',x=>selectMap(x)));
+  },120);
 }
 
 function render(svg){
@@ -638,8 +809,53 @@ function render(svg){
     hit.setAttribute('width',bb.width+6); hit.setAttribute('height',bb.height+6);
     g.insertBefore(hit,g.firstChild);
     g.addEventListener('pointerdown',startDrag);
-    g.addEventListener('dblclick',flipAnchor);
+    g.addEventListener('dblclick',g.dataset.kind==='via'?removeVia:flipAnchor);
   });
+  // the route pen: click a leg to add a waypoint where you clicked
+  root.querySelectorAll('.legpick').forEach(pth=>{ pth.addEventListener('click',addVia); });
+}
+
+// the editing SVG's projection (itinerary_map.py T()): lon*K -> x, -lat -> y
+function unproject(svg,x,y){
+  const [minx,miny,scale,ox,oy,K]=(svg.getAttribute('data-proj')||'').split(' ').map(Number);
+  if(!(scale>0)) return null;
+  return [-( (y-oy)/scale + miny ), ((x-ox)/scale + minx)/K];      // [lat, lon]
+}
+function svgPoint(svg,clientX,clientY){ const pt=svg.createSVGPoint(); pt.x=clientX; pt.y=clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+// a waypoint stays inside the map's frame: one dragged off the window was kept at its far-away position and the
+// whole map zoomed out 4x to fit it (stress test 2026-10-15)
+function clampToView(svg,x,y){
+  const vb=svg.viewBox&&svg.viewBox.baseVal; if(!vb||!vb.width) return [x,y];
+  const m=4;
+  return [Math.max(vb.x+m,Math.min(vb.x+vb.width-m,x)), Math.max(vb.y+m,Math.min(vb.y+vb.height-m,y))];
+}
+function addVia(e){
+  if(!cfg||kind!=='route') return;
+  if(e.detail>1) return;                 // the second click of a double-click: one waypoint, not two
+  const pth=e.currentTarget, svg=pth.ownerSVGElement, li=+pth.dataset.idx, leg=cfg.legs[li];
+  if(!leg) return;
+  const p0=svgPoint(svg,e.clientX,e.clientY), [px,py]=clampToView(svg,p0.x,p0.y), p={x:px,y:py}, ll=unproject(svg,p.x,p.y);
+  if(!ll) return;
+  // insert after the nearest point of the leg's polyline that precedes the click
+  const T=(la,lo)=>{ const [minx,miny,scale,ox,oy,K]=svg.getAttribute('data-proj').split(' ').map(Number); return [(lo*K-minx)*scale+ox, (-la-miny)*scale+oy]; };
+  const stops=cfg.stops, legPt=key=>{ if(key==='air') return [cfg.airport.lat,cfg.airport.lon]; if(typeof key==='string'&&key.startsWith('dot:')){ const d=cfg.dots.find(d=>d.name===key.slice(4)); return [d.lat,d.lon]; } return [stops[key].lat,stops[key].lon]; };
+  const via=Array.isArray(leg.via)?leg.via.slice():[];
+  const pts=[legPt(leg.a)].concat(via).concat([legPt(leg.b)]).map(q=>T(q[0],q[1]));
+  let best=0, bd=Infinity;
+  for(let i=0;i<pts.length-1;i++){
+    const [ax,ay]=pts[i],[bx,by]=pts[i+1]; const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy||1;
+    const t=Math.max(0,Math.min(1,((p.x-ax)*dx+(p.y-ay)*dy)/L2)); const qx=ax+t*dx, qy=ay+t*dy;
+    const dd=(p.x-qx)**2+(p.y-qy)**2; if(dd<bd){bd=dd;best=i;}
+  }
+  via.splice(best,0,[Math.round(ll[0]*1e5)/1e5, Math.round(ll[1]*1e5)/1e5]);
+  leg.via=via; delete leg.bow;           // a bowed leg becomes an explicit route once you draw on it
+  markDirty(); preview();
+}
+function removeVia(e){
+  const g=e.currentTarget, li=+g.dataset.idx, k=+g.dataset.k, leg=cfg&&cfg.legs[li];
+  if(!leg||!Array.isArray(leg.via)) return;
+  leg.via.splice(k,1); if(!leg.via.length) delete leg.via;
+  markDirty(); preview();
 }
 
 function startDrag(e){
@@ -657,6 +873,17 @@ function startDrag(e){
   function up(){
     window.removeEventListener('pointermove',move);
     g.classList.remove('drag');
+    // a label dragged past the frame stays inside it: one dragged to the window corner rescaled the whole map,
+    // a district label landed off-card where nothing could reach it (stress test 2026-10-16)
+    // the label's box in ROOT units (getBBox is local to the label's own scaled group, and clamping that against
+    // the root viewBox threw a label ~180 units off its pin; stress test 2026-10-23): shift it back inside
+    try{ const svg=g.ownerSVGElement, vb=svg.viewBox&&svg.viewBox.baseVal, r=g.getBoundingClientRect(), inv2=svg.getScreenCTM().inverse();
+      const to=(x,y)=>{const pt=svg.createSVGPoint();pt.x=x;pt.y=y;return pt.matrixTransform(inv2);};
+      const a=to(r.left,r.top), b=to(r.right,r.bottom);
+      if(vb&&vb.width&&r.width){ let sx=0, sy=0;
+        if(a.x<vb.x) sx=vb.x-a.x; else if(b.x>vb.x+vb.width) sx=vb.x+vb.width-b.x;
+        if(a.y<vb.y) sy=vb.y-a.y; else if(b.y>vb.y+vb.height) sy=vb.y+vb.height-b.y;
+        d.dx+=sx; d.dy+=sy; } }catch(_){}
     if(Math.abs(d.dx)>0.5||Math.abs(d.dy)>0.5){ commit(g,d); preview(); }
   }
   window.addEventListener('pointermove',move);
@@ -671,6 +898,10 @@ function commit(g,d){
   else if(k==='dot'){const o=cfg.dots[i]; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
   else if(k==='airport'){const o=cfg.airport; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
   else if(k==='leg'){const o=cfg.legs[i]; o.chip_off=0; o.chip_side=0; o.chip_dx=round1(+g.dataset.ox+d.dx); o.chip_dy=round1(+g.dataset.oy+d.dy);}
+  else if(k==='via'){
+    const leg=cfg.legs[i], kk=+g.dataset.k, [vx,vy]=clampToView(g.ownerSVGElement, +g.dataset.x+d.dx, +g.dataset.y+d.dy), ll=unproject(g.ownerSVGElement, vx, vy);
+    if(leg&&Array.isArray(leg.via)&&leg.via[kk]&&ll) leg.via[kk]=[Math.round(ll[0]*1e5)/1e5, Math.round(ll[1]*1e5)/1e5];
+  }
   markDirty();
 }
 
@@ -687,35 +918,53 @@ function flipAnchor(e){
   markDirty(); preview();
 }
 
-function markDirty(){ dirty=true; saveBtn.disabled=false; statusEl.textContent='unsaved changes'; }
+function markDirty(){ dirty=true; EDITS++; if(!loading) saveBtn.disabled=false; statusEl.textContent='unsaved changes'; }
 
 function preview(){
-  const my=GEN, s=slug; statusEl.textContent='rendering…';
+  const my=GEN, s=slug, p=++PSEQ; statusEl.textContent='rendering…';
   fetch('/api/preview/'+slug,{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } afs=d.afs; render(d.svg); statusEl.textContent='unsaved changes'; })
-    .catch(()=>{ if(my===GEN) statusEl.textContent='could not render (server?)'; });
+    body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug||p!==PSEQ) return; if(d.error){ statusEl.textContent='could not render: '+d.error; return; } afs=d.afs; render(d.svg); statusEl.textContent='unsaved changes'; })
+    .catch(()=>{ if(my===GEN&&p===PSEQ) statusEl.textContent='could not render (server?)'; });
 }
 
+// Save posts to the endpoint of the map's own kind, never while a map loads, and an answer that comes
+// back after another map was chosen only tells the article editor (the save did happen). A move made
+// while the save ran stays unsaved. A failed save says so and can be pressed again.
 saveBtn.onclick=()=>{
-  statusEl.textContent='saving…'; saveBtn.disabled=true;
-  if(cityMode){
-    fetch('/api/city/'+slug,{method:'POST',headers:{'content-type':'application/json'},
+  if(loading||!slug||!cfg||!kind) return;
+  const s=slug, k=kind, my=GEN, e0=EDITS, mine=()=>my===GEN&&s===slug;
+  statusEl.textContent='saving…'; saveBtn.disabled=true; PSEQ++;
+  const failed=(why)=>{ if(!mine()) return; statusEl.textContent=why; saveBtn.disabled=false; };
+  const settled=()=>{ if(EDITS===e0) dirty=false; else saveBtn.disabled=false; };
+  if(k==='city'){
+    fetch('/api/city/'+s,{method:'POST',headers:{'content-type':'application/json'},
       body:JSON.stringify({config:cfg,page:PAGE})}).then(r=>r.json()).then(d=>{
-        dirty=false;
+        if(d.error){ failed('not saved: '+d.error); return; }
+        if(d.ok) tell({type:'map-saved',city:true,slug:s,page:d.page,desk_svg:d.desk_svg,mob_svg:d.mob_svg});
+        if(!mine()) return;
+        settled();
         statusEl.textContent = d.ok ? ('saved → '+d.page) : ('embed error: '+d.log);
-        if(d.ok) tell({type:'map-saved',city:true,slug,page:d.page,desk_svg:d.desk_svg,mob_svg:d.mob_svg});
-        if(d.ok) fetch('/api/city/'+slug+'?page='+encodeURIComponent(PAGE)).then(r=>r.json()).then(x=>{ if(x.desk) renderCity(x.desk); });
-      });
+        if(d.ok&&EDITS===e0){ const p=++PSEQ; fetch('/api/city/'+s+'?page='+encodeURIComponent(PAGE)).then(r=>r.json()).then(x=>{ if(mine()&&p===PSEQ&&x.desk) renderCity(x.desk); }).catch(()=>{}); }
+      }).catch(()=>failed('could not save (server?): press Save again'));
     return;
   }
-  fetch('/api/map/'+slug,{method:'POST',headers:{'content-type':'application/json'},
+  fetch('/api/map/'+s,{method:'POST',headers:{'content-type':'application/json'},
     body:JSON.stringify({config:cfg})}).then(r=>r.json()).then(d=>{
-      dirty=false; afs=d.afs; render(d.svg);
+      if(d.error){ failed('not saved: '+d.error); return; }
+      if(d.ok) tell({type:'map-saved',slug:s,page:d.page,svg:d.svg,figure:d.figure||null});
+      if(!mine()) return;
+      settled();
+      if(EDITS===e0){ afs=d.afs; render(d.svg); }
       statusEl.textContent = d.ok ? ('saved → '+d.page) : ('embed error: '+d.log);
-      if(d.ok) tell({type:'map-saved',slug,page:d.page,svg:d.svg});
-    });
+    }).catch(()=>failed('could not save (server?): press Save again'));
 };
-resetBtn.onclick=()=>{ if(cityMode&&slug){ selectCity(slug); return; } if(slug) fetch('/api/map/'+slug).then(r=>r.json()).then(d=>{cfg=d.config;afs=d.afs;dirty=false;render(d.svg);saveBtn.disabled=true;statusEl.textContent='reverted';}); };
+// the answer is checked against the map chosen since, like selectMap/selectCity: a late Revert put
+// meteora's config under armenia, and Save would have written it there (QA 2026-10-08). A preview
+// still on its way is dropped (PSEQ), and a failed Revert says so.
+resetBtn.onclick=()=>{ if(loading) return; if(kind==='city'&&slug){ selectCity(slug); return; } if(!slug) return; const my=GEN, s=slug, p=++PSEQ;
+  resetBtn.disabled=true; statusEl.textContent='reverting…';
+  fetch('/api/map/'+s).then(r=>r.json()).then(d=>{ if(my!==GEN||s!==slug||p!==PSEQ) return; resetBtn.disabled=false; if(d.error){ statusEl.textContent='could not revert: '+d.error; return; } cfg=d.config;afs=d.afs;dirty=false;render(d.svg);saveBtn.disabled=true;statusEl.textContent='reverted';})
+    .catch(()=>{ if(my===GEN&&s===slug){ resetBtn.disabled=false; statusEl.textContent='could not revert (server?)'; } }); };
 window.addEventListener('beforeunload',e=>{ if(dirty){e.preventDefault();e.returnValue='';} });
 </script>
 </body></html>"""

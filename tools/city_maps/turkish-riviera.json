@@ -1,0 +1,134 @@
+{
+ "slug": "turkish-riviera",
+ "kicker": "Türkiye",
+ "city": "The Turkish Riviera",
+ "osm": ".tmp/turkish_riviera_osm.json",
+ "article": "turkiye/antalya.html",
+ "legend": false,
+ "labels": true,
+ "roads": "major",
+ "hint": [
+  "Touch to explore",
+  "Double-tap to open in Google Maps"
+ ],
+ "desktop": {
+  "pad": 1.12
+ },
+ "mobile": {
+  "pad": 1.22,
+  "init_w": 1.0,
+  "init_x": 0.5,
+  "init_y": 0.5
+ },
+ "sea_bg": true,
+ "water_labels": [
+  {
+   "text": "Mediterranean Sea",
+   "lat": 36.0,
+   "lon": 29.3,
+   "size": 14
+  }
+ ],
+ "groups": [
+  {
+   "key": "town",
+   "label": "TOWNS",
+   "color": "#245A43"
+  },
+  {
+   "key": "air",
+   "label": "AIRPORTS",
+   "color": "#6B716C"
+  }
+ ],
+ "pois": [
+  {
+   "name": "Antalya",
+   "group": "town",
+   "lat": 36.8969,
+   "lon": 30.7133,
+   "href": "https://www.google.com/maps/place/Antalya,+T%C3%BCrkiye/@36.8979376,30.718105,12z/data=!3m1!4b1!4m6!3m5!1s0x14c39aaeddadadc1:0x95c69f73f9e32e33!8m2!3d36.8968908!4d30.7133233!16zL20vMDFfaGhw?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "n"
+  },
+  {
+   "name": "Kaş",
+   "group": "town",
+   "lat": 36.2,
+   "lon": 29.6396,
+   "href": "https://www.google.com/maps/place/Ka%C5%9F,+Andifli,+07580+Ka%C5%9F%2FAntalya,+T%C3%BCrkiye/@36.200856,29.6497456,15z/data=!3m1!4b1!4m6!3m5!1s0x14c1da54a506cf4d:0xcfbf502fb3cb4db3!8m2!3d36.199913!4d29.63955!16zL20vMGJqOXFs?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "Ölüdeniz",
+   "group": "town",
+   "lat": 36.5704,
+   "lon": 29.1405,
+   "href": "https://www.google.com/maps/place/%C3%96l%C3%BCdeniz,+48300+Fethiye%2FMu%C4%9Fla,+T%C3%BCrkiye/@36.5690844,29.1405535,13z/data=!3m1!4b1!4m6!3m5!1s0x14c04098bb416971:0x3ed8d9c9cbf81ec9!8m2!3d36.570407!4d29.140454!16s%2Fm%2F025vp92?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "Fethiye",
+   "group": "town",
+   "lat": 36.6592,
+   "lon": 29.1263,
+   "href": "https://www.google.com/maps/place/Fethiye,+Mu%C4%9Fla,+T%C3%BCrkiye/@36.65182,29.12187,13z/data=!3m1!4b1!4m6!3m5!1s0x14c0439b0db6b13b:0x87150704244f70d7!8m2!3d36.659246!4d29.126347!16zL20vMGJqN2Rw?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "n"
+  },
+  {
+   "name": "Marmaris",
+   "group": "town",
+   "lat": 36.855,
+   "lon": 28.2742,
+   "href": "https://www.google.com/maps/place/Marmaris,+Mu%C4%9Fla,+T%C3%BCrkiye/@36.848085,28.2614455,14z/data=!3m1!4b1!4m6!3m5!1s0x14bfbdbff1961523:0xdf8e730ed1eeb2be!8m2!3d36.854936!4d28.270878!16zL20vMDNmMXRf?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "Bodrum",
+   "group": "town",
+   "lat": 37.0344,
+   "lon": 27.4305,
+   "href": "https://www.google.com/maps/place/Bodrum,+Mu%C4%9Fla,+T%C3%BCrkiye/@37.0357904,27.4127739,14z/data=!3m1!4b1!4m6!3m5!1s0x14be6c4faeb0d669:0x51a6e218f706590a!8m2!3d37.034407!4d27.43054!16zL20vMDFza3h4?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "AYT",
+   "group": "air",
+   "icon": "plane",
+   "lat": 36.8987,
+   "lon": 30.8005,
+   "href": "https://www.google.com/maps/place/Antalya+Airport/@36.9070844,30.8027449,15z/data=!3m1!4b1!4m6!3m5!1s0x14c384778d617c9d:0xc17cdcfcdb48e8fa!8m2!3d36.9086961!4d30.7981855!16zL20vMDlqMjg0?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "DLM",
+   "group": "air",
+   "icon": "plane",
+   "lat": 36.7131,
+   "lon": 28.7925,
+   "href": "https://www.google.com/maps/place/Dalaman+Airport/@36.7113798,28.78728,17z/data=!3m1!4b1!4m6!3m5!1s0x14c0715d8f83456f:0xcaf246be6efae4da!8m2!3d36.7113798!4d28.78728!16s%2Fm%2F026l2yc?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "s"
+  },
+  {
+   "name": "BJV",
+   "group": "air",
+   "icon": "plane",
+   "lat": 37.2506,
+   "lon": 27.6643,
+   "href": "https://www.google.com/maps/place/Milas%E2%80%93Bodrum+Airport/@37.2509834,27.6667245,17z/data=!3m1!4b1!4m6!3m5!1s0x14bef6172e26d41d:0x983b69b4d84b63d2!8m2!3d37.2509834!4d27.6667245!16zL20vMGZjY2Z3?hl=en&entry=ttu&g_ep=EgoyMDI2MTAwNy4wIKXMDSoASAFQAw%3D%3D",
+   "lab": "n"
+  }
+ ],
+ "embed": {
+  "pre": "between the many smaller towns in-between.</p>\n  ",
+  "post": "\n  <p>The best time to visit"
+ },
+ "extra_css": "\n.citymap-fig:has(.cmbase[src*=\"city-maps/turkish-riviera\"]){margin:2rem auto}\n",
+ "district_labels": [
+  {
+   "text": "RHODES",
+   "lat": 36.3,
+   "lon": 28.05,
+   "fixed": true
+  }
+ ]
+}

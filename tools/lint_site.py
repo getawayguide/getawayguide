@@ -207,6 +207,7 @@ for path, r in pages():
     for i, ln in enumerate(re.split(r"\n", clean), 1):
         if "—" not in ln: continue
         if re.search(r"<title>|<meta|fn-sub-hd|toc-", ln): continue
+        if 'id="explore-more"' in ln or 'class="gb-card"' in ln: continue   # other pages' titles and blurbs, drawn as cards (2026-10-24)
         # A dash inside a heading is a separator, not prose. Skip by SPAN, not by line: these
         # files put a whole card on one line, so `<h3>Ruta de las Flores — ...</h3>` sits in
         # the same line as its <p> excerpt, and skipping the line would blind the excerpt too.

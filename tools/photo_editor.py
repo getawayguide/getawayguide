@@ -48,6 +48,9 @@ from urllib.parse import unquote
 from pathlib import Path
 
 from flask import Flask, abort, jsonify, request, send_file, send_from_directory, Response
+from werkzeug.exceptions import HTTPException
+import struct, zlib
+from PIL import UnidentifiedImageError
 
 try:
     from pillow_heif import register_heif_opener
@@ -56,7 +59,15 @@ try:
 except ImportError:
     HEIC_OK = False
 
+import numpy as np
 from PIL import Image, ImageOps
+
+# every child gets a hidden console of its own: under the pythonw launcher a console program
+# (git, PowerShell, python.exe) otherwise opens a visible window (QA 2026-10-08)
+_NOWIN = 0x08000000 if __import__("sys").platform == "win32" else 0
+# the compress tools run below normal priority: they now work while the editor is open on another article
+# (2026-10-16), and typing and the photo dialog come first
+_LOWPRI = 0x00004000 if __import__("sys").platform == "win32" else 0
 
 ROOT = Path(__file__).resolve().parent.parent
 IMAGES = ROOT / "Images"
@@ -87,12 +98,102 @@ PIPELINE = ["recompress_desktop.py", "add_picture_mobile.py", "gen_mobile_jpg.py
 app = Flask(__name__)
 
 
+def _origin_ok(o):
+    """The callers: editor.html from file:// (Origin "null"), the pages this server and the suite's
+    other servers serve (http://127.0.0.1:<port>), and scripts (no Origin). Any other origin is a
+    web page in Kevin's browser, and with CORS open it could drive every route that writes
+    (QA 2026-10-08: /api/launch/fix rewrote a file outside the repo from a cross-origin POST)."""
+    if not o or o == "null":
+        return True
+    from urllib.parse import urlparse
+    try:
+        u = urlparse(o)
+    except ValueError:
+        return False
+    return u.scheme == "http" and u.hostname in ("127.0.0.1", "localhost")
+
+
+@app.before_request
+def same_machine_only():
+    if not _origin_ok(request.headers.get("Origin")):
+        return jsonify({"ok": False, "error": "origin not allowed"}), 403
+
+
+@app.errorhandler(TypeError)
+@app.errorhandler(AttributeError)
+@app.errorhandler(KeyError)
+@app.errorhandler(ValueError)
+@app.errorhandler(ZeroDivisionError)
+@app.errorhandler(OverflowError)
+@app.errorhandler(IndexError)
+@app.errorhandler(struct.error)
+@app.errorhandler(zlib.error)
+@app.errorhandler(UnidentifiedImageError)
+@app.errorhandler(FileNotFoundError)
+@app.errorhandler(Image.DecompressionBombError)
+def _bad_input(e):
+    """A route handed the wrong shape (a JSON array, a number, a key missing, ?s=abc) used to answer
+    with a 500 and a traceback (QA 2026-10-08: 25 routes). It is the request that is wrong, so 400.
+    The traceback still goes to the log, so a real bug of the same type is not hidden."""
+    import traceback
+    traceback.print_exc()
+    return jsonify({"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200])}), 400
+
+
+@app.errorhandler(HTTPException)
+def _http_error(e):
+    """abort(400/403/404/410/413/415) used to answer Flask's HTML page; the editor's r.json() then threw and
+    reported "the photo server isn't answering" (stress test 2026-10-15). JSON for the API, HTML for pages."""
+    if request.path.startswith(("/api/", "/comments/", "/review/", "/redline/")):
+        return jsonify({"ok": False, "error": e.name, "detail": (e.description or "")[:300]}), e.code
+    return e
+
+
+@app.errorhandler(Exception)
+def _server_error(e):
+    """anything else is still a 500, but a JSON one the editor can read; the traceback goes to the log"""
+    import traceback
+    traceback.print_exc()
+    if request.path.startswith(("/api/", "/comments/", "/review/", "/redline/")):
+        return jsonify({"ok": False, "error": "%s: %s" % (type(e).__name__, str(e)[:200])}), 500
+    raise e
+
+
+# A request body over this is refused with a 413 before it is read (a 50 MB body cost 100 MB of memory
+# and up to 11 s, stress test 2026-10-09). The largest real one, a photo upload, is ~25 MB.
+app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024
+
+
+@app.after_request
+def _send_in_pieces(resp):
+    """A large response leaves in 64 KB pieces. Werkzeug closes the connection after every response, and
+    on this machine's loopback a big body written in one go and then closed lost its tail: the merge of
+    a 2 MB article failed 10 times in 20, a 0.75 MB preview hung for minutes (stress test 2026-10-09).
+    Written in pieces, 0 in 20 were lost. Files from send_file already go out in pieces."""
+    try:
+        if resp.direct_passthrough or resp.is_streamed:
+            return resp
+        data = resp.get_data()
+        if len(data) > 65536:
+            resp.response = [data[i:i + 65536] for i in range(0, len(data), 65536)]
+            resp.headers["Content-Length"] = str(len(data))
+    except Exception:
+        pass
+    return resp
+
+
+def _rel_clean(rel):
+    """a repo path as a request names it: separators made forward, a leading ./ or / dropped. NOT
+    .lstrip("./"), which also ate the dot of ".tmp/..." and turned it into "tmp/..."."""
+    return re.sub(r"^(?:\./|/)+", "", (rel or "").replace("\\", "/"))
+
+
 @app.after_request
 def cors(resp):
     """editor.html runs on a different origin (file:// or another local port)
     and its photo sidebar calls this API directly."""
     resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Content-Encoding"   # the merge is sent gzipped
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return resp
 
@@ -258,8 +359,7 @@ def hydrate_if_cloud(p, timeout_s=180):
     Over half the main library is on-demand placeholders. Letting PIL open one
     triggers Windows' read-driven hydration, which Microsoft documents as
     "opportunistic" - it can stall for minutes, and the editor just looks hung
-    after you press Insert. photo_backup solved this already; reuse it rather
-    than keep a second, worse copy of the logic.
+    after you press Insert. tools/backup_lib.py has the explicit hydration call.
     """
     try:
         st = os.stat(p)
@@ -268,8 +368,8 @@ def hydrate_if_cloud(p, timeout_s=180):
     if not (st.st_file_attributes & (0x400000 | 0x1000)):    # RECALL | OFFLINE
         return
     try:
-        import photo_backup as pb                            # lazy: pb imports us
-        pb.hydrate(Path(p), timeout_s)
+        import backup_lib
+        backup_lib.hydrate(Path(p), timeout_s)
     except Exception:
         pass                                                 # fall back to a plain read
 
@@ -455,7 +555,11 @@ def clean_dirname(s):
     """One path COMPONENT: no separators, no drive colons, no dot-traversal.
     Country/City come from free-text fields — a stray '/' or '..' must not
     create nested folders or escape Images/."""
-    return re.sub(r'[<>:"/\\|?*]', "", str(s or "")).strip(". ").strip()
+    s = unicodedata.normalize("NFC", str(s or ""))
+    s = re.sub(r'[<>:"/\\|?*\x00-\x1f\u200e\u200f\u202a-\u202e\u2066-\u2069]', "", s)[:80].strip(". ").strip()   # cut THEN strip: a cut ending in "." made a folder Windows silently renamed; a 300-char city was WinError 123; bidi controls hid a folder's real name
+    if s.split(".")[0].upper() in ("CON", "PRN", "AUX", "NUL") or re.fullmatch(r"(?i)(COM|LPT)[1-9](\..*)?", s):
+        s += "_"                                  # Windows reserved device names cannot be folders
+    return s
 
 
 def country_dir(slug):
@@ -473,7 +577,10 @@ def country_dir(slug):
 
 def clean_name(stem):
     s = unicodedata.normalize("NFC", stem)
-    s = re.sub(r'[<>:"/\\|?*%#]', "", s).strip() or "photo"
+    # & + ' are out too: a file name reaches the page inside href/srcset, where an & must be escaped and the
+    # tier tools do not escape it (El Camino Pub & Hostel.jpg, 2026-10-19)
+    s = re.sub(r'[<>:"/\\|?*%#&+' + "']", "", s)
+    s = re.sub(r"\s{2,}", " ", s).strip()[:80].strip() or "photo"   # with -N and tier suffixes a long stem passed Windows' path limit
     return s
 
 
@@ -482,6 +589,144 @@ def clean_name(stem):
 # Model: .tmp/photo_editor/models/big-lama.pt (~196MB TorchScript, CPU).
 ERASED = ROOT / ".tmp" / "photo_editor" / "erased"
 ERASED.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------- background jobs (2026-10-16)
+# An AI erase takes 40 s to minutes and used to hold the photo dialog hostage; a result that landed after the
+# dialog moved on was the root of the 2026-10-15 "photo A's pixels under photo B's name" bug. Heavy work now runs
+# here, owned by a job the editor watches: the dialog stays usable, the chip in the sidebar shows progress, and the
+# result is applied only to the stage that asked for it (or kept for that photo's next open).
+_JOBS, _JOBS_LOCK, _JOB_SEQ = {}, threading.Lock(), [0]
+_JOB_POOL = ThreadPoolExecutor(max_workers=2)
+
+
+def job_new(kind, label, **meta):
+    with _JOBS_LOCK:
+        _JOB_SEQ[0] += 1
+        jid = "j%d%s" % (_JOB_SEQ[0], uuid_hex(6))
+        _JOBS[jid] = dict(id=jid, kind=kind, label=label, status="queued", progress=0.0, note="",
+                          started=time.time(), ended=None, result=None, error=None, cancel=False, **meta)
+        # the list never grows past 40: finished jobs older than an hour go first
+        done = sorted((j for j in _JOBS.values() if j["status"] in ("done", "failed", "cancelled")), key=lambda j: j["ended"] or 0)
+        for j in done[:max(0, len(_JOBS) - 40)]:
+            _JOBS.pop(j["id"], None)
+    return jid
+
+
+def uuid_hex(n):
+    import uuid
+    return uuid.uuid4().hex[:n]
+
+
+def job_progress(jid, frac, note=None):
+    # the worker's progress callback; False = cancelled, stop
+    with _JOBS_LOCK:
+        j = _JOBS.get(jid)
+        if not j:
+            return False
+        j["progress"] = max(0.0, min(1.0, float(frac)))
+        if note:
+            j["note"] = str(note)[:120]
+        return not j["cancel"]
+
+
+def job_submit(jid, fn):
+    def run():
+        with _JOBS_LOCK:
+            j = _JOBS.get(jid)
+            if not j or j["cancel"]:
+                return
+            j["status"] = "running"; j["started"] = time.time()
+        try:
+            result = fn(lambda f, n=None: job_progress(jid, f, n))
+            with _JOBS_LOCK:
+                j = _JOBS.get(jid)
+                if j:
+                    j.update(status="cancelled" if j["cancel"] else "done", progress=1.0, result=result, ended=time.time())
+        except Exception as e:
+            cancelled = "cancelled" in str(e)
+            with _JOBS_LOCK:
+                j = _JOBS.get(jid)
+                if j:
+                    j.update(status="cancelled" if (cancelled or j["cancel"]) else "failed", error=None if cancelled else str(e)[:300], ended=time.time())
+    _JOB_POOL.submit(run)
+
+
+def jobs_list():
+    with _JOBS_LOCK:
+        out = [{k: v for k, v in j.items() if k != "cancel"} for j in _JOBS.values()]
+    out.sort(key=lambda j: -(j["started"] or 0))
+    cs = _compress_status()
+    if cs.get("running"):
+        out.insert(0, {"id": "compress:" + cs["running"], "kind": "compress", "label": "Compressing photos: " + cs["running"].split("/")[-1],
+                       "status": "running", "progress": 0.0, "note": "", "started": None, "ended": None})
+    for r in cs.get("queued", []):
+        if r != cs.get("running"):
+            out.append({"id": "compress:" + r, "kind": "compress", "label": "Photos to compress: " + r.split("/")[-1],
+                        "status": "queued", "progress": 0.0, "note": "after the page is closed", "started": None, "ended": None})
+    return out
+
+
+@app.route("/api/jobs", methods=["GET", "OPTIONS"])
+def api_jobs():
+    if request.method == "OPTIONS":
+        return "", 204
+    return jsonify({"ok": True, "jobs": jobs_list()})
+
+
+@app.route("/api/jobs/<jid>", methods=["DELETE", "OPTIONS"])
+def api_job_delete(jid):
+    """cancel a running job (the worker stops at its next level) or dismiss a finished one"""
+    if request.method == "OPTIONS":
+        return "", 204
+    with _JOBS_LOCK:
+        j = _JOBS.get(jid)
+        if not j:
+            abort(404)
+        if j["status"] in ("queued", "running"):
+            j["cancel"] = True
+            if j["status"] == "queued":
+                j.update(status="cancelled", ended=time.time())
+        else:
+            _JOBS.pop(jid, None)
+    return jsonify({"ok": True})
+
+
+def _cache_sweep():
+    """the caches that only grew (thumbs 4 GB, erased 150 MB; stress test 2026-10-16): thumbs kept under 2 GB
+    (oldest first), erase sessions older than 7 days removed. At start and every 6 hours."""
+    while True:
+        try:
+            now = time.time()
+            for f in ERASED.glob("*.jpg"):
+                try:
+                    if now - f.stat().st_mtime > 7 * 86400:
+                        f.unlink()
+                except OSError:
+                    pass
+            files = []
+            for f in THUMBS.rglob("*"):
+                try:
+                    if f.is_file():
+                        st = f.stat(); files.append((st.st_mtime, st.st_size, f))
+                except OSError:
+                    pass
+            total = sum(s for _, s, _ in files)
+            # a working set, not a leak: an evicted thumbnail costs a 1-2 s HEIC decode when its album is next
+            # opened (the first sweep at 2.5 GB made a 1,100-photo cull crawl), so the cap sits above today's size
+            if total > 6.0 * 1024 ** 3:
+                files.sort()
+                freed = 0
+                for _, s, f in files:
+                    if total - freed <= 5.0 * 1024 ** 3:
+                        break
+                    try:
+                        f.unlink(); freed += s
+                    except OSError:
+                        pass
+                print("thumbs cache: %.2f GB, removed %.2f GB of the oldest" % (total / 1024 ** 3, freed / 1024 ** 3), flush=True)
+        except Exception as e:
+            print("cache sweep:", e, flush=True)
+        time.sleep(6 * 3600)
 LAMA_PT = ROOT / ".tmp" / "photo_editor" / "models" / "big-lama.pt"
 _lama = None
 _lama_gate = threading.Lock()
@@ -498,24 +743,18 @@ def lama():
     return _lama
 
 
-def lama_erase(im, mask):
-    """Inpaint masked pixels. Works on a context crop around the mask so a
-    small erase on a 12MP photo stays fast, then blends the patch back at
-    full resolution."""
-    import numpy as np
-    import torch
-    m = np.asarray(mask, dtype=np.uint8) > 127
+def _context_box(im, m, pad=0.45, extra=32):
+    """The box the eraser works in: the mask's bounds plus `pad` of their size and `extra` px."""
     ys, xs = np.where(m)
-    if not len(ys):
-        return im
-    # context box: mask bounds + 45% padding
     y0, y1, x0, x1 = ys.min(), ys.max(), xs.min(), xs.max()
-    ph, pw = int((y1 - y0 + 1) * .45) + 32, int((x1 - x0 + 1) * .45) + 32
-    y0, y1 = max(0, y0 - ph), min(im.height, y1 + ph + 1)
-    x0, x1 = max(0, x0 - pw), min(im.width, x1 + pw + 1)
-    crop = im.crop((x0, y0, x1, y1))
-    mcrop = mask.crop((x0, y0, x1, y1))
-    # cap the working resolution; LaMa CPU time grows fast with pixels
+    ph, pw = int((y1 - y0 + 1) * pad) + extra, int((x1 - x0 + 1) * pad) + extra
+    return (max(0, x0 - pw), max(0, y0 - ph), min(im.width, x1 + pw + 1), min(im.height, y1 + ph + 1))
+
+
+def lama_fill(crop, mcrop):
+    """LaMa's suggestion for the hole, at its working size (<= 1200 px): the structure of the fill. Returns
+    an RGB PIL image of the crop's size (scaled back up: a guide, not the final pixels)."""
+    import torch
     scale = min(1.0, 1200 / max(crop.size))
     work = crop.resize((max(8, int(crop.width * scale)), max(8, int(crop.height * scale))),
                        Image.LANCZOS) if scale < 1 else crop
@@ -531,199 +770,93 @@ def lama_erase(im, mask):
         out = lama()(img_t, mask_t)
     res = (out[0].permute(1, 2, 0).clamp(0, 1).numpy() * 255).astype("uint8")
     res = Image.fromarray(res[:work.height, :work.width])
-    if res.size != crop.size:
-        res = res.resize(crop.size, Image.LANCZOS)
-    # blend only the masked pixels (slightly feathered) back into the crop
-    from PIL import ImageFilter
-    feather = mcrop.filter(ImageFilter.GaussianBlur(3))
-    crop.paste(res, (0, 0), feather)
-    im.paste(crop, (x0, y0))
+    return res.resize(crop.size, Image.LANCZOS) if res.size != crop.size else res
+
+
+def lama_erase(im, mask, progress=None):
+    """The AI eraser: LaMa decides the structure of the fill at <= 1200 px, then the hole is rebuilt at
+    FULL resolution from patches of its surroundings (tools/inpaint_v2.complete, PhotoCraft's Remove Tool
+    recipe) and blended in without a seam. Works on a context crop around the mask."""
+    import inpaint_v2
+    m = np.asarray(mask, dtype=np.uint8) > 127
+    if not m.any():
+        return im
+    x0, y0, x1, y1 = _context_box(im, m)
+    crop = im.crop((x0, y0, x1, y1))
+    mcrop = mask.crop((x0, y0, x1, y1))
+    # a budget: the patch search holds ~1 KB per hole pixel, so a 40% hole of a 24 MP photo asked for 9 GB and
+    # died (stress test 2026-10-15). Over the budget the hole is rebuilt at a smaller size and scaled back in;
+    # the surroundings keep their full resolution.
+    hole_px = int((np.asarray(mcrop, dtype=np.uint8) > 127).sum())
+    scale = min(1.0, 2400 / max(crop.size), (1.2e6 / max(1, hole_px)) ** 0.5)
+    if scale < 0.999:
+        work = crop.resize((max(16, int(crop.width * scale)), max(16, int(crop.height * scale))), Image.LANCZOS)
+        wmask = mcrop.resize(work.size, Image.NEAREST)
+        whole = np.asarray(wmask, dtype=np.uint8) > 127
+        if progress: progress(0.05, "LaMa is sketching the fill")
+        guide = np.asarray(lama_fill(work, wmask))
+        small = inpaint_v2.complete(np.asarray(work), whole, init=guide, progress=(lambda f, n=None: progress(0.1 + 0.85 * f, n)) if progress else None)
+        up = np.asarray(Image.fromarray(small).resize(crop.size, Image.LANCZOS)).astype(np.float32)
+        base = np.asarray(crop).astype(np.float32)
+        import cv2
+        a = cv2.GaussianBlur((np.asarray(mcrop, dtype=np.uint8) > 127).astype(np.float32), (0, 0), 3)[..., None]
+        out = (base * (1 - a) + up * a).clip(0, 255).astype(np.uint8)
+    else:
+        hole = np.asarray(mcrop, dtype=np.uint8) > 127
+        if progress: progress(0.05, "LaMa is sketching the fill")
+        guide = np.asarray(lama_fill(crop, mcrop))
+        out = inpaint_v2.complete(np.asarray(crop), hole, init=guide, progress=(lambda f, n=None: progress(0.1 + 0.85 * f, n)) if progress else None)
+    im.paste(Image.fromarray(out), (x0, y0))
+    return im
+
+
+def spot_erase(im, mask):
+    """The Spot eraser: LightCraft's Remove (an automatically chosen source patch, healed in with a Poisson
+    clone): instant, right for dust, small marks and thin wires; a large hole wants the AI mode."""
+    import inpaint_v2
+    m = np.asarray(mask, dtype=np.uint8) > 127
+    if not m.any():
+        return im
+    x0, y0, x1, y1 = _context_box(im, m, pad=4.5, extra=24)
+    crop = im.crop((x0, y0, x1, y1))
+    hole = np.asarray(mask.crop((x0, y0, x1, y1)), dtype=np.uint8) > 127
+    out = inpaint_v2.heal(np.asarray(crop), hole)
+    im.paste(Image.fromarray(out), (x0, y0))
     return im
 
 
 # ---------------------------------------------------------------- develop bake
-# The Lightroom-style develop math. The WebGL shader in editor.html implements
-# EXACTLY these formulas IN THIS ORDER — if you change one, change both, or
-# the live preview will not match the baked file.
-DEV_KEYS = ("exposure", "contrast", "highlights", "shadows", "whites", "blacks",
-            "temp", "tint", "vibrance", "saturation", "sharpen", "vignette",
-            "dehaze", "clarity", "noise", "vigmid", "vigfeather",
-            "hsl_o_h", "hsl_o_s", "hsl_o_l", "hsl_g_h", "hsl_g_s", "hsl_g_l",
-            "hsl_a_h", "hsl_a_s", "hsl_a_l", "hsl_b_h", "hsl_b_s", "hsl_b_l")
-HSL_CENTERS = {"o": 30.0, "g": 110.0, "a": 185.0, "b": 230.0}   # hue degrees
-HSL_WIDTH = 55.0
+# The slider math lives in tools/develop_v2.py (LightCraft's, ported); the WebGL shader in editor.html
+# implements EXACTLY the same formulas. DEV_KEYS is the shared contract.
+import develop_v2 as _dev2    # noqa: E402
 
-
-def _smoothstep(e0, e1, x):
-    import numpy as np
-    t = np.clip((x - e0) / (e1 - e0), 0, 1)
-    return t * t * (3 - 2 * t)
-
-
-def _hue_weight(hue_deg, center):
-    """Raised-cosine window around a channel's hue center (degrees, wraps)."""
-    import numpy as np
-    dist = np.abs(((hue_deg - center + 180) % 360) - 180)
-    w = np.clip(1 - dist / HSL_WIDTH, 0, 1)
-    return w * w * (3 - 2 * w)
+DEV_KEYS = _dev2.DEV_KEYS
 
 
 def develop(im, p, masks=None):
-    """Bake develop parameters (each -100..100) into a PIL image."""
-    import numpy as np
-    from PIL import ImageFilter
-    v = {k: float(p.get(k, 0)) / 100.0 for k in DEV_KEYS}
-    masks = [m for m in (masks or []) if any(abs(float(m.get(k, 0))) > 1e-4
-                                             for k in ("exposure", "temp", "sat"))]
-    if not any(abs(x) > 1e-4 for x in v.values()) and not masks:
-        return im
-    a = np.asarray(im, dtype=np.float32) / 255.0
-    h, w = a.shape[:2]
-    # 1. exposure + white balance in (approx) linear light, +-2.5 EV full-scale
-    lin = np.power(np.clip(a, 0, 1), 2.2)
-    lin *= 2.0 ** (v["exposure"] * 2.5)
-    lin[..., 0] *= 1 + 0.25 * v["temp"]
-    lin[..., 2] *= 1 - 0.25 * v["temp"]
-    lin[..., 1] *= 1 - 0.12 * v["tint"]
-    d = np.power(np.clip(lin, 0, 4), 1 / 2.2)
-    # 2. tone: highlights/shadows/whites/blacks, then contrast
-    luma = d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722
-    hl = _smoothstep(.45, 1.0, luma)[..., None]
-    sh = (1 - _smoothstep(0.0, .55, luma))[..., None]
-    dc = np.clip(d, 0, 1)
-    bell = dc * (1 - dc)
-    d = d + v["highlights"] * 1.5 * hl * bell
-    d = d + v["shadows"] * 1.5 * sh * bell
-    d = d * (1 + 0.25 * v["whites"])
-    b = v["blacks"]
-    d = np.where(b >= 0, d * (1 - 0.25 * b) + 0.25 * b,
-                 (d - 0.25 * -b) / (1 - 0.25 * -b))
-    d = (d - 0.5) * (1 + 0.6 * v["contrast"]) + 0.5
-    d = np.clip(d, 0, 1)
-    # 3. HSL mixer: hue-windowed hue-shift / sat / luminance per channel
-    if any(abs(v[k]) > 1e-4 for k in DEV_KEYS if k.startswith("hsl_")):
-        mx = d.max(-1)
-        mn = d.min(-1)
-        delta = mx - mn
-        hue = np.zeros_like(mx)
-        nz = delta > 1e-5
-        r_, g_, b_ = d[..., 0], d[..., 1], d[..., 2]
-        rmax = nz & (mx == r_)
-        gmax = nz & (mx == g_) & ~rmax
-        bmax = nz & ~rmax & ~gmax
-        hue[rmax] = (60 * ((g_ - b_) / np.maximum(delta, 1e-6))[rmax]) % 360
-        hue[gmax] = 60 * ((b_ - r_) / np.maximum(delta, 1e-6))[gmax] + 120
-        hue[bmax] = 60 * ((r_ - g_) / np.maximum(delta, 1e-6))[bmax] + 240
-        lum3 = (d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722)[..., None]
-        hshift = np.zeros_like(mx)
-        for ch, center in HSL_CENTERS.items():
-            wgt = _hue_weight(hue, center)
-            if abs(v[f"hsl_{ch}_s"]) > 1e-4:
-                d = lum3 + (d - lum3) * (1 + v[f"hsl_{ch}_s"] * wgt)[..., None]
-            if abs(v[f"hsl_{ch}_l"]) > 1e-4:
-                d = d * (1 + 0.4 * v[f"hsl_{ch}_l"] * wgt)[..., None]
-            if abs(v[f"hsl_{ch}_h"]) > 1e-4:
-                hshift = hshift + v[f"hsl_{ch}_h"] * 30.0 * wgt
-        if np.any(np.abs(hshift) > 1e-3):
-            # rotate hue by re-deriving rgb from shifted hue (constant sat/luma
-            # approximation identical to the shader's)
-            rad = np.radians(hshift)
-            cosA = np.cos(rad)[..., None]
-            sinA = np.sin(rad)[..., None]
-            sq = 0.57735
-            d = np.clip(d * cosA + np.cross(np.broadcast_to([sq, sq, sq], d.shape), d) * sinA +
-                        (sq * (d[..., 0] + d[..., 1] + d[..., 2]))[..., None] * sq * (1 - cosA), 0, 4)
-        d = np.clip(d, 0, 1)
-    # 4. saturation + vibrance
-    l2 = (d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722)[..., None]
-    satur = (d.max(-1) - d.min(-1))[..., None]
-    d = l2 + (d - l2) * (1 + v["saturation"])
-    d = l2 + (d - l2) * (1 + v["vibrance"] * 0.8 * (1 - satur))
-    # 5. dehaze: pull the haze floor down (or lift it, for negative), plus a
-    # small saturation compensation — matched in the shader
-    if abs(v["dehaze"]) > 1e-4:
-        k = 0.12 * v["dehaze"]
-        d = (d - k) / (1 - k)
-        l3 = (d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722)[..., None]
-        d = l3 + (d - l3) * (1 + 0.15 * v["dehaze"])
-    d = np.clip(d, 0, 1)
-    # 6. clarity: midtone local contrast. The detail signal comes from the
-    # SOURCE luma (a single-pass shader cannot ring-blur its own processed
-    # output), weighted into midtones of the current image. Ring radius is
-    # 1.2% of the min dimension on both sides.
-    if abs(v["clarity"]) > 1e-4:
-        srcl = (np.clip(a, 0, 1)[..., 0] * .2126 +
-                np.clip(a, 0, 1)[..., 1] * .7152 +
-                np.clip(a, 0, 1)[..., 2] * .0722)
-        r = max(2, int(min(w, h) * 0.012))
-        ring = np.zeros_like(srcl)
-        for dx, dy in ((r, 0), (-r, 0), (0, r), (0, -r),
-                       (r, r), (r, -r), (-r, r), (-r, -r)):
-            ring += np.roll(np.roll(srcl, dy, axis=0), dx, axis=1)
-        ring /= 8.0
-        lm = d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722
-        mid = 4 * lm * (1 - lm)
-        d = d + ((srcl - ring) * v["clarity"] * 1.1 * mid)[..., None]
-        d = np.clip(d, 0, 1)
-    # 7. noise reduction: 4-neighbor bilateral computed on the SOURCE (same
-    # single-pass constraint), its smoothing delta applied to the output
-    if v["noise"] > 1e-4:
-        a0 = np.clip(a, 0, 1)
-        acc = a0.copy()
-        wsum = np.ones(a0.shape[:2], dtype=np.float32)
-        sig = 0.08
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            n = np.roll(np.roll(a0, dy, axis=0), dx, axis=1)
-            dist2 = ((n - a0) ** 2).sum(-1)
-            wgt = np.exp(-dist2 / (2 * sig * sig)).astype(np.float32)
-            acc += n * wgt[..., None]
-            wsum += wgt
-        d = d + (acc / wsum[..., None] - a0) * v["noise"]
-        d = np.clip(d, 0, 1)
-    # 8. local masks (linear / radial): exposure, temp, sat weighted by falloff
-    if masks:
-        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-        u = xx / w
-        vv = yy / h
-        for m in masks:
-            if m.get("type") == "radial":
-                cx, cy = float(m["x0"]), float(m["y0"])
-                rx = max(1e-4, abs(float(m["x1"]) - cx))
-                ry = max(1e-4, abs(float(m["y1"]) - cy))
-                dist = np.sqrt(((u - cx) / rx) ** 2 + ((vv - cy) / ry) ** 2)
-                t = 1 - _smoothstep(0.7, 1.3, dist)
-            else:
-                x0, y0 = float(m["x0"]), float(m["y0"])
-                x1, y1 = float(m["x1"]), float(m["y1"])
-                dx2, dy2 = x1 - x0, y1 - y0
-                ln = max(1e-6, dx2 * dx2 + dy2 * dy2)
-                t = 1 - _smoothstep(0.0, 1.0, ((u - x0) * dx2 + (vv - y0) * dy2) / ln)
-            t3 = t[..., None]
-            me = float(m.get("exposure", 0)) / 100.0
-            mt = float(m.get("temp", 0)) / 100.0
-            ms = float(m.get("sat", 0)) / 100.0
-            if abs(me) > 1e-4:
-                d = d * (2.0 ** (me * 1.5 * t3))
-            if abs(mt) > 1e-4:
-                d[..., 0] *= 1 + 0.20 * mt * t
-                d[..., 2] *= 1 - 0.20 * mt * t
-            if abs(ms) > 1e-4:
-                lm = (d[..., 0] * .2126 + d[..., 1] * .7152 + d[..., 2] * .0722)[..., None]
-                d = lm + (d - lm) * (1 + ms * t3)
-        d = np.clip(d, 0, 1)
-    # 9. vignette with midpoint + feather controls
-    if abs(v["vignette"]) > 1e-4:
-        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-        rd = np.sqrt(((xx / w - .5) * 2) ** 2 + ((yy / h - .5) * 2) ** 2) / 1.4142
-        mid = 0.35 + 0.35 * v["vigmid"]                 # -1..1 -> 0.0..0.7
-        feather = max(0.05, 0.75 + 0.55 * v["vigfeather"])
-        d *= (1 + v["vignette"] * 0.6 * _smoothstep(mid, mid + feather, rd))[..., None]
-    out = Image.fromarray((np.clip(d, 0, 1) * 255).astype("uint8"), "RGB")
-    # 10. sharpen last
-    if v["sharpen"] > 1e-4:
-        out = out.filter(ImageFilter.UnsharpMask(radius=1.6,
-                                                 percent=int(v["sharpen"] * 130),
-                                                 threshold=2))
+    """Bake develop parameters (each -100..100) and local masks into a PIL image."""
+    return _dev2.develop(im, p, masks)
+
+
+def brush_alphas(masks, size):
+    """A painted mask comes from the editor as a PNG of its strokes at the preview's size (the alpha is the
+    mask); here it becomes the full-size alpha the bake reads (develop_v2.mask_alpha, kind "brush")."""
+    import base64
+    import io
+    out = []
+    for m in masks or []:
+        if m.get("type") == "brush":
+            png = m.get("png") or ""
+            if "," not in png:
+                continue
+            try:
+                raw = base64.b64decode(png.split(",", 1)[1])
+                a = Image.open(io.BytesIO(raw)).convert("RGBA").split()[-1].resize(size, Image.BILINEAR)
+            except Exception:
+                continue
+            m = dict(m)
+            m["_alpha"] = np.asarray(a, dtype=np.float32) / 255.0
+        out.append(m)
     return out
 
 
@@ -758,8 +891,63 @@ def apply_orient(im, rot, flip):
     return im
 
 
+RECIPE_TAG = b"GGRECIPE"
+
+
+def recipe_segments(recipe):
+    """The edit recipe (sliders, masks, erases, source, orientation) as JPEG APP11 segments, appended to the
+    baked file (LightCraft keeps a photo's settings beside it; here they travel inside the archive copy, so a
+    placed photo can be reopened with every slider). JSON, zlib, split under the 64 KB segment limit."""
+    import json
+    import struct
+    import zlib
+    data = zlib.compress(json.dumps(recipe, ensure_ascii=False).encode("utf-8"), 9)
+    chunk = 65000
+    parts = [data[i:i + chunk] for i in range(0, len(data), chunk)] or [b""]
+    out = b""
+    for i, part in enumerate(parts):
+        body = RECIPE_TAG + struct.pack(">BB", i, len(parts)) + part
+        out += b"\xff\xeb" + struct.pack(">H", len(body) + 2) + body
+    return out
+
+
+def read_recipe(path):
+    """The recipe written by recipe_segments, or None."""
+    import json
+    import struct
+    import zlib
+    try:
+        raw = Path(path).read_bytes()
+    except OSError:
+        return None
+    if raw[:2] != b"\xff\xd8":
+        return None
+    parts = {}
+    i = 2
+    while i + 4 <= len(raw) and raw[i] == 0xFF:
+        marker = raw[i + 1]
+        if marker == 0xDA:                                   # start of scan: no more headers
+            break
+        if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7:
+            i += 2
+            continue
+        ln = struct.unpack(">H", raw[i + 2:i + 4])[0]
+        body = raw[i + 4:i + 2 + ln]
+        if marker == 0xEB and body.startswith(RECIPE_TAG):
+            k, n = struct.unpack(">BB", body[len(RECIPE_TAG):len(RECIPE_TAG) + 2])
+            parts[k] = body[len(RECIPE_TAG) + 2:]
+        i += 2 + ln
+    if not parts:
+        return None
+    try:
+        data = b"".join(parts[k] for k in sorted(parts))
+        return json.loads(zlib.decompress(data).decode("utf-8"))
+    except Exception:
+        return None
+
+
 def import_photo(src, country_dir, city, rot=0, flip=None, dev=None, name_hint=None,
-                 angle=0, masks=None):
+                 angle=0, masks=None, recipe=None):
     """Copy a library photo into the Images/ archive. HEIC becomes JPEG
     (quality 95, ICC + EXIF preserved); untouched non-HEIC files are copied
     byte-for-byte. Rotation/flip/develop re-encode the archive COPY only —
@@ -768,17 +956,37 @@ def import_photo(src, country_dir, city, rot=0, flip=None, dev=None, name_hint=N
     dest_dir = country_dir / city if city else country_dir
     dest_dir.mkdir(parents=True, exist_ok=True)
     rot = int(rot or 0) % 360
-    angle = float(angle or 0)
+    try:
+        angle = float(angle or 0)
+    except (TypeError, ValueError):
+        angle = 0.0
+    angle = max(-45.0, min(45.0, angle)) if angle == angle and abs(angle) != float("inf") else 0.0   # finite, a real tilt
+    flip = flip if flip in ("h", "v", "hv", "vh") else None
     dev = {k: v for k, v in (dev or {}).items() if k in DEV_KEYS and abs(float(v)) > 1e-4}
     masks = masks or []
-    reencode = (src.suffix.lower() in (".heic", ".heif") or rot or flip or dev
+    # anything that is not a JPEG is re-encoded to one (ICC kept): a .png/.webp copied as it was had no tiers
+    # cut for it, since the tier tools only know jpg/heic originals (Blue Cruise's Mr Ceyhun photos, 2026-10-16)
+    reencode = (src.suffix.lower() not in (".jpg", ".jpeg") or rot or flip or dev
                 or abs(angle) > 1e-3 or masks)
     base = clean_name((name_hint or src).stem if hasattr(name_hint or src, "stem")
                       else str(name_hint))
     ext = ".jpg" if reencode else src.suffix
     dest, n = dest_dir / f"{base}{ext}", 2
-    while dest.exists():
-        dest, n = dest_dir / f"{base}-{n}{ext}", n + 1
+    while True:                                   # the name is RESERVED, not just checked: 8 parallel imports of one
+        try:                                      # photo shared one file and read each other half-written (2026-10-16)
+            fd = os.open(dest, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.close(fd)
+            break
+        except FileExistsError:
+            dest, n = dest_dir / f"{base}-{n}{ext}", n + 1
+    try:
+        _import_write(src, dest, reencode, rot, flip, angle, dev, masks, recipe)
+    except Exception as e:
+        dest.unlink(missing_ok=True)              # a truncated or unreadable source leaves nothing behind
+        raise ValueError("the source could not be imported: %s" % str(e)[:120]) from e
+    return dest
+
+
+def _import_write(src, dest, reencode, rot, flip, angle, dev, masks, recipe):
     if reencode:
         im = ImageOps.exif_transpose(Image.open(src))
         icc = im.info.get("icc_profile")           # grab BEFORE convert()
@@ -787,16 +995,59 @@ def import_photo(src, country_dir, city, rot=0, flip=None, dev=None, name_hint=N
         im = im.convert("RGB")
         im = straighten(im, angle)
         if dev or masks:
-            im = develop(im, dev, masks)
+            im = develop(im, dev, brush_alphas(masks, im.size))
         kw = {"quality": 95}
         if icc:
             kw["icc_profile"] = icc
         if exif and not (rot or flip):             # stale Orientation would re-rotate
             kw["exif"] = exif
+        if recipe:
+            kw["extra"] = recipe_segments(recipe)
         im.save(dest, "JPEG", **kw)
     else:
+        with Image.open(src) as chk:
+            chk.load()                            # verify() misses a truncated JPEG; a full decode does not
         shutil.copy2(src, dest)
-    return dest
+        if recipe and dest.suffix.lower() in (".jpg", ".jpeg"):
+            _inject_app11(dest, recipe_segments(recipe))   # an erase-only or untouched insert could not be reopened or synced
+
+
+def _recipe_point_at_archive(dest, d):
+    """A photo added from a file: its staging copy under .tmp is disposable, so the recipe names the archive copy
+    itself as the source (✎ Edit then reopens Images/<Country>/<City>/<file>, which is always there)."""
+    if dest.suffix.lower() not in (".jpg", ".jpeg"):
+        return
+    label = next((sd["label"] for sd in SOURCES if Path(sd["path"]).resolve() == IMAGES.resolve()), None)
+    if not label:
+        return
+    rec = read_recipe(dest) or recipe_for(d)
+    rec["src"] = {"label": label, "path": dest.relative_to(IMAGES).as_posix()}
+    # the archive copy IS the developed photo: rotation, straighten, sliders, masks and erases are baked into it,
+    # so a recipe that still carried them made Edit apply them a second time (stress test 2026-10-23: a photo
+    # rotated once came back sideways, exposure +60 came back at 227 mean brightness)
+    rec.update({"rot": 0, "flip": None, "angle": 0.0, "dev": {}, "masks": [], "erases": []})
+    b = dest.read_bytes()
+    if b[:2] != b"\xff\xd8":
+        return
+    out, i = b[:2], 2                                     # the old recipe segments out, the new ones in
+    while i + 4 <= len(b) and b[i] == 0xFF and 0xE0 <= b[i + 1] <= 0xEF:
+        ln = int.from_bytes(b[i + 2:i + 4], "big")
+        seg = b[i:i + 2 + ln]
+        if not (b[i + 1] == 0xEB and seg[4:4 + len(RECIPE_TAG)] == RECIPE_TAG):
+            out += seg
+        i += 2 + ln
+    dest.write_bytes(out + recipe_segments(rec) + b[i:])
+
+
+def _inject_app11(path, segments):
+    """Splice ready-made APPn segments into a JPEG right after its leading APP segments, without re-encoding."""
+    b = path.read_bytes()
+    if b[:2] != b"\xff\xd8":
+        return
+    i = 2
+    while i + 4 <= len(b) and b[i] == 0xFF and 0xE0 <= b[i + 1] <= 0xEF:
+        i += 2 + int.from_bytes(b[i + 2:i + 4], "big")
+    path.write_bytes(b[:i] + segments + b[i:])
 
 
 def esc(s):
@@ -818,7 +1069,20 @@ def ui():
 
 @app.route("/site/<path:rel>")
 def site(rel):
-    return send_from_directory(ROOT, rel)
+    resp = send_from_directory(ROOT, rel)
+    if rel.replace("\\", "/").startswith("Images/web/flags/"):
+        # the Library redraws its album cards every 6 s and asked for every flag again each time: 480
+        # revalidations a minute from one idle tab (stress test 2026-10-09)
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+    return resp
+
+
+@app.route("/api/proof_rules")
+def api_proof_rules():
+    """The editor's live proofing reads the same British -> American table and protected names as
+    tools/americanize.py, so the underline and the batch sweep never disagree."""
+    import americanize
+    return jsonify({"amer": dict(americanize.AMER), "keep": list(americanize.KEEP)})
 
 
 @app.route("/api/state")
@@ -898,7 +1162,7 @@ def _browse_page(payload):
 
 
 def save_sources():
-    SRC_CFG.write_text(json.dumps(SOURCES, indent=2), encoding="utf-8")
+    _save_sources()                                # the guarded writer: a test instance never rewrites the tracked file
 
 
 @app.route("/api/sources_add", methods=["POST", "OPTIONS"])
@@ -1029,6 +1293,12 @@ def thumb():
     size = int(request.args.get("s", 320))
     rot = int(request.args.get("rot", 0)) % 360
     flip = request.args.get("flip") or None
+    return send_file(thumb_file(p, size, rot, flip), mimetype="image/jpeg")
+
+
+def thumb_file(p, size, rot, flip):
+    """The cached preview JPEG of `p` at `size` (built if missing). The stage shows this file, and the
+    planes / level routes read the same pixels."""
     key = f"{p}-{p.stat().st_mtime_ns}-{size}-{rot}-{flip}"
     cache = THUMBS / (re.sub(r"\W", "_", key)[-120:] + ".jpg")
     # A backed-up photo is decoded ONCE, into the library's 400 px copy, and every smaller grid tile
@@ -1043,7 +1313,7 @@ def thumb():
         except Exception:
             shared = None
     if not cache.exists():
-        with _ThumbLive(), _thumb_gate:
+        with _ThumbLive(), _one_build(cache), _thumb_gate:
             if not cache.exists():
                 try:
                     im = Image.open(shared) if shared else ImageOps.exif_transpose(Image.open(p))
@@ -1055,10 +1325,77 @@ def thumb():
                 kw = {"quality": 82}
                 if icc:
                     kw["icc_profile"] = icc
-                tmp = cache.with_name(cache.stem + ".part" + cache.suffix)
+                tmp = _part_name(cache)
                 im.convert("RGB").save(tmp, "JPEG", **kw)
                 os.replace(tmp, cache)                        # never a half-written file for another reader
-    return send_file(cache, mimetype="image/jpeg")
+    return cache
+
+
+def _stage_image():
+    """The pixels the stage shows for this request: the erased session (?token) at ?s, a repo file (?site)
+    at ?s, or the library photo's cached preview (?root&path&s&rot&flip)."""
+    size = int(request.args.get("s", 2000))
+    if request.args.get("token"):
+        p = ERASED / (re.sub(r"\W", "", request.args["token"]) + ".jpg")
+        if not p.exists():
+            abort(410)
+        im = Image.open(p).convert("RGB")
+        im.thumbnail((size, size))
+        return im, None
+    if request.args.get("site"):
+        rel = _rel_clean(request.args["site"])
+        p = (ROOT / rel).resolve()
+        if ROOT.resolve() not in p.parents or not p.exists():
+            abort(404)
+        im = ImageOps.exif_transpose(Image.open(p)).convert("RGB")
+        im.thumbnail((size, size))
+        return im, None
+    if not request.args.get("root") or not request.args.get("path"):
+        abort(400)
+    try:
+        p = source_path(request.args["root"], request.args["path"])
+        p.stat()
+    except FileNotFoundError:
+        abort(404)
+    except (ValueError, KeyError, OSError):
+        abort(400)
+    rot = int(request.args.get("rot", 0)) % 360
+    flip = request.args.get("flip") or None
+    f = thumb_file(p, size, rot, flip)
+    return Image.open(f).convert("RGB"), f
+
+
+@app.route("/api/planes")
+def api_planes():
+    """The photo's spatial planes for the live preview (develop_v2.planes, packed): computed from the very
+    preview the stage shows, so the shader and the bake read the same base layers. Cached beside the preview."""
+    import numpy as np
+    im, f = _stage_image()
+    cache = f.with_suffix(".planes") if f else None
+    if cache and cache.exists():
+        return Response(cache.read_bytes(), mimetype="application/octet-stream")
+    data = _dev2.pack_planes(_dev2.planes(np.asarray(im, dtype=np.float32) / 255.0))
+    if cache:
+        try:
+            tmp = _part_name(cache)
+            tmp.write_bytes(data)
+            os.replace(tmp, cache)
+        except OSError:
+            pass
+    return Response(data, mimetype="application/octet-stream")
+
+
+@app.route("/api/level")
+def api_level():
+    """Auto straighten: the angle that levels the photo's horizon / plumb lines (develop_v2.level_angle), or
+    null when its lines do not agree."""
+    import numpy as np
+    im, _ = _stage_image()
+    try:
+        angle = _dev2.level_angle(np.asarray(im.convert("L")))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+    return jsonify({"ok": True, "angle": angle})
 
 
 @app.route("/api/erase", methods=["POST", "OPTIONS"])
@@ -1074,27 +1411,51 @@ def api_erase():
     # Same as /api/import: a body with neither a token nor a photo to work on is a 400.
     if not isinstance(d, dict) or not (d.get("token") or d.get("path")):
         abort(400)
+    exif_b = None
     if d.get("token"):
-        im = Image.open(ERASED / (re.sub(r"\W", "", d["token"]) + ".jpg")).convert("RGB")
+        im0 = Image.open(ERASED / (re.sub(r"\W", "", d["token"]) + ".jpg"))
+        exif_b = im0.info.get("exif")
+        im = im0.convert("RGB")
         icc = im.info.get("icc_profile")
     else:
         src = resolve_full_res(source_path(d["root"], d["path"]))
-        im = ImageOps.exif_transpose(Image.open(src))
+        im0 = Image.open(src)
+        try:                                     # the capture date and GPS travel on (orientation reset: pixels are upright now)
+            ex = im0.getexif(); ex[0x0112] = 1; exif_b = ex.tobytes()
+        except Exception:
+            exif_b = None
+        im = ImageOps.exif_transpose(im0)
         icc = im.info.get("icc_profile")
         im = apply_orient(im, d.get("rot", 0), d.get("flip")).convert("RGB")
         im = straighten(im, d.get("angle", 0))   # erase masks are painted on
     raw = base64.b64decode(d["mask"].split(",", 1)[1])   # the straightened view
     mask = Image.open(io.BytesIO(raw)).convert("L").resize(im.size, Image.NEAREST)
+    mode = d.get("mode") or "ai"
+
+    def work(progress):
+        out = spot_erase(im, mask) if mode == "spot" else lama_erase(im, mask, progress=progress)
+        if progress(0.97, "saving") is False:
+            raise RuntimeError("cancelled")
+        token = uuid.uuid4().hex[:16]
+        kw = {"quality": 95}
+        if icc:
+            kw["icc_profile"] = icc
+        if exif_b:
+            kw["exif"] = exif_b
+        out.save(ERASED / (token + ".jpg"), "JPEG", **kw)
+        return {"token": token}
+
+    if d.get("bg"):
+        # a job: the dialog stays usable and the editor watches /api/jobs for the token
+        name = Path(d.get("path") or "photo").name
+        jid = job_new("erase", ("Spot heal: " if mode == "spot" else "Erasing: ") + name, photo=d.get("path") or "", mode=mode)
+        job_submit(jid, work)
+        return jsonify({"ok": True, "job": jid})
     try:
-        im = lama_erase(im, mask)
+        r = work(lambda f, n=None: True)
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
-    token = uuid.uuid4().hex[:16]
-    kw = {"quality": 95}
-    if icc:
-        kw["icc_profile"] = icc
-    im.save(ERASED / (token + ".jpg"), "JPEG", **kw)
-    return jsonify({"ok": True, "token": token})
+    return jsonify({"ok": True, "token": r["token"]})
 
 
 @app.route("/erased")
@@ -1192,70 +1553,6 @@ def _serialized(fn):
     return w
 
 
-_MS_CACHE = {"key": None, "data": {}}
-
-
-def shared_album_server_counts():
-    """What APPLE'S SERVER holds for each shared album, from iCloud's own
-    MediaStream database.
-
-    This is the only way to tell the two failure modes apart, and they need
-    opposite responses:
-
-      pending > 0   this PC is behind. It knows about the items and is still
-                    downloading them. Waiting works.
-      pending == 0
-      and short     the server itself doesn't have them. Your iPhone never
-                    finished uploading, and no amount of restarting iCloud on
-                    Windows will conjure them. The fix is on the phone.
-
-    Rows whose filename ends .jpgthumb are poster frames iCloud generates per
-    video, not album items, so they are excluded from the count."""
-    try:
-        base = Path(os.environ["LOCALAPPDATA"]) / "Packages"
-        db = next(base.glob("AppleInc.iCloud_*/LocalCache/Roaming/Apple Computer/"
-                            "MediaStream/local.db"))
-    except (StopIteration, KeyError, OSError):
-        return {}
-    try:
-        key = (str(db), db.stat().st_mtime_ns, db.stat().st_size)
-    except OSError:
-        return {}
-    if _MS_CACHE["key"] == key:
-        return _MS_CACHE["data"]
-    # iCloud keeps the file open, so read a snapshot rather than fighting it
-    tmp = BACKUP / "_meta" / "_mediastream.tmp.db"
-    out = {}
-    try:
-        tmp.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(db, tmp)
-        con = sqlite3.connect(f"file:{tmp}?mode=ro", uri=True)
-        try:
-            rows = con.execute("""
-                select a.albumName, s.assetfilename, s.downloaded
-                from MSASAlbums a join MSASAlbumAssets s on s.albumGuid = a.albumGuid
-                where coalesce(s.deleted, 0) = 0
-            """)
-            for name, fn, dl in rows:
-                if (fn or "").lower().endswith(".jpgthumb"):
-                    continue                     # video poster, not an album item
-                d = out.setdefault(name, {"onServer": 0, "pending": 0})
-                d["onServer"] += 1
-                if not dl:
-                    d["pending"] += 1
-        finally:
-            con.close()
-    except Exception:
-        return _MS_CACHE["data"]                 # keep the last good answer
-    finally:
-        try:
-            tmp.unlink()
-        except OSError:
-            pass
-    _MS_CACHE.update(key=key, data=out)
-    return out
-
-
 @app.route("/browser")
 def browser_page():
     # the library merged into the editor; #library selects the view client-side
@@ -1313,8 +1610,22 @@ def review_decisions(slug):
         abort(404)
     # Accept all posts one decision per change at once; unserialized, two requests read the
     # file while a third was writing it and got 500 (JSONDecodeError), 2026-09-27
+    d = request.get_json(force=True) or {}
+    # a change another tab accepted AND saved is in the article: a later Reject from a stale tab would record
+    # "Rejected" over text that is already there (stress test 2026-10-23); it stays accepted and the tab is told
+    done = set()
+    for fn in ("progress.json", "applied.json"):
+        f = _redline.STORE / slug / fn
+        if f.exists():
+            try:
+                done |= set(json.loads(f.read_text(encoding="utf-8")).get("ids") or [])
+            except Exception:
+                pass
+    kept = [k for k, v in (d.items() if isinstance(d, dict) else []) if v is False and k in done]
+    for k in kept:
+        d[k] = True
     with _decisions_lock:
-        return jsonify({"ok": True, "decisions": _redline.merge_decisions(slug, request.get_json(force=True) or {})})
+        return jsonify({"ok": True, "decisions": _redline.merge_decisions(slug, d), "kept": kept})
 
 
 _decisions_lock = threading.Lock()
@@ -1328,6 +1639,26 @@ def review_commit(slug):
         abort(404)
     d = request.get_json(force=True) or {}
     return jsonify(_redline.commit(slug, d.get("accepted", [])))
+
+
+@app.route("/review/<slug>/precheck", methods=["POST", "OPTIONS"])
+def review_precheck(slug):
+    """asked by the editor BEFORE it writes the article: would this save strand a moved sentence or
+    take a Maps link off the site? (redline.precheck)"""
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (_redline.STORE / slug / "proposal.json").exists():
+        abort(404)
+    raw = request.get_data()
+    if request.headers.get("Content-Encoding") == "gzip":
+        dec = zlib.decompressobj(16 + zlib.MAX_WBITS)          # bounded, like merge3: a 306 KB bomb inflated to 300 MB here
+        raw = dec.decompress(raw, 48 * 1024 * 1024)
+        if dec.unconsumed_tail:
+            abort(413)
+    d = json.loads(raw.decode("utf-8") or "{}")
+    if not isinstance(d, dict) or not isinstance(d.get("html"), str):
+        abort(400)
+    return jsonify(_redline.precheck(slug, d.get("accepted") or [], d["html"]))
 
 
 @app.route("/review/lint", methods=["POST", "OPTIONS"])
@@ -1368,7 +1699,7 @@ def review_resolve_maps():
     tmp = ROOT / ".tmp" / "resolve_queries.json"
     tmp.write_text(json.dumps(qs, ensure_ascii=False), encoding="utf-8")
     r = subprocess.run([sys.executable, str(ROOT / "tools" / "resolve_draft_maps.py"), "--queries", str(tmp)],
-                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800, creationflags=_NOWIN)
     line = (r.stdout or "").strip().splitlines()
     try:
         urls = json.loads(line[-1]) if line else {}
@@ -1378,6 +1709,27 @@ def review_resolve_maps():
 
 
 _PREVIEWS = {}       # rel -> html the editor holds right now, served back under the page's own path
+
+
+def _sweep_stale_temps():
+    """temp files a killed server left behind (thumbnail .part files, merge3 work folders), over an hour old"""
+    import tempfile
+    cut = time.time() - 3600
+    try:
+        for f in THUMBS.glob("*.part*"):
+            try:
+                if f.stat().st_mtime < cut:
+                    f.unlink()
+            except OSError:
+                pass
+        for d in Path(tempfile.gettempdir()).glob("merge3-*"):
+            try:
+                if d.is_dir() and d.stat().st_mtime < cut:
+                    shutil.rmtree(d, ignore_errors=True)
+            except OSError:
+                pass
+    except Exception:
+        pass
 
 
 @app.route("/preview", methods=["POST", "OPTIONS"])
@@ -1390,10 +1742,13 @@ def preview_put():
     rel, html = d.get("rel"), d.get("html")
     if not isinstance(rel, str) or not isinstance(html, str):
         abort(400)
-    rel = rel.replace("\\", "/").lstrip("./")
+    rel = _rel_clean(rel)
     if not rel or not html:
         abort(400)
+    _PREVIEWS.pop(rel, None)
     _PREVIEWS[rel] = html
+    while len(_PREVIEWS) > 20:                       # every preview was kept: 100 of them held 108 MB (stress 2026-10-09)
+        _PREVIEWS.pop(next(iter(_PREVIEWS)))
     return jsonify({"ok": True, "url": "/preview/" + rel})
 
 
@@ -1426,7 +1781,12 @@ def comments(key):
         return "", 204
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,120}", key):
         abort(400)
+    if request.method == "POST" and (request.content_length or 0) > 8 * 1024 * 1024:
+        abort(413)                                 # a comment store is kilobytes; a 117 MB one was accepted once
     if request.method == "POST":
+        raw = request.get_data(cache=True)
+        if len(raw) > 8 * 1024 * 1024:             # a chunked body has no Content-Length: the cap held only on paper (stress test 2026-10-23)
+            abort(413)
         data = request.get_json(force=True) or {"threads": []}
         data = _redline.comments_save(key, data)
         _answer_tasks(key, data)
@@ -1588,6 +1948,8 @@ def _answer_tasks(key, data):
     """A thread sent to Claude is answered here: through the API when .env holds
     ANTHROPIC_API_KEY (tools/claude_answer.py --ask), else by the warm Claude Code worker.
     The edit lands on the thread for the editor's poll to show as a tracked change."""
+    if os.environ.get("PHOTO_EDITOR_NO_WORKER") == "1" or str(key).startswith("test__"):
+        return                                      # a test server or a test store: no answers with Kevin's login
     for t in data.get("threads", []):
         if t.get("kind") in ("task", "rewrite") and t.get("status") == "sent" and not t.get("edit") and t["id"] not in _answering:
             _answering.add(t["id"])
@@ -1606,13 +1968,15 @@ def _task_watch():
     while True:
         try:
             for f in (_redline.COMMENTS.glob("*.json") if _redline.COMMENTS.exists() else []):
-                if f.stem.startswith("test__") or f.stem == "x":
-                    continue
+                if f.stem.startswith("test__") or f.stem == "x" or ".before-" in f.name or ".corrupt-" in f.name:
+                    continue                      # backups are not live stores (a task was answered into one, 2026-10-16)
                 try:
                     data = json.loads(f.read_text(encoding="utf-8"))
+                    if not isinstance(data, dict) or not isinstance(data.get("threads"), list):
+                        continue
+                    _answer_tasks(f.stem, data)
                 except Exception:
-                    continue
-                _answer_tasks(f.stem, data)
+                    continue                      # one bad store must not stop the stores after it
         except Exception:
             pass
         time.sleep(2)
@@ -1628,332 +1992,56 @@ if __name__ == "__main__" and os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
         threading.Thread(target=lambda: (time.sleep(8), _alt().warm()), daemon=True, name="alt-warm").start()
 
 
-# Live Activity polls this every 2 s while the panel is open, and the scan below walks
-# every album folder under ~/Backup and every placeholder under iCloudPhotos/Shared, which
-# takes 6 to 8 s on this box. Answered on the request thread, each poll outlasted the next,
-# the threads piled up, and the photo library stopped loading ("photo editor is having
-# trouble loading", 2026-09-26). The same fix backup_status got: one daemon thread scans
-# every 3 s, and a request only ever returns the last snapshot.
-_act_cache = {"v": None}
-
-
-def _backup_activity_refresh():
-    while True:
-        try:
-            _act_cache["v"] = _backup_activity_compute()
-        except Exception as e:
-            print("backup_activity compute failed:", e)
-        time.sleep(3)
-
-
-@app.route("/api/backup_activity")
-def api_backup_activity():
-    v = _act_cache["v"]
-    if v is None:
-        return jsonify({"todo": 0, "throttled": False, "throttleLeftSec": 0, "throttleTrips": 0, "running": False,
-                        "watcherAlive": True, "album": None, "stage": None, "pass": {}, "inFlight": [],
-                        "activeCount": 0, "orphanCutoffMin": 30, "warming": True})
-    return jsonify(v)
-
-
-def _backup_activity_compute():
-    """What the backup is doing RIGHT NOW: which album, which files, how fast.
-
-    api_backup_status only reports settled totals - it can't show a transfer
-    in progress. This scans the live .part files on disk (each one IS an
-    in-flight copy) and pairs them with the current pass counters from
-    status.json, so the library page can show real activity instead of asking
-    someone to run a script to find out if anything is happening.
-    """
-    st = load_json(BACKUP / "_meta" / "status.json", {"albums": {}})
-    now = time.time()
-
-    in_flight = []
-    if BACKUP.is_dir():
-        for d in BACKUP.iterdir():
-            if not d.is_dir() or d.name.startswith("_") or d.name.endswith(".replacing"):   # ingest staging is not an album
-                continue
-            for sub, album in ((d, d.name), (d / "videos", d.name)):
-                if not sub.is_dir():
-                    continue
-                for p in sub.glob("*.part"):
-                    try:
-                        st_p = p.stat()
-                    except OSError:
-                        continue
-                    # temp names are "<realname>.<pid>.<tid>.part" - strip the
-                    # two numeric suffixes back off to show the real filename
-                    stem = p.name[:-5]                          # drop ".part"
-                    parts = stem.rsplit(".", 2)
-                    real = parts[0] if len(parts) == 3 and all(x.isdigit() for x in parts[1:]) else stem
-                    age = now - st_p.st_ctime
-                    # A cloud hydration sits at 0 bytes for 5+ minutes in
-                    # iCloud's queue and then lands all at once - that is the
-                    # NORMAL shape, not a stall, and copy_deadline no longer
-                    # aborts it. So age alone says nothing. A .part is only
-                    # truly abandoned if it belongs to a watcher process that
-                    # no longer exists: the temp name carries the owning PID.
-                    owner_pid = int(parts[1]) if len(parts) == 3 and parts[1].isdigit() else None
-                    in_flight.append({
-                        "album": album, "name": real,
-                        "mb": round(st_p.st_size / 1e6, 2),
-                        "ageSec": round(age),
-                        "pid": owner_pid,
-                        "queued": st_p.st_size == 0,   # waiting on iCloud, no bytes yet
-                    })
-    # Is the PID that owns each .part still alive? Asked via the Win32 API
-    # directly. An earlier version shelled out to PowerShell here, and because
-    # this endpoint is polled every 2 seconds while the Live Activity panel is
-    # open, that flashed a fresh console window on screen every 2 seconds -
-    # subprocess from a windowless pythonw still pops a console on Windows.
-    import ctypes
-    _k32 = ctypes.windll.kernel32
-    _k32.OpenProcess.restype = ctypes.c_void_p
-    _k32.CloseHandle.argtypes = [ctypes.c_void_p]
-    STILL_ACTIVE = 259
-    def _pid_alive(pid):
-        h = _k32.OpenProcess(0x1000, False, pid)        # PROCESS_QUERY_LIMITED_INFORMATION
-        if not h:
-            return False
-        try:
-            code = ctypes.c_ulong()
-            if _k32.GetExitCodeProcess(h, ctypes.byref(code)):
-                return code.value == STILL_ACTIVE
-            return True
-        finally:
-            _k32.CloseHandle(h)
-    # Hydrations in progress. With explicit CfHydratePlaceholder the copy step
-    # is milliseconds, so the .part scan above almost never catches anything -
-    # the slow, visible work is the hydration, which the watcher records here.
-    for h in load_json(BACKUP / "_meta" / "inflight.json", []):
-        in_flight.append({
-            "album": h.get("album"), "name": h.get("name"),
-            "mb": h.get("mb", 0), "ageSec": round(now - h.get("since", now)),
-            "pid": h.get("pid"), "queued": False, "phase": "hydrating",
-        })
-    alive_cache = {}
-    for f in in_flight:
-        # orphan = owned by a dead process. That is the only real "stalled".
-        pid = f["pid"]
-        if pid is None:
-            f["stalled"] = False
-            continue
-        if pid not in alive_cache:
-            alive_cache[pid] = _pid_alive(pid)
-        f["stalled"] = not alive_cache[pid]
-    in_flight.sort(key=lambda x: (x["stalled"], -x["ageSec"]))
-    active = sum(1 for f in in_flight if not f["stalled"])
-
-    # Which album is genuinely being worked on RIGHT NOW - decided from the
-    # real .part files above, never from status.json's state=="running" flag.
-    # That flag is written once when a pass STARTS and is never cleared if
-    # the process gets killed mid-pass (a restart, a hold taking effect
-    # mid-run, anything) - it can point at an album nothing has touched in
-    # an hour. Kosovo sat there as "now backing up" long after it was put on
-    # hold and its pass was killed, simply because no later pass had
-    # overwritten the label. Ground truth is which album owns a fresh
-    # (non-stalled) transfer, not what the label says.
-    running_album, stage, pass_info = None, None, {}
-    live = [f for f in in_flight if not f["stalled"]]
-    if live:
-        running_album = live[0]["album"]
-        a = st.get("albums", {}).get(running_album, {})
-        # whichever counter is presently mid-pass tells us photos vs videos
-        stage = "photos" if a.get("state") == "running" else "videos"
-        if stage == "photos":
-            pass_info = {"done": a.get("done"), "total": a.get("total"),
-                         "copied": a.get("copied"), "failed": a.get("failed"),
-                         "skipped": a.get("skipped")}
-        else:
-            pass_info = {"done": a.get("vidDone"), "total": a.get("vidTotal"),
-                         "copied": a.get("vidFull"), "failed": a.get("vidFailed")}
-
-    # How much is actually left to copy, so the panel can say "all caught up"
-    # instead of rendering an empty card when there is simply nothing to do.
-    todo = 0
-    hold = set(load_json(BACKUP / "_meta" / "hold.json", []))
-    skip = {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}
-    try:
-        import re as _re2
-        shared = Path.home() / "iCloudPhotos" / "Shared"
-        def _canon(n):
-            m = _re2.match(r"^(.+)_\d+$", n)
-            return m.group(1) if m and (BACKUP / m.group(1)).is_dir() else n
-        for d in shared.iterdir():
-            if not d.is_dir() or d.name in skip or d.name in hold:
-                continue
-            base = _re2.sub(r"_\d+$", "", d.name)
-            if base in skip:
-                continue
-            n_items = sum(1 for p in d.iterdir()
-                          if p.suffix.lower() in {".jpg", ".mp4"})
-            if not n_items:
-                continue
-            # Count album ENTRIES with no backed-up file - not the difference
-            # between entry count and file count. Entries share files now
-            # (Apple's rebuild lists the same photo twice), so an album with
-            # duplicates always has fewer files than entries and a count-based
-            # figure reads as thousands outstanding on a complete backup.
-            bd = BACKUP / _canon(d.name)
-            if not bd.is_dir():
-                todo += n_items
-                continue
-            ent = (load_json(bd / "_manifest.json", {}) or {}).get("entries", {})
-            vent = load_json(bd / "videos" / "_manifest.json", {}) or {}
-            for f in d.iterdir():
-                sfx = f.suffix.lower()
-                if sfx == ".jpg":
-                    t = ent.get(f.name)
-                    if not t or not (bd / t).exists():
-                        todo += 1
-                elif sfx == ".mp4":
-                    rec = vent.get(f.name)
-                    t = rec.get("file") if isinstance(rec, dict) else None
-                    if not t or not (bd / "videos" / t).exists():
-                        todo += 1
-    except OSError:
-        todo = -1
-
-    thr = st.get("throttle") or {}
-    thr_left = max(0, round((thr.get("until") or 0) - now))
-    return {
-        "todo": todo,
-        "throttled": thr_left > 0, "throttleLeftSec": thr_left,
-        "throttleTrips": thr.get("trips", 0),
-        "running": running_album is not None,
-        "watcherAlive": (now - st.get("updated", 0)) < 200,
-        "album": running_album, "stage": stage, "pass": pass_info,
-        "inFlight": in_flight, "activeCount": active,
-        "orphanCutoffMin": 30,       # sweep_parts() threshold, for the UI's benefit
-    }
-
-
-def _compute_backup_status():
-    st = load_json(BACKUP / "_meta" / "status.json", {"albums": {}})
-    shared = Path.home() / "iCloudPhotos" / "Shared"
+def _compute_albums():
+    """Every album under ~/Backup with what it holds. The shared-album backup and its
+    verification (phone counts, "safe to delete", hold, server counts) went with the
+    watcher on 2026-10-12: albums come from icloud.com downloads now, so a card only
+    says what is on disk."""
     out = []
-    names = set(st.get("albums", {}))
-    if BACKUP.is_dir():
-        names |= {d.name for d in BACKUP.iterdir() if d.is_dir() and not d.name.startswith("_") and not d.name.endswith(".replacing")}
-    if shared.is_dir():
-        names |= {d.name for d in shared.iterdir()
-                  if d.is_dir() and d.name not in
-                  {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}}
-    import re as _re
-    SKIP_ALBUMS = {"Houston Trip", "New Zealand", "tomorrowland x bvi", "Sean’s Wedding"}
-
-    def _base(n):
-        m = _re.match(r"^(.+)_\d+$", n)
-        return m.group(1) if m else n
-
-    # A rebuild twin is not an album. iCloud recreates each shared album as
-    # "<Name>_1", "_2", "_3" while it refills them, and the backup already
-    # routes every round into the one folder - so listing them separately meant
-    # 83 cards for 27 albums, most of them empty shells with their own "enter
-    # your iPhone count" box. Fold each twin into its base, and drop the
-    # excluded albums by base name so "tomorrowland x bvi_1" goes too.
-    names = {_base(n) for n in names}
-    names = {n for n in names
-             if n not in SKIP_ALBUMS
-             and ((BACKUP / n).is_dir() or (shared / n).is_dir())}
-    for n in sorted(names):
-        a = dict(st.get("albums", {}).get(n, {}))
-        errs = (a.pop("errors", None) or []) + (a.pop("vidErrors", None) or [])
-        if errs:                              # can be thousands of strings
-            a["lastError"] = errs[-1]
-        d = BACKUP / n
-        # Exclude our metadata by NAME and count only real media. Filtering on
-        # a leading "_" dropped India's _DSC4284.JPG and _DSC4284-2.JPG, so the
-        # card read 798 of 800 on an album that was actually complete. Third
-        # place this same filter was wrong - the others were the todo count
-        # and the watcher's completeness gate.
+    if not BACKUP.is_dir():
+        return {"albums": out}
+    for d in sorted(BACKUP.iterdir(), key=lambda x: x.name.lower()):
+        if not d.is_dir() or d.name.startswith("_") or d.name.endswith(".replacing"):   # ingest staging is not an album
+            continue
+        # Exclude our metadata by NAME and count only real media. Filtering on a leading
+        # "_" dropped India's _DSC4284.JPG, so the card read 798 of 800 on a complete album.
         files = [p for p in d.iterdir()
                  if p.is_file() and not p.name.startswith("_manifest")
                  and p.suffix.lower() in IMG_EXTS
-                 and not is_stray_thumb(p.name)] if d.is_dir() else []
-        a["name"] = n
-        a["onDisk"] = len(files)
-        a["mb"] = round(sum(p.stat().st_size for p in files) / 1e6, 1)
-        # count videos from disk, not just the live status file — that resets
-        # whenever the backup process restarts
+                 and not is_stray_thumb(p.name)]
         vdir = d / "videos"
         vids = [p for p in vdir.iterdir()
                 if p.is_file() and p.suffix.lower() in {".mp4", ".mov", ".m4v"}] if vdir.is_dir() else []
-        a["videos"] = len(vids)
-        a["videosMb"] = round(sum(p.stat().st_size for p in vids) / 1e6, 1)
-        # Count DISTINCT photos across every round of this album, not the items
-        # in one folder. Each round is a different cut - Apple drops what it can
-        # no longer serve - and the filename is a content hash, so the stem is
-        # the photo. This is the number that lines up with the iPhone.
-        stems, vstems = set(), set()
-        if shared.is_dir():
-            for sd in shared.iterdir():
-                if not sd.is_dir() or _base(sd.name) != n:
-                    continue
-                for p in sd.iterdir():
-                    if (p.is_file() and p.suffix.lower() in IMG_EXTS
-                            and not is_stray_thumb(p.name)):
-                        stems.add(_re.sub(r"_\d+$", "", p.stem))
-                    elif p.is_file() and p.suffix.lower() in {".mp4", ".mov", ".m4v"}:
-                        vstems.add(_re.sub(r"_\d+$", "", p.stem))
-        a["inAlbum"] = len(stems)
-        # photos + videos, for the card's count before the watcher has verified
-        # the album (verify's albumItems is the exact figure once it has)
-        a["inAlbumItems"] = len(stems) + len(vstems)
-        out.append(a)
-    exp = load_json(EXPECTED, {})
-    arch = load_json(ARCHIVED, {})
-    srv = shared_album_server_counts()
-    hold = set(load_json(BACKUP / "_meta" / "hold.json", []))
-    for a in out:
-        a["held"] = a["name"] in hold             # present, deliberately not backed up
-        a["expected"] = exp.get(a["name"])
-        a["archived"] = arch.get(a["name"])       # ISO date you ticked it off
-        s = srv.get(a["name"]) or {}
-        a["onServer"] = s.get("onServer")         # what Apple actually holds
-        a["pending"] = s.get("pending")           # queued for download to this PC
-    # "running" is the watcher's own flag; a watcher that died mid-pass leaves
-    # it true forever (it read "backup running" off a 15-day-old file), so it
-    # only counts while the heartbeat is fresh - the same test the activity
-    # panel applies.
-    now = time.time()
-    running = bool(st.get("running", False)) and (now - st.get("updated", 0)) < 200
-    return {"albums": out, "running": running, "updated": st.get("updated", 0)}
+        if not files and not vids:
+            continue
+        out.append({"name": d.name, "onDisk": len(files),
+                    "mb": round(sum(p.stat().st_size for p in files) / 1e6, 1),
+                    "videos": len(vids),
+                    "videosMb": round(sum(p.stat().st_size for p in vids) / 1e6, 1)})
+    return {"albums": out}
 
 
-# The compute above stats ~13k backup files and walks ~56k iCloud placeholders:
-# 3-4 s idle, a minute under load. The library polls it every 6 s, and computed
-# per request ten calls piled up in one tab and starved every other route. So:
-# computed once up front, then refreshed on a background thread at most every
-# BS_TTL seconds, and every request is answered from the last result at once.
+# The listing stats ~13k backup files: seconds idle, longer under load. The library
+# polls it every 6 s, and computed per request ten calls piled up in one tab and
+# starved every other route. So: computed once up front, then refreshed on a
+# background thread at most every BS_TTL seconds, and every request is answered
+# from the last result at once.
 _bs = {"v": None, "t": 0.0, "busy": False, "lock": threading.Lock()}
 BS_TTL = 6
 
 
-def _refresh_backup_status():
+def _refresh_albums():
     try:
-        v = _compute_backup_status()
+        v = _compute_albums()
         _bs["v"], _bs["t"] = v, time.time()
     except Exception as e:
-        print("backup_status compute failed:", e)
+        print("album listing failed:", e)
     finally:
         _bs["busy"] = False
 
 
-def _bs_patch(album, **fields):
-    """A count/hold/tick-off just changed: fix the cached card straight away
-    rather than showing the old value until the next refresh."""
-    with _bs["lock"]:
-        v = _bs["v"]
-        if v:
-            for a in v["albums"]:
-                if a["name"] == album:
-                    a.update(fields)
-        _bs["t"] = 0.0                      # and recompute on the next poll
-
-
-@app.route("/api/backup_status")
-def api_backup_status():
+@app.route("/api/albums")
+def api_albums():
     with _bs["lock"]:
         if _bs["v"] is None and not _bs["busy"]:
             _bs["busy"] = True
@@ -1962,17 +2050,22 @@ def api_backup_status():
             mode = "wait"
         else:
             mode = "serve"
-            if time.time() - _bs["t"] > BS_TTL and not _bs["busy"]:
+            # a refresh stuck on a slow disk read froze every card at its old numbers for
+            # good (2026-10-03, Australia showed 930 of 1,029 until a restart): past 120 s,
+            # start another
+            stuck = _bs["busy"] and time.time() - _bs.get("started", 0) > 120
+            if time.time() - _bs["t"] > BS_TTL and (not _bs["busy"] or stuck):
                 _bs["busy"] = True
-                threading.Thread(target=_refresh_backup_status, daemon=True).start()
+                _bs["started"] = time.time()
+                threading.Thread(target=_refresh_albums, daemon=True).start()
     if mode == "compute":
-        _refresh_backup_status()
+        _refresh_albums()
     elif mode == "wait":
         for _ in range(900):
             if _bs["v"] is not None:
                 break
             time.sleep(0.1)
-    return jsonify(_bs["v"] or {"albums": [], "running": False, "updated": 0})
+    return jsonify(_bs["v"] or {"albums": []})
 
 
 @app.route("/api/backup_browse")
@@ -2004,57 +2097,22 @@ def api_backup_browse():
     return jsonify({"album": album, "photos": photos})
 
 
-EXPECTED = BACKUP / "_meta" / "expected.json"
-
-
-@app.route("/api/expected", methods=["POST", "OPTIONS"])
-@_serialized
-def api_expected():
-    """The item count YOU see on your iPhone for an album. It is the only
-    trustworthy definition of 'complete' — iCloud pauses an album mid-upload
-    while it works on others, so 'stopped growing' means nothing."""
-    if request.method == "OPTIONS":
-        return "", 204
-    d = request.get_json(force=True)
-    exp = load_json_for_write(EXPECTED, {})
-    n = str(d.get("count", "")).strip()
-    # an empty box clears the count; anything else must be a plain whole
-    # number (0, -5 and 1e3 used to silently delete the stored count)
-    if n == "":
-        exp.pop(d["album"], None)
-        val = None
-    elif n.isdigit() and 0 < int(n) <= 10_000_000:
-        val = exp[d["album"]] = int(n)
-    else:
-        return jsonify({"ok": False, "error": "Enter a whole number of items, like 119."}), 400
-    save_json(EXPECTED, exp)
-    _bs_patch(d["album"], expected=val)
-    return jsonify({"ok": True, "expected": exp})
-
-
-HOLD = BACKUP / "_meta" / "hold.json"
-
-
-# ---- the suite's own controls: pause/resume the watcher, fix iCloud sync ----
-# The editor's Live Activity panel drives these so there is one launcher file
-# (Editor Suite.cmd) instead of three. The work lives in tools/photo_suite.py;
-# long actions run on a thread and the panel polls the job log.
+# ---- the suite's status for the editor's Live Activity panel ----
+# What is up (photo server, covers, map editor, keeper), the tidy-up preview and the
+# compression queue. The watcher controls and "Fix iCloud sync" that used to sit here
+# went with the shared-album backup (2026-10-12).
 import photo_suite
-_suite_job = {"name": None, "log": [], "done": True, "code": None, "started": 0}
-_suite_lock = threading.Lock()
 _suite_cache = {"t": 0, "v": None}
 
 
 def _suite_status():
-    """Never computed on a request. photo_suite.status() shells out to PowerShell for the
-    watcher pids, and on this box that takes 5 to 8 s, not the 0.5 it once did. The
-    editor polls /api/suite every 2 s while Live Activity is open, so every request thread
-    was sitting in PowerShell and the photo library stopped answering ("photo editor is
-    having trouble loading", 2026-09-26). The status is refreshed by one daemon thread
-    every 15 s; a request only ever reads the last value."""
+    """Never computed on a request: the editor polls /api/suite every 2 s while Live
+    Activity is open, and a status computed per request once starved the photo library
+    ("photo editor is having trouble loading", 2026-09-26). One daemon thread refreshes
+    it every 15 s; a request only ever reads the last value."""
     if _suite_cache["v"] is None:
         _suite_cache["v"] = {"server": True, "heroes": photo_suite.port_open(5004),
-                             "maps": photo_suite.port_open(5002), "watcher": True, "watcherPids": []}
+                             "maps": photo_suite.port_open(5002), "keeper": photo_suite.port_open(5009)}
     return _suite_cache["v"]
 
 
@@ -2069,54 +2127,147 @@ def _suite_refresh():
 
 
 threading.Thread(target=_suite_refresh, daemon=True, name="suite-status").start()
-threading.Thread(target=_backup_activity_refresh, daemon=True, name="backup-activity").start()
 
 
-def _suite_run(action):
-    log = _suite_job["log"]
-    try:
-        if action == "pause":
-            pids = photo_suite.pause()
-            log.append(f"Backup paused (stopped {len(pids)} process(es)). "
-                       "Nothing is lost; resume picks up where it left off.")
-            code = 0
-        elif action == "resume":
-            log.append("Backup watcher started." if photo_suite.resume()
-                       else "Backup watcher was already running.")
-            code = 0
-        elif action == "fix":
-            code = photo_suite.fix_icloud(log.append)
-        else:
-            log.append(f"unknown action {action!r}")
-            code = 2
-    except Exception as e:                      # the panel must always hear back
-        log.append(f"failed: {e}")
-        code = 1
-    try:                                        # an action changed the state; show it now
-        _suite_cache["v"] = photo_suite.status()
-    except Exception:
-        pass
-    _suite_job["code"] = code
-    _suite_job["done"] = True
-
-
-@app.route("/api/suite", methods=["GET", "POST", "OPTIONS"])
+@app.route("/api/suite", methods=["GET", "OPTIONS"])
 def api_suite():
     if request.method == "OPTIONS":
         return "", 204
-    if request.method == "POST":
-        action = (request.get_json(force=True) or {}).get("action")
-        if action not in ("pause", "resume", "fix"):
-            abort(400)
-        with _suite_lock:
-            if not _suite_job["done"]:
-                return jsonify({"ok": False, "busy": _suite_job["name"]}), 409
-            _suite_job.update({"name": action, "log": [], "done": False,
-                               "code": None, "started": time.time()})
-            threading.Thread(target=_suite_run, args=(action,), daemon=True).start()
-        return jsonify({"ok": True, "job": _suite_job})
-    return jsonify({"status": _suite_status(), "job": _suite_job, "tidy": _tidy_preview(),
+    return jsonify({"status": _suite_status(), "tidy": _tidy_preview(),
                     "compress": _compress_status()})
+
+
+def _merge_lines(mine, base, theirs):
+    """Three-way merge on lines, finer than git's: within a stretch both sides changed, lines that only
+    one side changed (or both changed the same way) merge one by one when the stretch kept its length
+    on both sides. Returns the merged text, or None when any line was changed differently by both."""
+    import difflib
+    B, M, T = base.split("\n"), mine.split("\n"), theirs.split("\n")
+
+    def matches(a, b):
+        sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+        out = {}
+        for blk in sm.get_matching_blocks():
+            for k in range(blk.size):
+                out[blk.a + k] = blk.b + k
+        return out
+    mb, tb = matches(B, M), matches(B, T)
+    out, i, j, k = [], 0, 0, 0
+
+    def chunk(b, m, t):
+        if m == b:
+            return t
+        if t == b or m == t:
+            return m
+        if len(b) == len(m) == len(t):
+            res = []
+            for x, y, z in zip(b, m, t):
+                if y == x:
+                    res.append(z)
+                elif z == x or y == z:
+                    res.append(y)
+                else:
+                    return None
+            return res
+        # different lengths (one side split a paragraph, the other edited the next one): each side's edits
+        # as ranges of base lines; when no base line was touched by both, both sets of edits go in. An
+        # insertion touches the line it lands before. (A split next to another tab's edit was a false
+        # clash that paused its autosave; stress test 2026-10-09.)
+        def ops(x):
+            sm = difflib.SequenceMatcher(None, b, x, autojunk=False)
+            return [(i1, i2, x[j1:j2]) for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag != "equal"]
+        om, ot = ops(m), ops(t)
+        span = lambda o: set(range(o[0], o[1])) | {o[0]}
+        if any(span(x) & span(y) for x in om for y in ot):
+            return None
+        res, pos = [], 0
+        for i1, i2, new in sorted(om + ot):
+            if i1 < pos:
+                return None
+            res.extend(b[pos:i1]); res.extend(new); pos = i2
+        res.extend(b[pos:])
+        return res
+    for b in range(len(B) + 1):
+        if b < len(B):
+            if b not in mb or b not in tb or mb[b] < j or tb[b] < k:
+                continue
+            m_end, t_end = mb[b], tb[b]
+        else:
+            m_end, t_end = len(M), len(T)
+        got = chunk(B[i:b], M[j:m_end], T[k:t_end])
+        if got is None:
+            return None
+        out.extend(got)
+        if b < len(B):
+            out.append(B[b])
+        i, j, k = b + 1, m_end + 1, t_end + 1
+    return "\n".join(out)
+
+
+@app.route("/api/merge3", methods=["POST", "OPTIONS"])
+def api_merge3():
+    """Three-way merge for the editor's save (saveFile in editor.html).
+
+    The editor keeps the article as it last read or wrote it (base). When the file on disk
+    no longer matches that (theirs: a review round applied by this server, a second tab,
+    Claude, fit_backgrounds, the compression pipeline), saving the editor's copy (mine)
+    used to overwrite that change without a word. Accepted Armenia review changes and a
+    whole paragraph vanished that way (2026-09-27). git merge-file does the merge: line
+    based, identical changes on both sides merge cleanly, and edits on the same or
+    neighbouring lines are a conflict, which the editor puts to Kevin instead of guessing.
+
+    Returns {ok, conflicts, merged}; `merged` is only usable when conflicts == 0.
+    """
+    if request.method == "OPTIONS":
+        return "", 204
+    raw = request.get_data()
+    if request.headers.get("Content-Encoding") != "gzip" and len(raw) > 48 * 1024 * 1024:
+        return jsonify({"ok": False, "error": "the three copies are over 48 MB"}), 413     # the same cap the gzip path has (stress test 2026-10-23)
+    if request.headers.get("Content-Encoding") == "gzip":
+        # the editor gzips the three copies: a big article sent plain is a 4 MB+ body, and the dev
+        # server reset the connection on those about a third of the time (QA 2026-10-08)
+        import zlib
+        dec = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        # capped: a 248 KB gzip bomb inflated to 256 MB and took the server to 2.6 GB (stress 2026-10-09)
+        raw = dec.decompress(raw, 48 * 1024 * 1024)
+        if dec.unconsumed_tail:
+            return jsonify({"ok": False, "error": "the three copies are over 48 MB unpacked"}), 413
+    d = json.loads(raw.decode("utf-8") or "{}")
+    if not isinstance(d, dict) or not all(isinstance(d.get(k), str) for k in ("mine", "base", "theirs")):
+        abort(400)                                      # all three sides, as text: an empty request merged to ""
+    texts = [d[k].replace("\r\n", "\n") for k in ("mine", "base", "theirs")]
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix="merge3-") as td:
+        paths = []
+        for name, t in zip(("mine", "base", "theirs"), texts):
+            p = Path(td) / name
+            p.write_bytes(t.encode("utf-8"))
+            paths.append(str(p))
+        try:
+            r = subprocess.run(["git", "merge-file", "-p", *paths], capture_output=True, timeout=60,
+                               creationflags=0x08000000 if sys.platform == "win32" else 0)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            return jsonify({"ok": False, "error": str(e)}), 500
+    # exit status = number of conflicts (0 = clean); negative or > 127 = git failed
+    if r.returncode < 0 or r.returncode > 127:
+        return jsonify({"ok": False, "error": (r.stderr or b"").decode("utf-8", "replace")[:300]}), 500
+    merged = r.stdout.decode("utf-8") if r.returncode == 0 else None
+    if merged is None:
+        # git calls edits on NEIGHBOURING lines a conflict, and a paragraph is one line: accepting a review
+        # change next to another changed paragraph raised the dialog over two edits that never touch
+        # (QA 2026-10-08). A line-by-line pass settles those; anything truly overlapping stays a conflict.
+        merged = _merge_lines(*texts)
+    mine, base, theirs = texts
+    # A file cut short on disk (a tool that died mid-write, an empty file) is a DELETION to git, and
+    # with the editor's side unchanged there it merged "cleanly" into the cut-short file, which the
+    # editor would then write (QA 2026-10-08: an empty disk file merged to ""). An article that loses
+    # its closing tag, or most of its length, is never a clean merge.
+    def whole(t):
+        return "</html>" in t[-4000:].lower()
+    if merged is not None and ((whole(base) or whole(mine)) and not whole(merged)
+                               or len(merged) < 0.6 * min(len(base), len(mine))):
+        return jsonify({"ok": True, "conflicts": 1, "merged": None, "why": "truncated"})
+    return jsonify({"ok": True, "conflicts": 0 if merged is not None else max(r.returncode, 1), "merged": merged})
 
 
 def _tidy_preview():
@@ -2132,48 +2283,6 @@ def _tidy_preview():
     if not lines:
         return None
     return {"at": lines[0], "lines": lines[1:]}
-
-
-@app.route("/api/hold", methods=["POST", "OPTIONS"])
-@_serialized
-def api_hold():
-    """Turn an album's backup on or off. Albums arrive on hold because a batch
-    of them can appear at once (reviving Apple's shared-album agent surfaced
-    nine), and pulling full-resolution originals for all of them uses real
-    disk. The choice belongs here, not in a message to someone else."""
-    if request.method == "OPTIONS":
-        return "", 204
-    d = request.get_json(force=True)
-    hold = set(load_json_for_write(HOLD, []))
-    if d.get("hold"):
-        hold.add(d["album"])
-    else:
-        hold.discard(d["album"])
-    save_json(HOLD, sorted(hold))
-    _bs_patch(d["album"], held=d["album"] in hold)
-    return jsonify({"ok": True, "held": sorted(hold)})
-
-
-ARCHIVED = BACKUP / "_meta" / "archived.json"
-
-
-@app.route("/api/archived", methods=["POST", "OPTIONS"])
-@_serialized
-def api_archived():
-    """You ticking 'I deleted the shared album' — the end of the line for this
-    country. The backup is proven, the phone is clear, and the card has nothing
-    left to warn you about, so it collapses to a single done line."""
-    if request.method == "OPTIONS":
-        return "", 204
-    d = request.get_json(force=True)
-    arch = load_json_for_write(ARCHIVED, {})
-    if d.get("done"):
-        arch[d["album"]] = time.strftime("%Y-%m-%d")
-    else:
-        arch.pop(d["album"], None)
-    save_json(ARCHIVED, arch)
-    _bs_patch(d["album"], archived=arch.get(d["album"]))
-    return jsonify({"ok": True, "archived": arch})
 
 
 @app.route("/api/rate", methods=["POST", "OPTIONS"])
@@ -2250,10 +2359,7 @@ def ensure_uploads_source():
         if Path(s["path"]).resolve() == UPLOADS.resolve():
             return i
     SOURCES.append({"label": "Uploaded photos", "path": str(UPLOADS)})
-    try:
-        SRC_CFG.write_text(json.dumps(SOURCES, indent=2), encoding="utf-8")
-    except OSError:
-        pass
+    _save_sources()
     return len(SOURCES) - 1
 
 
@@ -2270,11 +2376,20 @@ def api_upload_photo():
     data = request.get_data(cache=False)
     if not data:
         return jsonify(ok=False, error="empty file"), 400
+    try:                                              # a file named .jpg that is not a photo is refused (stress 2026-10-09)
+        import io as _io
+        Image.open(_io.BytesIO(data)).verify()
+    except Exception:
+        return jsonify(ok=False, error="not a readable photo"), 415
     root = ensure_uploads_source()
     base = clean_name(Path(raw).stem) or "photo"
     dest, n = UPLOADS / f"{base}{ext}", 2
-    while dest.exists():
-        dest, n = UPLOADS / f"{base}-{n}{ext}", n + 1
+    while True:                                   # reserved, not just checked: 4 parallel uploads of "image.jpg" shared a file (2026-10-23)
+        try:
+            fd = os.open(dest, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.close(fd)
+            break
+        except FileExistsError:
+            dest, n = UPLOADS / f"{base}-{n}{ext}", n + 1
     dest.write_bytes(data)
     return jsonify(ok=True, root=root, path=dest.name, name=dest.name)
 
@@ -2291,11 +2406,20 @@ def ensure_backup_source():
         if Path(s["path"]).resolve() == BACKUP.resolve():
             return i
     SOURCES.append({"label": "Backup (blog picks)", "path": str(BACKUP)})
+    _save_sources()
+    return len(SOURCES) - 1
+
+
+def _save_sources():
+    """the tracked tools/photo_editor_sources.json. A test instance (PHOTO_EDITOR_NO_WORKER=1, often with a
+    made-up home folder) keeps its sources in memory: one added ".tmp/qa/stressB/home/Backup" to the real
+    file during the stress test (2026-10-09)."""
+    if os.environ.get("PHOTO_EDITOR_NO_WORKER") == "1":
+        return
     try:
         SRC_CFG.write_text(json.dumps(SOURCES, indent=2), encoding="utf-8")
     except OSError:
         pass
-    return len(SOURCES) - 1
 
 
 @app.route("/api/resolve_original")
@@ -2308,7 +2432,7 @@ def api_resolve_original():
     suffix, then find the archive file case-insensitively by stem (imports
     re-encode HEIC to .jpg but byte-copies keep .JPG/.JPEG as they came).
     """
-    rel = unquote(request.args.get("path", "")).replace("\\", "/").lstrip("./")
+    rel = _rel_clean(unquote(request.args.get("path", "")))
     rel = re.sub(r"^(\.\./)+", "", rel)
     if rel.startswith("Images/"):
         rel = rel[len("Images/"):]
@@ -2354,7 +2478,15 @@ def straighten_records():
         return {}
 
 
+_STRAIGHTEN_LOCK = threading.Lock()
+
+
 def straighten_record(dest, src_root, src_path, angle):
+    with _STRAIGHTEN_LOCK:                        # read-modify-write: 8 parallel imports left 4 of 180 records (2026-10-16)
+        return _straighten_record(dest, src_root, src_path, angle)
+
+
+def _straighten_record(dest, src_root, src_path, angle):
     """dest is the Images/ file just written; src is the {root, path} it was cut from.
     A source that is itself a recorded straighten passes its own source through, so the
     chain always points at the unrotated file."""
@@ -2370,8 +2502,7 @@ def straighten_record(dest, src_root, src_path, angle):
         pass
     recs[key] = {"angle": float(angle), "src": base}
     try:
-        STRAIGHTEN_FILE.parent.mkdir(parents=True, exist_ok=True)
-        STRAIGHTEN_FILE.write_text(json.dumps(recs, indent=1), encoding="utf-8")
+        _atomic_write(STRAIGHTEN_FILE, json.dumps(recs, indent=1))
     except OSError:
         pass
 
@@ -2411,11 +2542,41 @@ def api_picks():
 
 
 def bthumb_path(p, size):
-    """Cache location for a backed-up photo's thumbnail. Shared with
-    photo_backup.py, which pre-generates these while downloading so the
+    """Cache location for a backed-up photo's thumbnail (the ingest used to
+    pre-generate these on import so the
     library grid is instant instead of decoding 5712px HEICs on demand."""
     key = f"bk-{p}-{p.stat().st_mtime_ns}-{size}"
     return THUMBS / (re.sub(r"\W", "_", key)[-120:] + ".jpg")
+
+
+# One build per cache file, and a temp name per writer. Twelve requests for the same new tile all
+# decoded the photo and wrote the same "x.part.jpg": half answered 500 (the file was gone or locked)
+# and good photos answered 415 (stress test 2026-10-09). Now the first builds and the rest wait for it.
+_build_locks, _build_locks_guard = {}, threading.Lock()
+
+
+class _one_build:
+    def __init__(self, path):
+        self.key = str(path)
+
+    def __enter__(self):
+        with _build_locks_guard:
+            ent = _build_locks.setdefault(self.key, [threading.Lock(), 0])
+            ent[1] += 1
+        self.ent = ent
+        ent[0].acquire()
+        return self
+
+    def __exit__(self, *a):
+        self.ent[0].release()
+        with _build_locks_guard:
+            self.ent[1] -= 1
+            if self.ent[1] <= 0:
+                _build_locks.pop(self.key, None)
+
+
+def _part_name(path):
+    return path.with_name("%s.%d.%d.part%s" % (path.stem, os.getpid(), threading.get_ident(), path.suffix))
 
 
 def _build_bthumb(p, size):
@@ -2428,7 +2589,7 @@ def _build_bthumb(p, size):
     # grid thumbnails; and the photo is shrunk BEFORE it is turned upright, which spares a full
     # 24-megapixel rotate and cut a first preview from ~14 s to a few (2026-09-28)
     gate = _preview_gate if size >= 1000 else _thumb_gate
-    with gate:
+    with _one_build(cache), gate:
         if cache.exists():
             return cache
         small = bthumb_path(p, 400) if size > 400 else None   # the grid's size, written from the same decode
@@ -2451,12 +2612,12 @@ def _build_bthumb(p, size):
         if icc:
             kw["icc_profile"] = icc
         im = im.convert("RGB")
-        tmp = cache.with_name(cache.stem + ".part" + cache.suffix)
+        tmp = _part_name(cache)
         im.save(tmp, "JPEG", **kw)
         os.replace(tmp, cache)                                # atomic: a reader never sees a half-written file
         if small is not None and not small.exists():          # a 2000 px preview was decoded: the 400 is free
             s4 = im.copy(); s4.thumbnail((400, 400), reducing_gap=2.0)
-            t4 = small.with_name(small.stem + ".part" + small.suffix)
+            t4 = _part_name(small)
             s4.save(t4, "JPEG", **kw)
             os.replace(t4, small)
     return cache
@@ -2561,17 +2722,34 @@ def api_warm_thumbs():
     d = BACKUP / album
     if not album or not d.is_dir():
         return jsonify(ok=False), 404
+    # An album checked whole lately, with nothing missing and the folder unchanged since, is not checked
+    # again: every article open, album switch and Load more re-checked every photo (about five file
+    # calls each), 0.7 s for Armenia on a calm machine and up to 26 s under load (stress test 2026-10-09)
+    full = not body.get("only")
+    try:
+        stamp = d.stat().st_mtime_ns
+    except OSError:
+        stamp = None
+    memo = _warm_seen.get(album)
+    if full and memo and memo[0] == stamp and time.time() - memo[1] < 600:
+        return jsonify(ok=True, queued=0)
     names = [os.path.basename(n) for n in (body.get("names") or [])[:600]]
-    rest = [] if body.get("only") else sorted(p.name for p in d.iterdir() if p.is_file() and p.suffix.lower() in IMG_EXTS and not is_stray_thumb(p.name))
+    rest = [] if not full else sorted(p.name for p in d.iterdir() if p.is_file() and p.suffix.lower() in IMG_EXTS and not is_stray_thumb(p.name))
     todo = []
-    for n in names + [n for n in rest if n not in set(names)]:
+    root, seen = BACKUP.resolve(), set(names)
+    for n in names + [n for n in rest if n not in seen]:
         p = (d / n).resolve()
-        if BACKUP.resolve() not in p.parents or not p.is_file() or p in _warm_thumbs_queued or bthumb_path(p, 400).exists():
+        if root not in p.parents or p in _warm_thumbs_queued or not p.is_file() or bthumb_path(p, 400).exists():
             continue
         _warm_thumbs_queued.add(p); todo.append(p)
     if todo:
         _lib_warm_pool.submit(_warm_library_album, album, todo)
+    elif full:
+        _warm_seen[album] = (stamp, time.time())
     return jsonify(ok=True, queued=len(todo))
+
+
+_warm_seen = {}      # album -> (folder mtime, when): checked whole, nothing was missing
 
 
 @app.route("/api/warm_previews", methods=["POST", "OPTIONS"])
@@ -2612,49 +2790,512 @@ def bthumb():
     return send_file(cache, mimetype="image/jpeg")
 
 
+def recipe_for(d):
+    """The recipe an import carries: the library source (by the source's LABEL, since the root indexes shift
+    when sources are added), orientation, straighten, sliders, masks (a brush mask as its PNG) and the erases
+    done (each as its painted mask and mode, so a re-edit can replay them)."""
+    try:
+        label = SOURCES[int(d["root"])]["label"]
+    except (KeyError, ValueError, IndexError, TypeError):
+        label = ""
+    r = d.get("recipe") or {}
+    return {"v": 1, "src": {"label": label, "path": d["path"]},
+            "rot": int(d.get("rot", 0) or 0), "flip": d.get("flip") or None, "angle": float(d.get("angle", 0) or 0),
+            "dev": {k: v for k, v in (d.get("dev") or {}).items() if abs(float(v or 0)) > 1e-4},
+            "masks": d.get("masks") or [], "erases": r.get("erases") or []}
+
+
+def _source_index(label):
+    for i, srcd in enumerate(SOURCES):
+        if srcd.get("label") == label:
+            return i
+    return None
+
+
+def _archive_for_ref(ref):
+    """The Images/ file an article <img> ref points at (a web variant walks back to its original)."""
+    rel = _rel_clean(unquote(ref or ""))
+    rel = re.sub(r"^(\.\./)+", "", rel)
+    if rel.startswith("Images/"):
+        rel = rel[len("Images/"):]
+    if rel.startswith("web/"):
+        rel = rel[len("web/"):]
+    rel = re.sub(r"-(?:mob-)?[123]x(?=\.[^.]+$)", "", rel)
+    cand = IMAGES / rel
+    folder, stem = cand.parent, cand.stem
+    if folder.is_dir():
+        low = stem.lower()
+        for f in folder.iterdir():
+            if f.is_file() and f.stem.lower() == low and f.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".heic"}:
+                return f
+    return None
+
+
+@app.route("/api/recipe")
+def api_recipe():
+    """The edit recipe of a placed photo (read out of the archive JPEG), with its source resolved to the
+    current root index, or {ok: false} when the photo has none (placed before 2026-10-14, or copied as is)."""
+    hit = _archive_for_ref(request.args.get("path", ""))
+    if not hit:
+        return jsonify({"ok": False, "error": "no archive original"}), 404
+    rec = read_recipe(hit)
+    if not rec:
+        return jsonify({"ok": False, "error": "no recipe in this photo"})
+    root = _source_index((rec.get("src") or {}).get("label", ""))
+    if root is None:
+        return jsonify({"ok": False, "error": "its photo source is no longer configured"})
+    src = source_path(root, rec["src"]["path"])
+    if not src.exists():
+        return jsonify({"ok": False, "error": "its source photo is gone"})
+    return jsonify({"ok": True, "recipe": rec, "root": root, "path": rec["src"]["path"], "name": src.name,
+                    "archive": hit.relative_to(ROOT).as_posix()})
+
+
+def replay_erases(im, erases):
+    """Run a recipe's erases again on the (straightened) source: each one's painted mask at its mode."""
+    import base64
+    import io
+    for e in erases or []:
+        png = e.get("png") or ""
+        if "," not in png:
+            continue
+        raw = base64.b64decode(png.split(",", 1)[1])
+        mask = Image.open(io.BytesIO(raw)).convert("L").resize(im.size, Image.NEAREST)
+        im = spot_erase(im, mask) if e.get("mode") == "spot" else lama_erase(im, mask)
+    return im
+
+
+@app.route("/api/recipe_session", methods=["POST", "OPTIONS"])
+def api_recipe_session():
+    """A re-edit of a photo whose recipe holds erases: the erases are replayed on the source (oriented and
+    straightened as the recipe says) and the result becomes an erase session token, like a fresh erase."""
+    if request.method == "OPTIONS":
+        return "", 204
+    import uuid
+    d = request.get_json(force=True) or {}
+    if not isinstance(d, dict) or not d.get("path"):
+        abort(400)
+    src = resolve_full_res(source_path(d["root"], d["path"]))
+    im0 = Image.open(src)
+    try:                                     # capture date and GPS travel on through the replayed erases
+        ex = im0.getexif(); ex[0x0112] = 1; exif_b = ex.tobytes()
+    except Exception:
+        exif_b = None
+    im = ImageOps.exif_transpose(im0)
+    icc = im.info.get("icc_profile")
+    im = apply_orient(im, d.get("rot", 0), d.get("flip")).convert("RGB")
+    im = straighten(im, d.get("angle", 0))
+    try:
+        im = replay_erases(im, d.get("erases"))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+    token = uuid.uuid4().hex[:16]
+    kw = {"quality": 95}
+    if icc:
+        kw["icc_profile"] = icc
+    if exif_b:
+        kw["exif"] = exif_b
+    im.save(ERASED / (token + ".jpg"), "JPEG", **kw)
+    return jsonify({"ok": True, "token": token})
+
+
+@app.route("/api/sync_look", methods=["POST", "OPTIONS"])
+def api_sync_look():
+    """LightCraft's Sync: one photo's sliders (not its masks, crop or erases) onto the other photos of the
+    article that carry a recipe; each is re-rendered from its own source and written as a new archive file."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = request.get_json(force=True) or {}
+    src_hit = _archive_for_ref(d.get("source", ""))
+    rec = read_recipe(src_hit) if src_hit else None
+    if not rec:
+        return jsonify({"ok": False, "error": "the chosen photo has no edit recipe"}), 400
+    dev = rec.get("dev") or {}
+    out = []
+    targets = list(dict.fromkeys(t for t in (d.get("targets") or []) if isinstance(t, str)))   # each photo once
+    if len(targets) > 500:
+        abort(400, "too many targets (max 500)")
+    for ref in targets:
+        hit = _archive_for_ref(ref)
+        tr = read_recipe(hit) if hit else None
+        if not tr or hit == src_hit:
+            out.append({"ref": ref, "skipped": "no recipe"})
+            continue
+        root = _source_index((tr.get("src") or {}).get("label", ""))
+        if root is None:
+            out.append({"ref": ref, "skipped": "source missing"})
+            continue
+        try:
+            tr = dict(tr, dev=dev)
+            srcp = resolve_full_res(source_path(root, tr["src"]["path"]))
+            rel = hit.relative_to(IMAGES).as_posix().split("/")
+            country, city = rel[0], rel[1] if len(rel) > 2 else ""
+            masks = brush_alphas  # (resolved inside import_photo)
+            if tr.get("erases"):
+                im = ImageOps.exif_transpose(Image.open(srcp))
+                icc = im.info.get("icc_profile")
+                im = straighten(apply_orient(im, tr.get("rot", 0), tr.get("flip")).convert("RGB"), tr.get("angle", 0))
+                im = replay_erases(im, tr["erases"])
+                tmp = ERASED / ("sync-" + hit.stem + ".jpg")
+                kw = {"quality": 95}
+                if icc:
+                    kw["icc_profile"] = icc
+                im.save(tmp, "JPEG", **kw)
+                dest = import_photo(tmp, country_dir(country), city, dev=dev, masks=tr.get("masks"), name_hint=srcp, recipe=tr)
+            else:
+                dest = import_photo(srcp, country_dir(country), city, rot=tr.get("rot", 0), flip=tr.get("flip"), dev=dev,
+                                    angle=tr.get("angle", 0), masks=tr.get("masks"), recipe=tr)
+            out.append({"ref": ref, "src": dest.relative_to(ROOT).as_posix()})
+        except Exception as e:
+            out.append({"ref": ref, "skipped": str(e)})
+    return jsonify({"ok": True, "results": out})
+
+
+# ---------------------------------------------------------------- MobileSAM: click to select a subject
+SAM_PT = ROOT / ".tmp" / "photo_editor" / "models" / "mobile_sam.pt"
+_sam = {"pred": None, "key": None, "lock": threading.Lock()}
+
+
+def sam_predictor():
+    """MobileSAM (Apache-2.0; EffectCraft's Roto Brush uses the same model), loaded once."""
+    if _sam["pred"] is None:
+        import warnings
+        warnings.filterwarnings("ignore")
+        from mobile_sam import SamPredictor, sam_model_registry
+        if not SAM_PT.exists():
+            raise RuntimeError("mobile_sam.pt missing from .tmp/photo_editor/models")
+        model = sam_model_registry["vit_t"](checkpoint=str(SAM_PT))
+        model.eval()
+        _sam["pred"] = SamPredictor(model)
+    return _sam["pred"]
+
+
+@app.route("/api/segment", methods=["POST", "OPTIONS"])
+def api_segment():
+    """A mask for the clicked subject: points (x, y, label 1 = include / 0 = exclude) in the pixels of the
+    stage image (?token / root+path at ?s, as /api/planes reads it). The image embedding is kept for the
+    next click on the same photo (the encoder is the slow part; the decoder answers in milliseconds)."""
+    if request.method == "OPTIONS":
+        return "", 204
+    import base64
+    import io
+    d = request.get_json(force=True) or {}
+    pts = d.get("points") or []
+    if not pts:
+        abort(400)
+    with app.test_request_context(query_string={k: str(v) for k, v in d.items() if k in ("token", "root", "path", "s", "rot", "flip", "site") and v is not None}):
+        im, f = _stage_image()
+    key = "%s|%s|%s|%s|%s|%s" % (d.get("token"), d.get("root"), d.get("path"), d.get("s"), d.get("rot"), d.get("flip"))
+    try:
+        with _sam["lock"]:
+            pred = sam_predictor()
+            if _sam["key"] != key:
+                pred.set_image(np.asarray(im))
+                _sam["key"] = key
+            coords = np.array([[float(p[0]), float(p[1])] for p in pts])
+            labels = np.array([int(p[2]) if len(p) > 2 else 1 for p in pts])
+            masks, scores, _ = pred.predict(point_coords=coords, point_labels=labels, multimask_output=len(pts) == 1)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+    # one click: SAM answers at three granularities (whole / part / sub-part) with a confidence each. EffectCraft
+    # takes the most confident; a click on a wall then selects a window. Lightroom's Select Object means the
+    # object, so of the answers within 0.05 of the best confidence the LARGEST is taken.
+    top = float(scores.max())
+    cands = [i for i in range(len(scores)) if scores[i] >= top - 0.05]
+    best = masks[max(cands, key=lambda i: int(masks[i].sum()))]
+    # white with the mask as ALPHA: the editor draws it straight into a brush mask's canvas (alpha is the mask)
+    a8 = (best.astype(np.uint8) * 255)
+    out = Image.fromarray(np.dstack([np.full_like(a8, 255)] * 3 + [a8]), "RGBA")
+    buf = io.BytesIO()
+    out.save(buf, "PNG")
+    return jsonify({"ok": True, "png": "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode(),
+                    "w": out.width, "h": out.height, "score": float(scores.max())})
+
+
+# ---------------------------------------------------------------- culling scores (LightCraft cull.rs)
+CULL_DIR = ROOT / ".tmp" / "photo_editor" / "cull"
+CULL_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def cull_measure(path):
+    """Focus (detail energy of the sharpest 16 px blocks, 90th percentile), clipped fraction and a small
+    luminance signature for finding bursts; measured on the 400 px thumb so scores compare across photos."""
+    import cv2
+    im = Image.open(path).convert("L")
+    im.thumbnail((400, 400))
+    g = np.asarray(im, dtype=np.float32) / 255.0
+    lap = cv2.Laplacian(g, cv2.CV_32F, ksize=3)
+    h, w = g.shape
+    bh, bw = h // 16, w // 16
+    if bh < 1 or bw < 1:
+        return {"sharp": 0, "clip": 0, "sig": [0.0] * 64}
+    blocks = (lap[:bh * 16, :bw * 16] ** 2).reshape(bh, 16, bw, 16).mean(axis=(1, 3))
+    sharp = float(np.sqrt(np.percentile(blocks, 90)))
+    clip = float(((g >= 0.98) | (g <= 0.02)).mean())
+    sig = cv2.resize(g, (8, 8), interpolation=cv2.INTER_AREA).ravel()
+    sig = (sig - sig.mean()) / (sig.std() + 1e-6)
+    return {"sharp": round(sharp, 4), "clip": round(clip, 4), "sig": [round(float(v), 3) for v in sig]}
+
+
+_cull_locks, _cull_locks_guard = {}, threading.Lock()
+
+
+@app.route("/api/cull")
+def api_cull():
+    """The album's culling scores (cached per file), and its bursts: runs of consecutive photos whose
+    signatures agree, each with the sharpest one named. One scan per album at a time: a cold 1,100-photo
+    album took 26 s, and every 6 s tick in between started another full scan (five at once, the last answering
+    93 s after the first; stress test 2026-10-15). Later callers wait for the first and read its cache."""
+    album = clean_dirname(request.args.get("album", ""))
+    d = BACKUP / album
+    if not album or not d.is_dir():
+        return jsonify({"photos": {}, "bursts": []})
+    with _cull_locks_guard:
+        lock = _cull_locks.setdefault(album, threading.Lock())
+    quick = request.args.get("quick") == "1"
+    if quick and not lock.acquire(blocking=False):
+        # the background scan holds the lock: answer from the cache as it stands (it is written every few
+        # seconds during a scan), so the tiles get their marks while the scan goes on
+        return jsonify(_cull_now(album, d, budget=0))
+    if not quick:
+        lock.acquire()
+    try:
+        res = _cull_now(album, d, budget=1.5 if quick else None)
+    finally:
+        lock.release()
+    if quick and res.get("pending"):
+        # the rest of the album is measured in the background; the editor polls until pending is 0
+        def finish():
+            if not lock.acquire(blocking=False):
+                return
+            try:
+                _cull_now(album, d)
+            finally:
+                lock.release()
+        threading.Thread(target=finish, daemon=True, name="cull-" + album[:20]).start()
+    return jsonify(res)
+
+
+def _cull_now(album, d, budget=None):
+    """budget: seconds of measuring before answering with what is known (quick=1); the rest is `pending`.
+    A cold 1,100-photo album took 26 s before the first stack showed (stress test 2026-10-16)."""
+    import json
+    cache_p = CULL_DIR / (re.sub(r"\W", "_", album) + ".json")
+    cache = load_json(cache_p, {})
+    files = [p for p in sorted(d.iterdir(), key=lambda x: x.name.lower())
+             if p.is_file() and p.suffix.lower() in IMG_EXTS and not p.name.startswith("_manifest") and not is_stray_thumb(p.name)]
+    out, changed, pending, t0, last_write = {}, False, 0, time.time(), time.time()
+    for p in files:
+        key = f"{p.name}|{p.stat().st_mtime_ns}"
+        ent = cache.get(p.name)
+        if not ent or ent.get("k") != key:
+            if budget is not None and time.time() - t0 > budget:
+                pending += 1
+                continue
+            try:
+                thumb = _build_bthumb(p, 400)
+                ent = dict(cull_measure(thumb), k=key)
+            except Exception:
+                ent = {"k": key, "sharp": 0, "clip": 0, "sig": [0.0] * 64}
+            cache[p.name] = ent
+            changed = True
+            if time.time() - last_write > 4:          # a long scan shows its progress to the quick polls
+                try:
+                    _atomic_write(cache_p, json.dumps(cache)); last_write = time.time()
+                except OSError:
+                    pass
+        out[p.name] = {"sharp": ent["sharp"], "clip": ent["clip"]}
+    if changed:
+        try:
+            _atomic_write(cache_p, json.dumps(cache))      # never a half-written cache for the next reader
+        except OSError:
+            pass
+    # bursts: neighbours in capture order (file names sort by it) that look alike
+    bursts, run = [], []
+    names = [p.name for p in files if p.name in out]        # unmeasured (pending) photos are not in any burst yet
+    for i, n in enumerate(names):
+        if run:
+            a, b = np.array(cache[run[-1]]["sig"]), np.array(cache[n]["sig"])
+            sim = float((a * b).mean())
+            if sim > 0.9:
+                run.append(n)
+                continue
+            if len(run) > 1:
+                bursts.append({"names": run, "best": max(run, key=lambda x: cache[x]["sharp"])})
+        run = [n]
+    if len(run) > 1:
+        bursts.append({"names": run, "best": max(run, key=lambda x: cache[x]["sharp"])})
+    sharps = sorted(v["sharp"] for v in out.values()) or [0]
+    median = sharps[len(sharps) // 2]
+    return {"photos": out, "bursts": bursts, "soft_below": round(median * 0.35, 4), "pending": pending}
+
+
+# ---------------------------------------------------------------- insert results (2026-10-16)
+# An insert bakes while Kevin keeps working, so the tab that asked for it may be closed, or showing another article,
+# by the time the file is ready: the photo was archived and never placed. Each insert now carries an id (cid) and its
+# outcome is kept here, so the editor places the photo when that article opens again. The first tab to claim a
+# result places it; any other gets won=false and leaves it, so two tabs never place one photo twice.
+IMPORT_RESULTS = ROOT / ".tmp" / "photo_editor" / "import_results.json"
+_IR_LOCK = threading.Lock()
+_CID_RE = re.compile(r"^[A-Za-z0-9_-]{6,40}$")
+
+
+def _ir_load():
+    try:
+        d = json.loads(IMPORT_RESULTS.read_text(encoding="utf-8"))
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _ir_save(d):
+    # two weeks, at most 300: an insert nobody came back for is not kept forever
+    cutoff = time.time() - 14 * 86400
+    d = {k: v for k, v in d.items() if isinstance(v, dict) and (v.get("at") or 0) >= cutoff}
+    if len(d) > 300:
+        for k in sorted(d, key=lambda k: d[k].get("at") or 0)[:len(d) - 300]:
+            d.pop(k, None)
+    _atomic_write(IMPORT_RESULTS, json.dumps(d))
+
+
+def _ir_update(cid, **fields):
+    with _IR_LOCK:
+        d = _ir_load()
+        rec = d.get(cid) if isinstance(d.get(cid), dict) else {"at": time.time()}
+        rec.update(fields)
+        d[cid] = rec
+        try:
+            _ir_save(d)
+        except OSError:
+            pass                                      # the insert itself must not fail over its bookkeeping
+        return dict(rec)
+
+
+def _ir_view(rec):
+    """a record as the editor sees it; one left 'running' by a server that has since restarted never finishes"""
+    if rec.get("state") == "running" and rec.get("pid") != os.getpid():
+        rec = dict(rec, state="failed", error="the photo server restarted while it baked")
+    return {k: rec.get(k) for k in ("state", "src", "w", "h", "orient", "error", "claimed", "at")}
+
+
 @app.route("/api/import", methods=["POST", "OPTIONS"])
 def api_import():
     """Copy a library photo into the Images/ archive WITHOUT touching any
     page: editor.html inserts the markup itself in its contenteditable and
-    only needs the archived file + its repo-relative path."""
+    only needs the archived file + its repo-relative path. With a cid, the
+    outcome is also kept for /api/import_result."""
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True) or {}
+    cid = d.get("cid") if isinstance(d, dict) else None
+    cid = cid if isinstance(cid, str) and _CID_RE.match(cid) else None
+    if cid:
+        with _IR_LOCK:
+            prev = _ir_load().get(cid)
+        if isinstance(prev, dict) and prev.get("state") == "done":
+            # the same insert sent again (a reopened tab re-sending one that never arrived): it is already archived
+            return jsonify({"ok": True, "src": prev["src"], "w": prev["w"], "h": prev["h"], "orient": prev["orient"]})
+        _ir_update(cid, state="running", pid=os.getpid(), at=time.time())
+    try:
+        body, status = _import_run(d)
+    except HTTPException as e:
+        if cid:
+            _ir_update(cid, state="failed", error=(e.description or e.name or "refused")[:300])
+        raise
+    except Exception as e:
+        if cid:
+            _ir_update(cid, state="failed", error=("%s: %s" % (type(e).__name__, e))[:300])
+        raise
+    if cid:
+        if body.get("ok"):
+            _ir_update(cid, state="done", src=body["src"], w=body["w"], h=body["h"], orient=body["orient"])
+        else:
+            _ir_update(cid, state="failed", error=body.get("error") or "import failed")
+    return jsonify(body), status
+
+
+@app.route("/api/import_result", methods=["GET", "POST", "OPTIONS"])
+def api_import_result():
+    """What became of an insert, by its cid: running, done (with the archived file), failed, or unknown (it
+    never arrived). POST {cid, claim: <tab id>} takes the placement of a finished one for that tab: the first
+    claim wins, and a later one from another tab answers won=false."""
+    if request.method == "OPTIONS":
+        return "", 204
+    d = (request.get_json(force=True, silent=True) or {}) if request.method == "POST" else request.args
+    cid = d.get("cid") if hasattr(d, "get") else None
+    if not (isinstance(cid, str) and _CID_RE.match(cid)):
+        abort(400)
+    claim = d.get("claim") if request.method == "POST" else None
+    claim = str(claim)[:40] if claim else None
+    with _IR_LOCK:
+        all_ = _ir_load()
+        rec = all_.get(cid)
+        if not isinstance(rec, dict):
+            return jsonify({"state": "unknown", "won": False})
+        out = _ir_view(rec)
+        won = False
+        if claim and out["state"] == "done":
+            if not rec.get("claimed"):
+                rec["claimed"] = claim
+                rec["claimed_at"] = time.time()
+                all_[cid] = rec
+                try:
+                    _ir_save(all_)
+                except OSError:
+                    pass
+            won = rec["claimed"] == claim
+            out["claimed"] = rec["claimed"]
+    out["won"] = won
+    return jsonify(out)
+
+
+def _import_run(d):
+    """the import itself: (json body, status)"""
     # An empty or wrong-shaped body answered 500, because d["root"] raised straight out of
     # the handler. The request is malformed, so say that instead.
-    if not isinstance(d, dict) or not d.get("root") or not d.get("path"):
+    if not isinstance(d, dict) or d.get("root") in (None, "") or not d.get("path"):   # root 0 is the first source tab, not "missing"
         abort(400)
     try:
         src = source_path(d["root"], d["path"])
     except (ValueError, KeyError, OSError):
         abort(400)
+    # the source must be an image BEFORE it is copied into the archive: a 0-byte, truncated or non-image
+    # file used to land in Images/<Country>/ and then 500 (stress test 2026-10-15)
+    try:
+        with Image.open(src) as _im:
+            _im.verify()
+    except Exception:
+        abort(400, "the source is not a readable image")
     # A file already IN the backup is the full-resolution original - that is the
     # whole point of the backup. Re-resolving it against the library wastes a
     # lookup and, worse, find_original() matches on capture SECOND, so a burst
     # frame can come back as a DIFFERENT shot. Publish the file as it stands.
     from_backup = BACKUP.resolve() in src.resolve().parents
-    if d.get("full", True) and not from_backup:
+    from_upload = UPLOADS.resolve() in src.resolve().parents     # a file added from the computer IS the original
+    if d.get("full", True) and not from_backup and not from_upload:
         src = resolve_full_res(src)      # publish from the original, not a 2048px copy
         hydrate_if_cloud(src)            # pull it via the API, not by blind reading
     if d.get("token"):
         # erased pixels replace the library source; orientation is already baked
         erased_src = ERASED / (re.sub(r"\W", "", d["token"]) + ".jpg")
         if not erased_src.exists():
-            return jsonify({"ok": False, "error": "erase session expired"}), 410
+            return {"ok": False, "error": "erase session expired"}, 410
         dest = import_photo(erased_src, country_dir(d["country"]), d.get("city", "").strip(),
-                            dev=d.get("dev"), masks=d.get("masks"), name_hint=src)
+                            dev=d.get("dev"), masks=d.get("masks"), name_hint=src, recipe=recipe_for(d))
     else:
         dest = import_photo(src, country_dir(d["country"]), d.get("city", "").strip(),
                             rot=d.get("rot", 0), flip=d.get("flip"), dev=d.get("dev"),
-                            angle=d.get("angle", 0), masks=d.get("masks"))
+                            angle=d.get("angle", 0), masks=d.get("masks"), recipe=recipe_for(d))
         if abs(float(d.get("angle", 0) or 0)) > 1e-3:
             straighten_record(dest, d["root"], d["path"], d.get("angle", 0))
+    if from_upload:
+        _recipe_point_at_archive(dest, d)
     with Image.open(dest) as im:
         im = ImageOps.exif_transpose(im)
         w, h = im.size
-    return jsonify({"ok": True, "src": dest.relative_to(ROOT).as_posix(),
-                    "w": w, "h": h,
-                    "orient": "landscape" if w >= h * 1.05 else "portrait" if h >= w * 1.05 else "square"})
+    return {"ok": True, "src": dest.relative_to(ROOT).as_posix(),
+            "w": w, "h": h,
+            "orient": "landscape" if w >= h * 1.05 else "portrait" if h >= w * 1.05 else "square"}, 200
 
 
 def read_page(rel):
@@ -2679,22 +3320,40 @@ def _run_pipeline(page):
         # a draft goes through tools/draft_images.py, which stages it as a temporary live
         # page so the same six tools can run on it, then copies the result back
         r = subprocess.run([sys.executable, str(ROOT / "tools" / "draft_images.py"), page],
-                           capture_output=True, text=True, cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
+                           capture_output=True, text=True, cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace", creationflags=_NOWIN | _LOWPRI)
         tail = "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-12:])
         log = ["$ draft_images.py\n" + tail]
         if r.returncode == 0:
             _fit_page(page, log)
         return r.returncode == 0, "\n\n".join(log)
     log = []
-    for tool in PIPELINE:
-        args = [sys.executable, str(ROOT / "tools" / tool)]
-        if tool == "recompress_desktop.py":
-            args.append("--new-only")            # only build missing web variants
-        r = subprocess.run(args, capture_output=True, text=True, cwd=ROOT, timeout=1800)
-        tail = (r.stdout or r.stderr or "").strip().splitlines()[-3:]
-        log.append(f"$ {tool}\n" + "\n".join(tail))
-        if r.returncode != 0:
-            return False, "\n\n".join(log)
+    # A published page is compressed on a STAGED copy in the same folder (so every ../Images path stays right)
+    # and written back only if nobody saved the page meanwhile, the way draft_images.py already works for
+    # drafts. The tools read the page, cut for minutes, then write their old copy back: a save made in that
+    # window was lost, and the next merge read the loss as a deliberate undo (stress test 2026-10-23).
+    p = ROOT / page
+    stage = p.with_name("_live-" + p.name)
+    try:
+        src = p.read_bytes(); stamp = p.stat().st_mtime_ns
+        stage.write_bytes(src)
+        srel = stage.relative_to(ROOT).as_posix()
+        for tool in PIPELINE:
+            args = [sys.executable, str(ROOT / "tools" / tool)]
+            if tool == "recompress_desktop.py":
+                args.append("--new-only")            # only build missing web variants
+            args += ["--page", srel]                 # this page alone: another article may be open in the editor
+            r = subprocess.run(args, capture_output=True, text=True, cwd=ROOT, timeout=1800, creationflags=_NOWIN | _LOWPRI)
+            tail = (r.stdout or r.stderr or "").strip().splitlines()[-3:]
+            log.append(f"$ {tool}\n" + "\n".join(tail))
+            if r.returncode != 0:
+                return False, "\n\n".join(log)
+        if p.stat().st_mtime_ns != stamp or p.read_bytes() != src:
+            return False, "\n\n".join(log) + "\n(the page was saved during the run: nothing written back, it runs again)"
+        out = stage.read_bytes()
+        if out != src:
+            p.write_bytes(out)
+    finally:
+        stage.unlink(missing_ok=True)
     _fit_page(page, log)
     return True, "\n\n".join(log)
 
@@ -2706,7 +3365,7 @@ def _fit_page(page, log):
     for tool in ("fit_image_tiers.py", "fit_backgrounds.py"):
         try:
             r = subprocess.run([sys.executable, str(ROOT / "tools" / tool), page], capture_output=True, text=True,
-                               cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace")
+                               cwd=ROOT, timeout=1800, encoding="utf-8", errors="replace", creationflags=_NOWIN | _LOWPRI)
             tail = (r.stdout or r.stderr or "").strip().splitlines()[-2:]
             log.append(f"$ {tool}\n" + "\n".join(tail))
         except Exception as e:
@@ -2724,10 +3383,10 @@ def _fit_page(page, log):
 # under you, because the page is not open when its file changes; the next open reads the
 # finished markup like any other.
 #
-# The live-page tools run SITE-WIDE (no page argument), so a live page is only compressed
-# when no queued live page is open either; a draft goes through draft_images.py, which works
-# on the one file, so drafts only wait for themselves. The queue is a file, so a server
-# restart does not forget it.
+# Every tool in a run works on the queued page alone (--page; they used to run SITE-WIDE, so nothing ran while
+# ANY article was open, which meant not until the editor was closed). A page now waits only for itself, and for
+# an open article that shows one of its photos, whose files the run re-cuts (2026-10-16). The queue is a file,
+# so a server restart does not forget it.
 OPEN_GRACE = 75
 _cq_lock = threading.Lock()
 _cq_open = {}                                   # rel -> {tab id: time of that tab's last heartbeat}
@@ -2738,16 +3397,45 @@ CQ_FILE = photo_suite.META / "compress_queue.json"
 def _cq_load():
     try:
         return json.loads(CQ_FILE.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except OSError:
+        return {}
+    except ValueError:
+        # a torn file is kept beside the live one, never silently read as "nothing queued" and overwritten
+        # (stress test 2026-10-23: nine queued pages vanished that way)
+        try:
+            bad = CQ_FILE.with_name("compress_queue.corrupt-%d.json" % int(time.time()))
+            if not bad.exists():
+                shutil.copy2(CQ_FILE, bad)
+                print("compress queue file unreadable; copy kept at %s" % bad.name, file=sys.stderr)
+        except Exception:
+            pass
         return {}
 
 
+def _atomic_write(path, text):
+    """write to a temp file beside it, then replace: a kill mid-write left compress_queue.json and the
+    Recent list at 0 bytes, read back as empty (stress test 2026-10-09)"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name("%s.%d.%d.tmp" % (path.name, os.getpid(), threading.get_ident()))
+    tmp.write_text(text, encoding="utf-8")
+    for i in range(6):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:                        # a reader has it open for a moment
+            if i == 5:
+                raise
+            time.sleep(0.1 * (i + 1))
+
+
 def _cq_save(q):
+    """True when the queue is on disk; a failure is the caller's to report (it used to answer ok)"""
     try:
-        CQ_FILE.parent.mkdir(parents=True, exist_ok=True)
-        CQ_FILE.write_text(json.dumps(q, indent=1), encoding="utf-8")
-    except OSError:
-        pass
+        _atomic_write(CQ_FILE, json.dumps(q, indent=1))
+        return True
+    except OSError as e:
+        print("compress queue not saved:", e, file=sys.stderr)
+        return False
 
 
 def _cq_is_open(rel, now):
@@ -2759,30 +3447,71 @@ def _cq_is_open(rel, now):
 def _cq_ready(rel, q, now):
     if _cq_is_open(rel, now):
         return False
-    if not rel.startswith("Drafts/"):
-        # site-wide tools: wait until no queued live page is open either
-        if any(_cq_is_open(o, now) for o in q if not o.startswith("Drafts/")):
-            return False
-    return True
+    # the tools touch this page alone now (a draft's run once rewrote a live page under the open editor, stress
+    # test 2026-10-16, when they ran site-wide); an open article that shows one of its photos still waits it out
+    mine = _page_photos(rel)
+    return not any(mine & _page_photos(o) for o in list(_cq_open) if o != rel and _cq_is_open(o, now))
+
+
+_PHOTOS_CACHE = {}
+_FURNITURE = {"flags", "icons", "og", "ui", "search", "continents", "Index", "Bio", "dest-cards", "city-maps", "itinerary-maps"}
+
+
+def _page_photos(rel):
+    """the photos a page shows, by what they are (<Country>/<path>/<Name>, lower case), whichever copy it names:
+    the original, the desktop file, a tier or a mobile file"""
+    f = ROOT / rel
+    try:
+        mt = f.stat().st_mtime_ns
+    except OSError:
+        return set()
+    hit = _PHOTOS_CACHE.get(rel)
+    if hit and hit[0] == mt:
+        return hit[1]
+    try:
+        txt = f.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return set()
+    out = set()
+    for u in re.findall(r'Images/[^"\',\s)]+\.(?:jpe?g|png|webp|heic)', txt, re.I):
+        p = unquote(u)[len("Images/"):]
+        p = p[len("web/"):] if p.startswith("web/") else p
+        if "/" not in p or p.split("/", 1)[0] in _FURNITURE:
+            continue                             # site furniture that many pages share (the nav's map, flags)
+        out.add(re.sub(r"-(?:mob-)?[123]x$", "", p.rsplit(".", 1)[0]).lower())
+    _PHOTOS_CACHE[rel] = (mt, out)
+    return out
 
 
 def _cq_tick():
     """One pass of the worker: compress the oldest page that is ready. Returns the page or None."""
     with _cq_lock:
         q, now = _cq_load(), time.time()
+        # a page deleted or moved while queued used to sit there as "failed" forever (stress test 2026-10-15)
+        gone = [r for r in q if not (ROOT / r).is_file()]
+        for r in gone:
+            q.pop(r, None); _cq_open.pop(r, None)
+        if gone:
+            _cq_save(q)
+            _cq_state["last"] = {"page": gone[0], "ok": False, "at": time.strftime("%H:%M"), "log": "the page is gone; dropped from the queue"}
         rel = next((r for r in sorted(q, key=lambda r: q[r].get("queued", 0))
                     if _cq_ready(r, q, now) and q[r].get("tries", 0) < 3), None)
         if not rel:
             return None
         _cq_state["running"] = rel
+        queued_at = q[rel].get("queued")
     try:
         ok, log = _run_pipeline(rel)
     except Exception as e:                       # a crash is a failed try, not a dead worker
         ok, log = False, "error: %s" % e
     with _cq_lock:
         q = _cq_load()
-        if ok:
+        if ok and q.get(rel, {}).get("queued") == queued_at:
             q.pop(rel, None)
+        elif ok:
+            # saved and queued again while this run went: that save still needs its photos cut
+            q.setdefault(rel, {"queued": time.time()})["tries"] = 0     # the file may have been reset mid-run
+            log += "\n(queued again during the run: it will run once more)"
         else:
             e = q.setdefault(rel, {"queued": time.time()})
             e["tries"] = e.get("tries", 0) + 1
@@ -2808,6 +3537,7 @@ def _cq_worker():
 # imports this module, and its copy of the worker compressed a page under the open editor (2026-10-03)
 if __name__ == "__main__" and os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
     threading.Thread(target=_cq_worker, daemon=True, name="compress-queue").start()
+    threading.Thread(target=_cache_sweep, daemon=True, name="cache-sweep").start()
 
 
 @app.route("/api/pipeline/queue", methods=["POST", "OPTIONS"])
@@ -2816,14 +3546,18 @@ def api_pipeline_queue():
     if request.method == "OPTIONS":
         return "", 204
     body = request.get_json(force=True) or {}
-    page = body.get("page") or ""
-    if not page or ".." in page or not (ROOT / page).is_file():
+    # an article page in the repo, and not empty: the old check let an absolute path (ROOT / "C:/x"
+    # is that path on Windows), styles.css or a 0-byte page into the queue (QA 2026-10-08)
+    page = _prelaunch.safe_rel(body.get("page")) if isinstance(body, dict) else None
+    if not page or (ROOT / page).stat().st_size == 0:
         abort(400)
     with _cq_lock:
         q = _cq_load()
         q[page] = {"queued": time.time(), "tries": 0}
-        _cq_save(q)
+        saved = _cq_save(q)
         _cq_open.setdefault(page, {})[str(body.get("tab") or "_")] = time.time()   # the save came from the open editor
+    if not saved:                                     # it answered ok over a queue that never reached the disk (stress 2026-10-09)
+        return jsonify({"ok": False, "error": "the compression queue could not be saved"}), 500
     return jsonify({"ok": True, "queued": sorted(q)})
 
 
@@ -2834,8 +3568,29 @@ def api_editor_open():
     if request.method == "OPTIONS":
         return "", 204
     d = request.get_json(force=True, silent=True) or {}
-    page, tab = d.get("page") or "", str(d.get("tab") or "_")
+    if not isinstance(d, dict):
+        d = {}
+    page, tab = d.get("page") or "", str(d.get("tab") or "_")[:80]
+    if not isinstance(page, str):
+        return jsonify({"ok": True, "compressing": False})
+    canon = _prelaunch.safe_rel(page) if page else ""
+    if page and not canon:
+        if d.get("closing"):                                        # a page that is gone: let go of it anyway
+            with _cq_lock:
+                for k in [k for k in _cq_open if k.replace("\\", "/").lower() == page.replace("\\", "/").lower()]:
+                    _cq_open.pop(k, None)
+        return jsonify({"ok": True, "compressing": False})          # not an article: nothing to track
+    page = canon
     with _cq_lock:
+        # tabs that stopped beating long ago are gone (a closed laptop, a crashed tab); without this
+        # the map only grew (QA 2026-10-08)
+        now = time.time()
+        for rel in list(_cq_open):
+            live = {t: at for t, at in _cq_open[rel].items() if now - at < 3600}
+            if live:
+                _cq_open[rel] = live
+            else:
+                _cq_open.pop(rel, None)
         if d.get("closing"):
             _cq_open.get(page, {}).pop(tab, None)        # this tab only; another may still have it
             if not _cq_open.get(page):
@@ -2864,8 +3619,10 @@ def _note_recent(rel):
         rec[rel] = time.time()
         _articles_cache["at"] = 0                # the Recent list must show this open at once
         keep = dict(sorted(rec.items(), key=lambda kv: -kv[1])[:40])
-        RECENT.parent.mkdir(exist_ok=True)
-        RECENT.write_text(json.dumps(keep, indent=1), encoding="utf-8")
+        try:
+            _atomic_write(RECENT, json.dumps(keep, indent=1))
+        except OSError:
+            pass
 
 
 _SKIP_TOP = {"archive", "Images", "tools", "workflows", "_content", "assets", "fonts", ".tmp", "node_modules", ".git", ".claude"}
@@ -3017,6 +3774,44 @@ def find_card(h, name):
     return None
 
 
+def _xm_page(rel):
+    page = (ROOT / rel).resolve()
+    return page if ROOT.resolve() in page.parents and page.suffix == ".html" and page.is_file() else None
+
+
+@app.route("/api/explore")
+def api_explore():
+    """the open article's Explore More slots: the three the rules (or Kevin's pins) chose, every page a slot can be
+    switched to, and the block as it would be written (tools/explore_more.py; Kevin, 2026-10-23)"""
+    import explore_more as xm
+    rel = (request.args.get("rel") or "").replace("\\", "/").lstrip("./")
+    if not _xm_page(rel):
+        return jsonify({"ok": False, "error": "no such article"}), 404
+    cat, pins = xm.catalog(), xm.load_pins()
+    return jsonify({"ok": True, "rel": rel, "slots": xm.slot_info(rel, cat, pins), "pinned": (pins.get(rel) or [None, None, None])[:3],
+                    "catalog": [{"rel": e["rel"], "title": e["title"], "kind": e["kind"], "label": xm.KIND_LABEL[e["kind"]], "country": e["name"], "draft": e["draft"]}
+                                for e in cat.values() if e["rel"] != rel],
+                    "block": xm.block_html(rel, xm.picks(rel, cat, pins))})
+
+
+@app.route("/api/explore/set", methods=["POST", "OPTIONS"])
+def api_explore_set():
+    """pin (or unpin) the three slots of a page; the pins live in tools/explore_pins.json and the page itself is
+    redrawn by the editor, which saves it the normal way"""
+    if request.method == "OPTIONS":
+        return "", 204
+    import explore_more as xm
+    d = request.get_json(force=True) or {}
+    rel = (d.get("rel") or "").replace("\\", "/").lstrip("./")
+    if not _xm_page(rel):
+        return jsonify({"ok": False, "error": "no such article"}), 404
+    cat = xm.catalog()
+    slots = [t if isinstance(t, str) and t in cat and t != rel else None for t in (list(d.get("slots") or []) + [None] * 3)[:3]]
+    pins = xm.set_pins(rel, slots)
+    return jsonify({"ok": True, "rel": rel, "slots": xm.slot_info(rel, cat, pins), "pinned": (pins.get(rel) or [None, None, None])[:3],
+                    "block": xm.block_html(rel, xm.picks(rel, cat, pins))})
+
+
 @app.route("/api/thumbs")
 def api_thumbs():
     """The open article's thumbnails as they are today, one per slot, for the photo sidebar's
@@ -3113,6 +3908,11 @@ def _compress_status():
 if __name__ == "__main__":
     # 127.0.0.1 rather than localhost: localhost resolves ::1 first on this
     # box (Bonjour) and every request pays a ~2s IPv6 timeout
-    print(f"Photo editor: http://127.0.0.1:5003   sources: {[s['label'] for s in SOURCES]}")
+    print(f"Photo editor: http://127.0.0.1:{int(os.environ.get('PHOTO_EDITOR_PORT', 5003))}   sources: {[s['label'] for s in SOURCES]}")
     # threaded: thumbnail generation must not block imports/saves behind it
+    # an idle connection is closed after 2 minutes: 500 idle sockets pinned 504 threads and 2,000 handles
+    # until the client let go (stress test 2026-10-09)
+    from werkzeug.serving import WSGIRequestHandler
+    WSGIRequestHandler.timeout = 120
+    _sweep_stale_temps()
     app.run(port=int(os.environ.get("PHOTO_EDITOR_PORT", 5003)), debug=False, threaded=True)   # a test instance runs beside the live one

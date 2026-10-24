@@ -8,7 +8,9 @@ is what the launch runs when it says retire. The country becomes an In-Depth Gui
 Salvador is, and nothing on the site points at the field notes any more:
 
   1. destinations.html   the country's card opens <slug>/index.html and wears the In-Depth Guide
-                         badge; the map's entry for it opens the same page
+                         badge, says Read Guide; the map's entry for it opens the same page
+  1b. index.html         the home page's Explore tile opens the country page, counts its stories and says
+                         Read Guide (Kevin, 2026-10-24)
   2. publish_country.py  FULL_GUIDES gains the country, so every nav built from now on lists it
                          as a guide (green dot) and not as field notes
   3. the nav             regenerated on every live page from destinations.html + FULL_GUIDES
@@ -17,6 +19,10 @@ Salvador is, and nothing on the site points at the field notes any more:
                          keeps nothing of the old anchor, the country page has none of them
   5. the page itself     becomes a redirect to the country page (noindex, canonical, meta refresh
                          and location.replace), so old links and bookmarks still land somewhere
+  5b. guide cards       a kept field-notes page gets a card under each city heading whose city now has its own
+                         guide (tools/guide_cards.py; Kevin, 2026-10-23)
+  6b. Explore More       the three related-article cards at the end of every live page are picked again
+                         (tools/explore_more.py; Kevin, 2026-10-23)
   6. posts + count      tools/sync_guides.py: its articles join the posts page's Guides section, its
                          field-notes card leaves, and the home hero's "N and counting." is recounted
   7. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
@@ -25,7 +31,7 @@ It refuses to run until <slug>/index.html is live: retiring first would point th
 page that does not exist yet. archive/ is never touched (see the publish protocol memory).
 
 --keep-field-notes (Kevin, 2026-10-07, Greece: "the only greek articles that are live are field notes, meteora
-and thessaloniki"): the country becomes an In-Depth Guide (steps 1, 2, 3, 6, 7) but its field notes stay a live
+and thessaloniki"): the country becomes an In-Depth Guide (steps 1, 2, 3, 5b, 6, 7) but its field notes stay a live
 page that the site keeps linking to (steps 4 and 5 are skipped). That is the "Keep the field notes live" launch.
 
     python tools/retire_field_notes.py armenia --dry-run     # what it would change (the tab shows this)
@@ -111,7 +117,8 @@ def plan(slug):
             "in_sitemap": ("/%s/field-notes.html" % slug) in sm,
             "steps": [
                 "The %s card on the destinations page and its map entry open the country page, with the In-Depth Guide badge" % name,
-                "%s joins the nav as a guide (green dot) on all %d pages that carry the nav" % (name, nav_pages),
+                ("%s joins the nav as a guide (green dot) on all %d pages that carry the nav" % (name, nav_pages)) if nav_pages
+                else "%s joins the nav as a guide (green dot) once pages carry the nav (none do yet)" % name,
                 "%d other link(s) on %d page(s) move to the country page" % (sum(i["links"] for i in inbound), len(inbound)),
                 "%s becomes a redirect to %s/index.html, so old links still land" % (page, slug),
                 "The sitemap and site search drop it"]}
@@ -151,13 +158,16 @@ def apply(slug, dry=False, force=False, keep=False):
         new = card.group(0).replace('<div class="art-card-info">',
                                     '<span class="art-card-badge"><span class="art-card-badge-dot"></span>In-Depth Guide</span>\n        <div class="art-card-info">')
         d2 = d2.replace(card.group(0), new)
-    btn = re.search(r"(location\.href='%s/index\.html'.*?<span class=\"art-card-btn\">)Read Notes(</span>)" % re.escape(slug), d2, re.S)
-    if btn:                                           # a guide's card says Explore, like El Salvador's
-        d2 = d2[:btn.start()] + btn.group(1) + "Explore" + btn.group(2) + d2[btn.end():]
+    btn = re.search(r"(location\.href='%s/index\.html'.*?<span class=\"art-card-btn\">)(?:Read Notes|Explore)(</span>)" % re.escape(slug), d2, re.S)
+    if btn:                                           # a guide's card says Read Guide (Kevin, 2026-10-24)
+        d2 = d2[:btn.start()] + btn.group(1) + "Read Guide" + btn.group(2) + d2[btn.end():]
     if d2 != d:
         log.append("destinations.html: card + map entry -> %s/index.html, In-Depth Guide badge" % slug)
         if not dry:
             io.open(ROOT / "destinations.html", "w", encoding="utf-8", newline="").write(d2)
+    # 1b. the home page's tile for the country opens the country page and reads as a guide (Kevin, 2026-10-24:
+    #     "Turkiye card on home should link to the index card")
+    log += home_tile(slug, dry)
     # 2. FULL_GUIDES
     pcf = TOOLS / "publish_country.py"
     src = io.open(pcf, encoding="utf-8", newline="").read()
@@ -192,7 +202,7 @@ def apply(slug, dry=False, force=False, keep=False):
         log.append("nav regenerated on the %d pages that carry it" % p["nav_pages"])
     if keep:                                          # the field notes stay a live page: links to them stay
         log.append("field notes kept live: other links and %s left as they are" % p["page"])
-        return log + _finish(dry)
+        return log + _finish(dry, p["page"])
     # 4. every other link
     rx = link_re(slug)
     moved = 0
@@ -212,15 +222,50 @@ def apply(slug, dry=False, force=False, keep=False):
     log.append("%s -> redirect to index.html" % p["page"])
     if not dry:
         io.open(ROOT / p["page"], "w", encoding="utf-8", newline="").write(STUB.format(name=name, domain=DOMAIN, slug=slug))
-    return log + _finish(dry)
+    return log + _finish(dry, p["page"])
 
 
-def _finish(dry):
+def home_tile(slug, dry=False):
+    """index.html's Explore tile for `slug`: href to the country page, "N stories" for the sub line, Read Guide"""
+    h = _read("index.html")
+    m = re.search(r'<a class="tile" href="%s/(?:field-notes|index)\.html">.*?</a>' % re.escape(slug), h, re.S)
+    if not m:
+        return ["index.html: no tile for %s" % slug]
+    n = len([p for p in (ROOT / slug).glob("*.html") if p.name not in ("index.html",) and 'http-equiv="refresh"' not in p.read_text(encoding="utf-8")[:4000]])
+    t = m.group(0).replace('href="%s/field-notes.html"' % slug, 'href="%s/index.html"' % slug)
+    t = re.sub(r'<div class="sub">[^<]*</div>', '<div class="sub">%d stories</div>' % n, t, count=1)
+    t = t.replace('<span class="rn">Read Notes</span>', '<span class="rn">Read Guide</span>')
+    if t == m.group(0):
+        return ["index.html: the %s tile already opens the country page" % slug]
+    if not dry:
+        io.open(ROOT / "index.html", "w", encoding="utf-8", newline="").write(h[:m.start()] + t + h[m.end():])
+    return ["index.html: %s tile -> %s/index.html, %d stories, Read Guide" % (slug, slug, n)]
+
+
+def _finish(dry, page=None):
     log = []
+    # 5b. guide cards (Kevin, 2026-10-23: "add field notes badges as part of launch steps"): a field-notes section
+    #     whose city now has its own published guide gets the card under its heading (tools/guide_cards.py). A
+    #     retired page is a redirect by now, so only a kept page gets them.
+    if page and (ROOT / page).is_file():
+        import guide_cards
+        if guide_cards.published(ROOT / page):
+            rep = guide_cards.process(ROOT / page, dry)
+            for sec, guide, what in rep:
+                log.append("guide card on %s#%s -> %s: %s" % (page, sec, guide, what))
+            if not rep:
+                log.append("guide cards: no section of %s links to a published guide" % page)
     # 6. the posts page lists the country's articles under Guides (a retired country's field-notes card
     #    leaves), and the home hero's "N and counting." is recounted (tools/sync_guides.py; Kevin, 2026-10-02)
     import sync_guides
     log += sync_guides.run(dry)
+    # 6b. Explore More (Kevin, 2026-10-23: "when I publish a new article the website should re-evaluate these
+    #     thumbnails"): the three cards at the end of every live page are picked again, pins kept
+    import explore_more as xm
+    cat, pins, n = xm.catalog(), xm.load_pins(), 0
+    for r in xm.live_pages():
+        n += xm.apply_page(r, cat, pins, dry)[1] == "ok"
+    log.append("Explore More cards picked again on %d pages" % n)
     # 7. sitemap + search
     for tool in ("gen_sitemap.py", "gen_search_index.py"):
         if not (TOOLS / tool).is_file():
@@ -232,6 +277,7 @@ def _finish(dry):
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")      # this box's console is cp1252: ’ came out as �
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if not args:
         print(__doc__)

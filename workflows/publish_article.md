@@ -79,6 +79,11 @@ Everything in this stage moves words around, so all of it happens before prose.
 
 - [ ] Hero chosen (`python tools/hero_picker.py`)
 - [ ] Section order and day grouping final
+- [ ] Every city or guide page opens with an intro BEFORE the contents box, the way
+      `greece/thessaloniki.html` does: a bold one-line verdict, what the place is like,
+      an honest expectation, then how long to give it and where it sits in the trip.
+      Paragraphs above the first `<h2>` land above the contents box. No "Practical
+      Notes" section: those facts belong in the intro (Kevin, 2026-10-10)
 - [ ] Highlights block present and correct
 - [ ] De-templated: no two pages share a skeleton sentence
 - [ ] Table of contents correct (this broke once sitewide, commit 5115557)
@@ -110,7 +115,9 @@ names exists, and re-running it changes nothing.
 Then `python tools/fit_image_tiers.py <page>` (added 2026-09-30, after Kevin found blurry photos on
 Yerevan): it renders the page, measures how wide each photo is actually drawn (desktop and phone,
 cover-cropping included), cuts the 1x/2x/3x files again from the original at those widths and
-writes `sizes` to match. `tier_srcsets` only guesses from the photo's shape, and the tiers
+writes `sizes` to match. A photo whose files are already cut at those widths, after its original was
+last written, is skipped (2026-10-16: it used to re-cut every photo of the page on every run, about
+10 s each); `--force` cuts them all again. `tier_srcsets` only guesses from the photo's shape, and the tiers
 `gen_image_tiers` cuts are anchored on the old desktop copy (600 px for a pair photo), which is
 too small for a photo shown full width. The Launch tab's render check flags any photo still softer
 than the screen.
@@ -175,6 +182,26 @@ retire, run `python tools/retire_field_notes.py <slug>` once the country page is
 becomes an In-Depth Guide like El Salvador (destinations card and map, `FULL_GUIDES`, the nav on
 every page), every other link moves to the country page, and the field notes become a redirect.
 It refuses to run before the country page exists; `--dry-run` shows what it will do.
+When it says keep, run `python tools/retire_field_notes.py <slug> --keep-field-notes` instead.
+
+**Guide cards (added 2026-10-23).** Either way, the same run ends with `tools/guide_cards.py` on a
+kept field-notes page: each city section whose guide is now live gets the guide card under its
+heading (cover photo and title from the country page's card, plus "Want the detailed version? I wrote
+a full dedicated guide for <City> with maps, photos and the places I went."). A section is matched to
+its guide by the links in it, else by name (`#athens` → `athens.html`, `#naxos` and `#ios` →
+`naxos-ios.html`), else by `ALIASES` in the tool (`#sailing` → `blue-cruise.html`). The Launch tab's
+"Field notes point to the new guides" check lists the sections that will get a card, and flags a live
+guide with no card (its button runs the tool). So the country page card has to exist first: the
+card's title and photo come from it.
+
+**Explore More (added 2026-10-23).** Every live article and field-notes page ends with three related
+articles ("Explore More": three photo cards on desktop and tablet, three thumbnail rows on a phone).
+`tools/explore_more.py` picks them by Kevin's rules (same country's itinerary and top 10, then its
+articles, then the neighbors' itinerary and top 10, articles and field notes; nearest first) and both
+launch tools run it over the whole site at the end, because a new page changes everyone's picks. A slot
+Kevin switched in the editor (the ⇄ Explore More panel next to Thumbnails) is a pin in
+`tools/explore_pins.json` and survives every rerun. The Launch tab's "Explore More cards at the end of
+every page" check flags a live page without the block or a card pointing at a page that is not there.
 
 Pick the destination-card photo first. It is the one publish decision that needs
 Kevin: the default is `Images/dest-cards/<Name>_1.JPG`, but he often names a

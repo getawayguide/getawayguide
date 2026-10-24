@@ -18,8 +18,9 @@ from html import unescape
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # chrome to exclude from the searchable body text
 SKIP_TAGS = {"script", "style", "nav", "footer", "head", "noscript", "svg"}
-SKIP_IDS = {"mobile-nav-drawer", "toc-b"}
-SKIP_CLASS = ("country-breadcrumb", "country-places-row", "mobile-nav", "mobile-drawer", "toc-")
+SKIP_IDS = {"mobile-nav-drawer", "toc-b", "explore-more"}   # the Explore More cards point elsewhere; not this page's text
+SKIP_CLASS = ("country-breadcrumb", "country-places-row", "mobile-nav", "mobile-drawer", "toc-",
+              "gb-card")   # the field-notes guide card (tools/guide_cards.py) is a pointer, not prose
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input",
         "link", "meta", "param", "source", "track", "wbr"}
 

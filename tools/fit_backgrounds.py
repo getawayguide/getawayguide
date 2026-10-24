@@ -172,7 +172,7 @@ _src_cache = {}
 SRC_CACHE = ROOT / ".tmp" / "bgfit_sources.json"
 
 
-def _open(path, angle):
+def _open(path, angle, flip=""):
     if str(path).lower().endswith((".heic", ".heif")):
         # the remembered source can be an iPhone original; importing hero_picker registers the HEIC
         # reader, and a cache hit skips the search that used to import it (Armenia launch, 2026-10-02)
@@ -180,6 +180,9 @@ def _open(path, angle):
     im0 = Image.open(path)
     icc = im0.info.get("icc_profile")
     im = ImageOps.exif_transpose(im0).convert("RGB")
+    if flip:
+        import hero_picker as HP
+        im = HP.apply_flip(im, flip)              # before the straighten, as the picker cuts it
     if abs(angle) > 1e-3:
         import hero_picker as HP
         im = HP.straighten(im, angle)
@@ -202,43 +205,43 @@ def source_for(img, rel):
         known = {}
     k = known.get(img)
     if k and k.get("mtime") == mt and Path(k["path"]).exists():
-        _src_cache[key] = _open(k["path"], k.get("angle", 0.0))
+        _src_cache[key] = _open(k["path"], k.get("angle", 0.0), k.get("flip", ""))
         return _src_cache[key]
     web = ImageOps.exif_transpose(Image.open(ROOT / img)).convert("RGB")
-    cands = []                                       # (path, angle)
+    cands = []                                       # (path, angle, flip)
     try:
         import hero_picker as HP
         hit = HP._web_original(img, rel)
         if hit:
-            cands.append((str(HP.resolve_src(hit[0])), float(hit[1] or 0)))
+            cands.append((str(HP.resolve_src(hit[0])), float(hit[1] or 0), hit[3] if len(hit) > 3 else ""))
     except Exception as e:
         print("   (no original via the Hero Picker for %s: %s)" % (img, str(e)[:80]))
     stem = re.sub(r"(-[123]x|-2x|-mob(-1x)?)$", "", Path(img).stem)
     for f in (ROOT / img).parent.glob(stem + "*.*"):
         if f.suffix.lower() in (".jpg", ".jpeg", ".webp", ".png") and not re.search(r"-\d+w$|-mob", f.stem):
-            cands.append((str(f), 0.0))
+            cands.append((str(f), 0.0, ""))
     ref = web.resize((64, max(1, round(64 * web.height / web.width))))
-    best_path, best_angle, best_w = str(ROOT / img), 0.0, web.width
+    best_path, best_angle, best_flip, best_w = str(ROOT / img), 0.0, "", web.width
     opened = []
-    for path, angle in cands:
+    for path, angle, flip in cands:
         try:
-            opened.append((path, angle) + _open(path, angle))
+            opened.append((path, angle, flip) + _open(path, angle, flip))
         except Exception:
             continue
-    for path, angle, im, icc in sorted(opened, key=lambda c: -c[2].width):
+    for path, angle, flip, im, icc in sorted(opened, key=lambda c: -c[3].width):
         if abs(im.width / im.height - web.width / web.height) > 0.02 or im.width <= best_w:
             continue
         d = ImageStat.Stat(ImageChops.difference(im.resize(ref.size), ref)).mean
         if sum(d) / 3 <= 10:                         # the same photo, same framing
-            best_path, best_angle, best_w = path, angle, im.width
+            best_path, best_angle, best_flip, best_w = path, angle, flip, im.width
             break
-    known[img] = {"mtime": mt, "path": best_path, "angle": best_angle}
+    known[img] = {"mtime": mt, "path": best_path, "angle": best_angle, "flip": best_flip}
     try:
         SRC_CACHE.parent.mkdir(parents=True, exist_ok=True)
         SRC_CACHE.write_text(json.dumps(known, indent=0, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
-    _src_cache[key] = _open(best_path, best_angle)
+    _src_cache[key] = _open(best_path, best_angle, best_flip)
     return _src_cache[key]
 
 
@@ -301,10 +304,35 @@ def refresh(web_file):
     src, icc = source_for(img, "")
     for f in files:
         w = min(int(re.search(r"-(\d+)w$", f.stem).group(1)), src.width)
-        im = src if w == src.width else src.resize((w, round(src.height * w / src.width)), Image.LANCZOS)
+        im = _cut(img, src, w)
         im.save(f, "WEBP", quality=WEBP_Q, method=6, **({"icc_profile": icc} if icc else {}))
     print("refreshed %d file(s) for %s" % (len(files), img))
     return len(files)
+
+
+def hero_sharpen(img):
+    """The Sharpen amount the cover picker saved for this hero (0 for anything else): a web copy
+    Images/web/<Folder>/hero-<slug>.webp belongs to the pick with that slug whose country is that folder."""
+    import json
+    m = re.match(r"Images/web/([^/]+)/hero-(.+?)(?:-2x|-mob(?:-1x)?)?\.(?:webp|jpe?g)$", Path(img).as_posix())
+    if not m:
+        return 0.0
+    try:
+        import hero_picker as HP
+        picks = json.loads((ROOT / ".tmp" / "hero_picks.json").read_text(encoding="utf-8"))
+        for p in picks.values():
+            if isinstance(p, dict) and p.get("slug") == m.group(2) and HP._web_country(p.get("country", "")) == m.group(1):
+                return float(p.get("sharpen") or 0)
+    except Exception:
+        pass
+    return 0.0
+
+
+def _cut(img, src, w):
+    """one width of a web copy, sharpened by the hero's Sharpen setting after the resize"""
+    import gen_hero_variants as GHV
+    im = src if w == src.width else src.resize((w, round(src.height * w / src.width)), Image.LANCZOS)
+    return GHV.sharpen(im, hero_sharpen(img))
 
 
 def file_for(img, w):
@@ -319,6 +347,7 @@ def run(rels, dry=False):
     pages, ivals, srcs = {}, {}, {}
     for rel in rels:
         raw = (ROOT / rel).read_text(encoding="utf-8", newline="")
+        stamp = (ROOT / rel).stat().st_mtime_ns
         clean = re.sub(r'\s*<style id="bg-fit">.*?</style>', "", raw, flags=re.S)
         clean = re.sub(BAND_SRC, "", clean)              # a previous run's band sources for hero images
         tagged, count = tag_page(clean, classes)
@@ -362,7 +391,7 @@ def run(rels, dry=False):
         f = file_for(img, w)
         if not dry and (not f.exists() or f.stat().st_mtime < (ROOT / img).stat().st_mtime):
             src, icc = srcs[img]
-            im = src if w == src.width else src.resize((w, round(src.height * w / src.width)), Image.LANCZOS)
+            im = _cut(img, src, w)
             im.save(f, "WEBP", quality=WEBP_Q, method=6, **({"icc_profile": icc} if icc else {}))
             made[0] += 1
         return f
@@ -436,6 +465,9 @@ def run(rels, dry=False):
         if not items:
             out = raw
         if not dry and out != raw:
+            if (ROOT / rel).stat().st_mtime_ns != stamp:   # saved meanwhile: that save wins (stress test 2026-10-15)
+                print("! %s changed while this ran; its background rules were not rewritten (run again)" % rel)
+                sys.exit(3)
             (ROOT / rel).write_text(out, encoding="utf-8", newline="")
         print("%s%s: %d photo(s) fitted (%d hero image(s))" % ("[dry] " if dry else "", rel, len(items), len(pics)))
     files = sum(len(v) for v in chosen.values())
@@ -456,6 +488,7 @@ def main():
         for rel in rels:
             p = ROOT / rel
             h = p.read_text(encoding="utf-8", newline="")
+            stamp = p.stat().st_mtime_ns
 
             def fix(m):
                 n, href = m.group(1), m.group(3)
@@ -463,6 +496,8 @@ def main():
                 return '[data-bgfit="%s"]%s{background-image:url(\'%s\')!important}' % (n, scope_for(h, n, stem + ".x"), href)
             new = re.sub(r'\[data-bgfit="(\d+)"\](\[style\*="[^"]*"\])?\{background-image:url\(\'([^\']+)\'\)!important\}', fix, h)
             if new != h:
+                if p.stat().st_mtime_ns != stamp:
+                    print("! %s changed while this ran; not rewritten" % rel); sys.exit(3)
                 p.write_text(new, encoding="utf-8", newline="")
             print("%s: %d rule(s) scoped" % (rel, len(re.findall(r'\]\[style\*=', new))))
         return 0

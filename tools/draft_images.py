@@ -19,6 +19,7 @@ Usage:
     python tools/draft_images.py <draft> --dry-run      # show what the tools would do
 """
 import io
+from urllib.parse import unquote
 import re
 import subprocess
 import sys
@@ -54,14 +55,18 @@ def main():
     up = "../" * depth
     country = draft.parent.name
     live_dir = ROOT / country
-    if not live_dir.is_dir():
-        sys.exit(f"! no published folder {country}/ to stage the draft in")
+    made_dir = not live_dir.is_dir()
+    if made_dir:
+        # a country with no published page yet (New Zealand, the field-notes drafts) still needs its photos cut:
+        # the folder is made for the run and removed if it is still empty after (stress test 2026-10-23)
+        live_dir.mkdir()
     tmp = live_dir / f"_draft-{draft.stem}.html"
 
     src = io.open(draft, encoding="utf-8", newline="").read()
+    stamp = draft.stat().st_mtime_ns          # a save while the tools run must win over this run's write-back
     # the country the tier tool works on is whichever Images/<Country>/ the body draws from
     m_c = re.search(r'Images/(?!web/)([^/"]+)/', src)
-    country_name = m_c.group(1) if m_c else None
+    country_name = unquote(m_c.group(1)) if m_c else None       # "El%20Salvador" found no folder (stress test 2026-10-23)
     staged = src.replace(f"{up}Images/", "../Images/")
     # the tools scan from the literal marker class="article-body"; the artifact template's body
     # is "artbody", so a hidden marker span goes in right after its opening tag (and out again)
@@ -81,7 +86,9 @@ def main():
                     print('\n== ' + tool[0] + '\n   skipped: no Images/<Country>/ path in the body')
                     continue
                 tool = [t.replace("{country}", country_name) for t in tool]
-            cmd = [sys.executable, str(ROOT / "tools" / tool[0])] + tool[1:] + (["--dry-run"] if dry else [])
+            # --page: the staged copy alone. Without it each tool also rewrote any OTHER page with unprocessed
+            # photos, an article open in the editor among them (2026-10-16)
+            cmd = [sys.executable, str(ROOT / "tools" / tool[0])] + tool[1:] + ["--page", tmp.relative_to(ROOT).as_posix()] + (["--dry-run"] if dry else [])
             print(f"\n== {' '.join(tool)}")
             r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
             lines = [l for l in (r.stdout + r.stderr).splitlines() if tmp.name in l or "NEW" in l or "MISSING" in l or "encoded" in l or "page(s)" in l or "Traceback" in l or "Error" in l]
@@ -91,6 +98,13 @@ def main():
         if not dry:
             out = io.open(tmp, encoding="utf-8", newline="").read()
             out = out.replace("../Images/", f"{up}Images/").replace(MARK, "", 1)
+            if not draft.exists():
+                sys.exit("! the draft was deleted while the pipeline ran; nothing written back")
+            if draft.stat().st_mtime_ns != stamp:
+                # the editor saved it meanwhile: writing the staged copy back would drop that save (stress test
+                # 2026-10-15). Exit 3 = run again once the page is closed; the variants on disk are kept.
+                print("! the draft changed while the pipeline ran; not written back (it will run again)")
+                sys.exit(3)
             draft.write_text(out, encoding="utf-8", newline="")
             pics = len(re.findall(r"<picture>", out))
             orig = len(re.findall(r'<img[^>]*src="[^"]*Images/(?!web/)', out[out.find('class="artbody"'):]))
@@ -98,6 +112,11 @@ def main():
     finally:
         if tmp.exists():
             tmp.unlink()
+        if made_dir:
+            try:
+                live_dir.rmdir()                  # only when still empty
+            except OSError:
+                pass
             print(f"removed {tmp.relative_to(ROOT)}")
 
 

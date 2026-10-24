@@ -180,25 +180,49 @@
 
   // ------------------------------------------------------------------ boot
   async function boot(rel) {
+    // threads whose save failed exist only in this tab: the same article opened again (a merge reopen)
+    // used to lose them (stress test 2026-10-09)
+    const carry = state._saveFail && state.rel === rel ? state.comments.threads.slice() : [];
+    // a half-written comment belongs to the article it was started on: carried over, it posted the old
+    // article's anchor under the new one (QA 2026-10-08)
+    if (state.draft) { try { unwrapMark(state.draft.id); } catch (e) {} state.draft = null; }
     state.rel = rel; state.slug = null; state.changes = []; state.st = {}; state.last = {}; state.comments = { threads: [] }; state.hidden = []; state.active = null; state.lint = [];
+    // two opens in quick succession both marked every change, so the sentence read three times over
+    const gen = state._bootGen = (state._bootGen || 0) + 1;
     let r;
     try { r = await (await fetch(API + '/review/for?rel=' + encodeURIComponent(rel), { cache: 'no-store' })).json(); }
     catch (e) { console.warn('review: server not reachable', e); return; }
+    if (gen !== state._bootGen) return;
     state.slug = r.slug; state.key = r.comments_key; state.comments = r.comments || { threads: [] };
-    state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
+    { const have = new Set(state.comments.threads.map(t => t.id)), gone = new Set(state.comments.deleted || []);
+      const add = carry.filter(t => !have.has(t.id) && !gone.has(t.id));
+      if (add.length) { state.comments.threads.push(...add); setTimeout(saveComments, 0); } }
+    // a proposal lives in the article as tracked-change marks, which a fresh open does not have: its thread
+    // goes back to "sent" so the poll below proposes it again (the card used to show "Claude proposed" with
+    // no tick, no Use and no Send; stress test 2026-10-09)
+    state.comments.threads.forEach(t => { if (isTask(t) && t.status === 'proposed' && (t.edit || t.edits)) t.status = 'sent'; });
+    state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label, created: r.created };   // cards show the round's time (QA 2026-10-08: dropped here)
     state.decided = r.decided || [];
     if (state.awaitingFile) { state.view = 'contextual'; press('rv-v-ctx', true); press('rv-v-list', false); }
     state.awaitingFile = false;
     snapshotDisk(rel);                                   // so a later change on disk can be noticed
+    // marks drawn by an earlier boot of this article come off first: booted twice, the round's marks were
+    // drawn inside the first set, every change nested in itself (QA 2026-10-08)
+    { const e0 = ed(); if (e0.querySelector('del.rl, ins.rl, sup.rl-n')) {
+        e0.querySelectorAll('sup.rl-n, ins.rl').forEach(x => x.remove());
+        e0.querySelectorAll('del.rl').forEach(x => unwrap(x)); e0.normalize(); } }
     if (r.slug) {
       state.changes = r.changes;
-      for (const id in r.decisions) state.last[id] = r.decisions[id];
+      for (const id in r.decisions) { state.last[id] = r.decisions[id]; if (r.decisions[id] === false) state.st[id] = false; }   // a saved Reject stays rejected (stress test 2026-10-23)
       injectMarks();
     }
     anchorComments();
-    if (H()) H().reset();
+    // the undo history starts over only when a round's marks were drawn into the article: the reset ran on
+    // every answer, seconds after opening, and wiped the edits made meanwhile (stress test 2026-10-09)
+    if (H() && r.slug && state.changes.length) H().reset();
     renderAll();
     if (state.comments.threads.some(isTask)) { startPolling(); pollTasks(); }
+    else if (state.comments.threads.length || state.changes.length) startPolling();   // replies from another tab reach a tab whose pane is shut (stress test 2026-10-23)
     // something to review opens the margin; otherwise the photo sidebar is the default
     // (Kevin, 2026-09-26: "default to photos bar open unless there are any comments to review")
     const pendingReview = state.changes.some(c => state.last[c.id] === undefined) || state.comments.threads.some(t => !t.resolved);
@@ -230,6 +254,51 @@
     return hits && hits.length === 1 ? hits[0] : null;
   }
   window.__rvLocate = locate;               // test seam
+  // WHERE a change's text is, as [key, index], or null. A find that trimTags shortened ("…</h2>" was what made
+  // it unique in the file) can occur more than once in the live HTML, and a bare phrase can also sit in the
+  // editor's own table of contents or inside an attribute (a map pin's data-name): the first hit was marked
+  // and "applied" at the wrong spot (stress test 2026-10-23). The untrimmed find places it when it can;
+  // otherwise the hit has to be the only one outside the chrome and outside a tag.
+  function chromeRanges(html) {
+    const out = [], re = /<div[^>]*\b(?:class="[^"]*\bed-toc\b[^"]*"|id="toc-b")[^>]*>/g; let m;
+    while ((m = re.exec(html))) {
+      let depth = 1, i = m.index + m[0].length;
+      const t = /<\/?div\b[^>]*>/g; t.lastIndex = i; let x;
+      while (depth && (x = t.exec(html))) { depth += x[0][1] === '/' ? -1 : 1; i = x.index + x[0].length; }
+      out.push([m.index, i]);
+    }
+    return out;
+  }
+  function hitsOf(html, key) { const a = []; let i = -1; while ((i = html.indexOf(key, i + 1)) >= 0) a.push(i); return a; }
+  function locateAt(html, needle, full) {
+    if (!needle) return null;
+    if (full && full !== needle) {
+      const k = locate(html, full);
+      if (k && hitsOf(html, k).length === 1) {
+        const inner = locate(k, needle);
+        if (inner) return [inner, html.indexOf(k) + k.indexOf(inner)];
+      }
+    }
+    const key = locate(html, needle); if (!key) return null;
+    const chrome = chromeRanges(html);
+    const inTag = i => key.indexOf('>') < 0 && html.lastIndexOf('<', i) > html.lastIndexOf('>', i);
+    const ok = hitsOf(html, key).filter(i => !chrome.some(([a, b]) => i >= a && i < b) && !inTag(i));
+    return ok.length === 1 ? [key, ok[0]] : null;
+  }
+  window.__rvLocateAt = locateAt;
+  // A Claude answer is placed only where its text occurs once, and not inside a pending change. Matched
+  // twice, it landed on the first one, not the one commented on; matched inside a round change's
+  // deletion, accepting both lost Claude's edit (QA 2026-10-08). Otherwise the card offers it (Use).
+  function soleSpot(h, key) {
+    const i = h.indexOf(key);
+    if (i < 0 || h.indexOf(key, i + 1) >= 0) return false;
+    const pre = h.slice(0, i);
+    for (const tag of ['del', 'ins']) {
+      const o = pre.lastIndexOf('<' + tag + ' class="rl');
+      if (o >= 0 && pre.lastIndexOf('</' + tag + '>') < o) return false;
+    }
+    return true;
+  }
   function injectMarks(only) {               // only: just these changes, numbered after the existing ones
     const e = ed(); let html = e.innerHTML;
     const spans = [];
@@ -242,12 +311,14 @@
       if (c.kind === 'grammar') { trimTags(c); c.struct = !balanced(c.find) || !balanced(c.replace); }
       if (c.kind === 'insert') c.struct = false;
       if (c.kind === 'insert') {                 // zero-width span right after the anchor
-        const key = locate(html, c.after); if (!key) { state.hidden.push(c.id); continue; }
-        const i = html.indexOf(key) + key.length; spans.push([i, i, c, '']); continue;
+        const at = locateAt(html, c.after); if (!at) { state.hidden.push(c.id); continue; }
+        const i = at[1] + at[0].length; spans.push([i, i, c, '']); continue;
       }
-      const key = locate(html, c.kind === 'grammar' ? c.find : c.sentence);
-      if (!key) { state.hidden.push(c.id); continue; }
-      const i = html.indexOf(key);
+      // a stored rejection is a decision: it is not marked again on reopen (stress test 2026-10-23)
+      if (!only && state.st[c.id] === false) continue;
+      const at = locateAt(html, c.kind === 'grammar' ? c.find : c.sentence, c.kind === 'grammar' ? c.findFull : null);
+      if (!at) { state.hidden.push(c.id); continue; }
+      const [key, i] = at;
       // a find that starts inside a tag (an href, an alt) cannot be wrapped in <del>/<ins>:
       // the marks would land inside the tag and mangle it. It is applied whole instead.
       if (html.lastIndexOf('<', i) > html.lastIndexOf('>', i)) {
@@ -283,7 +354,7 @@
   // of a card and nothing else). The tag is not part of the change: wrapping it in <del> split
   // the fact card's closing tag and, once accepted, pushed the remaining cards out of the grid.
   function trimTags(c) {
-    if (c._trimmed) return; c._trimmed = true;
+    if (c._trimmed) return; c._trimmed = true; c.findFull = c.find;
     // trailing: a shared run of CLOSING tags, but ONLY when their openers sit outside the
     // change. A find that ends at "</b>" whose "<b>" opens INSIDE it (a sentence whose tail
     // clause is bold) is balanced as written; stripping that "</b>" left an open <b> inside
@@ -351,34 +422,60 @@
   function unwrap(el) { const p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); }
   function pending() { return state.changes.filter(c => state.st[c.id] === undefined && inDom(c.id)); }
 
+  // a decision made from the keyboard keeps the keyboard in the margin: focus moves to the card that is
+  // active next (QA 2026-10-08: focus fell back to the page, with no keyboard way to the next card)
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.closest && e.target.closest('#rv-canvas .rv-card button')) state._kbd = true;
+  }, true);
+  function focusActiveCard() {
+    if (!state._kbd) return; state._kbd = false;
+    setTimeout(() => { const b = document.querySelector('#rv-canvas .rv-card.active button'); if (b) b.focus({ preventScroll: true }); }, 0);
+  }
   function decide(id, accept, silent) {
     const c = byId(id); if (!c) return;
+
     const marks = [...ed().querySelectorAll(`[data-id="${id}"]`)];
     if (!marks.length) {
       if (accept && !silent) { toast('This change is not in the open text, so there is nothing to apply. Reject it, or make the edit by hand.', 6000); return; }
       state.st[id] = accept; post(id, accept); if (!silent) renderAll(); return;
     }
-    if (H()) H().checkpoint();
     const holder = marks[0].closest('p,li,div.copy,div');
     const ref = marks[0].previousElementSibling || marks[0].parentElement;   // where the change was, once its marks are gone
-    for (const m of marks) {
-      if (m.tagName === 'SUP') { m.remove(); continue; }
-      if (m.tagName === 'DEL') { accept ? m.remove() : unwrap(m); }
-      else if (m.tagName === 'INS') { accept ? unwrap(m) : m.remove(); }
-    }
     if (accept && c.struct) {
-      // the fragment was never wrapped, so it is still intact in the serialised canvas
-      // Deciding another change in the same paragraph can leave an empty class="" on the <p>
-      // (classList.remove of the hit highlight), and a find that opens with the tag then stops
-      // matching. An empty class means nothing, so it is dropped before matching.
-      // comment and lint highlights inside the fragment (the thread that asked for it is one)
-      // would stop the find matching; they are drawn from anchors, so drop them and redraw after
+      // The fragment was never wrapped: it sits right after this change's own chip and number, so that is the
+      // only place it is looked for (a bare locate took the first hit anywhere, and a passage edited since the
+      // proposal was "accepted" with nothing applied; stress test 2026-10-23). Comment and lint highlights
+      // inside it would stop the find matching; they are drawn from anchors, so they come off and are redrawn.
+      // An empty class="" left by a decided neighbour means nothing and is dropped before matching.
       ed().querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap); ed().normalize();
-      const e = ed(), h = e.innerHTML.replace(/ class=""/g, ''), key = locate(h, c.find);
-      if (key) e.innerHTML = h.replace(key, () => c.replace);   // a function: "$" in the text is literal
-      else console.warn('review: layout change', id, 'no longer matches; nothing applied');
+      ed().querySelectorAll('.rl-hit').forEach(x => x.classList.remove('rl-hit'));   // the jump highlight is transient; on the chip it hid the chip from the search
+      const e = ed(), h = e.innerHTML.replace(/ class=""/g, '');
+      const cm = new RegExp('<ins class="rl ed struct[^"]*" data-id="' + id + '"').exec(h);   // ids are letters and digits
+      const cs = cm ? cm.index : -1;
+      const se = cs >= 0 ? h.indexOf('</sup>', cs) : -1, fs = se >= 0 ? se + 6 : -1;
+      let key = null;
+      if (fs >= 0) { const tail = h.slice(fs), k = locate(tail, c.find); const off = k ? tail.indexOf(k) : -1;
+        if (off >= 0 && !tail.slice(0, off).trim()) key = k; }
+      if (!key) {
+        if (!silent) toast('This passage was edited after the change was proposed, so the change no longer fits. Reject it, or make the edit by hand.', 7000);
+        return;
+      }
+      // the typo fixes proposed INSIDE this passage go into its new text (unless rejected already): the
+      // replacement still had the old wording, so a fix shown as accepted never reached the page (QA 2026-10-08)
+      const rep = (c.inner || []).reduce((t, i) => { const g = byId(i);
+        return g && g.kind === 'grammar' && g.find && state.st[i] !== false && t.includes(g.find) ? t.split(g.find).join(g.replace) : t; }, c.replace);
+      if (H()) H().checkpoint();
+      e.innerHTML = h.slice(0, cs) + rep + h.slice(fs + key.length);        // chip, number and fragment out; the new text in
       anchorComments();
-    } else if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture,.photo-ph')) holder.remove();
+    } else {
+      if (H()) H().checkpoint();
+      for (const m of marks) {
+        if (m.tagName === 'SUP') { m.remove(); continue; }
+        if (m.tagName === 'DEL') { accept ? m.remove() : unwrap(m); }
+        else if (m.tagName === 'INS') { accept ? unwrap(m) : m.remove(); }
+      }
+      if (accept && holder && holder.isConnected && !holder.textContent.trim() && !holder.querySelector('img,.img-slot-empty,picture,.photo-ph')) holder.remove();
+    }
     if (accept) {
       // an accepted change can carry a [PHOTO] marker; make it the same live, clickable slot
       // a marker becomes when the article is opened, instead of dead text until the next open
@@ -394,7 +491,7 @@
       const open = state.changes.some(x => x.task === c.task && x.id !== id && state.st[x.id] === undefined);
       if (th && !open) {
         const any = accept || state.changes.some(x => x.task === c.task && state.st[x.id] === true);
-        th.status = any ? 'applied' : 'rejected';
+        th.status = any ? 'applied' : 'rejected'; stamp(th);     // stamped: the newest state wins in the store (stress test 2026-10-09)
         if (any) { th.resolved = true; th.anchor = { before: '', quote: plain(c.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' }; }
         anchorComments(); saveComments();
       }
@@ -404,19 +501,36 @@
     if (H() && H().label) H().label((accept ? 'Accepted' : 'Rejected') + (c.task ? ' Claude: ' : ': ') + plain(c.replace || c.sentence || '').replace(/\s+/g, ' ').slice(0, 48));
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
-      if (accept) c.inner.forEach(i => { state.st[i] = true; state.last[i] = true; posted[i] = true; });
+      // the layout change replaced the whole passage, so a fix inside it was "accepted" but never in the
+      // text (QA 2026-10-08). It is accepted only if its words are in what went in; otherwise it is
+      // recorded as not applied, so Decided never offers to reverse a change that did not happen.
+      const flat = t => plain(t || '').replace(/\s+/g, ' ').trim();
+      if (accept) { ed().querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap); ed().normalize(); }   // a comment's mark across the words hid the find (stress test 2026-10-09)
+      if (accept) c.inner.forEach(i => {
+        const g = byId(i); let v = false;
+        if (g && g.kind === 'grammar' && g.replace) {
+          if (flat(ed().innerHTML).includes(flat(g.replace))) v = true;            // went in with the new text
+          else {                                                                  // it only overlapped the passage: apply it where it now stands
+            const h = ed().innerHTML.replace(/ class=""/g, ''), k = locate(h, g.find);
+            if (k && h.indexOf(k) === h.lastIndexOf(k)) { ed().innerHTML = h.replace(k, () => g.replace); v = true; }
+          }
+        }
+        state.st[i] = v; state.last[i] = v; posted[i] = v;
+      });
       else reinject(c.inner);
+      if (accept) anchorComments();
     }
     post(posted);
     if (H()) H().touch(); dirty();
     previewDecision(null);
+    focusActiveCard();
     if (!silent) { renderAll(); advanceFrom(id, holder && holder.isConnected ? holder : ref); }
   }
   function reinject(ids) {                   // a rejected cut keeps its sentence, so its grammar fixes are offered again
     const e = ed(); let html = e.innerHTML;
     for (const id of ids) {
       const c = byId(id); const key = locate(html, c.find); if (!key) continue;
-      html = html.replace(key, markHtml(c, key, c.n));
+      html = html.replace(key, () => markHtml(c, key, c.n));   // a function: "$$" in the text is literal
     }
     e.innerHTML = html; if (window.restoreSlotButtons) window.restoreSlotButtons(e);
   }
@@ -430,7 +544,14 @@
   async function post(map, accept) {
     if (!state.slug) return;
     const body = typeof map === 'string' ? { [map]: accept } : map;
-    try { await fetch(API + `/review/${state.slug}/decisions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+    try {
+      const r = await (await fetch(API + `/review/${state.slug}/decisions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+      if (r && r.kept && r.kept.length) {       // another tab accepted and saved it: the text is in the file, so it stays accepted
+        r.kept.forEach(id => { state.st[id] = true; state.last[id] = true; });
+        toast('That change was already accepted and saved from another tab, so it stays. To take it back, open List, show the decided changes and choose Reject there.', 8000);
+        renderAll();
+      }
+    }
     catch (e) { toast('Could not save the decision (server?)'); }
   }
   function syncFromDom() {                   // after undo/redo the DOM is the truth
@@ -443,6 +564,7 @@
     }
     const changed = {};
     for (const c of state.changes) {
+      if (state.hidden.includes(c.id)) continue;      // never located: not in the page is not a decision (stress test 2026-10-23)
       const present = inDom(c.id);
       if (present && state.st[c.id] !== undefined) { state.st[c.id] = undefined; changed[c.id] = null; }
       else if (!present && state.st[c.id] === undefined && state.last[c.id] !== undefined) { state.st[c.id] = state.last[c.id]; changed[c.id] = state.last[c.id]; }
@@ -498,8 +620,37 @@
     saveEl.querySelectorAll('del.rl').forEach(unwrap);                   // undecided deletions stay as original text
     saveEl.querySelectorAll('mark.cm').forEach(unwrap);                  // comment anchors never ship
   }
+  // Before the editor writes the article: would it strand a moved sentence or take a Maps link off the
+  // site? (QA 2026-10-08: that check ran only AFTER the save, refused, and the sentence was lost.)
+  // Only a save with an accepted cut can; anything else is ok at once.
+  async function precheck(html) {
+    if (!state.slug) return { ok: true };
+    const accepted = Object.keys(state.st).filter(id => state.st[id] === true);
+    if (!accepted.some(id => { const c = byId(id); return c && c.kind === 'cut'; })) return { ok: true };
+    try {
+      let body = JSON.stringify({ accepted, html }); const headers = { 'Content-Type': 'application/json' };
+      if (typeof CompressionStream !== 'undefined') {
+        body = await new Response(new Blob([body]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+        headers['Content-Encoding'] = 'gzip';
+      }
+      const resp = await fetch(API + `/review/${state.slug}/precheck`, { method: 'POST', headers, body });
+      if (!resp.ok) throw new Error('the photo server answered ' + resp.status);     // a 400 with no problems in it read as "all clear"
+      const r = await resp.json();
+      // a move that cannot be placed would lose its sentence: that blocks the save. A Maps link taken off
+      // the site by a cut Kevin accepted is his call: it saves, with a warning naming the links.
+      const warn = r.lost && r.lost.length ? ['this save takes ' + r.lost.length + ' Google Maps link' + (r.lost.length === 1 ? '' : 's') +
+        ' off the site (the cut removed the only one): ' + r.lost.map(u => decodeURIComponent((u.split('/place/')[1] || u).split('/')[0]).replace(/\+/g, ' ')).join(', ')] : [];
+      if (!(r.problems || []).length) return { ok: true, warn };
+      const why = r.problems.map(x => 'change ' + ((byId(x.id) || {}).n || x.id) + ' cannot be placed (' + x.why + ')');
+      return { ok: false, why };
+    } catch (e) {
+      return { ok: false, why: [(e && /answered \d+/.test(e.message) ? e.message : 'the photo server is not answering') + ', and an accepted move needs it to write the supporting article'] };
+    }
+  }
+
   async function onSaved() {
     if (state.rel) await snapshotDisk(state.rel);    // our own write is not a change to warn about
+    { const b = $('rv-banner'); if (b && /changed on disk/.test(b.textContent)) b.style.display = 'none'; }   // the save merged it
     if (!state.slug) return;
     const accepted = Object.keys(state.st).filter(id => state.st[id] === true);
     if (!accepted.length) return;
@@ -555,6 +706,7 @@
     if (!_range || !_range.toString().trim()) return newGeneral();
     if (state.filter === 'changes') setFilter('all'); toggle(true);
     state.draft = { range: _range, anchor: textAround(_range), id: 'c' + Date.now().toString(36) };
+    state.active = state.draft.id;               // the draft is the card that is pinned and kept on screen
     // Word highlights the anchor while the draft is open
     wrapRange(_range, state.draft.id, true);
     renderAll();
@@ -566,6 +718,7 @@
     const anchor = { quote: '', before: '', after: '', where: 'general' };
     if (h) { anchor.section = h.id || ''; anchor.sectionText = h.textContent.replace(/\s+/g, ' ').trim(); }
     state.draft = { anchor, id: 'c' + Date.now().toString(36), general: true };
+    state.active = state.draft.id;               // pinned and kept on screen, like a draft on a selection
     _caret = null;
     renderAll();
     const el = generalEl(anchor); if (el && el.scrollIntoView) { const r = el.getBoundingClientRect(); if (r.top < 0 || r.top > innerHeight) el.scrollIntoView({ block: 'start' }); }
@@ -593,7 +746,7 @@
     if (toClaude && d.anchor && d.anchor.where) { toClaude = false; toast('Title and subtitle: left as a comment (live edits work in the article text only).', 4500); }
     const m = cmQ(`mark.cm[data-cm="${d.id}"]`); if (m) m.classList.remove('draft');
     const t = { id: d.id, author: AUTHOR, text: text.trim(), created: new Date().toISOString(), anchor: d.anchor, resolved: false, replies: [] };
-    if (toClaude) { t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); }
+    if (toClaude) { t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); stamp(t); }
     state.comments.threads.push(t);
     state.draft = null; _range = null; state.active = d.id;
     (toClaude ? beforeSend(t) : Promise.resolve()).then(saveComments).then(() => { if (toClaude) { toast('Sent. The edit lands here when Claude answers.', 4000); pollTasks(); } }); renderAll();
@@ -639,27 +792,29 @@
   const QUICK = [['Rewrite', 'rewrite'], ['Shorter', 'make this shorter'], ['Less formal', 'less formal, more like me'],
                  ['Synonym', 'synonym'], ['Link this', 'link this (Maps pin for a place, my article if I have one)'],
                  ['Look this up', 'look this up and fill it in, with the source in the reply']];
+  // A quick pick leaves a COMMENT on the selection, for the next review round (Kevin, 2026-10-15: the live
+  // "send to Claude" edits were not going through; "just leave the comment instead").
   function quickTask(text, range) {
-    if (zoneOf(range.startContainer)) { _range = range; newComment(); toast('Title and subtitle: left as a comment (live edits work in the article text only).', 4500); return; }
     const a = textAround(range), id = 'c' + Date.now().toString(36);
     wrapRange(range, id, false);
-    const t = { id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [],
-                kind: 'task', status: 'sent', sentAt: new Date().toISOString() };
+    const t = { id, author: AUTHOR, text, created: new Date().toISOString(), anchor: a, resolved: false, replies: [] };
     state.comments.threads.push(t);
     state.active = id; if (state.filter === 'changes') setFilter('all');
-    beforeSend(t).then(saveComments).then(() => pollTasks()); renderAll();
-    toast('Sent to Claude: ' + text, 3000);
+    saveComments(); renderAll(); toggle(true);
+    toast('Comment left: ' + text, 3000);
   }
   function quickMenu(x, y, range) {
     let m = document.getElementById('rv-quick'); if (m) m.remove();
     m = document.createElement('div'); m.id = 'rv-quick';
-    m.innerHTML = `<div class="qh">${CLAUDE_MARK} Send to Claude</div>` + QUICK.map(([l], i) => `<button data-i="${i}">${l}</button>`).join('') +
+    m.innerHTML = `<div class="qh">${CLAUDE_MARK} Comment for the next round</div>` + QUICK.map(([l], i) => `<button data-i="${i}">${l}</button>`).join('') +
                   '<button data-i="c" class="qc">Comment…</button>';
     m.style.left = Math.min(x, innerWidth - 190) + 'px'; m.style.top = Math.min(y, innerHeight - 260) + 'px';
     document.body.appendChild(m);
+    const esc = e => { if (e.key === 'Escape') { m.remove(); document.removeEventListener('keydown', esc); } };
+    document.addEventListener('keydown', esc);
     m.onclick = e => {
       const b = e.target.closest('button'); if (!b) return;
-      m.remove();
+      m.remove(); document.removeEventListener('keydown', esc);
       if (b.dataset.i === 'c') { _range = range; newComment(); return; }
       quickTask(QUICK[+b.dataset.i][1], range);
     };
@@ -677,7 +832,7 @@
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
     if (t.anchor && t.anchor.where) { toast((isGeneral(t.anchor) ? 'A general' : 'A title or subtitle') + ' comment is answered in the next round, not live.', 4500); return; }
-    t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit; delete t.edits;
+    t.kind = 'task'; t.status = 'sent'; t.sentAt = new Date().toISOString(); t.resolved = false; delete t.edit; delete t.edits; stamp(t);
     beforeSend(t).then(saveComments).then(pollTasks); renderAll(); toast('Sent to Claude.');
   }
   let _pollT = null;
@@ -695,15 +850,36 @@
     if (_pollT) return;
     // the server pushes 'changed' the moment the comment store is written; the poll stays as a
     // slow fallback for when the stream drops (sleep, a server restart)
-    let pushed = false;
-    try {
-      const es = new EventSource(API + '/api/tasks/stream');
-      es.onopen = () => { pushed = true; };
-      es.onmessage = () => pollTasks(true);
-      es.onerror = () => { pushed = false; };
-    } catch (e) {}
-    _pollT = setInterval(() => { if (!pushed) pollTasks(); }, 1000);
-    setInterval(() => { if (pushed) pollTasks(); }, 5000);
+    let pushed = false, es = null;
+    // the stream is held only while the tab shows: each tab held one for good, Chrome allows six
+    // connections to a host, and the sixth tab hung every request (stress test 2026-10-09)
+    const open = () => {
+      if (es || document.hidden) return;
+      try {
+        es = new EventSource(API + '/api/tasks/stream');
+        es.onopen = () => { pushed = true; pollTasks(true); };
+        es.onmessage = () => pollTasks(true);
+        es.onerror = () => { pushed = false; };
+      } catch (e) { es = null; }
+    };
+    const shut = () => { if (es) { try { es.close(); } catch (e) {} es = null; pushed = false; } };
+    // ...and only while an answer from Claude is awaited: a tab with nothing pending holds no connection
+    // (six tabs each holding one hung every request to the server; stress test 2026-10-09). The rest
+    // of the time a 10 s poll brings in other tabs' comments.
+    const waiting = () => state.comments.threads.some(t => isTask(t) && !t.resolved && t.status === 'sent');
+    document.addEventListener('visibilitychange', () => { if (document.hidden) shut(); else if (waiting()) open(); });
+    window.addEventListener('pagehide', shut);
+    if (waiting()) open();
+    // a hidden tab does not poll (it fetched the comments every second with the stream down, stress test 2026-10-09)
+    let tick = 0;
+    _pollT = setInterval(() => {
+      if (document.hidden) return;
+      if (waiting()) open(); else shut();
+      tick++;
+      if (!pushed) pollTasks(tick % 10 === 0);
+    }, 1000);
+    let pushN = 0;
+    setInterval(() => { if (pushed && !document.hidden) pollTasks((++pushN % 6) === 0); }, 5000);   // every 30 s a full read: deletions from another tab (stress test 2026-10-15)
     setInterval(tickAges, 1000);
   }
   async function pollTasks(force) {
@@ -715,6 +891,12 @@
     let r; try { r = await (await fetch(API + `/comments/${state.key}`, { cache: 'no-store' })).json(); } catch (e) { state._polling = false; return; }
     state._polling = false;
     let touched = false;
+    // a thread another tab deleted goes here too (QA 2026-10-08: it stayed on screen in the other tab)
+    { const gone = new Set(r.deleted || []);
+      if (gone.size) { const keep = state.comments.threads.filter(t => !gone.has(t.id));
+        if (keep.length !== state.comments.threads.length) {
+          state.comments.threads.filter(t => gone.has(t.id)).forEach(t => { try { unwrapMark(t.id); } catch (e) {} });
+          state.comments.threads = keep; touched = true; } } }
     for (const st of (r.threads || [])) {
       let t = state.comments.threads.find(x => x.id === st.id);
       // a task this tab has never seen (another tab, or added while it was closed) may arrive
@@ -724,10 +906,34 @@
         t = Object.assign({}, st, { status: (st.edit || st.edits) && !['applied', 'rejected', 'offered'].includes(st.status) ? 'sent' : st.status });
         state.comments.threads.push(t); touched = true;
       }
-      if (!isTask(t)) continue;
+      // a reply edited in another tab (stress test 2026-10-09: an idle tab put the first version back)
+      const takeReplies = () => {
+        for (const rp of (st.replies || [])) {
+          const mine = (t.replies || []).find(x => x.id === rp.id);
+          if (!mine) { (t.replies = t.replies || []).push(rp); touched = true; }
+          else if ((rp.edited || '') > (mine.edited || '')) { Object.assign(mine, { text: rp.text, edited: rp.edited }); touched = true; }
+        }
+      };
+      if (!isTask(t)) {
+        // another tab resolved, reopened or edited it since this tab last did (QA 2026-10-08: tab B
+        // never heard of A's resolve, and B's next save reopened the thread)
+        if (st.at && (!t.at || st.at > t.at)) {
+          Object.assign(t, { text: st.text, resolved: !!st.resolved, at: st.at });
+          touched = true;
+        }
+        takeReplies();
+        continue;
+      }
       // Claude's replies and status arrive; Kevin's own edits to the thread stay
-      const seen = new Set((t.replies || []).map(x => x.id));
-      for (const rp of (st.replies || [])) if (!seen.has(rp.id)) { (t.replies = t.replies || []).push(rp); touched = true; }
+      takeReplies();
+      // another tab accepted (or rejected, or could not place) the proposal this tab still shows as tracked
+      // marks: the same decision here, so the two tabs agree and the next save merges cleanly
+      if (t.status === 'proposed' && ['applied', 'rejected', 'offered'].includes(st.status) && st.at && (!t.at || st.at > t.at)) {
+        state.changes.filter(c => c.task === t.id).forEach(c => { try { decide(c.id, st.status === 'applied', true); } catch (e) {} });
+        state.changes = state.changes.filter(c => c.task !== t.id);
+        Object.assign(t, { status: st.status, at: st.at, edit: st.edit || t.edit, edits: st.edits || t.edits, resolved: !!st.resolved });
+        touched = true; continue;
+      }
       if (st.edits && st.edits.length && !['applied', 'offered', 'proposed', 'rejected'].includes(t.status)) { t.edits = st.edits; touched = applyTaskEdits(t) || touched; }
       else if (st.edit && t.status !== 'applied' && t.status !== 'offered' && t.status !== 'proposed' && t.status !== 'rejected') { t.edit = st.edit; touched = applyTaskEdit(t) || touched; }
       // an edit that was applied but never saved: the article was reopened and the old sentence is
@@ -748,25 +954,39 @@
   let _typedAt = 0;
   document.addEventListener('input', e => { if (ed() && ed().contains(e.target)) _typedAt = Date.now(); }, true);
   // one instruction, several places ("link every place in this section"): one tracked change each
+  // where the caret is, as the words before it: a tracked change above shifts every text offset by the
+  // length of its replacement, and the next keystrokes landed mid-word (stress test 2026-10-09)
+  function caretCtx(e) {
+    const sel = window.captureSel ? captureSel(e) : null; if (!sel) return null;
+    return { sel, ctx: e.textContent.slice(Math.max(0, sel.s - 48), sel.s) };
+  }
+  function caretBack(e, k) {
+    if (!k || !window.restoreSel) return;
+    const t = e.textContent, i = k.ctx.length >= 12 ? t.indexOf(k.ctx) : -1;
+    try { if (i >= 0 && t.indexOf(k.ctx, i + 1) < 0) restoreSel(e, { s: i + k.ctx.length, e: i + k.ctx.length }); else restoreSel(e, k.sel); } catch (err) {}
+  }
   function applyTaskEdits(t) {
     if (Date.now() - _typedAt < 2500) return false;
     const e = ed();
     e.querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap);
     e.normalize();
+    // the caret is kept: these rebuilds sent the next keystrokes to the top of the article (stress test 2026-10-09)
+    const keep = caretCtx(e);
     let h = e.innerHTML.replace(/ class=""/g, ''); e.innerHTML = h;
     const fresh = [];
     t.edits.forEach((x, i) => {
       const cid = 'tk' + t.id + '-' + i;
       if (state.changes.some(c => c.id === cid)) return;
-      const key = locate(h, x.find); if (!key) return;
+      const key = locate(h, x.find); if (!key || !soleSpot(h, key)) return;
       fresh.push({ id: cid, kind: 'grammar', section: 'Claude', find: key, replace: x.replace, count: 1, task: t.id,
                    note: i ? '' : ((t.replies || []).filter(r => r.author === 'Claude').map(r => r.text).pop() || '') });
     });
     for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); }
-    if (!fresh.length) { t.status = 'offered'; t.edit = t.edits[0]; toast("Claude's edit no longer matches the text here; it is on the card with a Use button.", 7000); return true; }
+    if (!fresh.length) { t.status = 'offered'; stamp(t); t.edit = t.edits[0]; toast("Claude's edit no longer matches the text here; it is on the card with a Use button.", 7000); return true; }
     if (H() && H().label) { H().label('Claude proposed: ' + t.text.slice(0, 48)); H().checkpoint(); }
     state.changes.push(...fresh); injectMarks(fresh);
-    t.status = 'proposed'; t.proposedAt = new Date().toISOString(); state.active = fresh[0].id;
+    caretBack(e, keep);
+    t.status = 'proposed'; stamp(t); t.proposedAt = new Date().toISOString(); state.active = fresh[0].id;
     toast('Claude proposed ' + fresh.length + ' change' + (fresh.length === 1 ? '' : 's') + ': ' + t.text.slice(0, 50), 5000);
     return true;
   }
@@ -779,8 +999,9 @@
     // the bare text, and put them back after.
     e.querySelectorAll('mark.cm:not(.draft), mark.lint').forEach(unwrap);
     e.normalize();
+    const keep = caretCtx(e);
     const h = e.innerHTML.replace(/ class=""/g, '');
-    const key = locate(h, t.edit.find);
+    const key0 = locate(h, t.edit.find), key = key0 && soleSpot(h, key0) ? key0 : null;
     const relint = () => { for (const f of state.lint) { if (!f.anchor) continue; const rg = findRange(f.anchor); if (rg) wrapRange(rg, f.id, false, 'lint'); } };
     if (key) {
       // the answer goes in as a TRACKED CHANGE: old text struck, new text underlined, a tick
@@ -794,15 +1015,16 @@
         state.changes.push(c);
         e.innerHTML = h;
         injectMarks([c]);
+        caretBack(e, keep);
       }
       relint();
-      t.status = 'proposed'; t.proposedAt = new Date().toISOString();
+      t.status = 'proposed'; stamp(t); t.proposedAt = new Date().toISOString();
       state.active = cid;
       toast('Claude proposed: ' + t.text.slice(0, 70) + ' (tick to accept)', 5000);
       return true;
     }
     relint();
-    t.status = 'offered';                    // the text moved on; the card offers the replacement instead
+    t.status = 'offered'; stamp(t);          // the text moved on; the card offers the replacement instead
     toast("Claude's edit no longer matches the text here; it is on the card with a Use button.", 7000);
     // its quote may be what moved: re-anchor on the text either side of it, so the card
     // with the Use button still has a place beside the passage instead of only in the List
@@ -816,24 +1038,41 @@
   }
   function useTaskEdit(t) {
     const marks = [...cmQA(`mark.cm[data-cm="${t.id}"]`)];
+    // words inside a pending round change: Use put the whole answer into them and the sentence read twice
+    // (QA 2026-10-08). That change is decided first.
+    if (marks.some(m => m.closest('del.rl, ins.rl'))) { toast('Accept or reject the proposed change on these words first: Claude’s edit is on the same text.', 7000); return; }
     if (H()) H().checkpoint();
-    if (marks.length) {
+    // the edit's own passage first, when it is in the text exactly once; otherwise the commented words
+    // (a stale answer: its passage moved on, the comment marks where it belongs)
+    const bare = (() => { const c = ed().cloneNode(true); c.querySelectorAll(`mark.cm[data-cm="${t.id}"]`).forEach(m => m.replaceWith(...m.childNodes)); return c.innerHTML.replace(/ class=""/g, ''); })();
+    const own = locate(bare, t.edit.find);
+    if (own && soleSpot(bare, own)) {
+      marks.forEach(unwrap); ed().normalize();
+      ed().innerHTML = ed().innerHTML.replace(/ class=""/g, '').replace(own, () => t.edit.replace);
+    } else if (marks.length) {
       marks[0].innerHTML = t.edit.replace; marks.slice(1).forEach(m => { m.textContent = ''; }); marks.forEach(unwrap);
-    } else {
-      const key = locate(ed().innerHTML.replace(/ class=""/g, ''), t.edit.find);
-      if (!key) { toast('The passage is no longer in the text; paste it by hand from the card.'); return; }
-      ed().innerHTML = ed().innerHTML.replace(/ class=""/g, '').replace(key, () => t.edit.replace);
-    }
+    } else { toast('The passage is no longer in the text; paste it by hand from the card.'); return; }
     if (window.adoptPlaceholders) window.adoptPlaceholders(ed());
     if (window.restoreSlotButtons) window.restoreSlotButtons(ed());
-    t.status = 'applied'; t.anchor = { before: '', quote: plain(t.edit.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' };
+    t.status = 'applied'; stamp(t); t.anchor = { before: '', quote: plain(t.edit.replace).replace(/\s+/g, ' ').trim().slice(0, 120), after: '' };
     dirty(); if (H()) H().touch(); anchorComments(); saveComments(); renderAll();
   }
   function cancelDraft() { if (!state.draft) return; unwrapMark(state.draft.id); state.draft = null; renderAll(); }
   async function saveComments() {
     if (!state.key) return;
-    try { await fetch(API + `/comments/${state.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state.comments) }); }
-    catch (e) { toast('Could not save comments (server?)'); }
+    const key = state.key;
+    try {
+      const r = await fetch(API + `/comments/${key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state.comments) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      state._saveFail = 0;
+    } catch (e) {
+      // tried again every few seconds: a comment whose one POST was reset lived only in the tab and was
+      // gone at the next reopen (stress test 2026-10-09)
+      state._saveFail = (state._saveFail || 0) + 1;
+      if (state._saveFail === 1) toast('Could not save comments (server?); trying again');
+      clearTimeout(state._saveT);
+      if (state._saveFail <= 20) state._saveT = setTimeout(() => { if (state.key === key) saveComments(); }, 3000);
+    }
   }
   function anchorComments() {               // find each unresolved thread's quote in the text and highlight it
     cmQA('mark.cm:not(.draft)').forEach(unwrap);
@@ -891,10 +1130,11 @@
     }
     return generalEl({});
   }
-  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
+  const stamp = t => { t.at = new Date().toISOString(); };
+  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
-  function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
-  function editText(id, rid, text) { const t = thread(id); if (!t) return; if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
+  function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; stamp(t); t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
+  function editText(id, rid, text) { const t = thread(id); if (!t) return; stamp(t); if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
   function editInPlace(tx, text, save) {    // swap the comment text for a box, in the card, no dialog
     if (!tx || tx.querySelector('textarea')) return;
     const ta = document.createElement('textarea'); ta.value = text; ta.className = 'edit';
@@ -1000,13 +1240,18 @@
     try { renderChecklist(); } catch (e) {}
     mapsCount();
     const pend = pending(), open = state.comments.threads.filter(t => !t.resolved).length + (state.draft ? 1 : 0);
-    $('rv-n-ch').textContent = pend.length; $('rv-n-cm').textContent = open;
+    const lostAll = state.hidden.filter(id => state.st[id] === undefined).length;   // not found in the open text, still undecided
+    $('rv-n-ch').textContent = pend.length + lostAll; $('rv-n-cm').textContent = open;
     const nres = state.comments.threads.filter(t => t.resolved).length; $('rv-n-res').textContent = nres; $('rv-resolved').style.display = state.view === 'list' && nres ? '' : 'none';
     const hb = $('btn-review-n'); if (hb) hb.textContent = pend.length + open ? String(pend.length + open) : '';
     const cut = state.changes.filter(c => c.kind === 'cut' && state.st[c.id] === true).reduce((s, c) => s + (c.words || 0), 0);
-    const yes = Object.values(state.st).filter(v => v === true).length, no = Object.values(state.st).filter(v => v === false).length;
+    // a saved decision leaves state.st (it moves to Decided), and the count went back to 0 after
+    // every autosave (QA 2026-10-08): the round's decided changes count too
+    const savedDec = (state.decided || []).filter(x => x.round === state.slug && !(x.id in state.st));
+    const yes = Object.values(state.st).filter(v => v === true).length + savedDec.filter(x => x.accepted).length,
+          no = Object.values(state.st).filter(v => v === false).length + savedDec.filter(x => !x.accepted).length;
     const words = state.meta && state.meta.before && state.meta.target ? ` ·${state.meta.before - cut} words (${state.meta.tlabel} ${state.meta.target})` : '';
-    $('rv-status').textContent = state.slug ? `${pend.length} to review · ${yes} accepted · ${no} rejected${words}`
+    $('rv-status').textContent = state.slug ? `${pend.length} to review${lostAll ? ` · ${lostAll} not found` : ''} · ${yes} accepted · ${no} rejected${words}`
                                : (state.rel ? `${open} open comment${open === 1 ? '' : 's'} · no proposed changes` : '');   // no article: say nothing
     const list = $('rv-list'), canvas = $('rv-canvas');
     list.innerHTML = ''; canvas.innerHTML = '';
@@ -1021,6 +1266,14 @@
       p.style.cursor = 'pointer'; p.title = 'Open ' + file;
       p.onclick = openWaiting;
       host.appendChild(p);
+      // the changes themselves, read-only until the article is open (QA 2026-10-08: only their count showed)
+      (state.previewChanges || []).forEach((c, k) => {
+        const d = document.createElement('div'); d.className = 'rv-card wait-ch';
+        const old = plain(c.find || c.sentence || '').replace(/\s+/g, ' ').trim(), nu = plain(c.replace || '').replace(/\s+/g, ' ').trim();
+        d.innerHTML = `<div class="who"><b>Change ${k + 1}</b>${c.section ? ' · ' + esc(c.section) : ''}${c.kind === 'cut' ? ' · cut' : ''}</div>` +
+          `<div class="tx"><del>${esc(old.slice(0, 300))}</del>${nu ? ' <ins>' + esc(nu.slice(0, 300)) + '</ins>' : ''}</div>`;
+        host.appendChild(d);
+      });
     }
     const its = items(); let lost = 0;
     for (const it of its) {
@@ -1041,7 +1294,8 @@
     if (lost || lostCh) { const n = document.createElement('div'); n.className = 'rv-note'; n.textContent = `${[lostCh && `${lostCh} change${lostCh === 1 ? '' : 's'}`, lost && `${lost} comment${lost === 1 ? '' : 's'}`].filter(Boolean).join(' and ')} not found in the open text · see List`; host.appendChild(n); }
     if (!host.querySelector(':scope > :not(.rv-note):not(.rv-dec-h)')) {
       const e = document.createElement('div'); e.className = 'rv-empty';
-      e.textContent = state.slug && !pend.length && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
+      e.textContent = state.slug && !pend.length && !lostAll && state.filter !== 'comments' ? 'Every change is decided. Save the article to commit them.'
+                    : state.slug && !pend.length && lostAll && state.filter !== 'comments' ? `${lostAll} change${lostAll === 1 ? '' : 's'} could not be placed in the open text (see List). Reject ${lostAll === 1 ? 'it' : 'them'} or make the edit by hand.`
                     : state.filter === 'changes' ? 'No changes to review.' : 'Select text and choose + Comment (Ctrl+Alt+M), or choose it with nothing selected for a general comment on the section.';
       host.appendChild(e);
     }
@@ -1058,7 +1312,12 @@
     const label = c.kind === 'grammar' ? 'Replaced' : c.kind === 'insert' ? 'Inserted' : (c.dest_file ? 'Moved' : 'Deleted');
     const d = document.createElement('div');
     d.className = 'rv-card rv-c ' + cls + (state.active === c.id ? ' active' : '') + (dim ? ' dim' : ''); d.dataset.id = c.id;
-    const body = c.kind === 'grammar' ? `<del>${esc(plain(c.find))}</del> <ins>${esc(plain(c.replace))}</ins>`
+    // what a change shows on its card: a find that starts inside a tag drops that tag's tail, a photo or a map
+    // is named rather than dumped as its SVG labels (stress test 2026-10-23)
+    const show = h => { const t = plain((h && !h.startsWith('<') && /^[^<]*>/.test(h)) ? h.replace(/^[^<]*>/, '') : h).replace(/\s+/g, ' ').trim();
+      if (t && !/<svg|citymap|<picture/i.test(h || '')) return t.length > 600 ? t.slice(0, 600) + '…' : t;
+      return /<picture|<img/i.test(h || '') ? '(a photo)' : /<svg|citymap/i.test(h || '') ? '(a map)' : t || '(markup only)'; };
+    const body = c.kind === 'grammar' ? `<del>${esc(show(c.find))}</del> <ins>${esc(show(c.replace))}</ins>`
                : c.kind === 'insert' ? `<ins>${esc(plain(c.html)).slice(0, 600)}${plain(c.html).length > 600 ? '…' : ''}</ins>` : `<del>${esc(plain(c.sentence))}</del>`;
     let meta = '';
     if (c.kind === 'cut') {
@@ -1076,7 +1335,9 @@
       <div class="t">${body}</div>${meta}`;
     d.onclick = e => { if (!e.target.closest('button')) jump(c.id); };
     d.querySelectorAll('.acts button').forEach(b => {
-      b.onclick = ev => { ev.stopPropagation(); decide(c.id, b.dataset.v === '1'); };
+      // the second click of a double-click is not a decision: the next card had slid under the pointer, and a
+      // double-click accepted two changes (QA 2026-10-08). Only that click is ignored; quick separate clicks count.
+      b.onclick = ev => { ev.stopPropagation(); if (ev.detail > 1) return; decide(c.id, b.dataset.v === '1'); };
       b.onmouseenter = () => previewDecision(c.id, b.dataset.v === '1');
       b.onmouseleave = () => previewDecision(null);
     });
@@ -1197,25 +1458,69 @@
   function queueLayout() { if (state._raf) return; state._raf = requestAnimationFrame(() => { state._raf = 0; layout(); }); }
   function layout() {                          // each card level with its text; the active one exactly, the rest make room
     const canvas = $('rv-canvas'); if (!canvas) return;
+    // the hovered tick was destroyed by a redraw (autosave commit, Ctrl+Z, a task poll), so its
+    // mouseleave never came: every later layout gave up and the cards stayed stacked at the top
+    // (QA 2026-10-08, Kevin's "in-line comments bunch up")
+    if (state.previewing && !canvas.querySelector('button:hover')) {
+      state.previewing = false;
+      ed().querySelectorAll('.rl-pv-yes,.rl-pv-no').forEach(m => m.classList.remove('rl-pv-yes', 'rl-pv-no'));
+    }
     if (!document.body.classList.contains('review-open') || canvas.style.display === 'none' || state.previewing) { drawLines(); return; }
     if ($('rv-body').scrollTop) $('rv-body').scrollTop = 0;
     const top0 = $('rv-body').getBoundingClientRect().top;
+    // a card appears only while its text is on the page (Kevin, 2026-10-12: "the in-line comments should
+    // only appear when the text shows up on the page"); the card being written or looked at stays
+    const scR = (document.querySelector('.editor-scroll') || ed()).getBoundingClientRect();
     const rows = [];
     for (const c of canvas.querySelectorAll(':scope > .rv-card')) {      // a thread riding inside a change card is not placed on its own
       const r = anchorRect(c); if (!r) { c.style.display = 'none'; continue; }
+      const id = c.dataset.cm || c.dataset.id || c.dataset.lint, keep = id === state.active || c.classList.contains('draft');
+      if (!keep && (r.bottom < scR.top || r.top > scR.bottom)) { c.style.display = 'none'; continue; }
       c.style.display = '';
       rows.push({ c, y: r.top - top0 - 6, h: c.offsetHeight });
     }
     if (!rows.length) { drawLines(); return; }
     rows.sort((a, b) => a.y - b.y);
     let ai = rows.findIndex(r => (r.c.dataset.id || r.c.dataset.cm || r.c.dataset.lint) === state.active); if (ai < 0) ai = 0;
-    const GAP = 8, pos = new Array(rows.length);
+    const GAP = 8, pos = new Array(rows.length), H = $('rv-body').clientHeight;
     pos[ai] = rows[ai].y;
     let floor = pos[ai] + rows[ai].h + GAP;
     for (let i = ai + 1; i < rows.length; i++) { pos[i] = Math.max(rows[i].y, floor); floor = pos[i] + rows[i].h + GAP; }
     let ceil = pos[ai] - GAP;
     for (let i = ai - 1; i >= 0; i--) { pos[i] = Math.min(rows[i].y, ceil - rows[i].h); ceil = pos[i] - GAP; }
+    // level with its text, but never out of sight: a draft for text near the top of the view (or below a
+    // tall active card) opened outside the margin and Kevin typed into a box he could not see (QA 2026-10-08)
+    { const h = rows[ai].h;
+      let d = 0;
+      if (pos[ai] < 0) d = -pos[ai];
+      else if (pos[ai] + h > H) d = Math.max(-pos[ai], H - h - pos[ai]);
+      if (d) for (let i = 0; i < pos.length; i++) pos[i] += d; }
+    // Cards above the active one made room by sliding UP, and with several comments close together
+    // they slid above the pane, where overflow:hidden swallowed them: the counter said 6, the margin
+    // showed 3 (Kevin, 2026-10-12: "some of them aren't showing up in the sidebar, but the number still
+    // says they're there"). A card whose text is in view is never placed above the pane: the ones that
+    // would be are laid down from the top instead, in order, and what follows makes room below.
+    { const first = rows.findIndex((r, i) => pos[i] < 0 && r.y > -r.h / 2);   // pushed above the pane, yet its text is in view
+      if (first >= 0) {
+        let fl = 0;
+        for (let i = first; i < rows.length; i++) { pos[i] = Math.max(rows[i].y, fl, 0); fl = pos[i] + rows[i].h + GAP; }
+        // only when the pane is too small for all of them does the active card take precedence again
+        const over = pos[ai] + rows[ai].h - H;
+        if (over > 0) for (let i = 0; i < pos.length; i++) pos[i] -= over;
+      } }
     rows.forEach((r, i) => { r.c.style.top = pos[i] + 'px'; });
+    // When the pane cannot hold every card whose text is in view, the ones that had to leave are counted
+    // at the edge they left by ("▲ 3 more"); a click brings the nearest one back, and the counter never
+    // disagrees with the margin again (Kevin, 2026-10-12)
+    { const hidden = rows.map((r, i) => ({ r, i })).filter(x => x.r.y > -x.r.h / 2 && x.r.y < H && (pos[x.i] + x.r.h < 0 || pos[x.i] > H));
+      const above = hidden.filter(x => pos[x.i] < 0), below = hidden.filter(x => pos[x.i] > H);
+      for (const [cls, list, nearest] of [['up', above, above[above.length - 1]], ['down', below, below[0]]]) {
+        let pill = canvas.querySelector('.rv-edge.' + cls);
+        if (!list.length) { if (pill) pill.remove(); continue; }
+        if (!pill) { pill = document.createElement('button'); pill.type = 'button'; pill.className = 'rv-edge ' + cls; canvas.appendChild(pill); }
+        pill.textContent = (cls === 'up' ? '▲ ' : '▼ ') + list.length + ' more comment' + (list.length === 1 ? '' : 's');
+        pill.onclick = () => { const c = nearest.r.c; state.active = c.dataset.cm || c.dataset.id || c.dataset.lint; renderAll(); };
+      } }
     drawLines(); clearTimeout(state._ld); state._ld = setTimeout(drawLines, 200);   // again once the cards have slid
   }
   function drawLines() {                       // classic Word balloons: a line from each card to the text it is about
@@ -1233,10 +1538,12 @@
       const cr = card.getBoundingClientRect(); if (cr.bottom < br.top || cr.top > br.bottom) continue;
       const ar = anchorRect(card); if (!ar || ar.bottom < sc.top || ar.top > sc.bottom) continue;
       const id = card.dataset.id || card.dataset.cm || card.dataset.lint, on = state.active === id || state.hover === id;
-      const x0 = cr.right, y0 = cr.top + 15, x1 = ar.left - 3, y1 = ar.top + ar.height / 2;
+      const x0 = cr.right, y0 = cr.top + 15, x1 = ar.left - 3, y1 = ar.top + ar.height / 2, ya = ar.top + 1;
       const kind = card.classList.contains('rv-lint') ? 'lint' : card.classList.contains('rv-cm') ? 'cm' : card.classList.contains('mv') ? 'mv' : card.classList.contains('ed') ? 'ed' : 'rm';
       const p = document.createElementNS(NS, 'path');
-      p.setAttribute('d', `M${x0},${y0} L${xg},${y1} H${x1}`);
+      // along the top of the line box, then down to the dot: through the middle it read as a strikethrough
+      // of the words before the anchor (QA 2026-10-08)
+      p.setAttribute('d', `M${x0},${y0} L${xg},${ya} H${x1} V${y1}`);
       p.setAttribute('class', `ln ${kind}${on ? ' on' : ''}`);
       svg.appendChild(p);
       const dot = document.createElementNS(NS, 'circle');
@@ -1276,7 +1583,7 @@
     state.rel = rel; state.awaitingFile = true; state.changes = []; state.st = {};
     let r; try { r = await (await fetch(API + '/review/for?rel=' + encodeURIComponent(rel), { cache: 'no-store' })).json(); } catch (e) { return; }
     state.slug = r.slug; state.key = r.comments_key; state.comments = r.comments || { threads: [] };
-    state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label };
+    state.meta = { title: r.title, before: r.words_before, target: r.words_target, tlabel: r.target_label, created: r.created };   // cards show the round's time (QA 2026-10-08: dropped here)
     state.decided = r.decided || [];
     state.previewChanges = r.changes || [];
     toggle(true); setFilter('all'); setView('list');
@@ -1302,7 +1609,7 @@
     if (window.__saving || now === window.__lastWritten) { state.disk = now; return; }   // this editor's own save
     state.diskWarned = true;
     const b = $('rv-banner'); b.innerHTML = 'This article changed on disk since you opened it, from a commit in another window or another editor. ' +
-      'Reopen it before saving or your save will overwrite that. <button id="rv-banner-x">Dismiss</button>';
+      'Your next save merges that change with your edits; if both touched the same passage, the editor asks which to keep. <button id="rv-banner-x">Dismiss</button>';
     b.style.display = 'block'; $('rv-banner-x').onclick = () => { b.style.display = 'none'; };
     toggle(true);
   }
@@ -1428,7 +1735,7 @@
   }
   window.review = {
     resnapshot: () => state.rel && snapshotDisk(state.rel),
-    toggle, anchorBanner, prepareForSave, onSaved, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
+    toggle, anchorBanner, prepareForSave, onSaved, precheck, syncFromDom, decide, jump, newComment, state, refresh, preview, checkDisk, layout, previewDecision, setFilter, setView, trimTags, pollTasks, sendToClaude,
     // test seam: open an article body under a given repo path without a folder handle
     loadFor(rel, html) { state.relOverride = rel; const e = ed(); e.style.display = ''; e.contentEditable = 'true'; e.innerHTML = html; return boot(rel); }
   };
@@ -1483,7 +1790,7 @@ body.review-open #review-pane{display:flex}
 #rv-quick button{display:block;width:100%;text-align:left;border:0;background:none;padding:.42rem .55rem;border-radius:4px;cursor:pointer;color:#1C2821;font:inherit}
 #rv-quick button:hover{background:#F3F6F4}
 #rv-quick .qc{border-top:1px solid #eee;border-radius:0 0 4px 4px;color:#6b7a70}
-.rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4}
+.rv-card .alt{display:flex;gap:.45rem;align-items:flex-start;margin:.3rem 0;font-size:.8rem;line-height:1.4;min-width:0;max-width:100%}.rv-card .alt>span{min-width:0;flex:1 1 auto;overflow-wrap:anywhere}   /* a long offered edit pushed the card's tick off the page (Kevin, 2026-10-24) */
 .rv-card .alt .use{flex-shrink:0;font:600 .58rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #b9d4c5;background:#E3F0E8;color:#2D6B50;border-radius:3px;cursor:pointer}
 .rv-card .alt .use:hover{background:#2D6B50;color:#fff}
 .rv-status:empty{display:none}
@@ -1526,7 +1833,11 @@ body.review-open #review-pane{display:flex}
 .rv-cm .dd{display:none;position:absolute;right:0;top:1.4rem;background:#fff;border:1px solid #e0ded8;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:3;min-width:150px}
 .rv-cm .dd.open{display:block}.rv-cm .dd button{display:block;width:100%;text-align:left;border:0!important;border-radius:0!important;text-transform:none!important;letter-spacing:0!important;font-size:.78rem!important;padding:.45rem .7rem!important}
 .rv-cm .dd button:hover{background:#F5F5F2}
-.rv-cm .tx{font-size:.84rem;margin:.3rem 0 0;white-space:pre-wrap}.rv-cm .rp{margin:.5rem 0 0 .4rem;padding-left:.55rem;border-left:2px solid #e6e6e2}
+.rv-cm .tx{font-size:.84rem;margin:.3rem 0 0;white-space:pre-wrap}
+/* an idle card shows a few lines of each text so a cluster of comments fits the pane; the active one shows all */
+.rv-canvas .rv-cm:not(.active):not(.draft) .tx,.rv-canvas .rv-cm:not(.active):not(.draft) .rp .tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rv-edge{position:absolute;left:50%;transform:translateX(-50%);z-index:4;border:1px solid #c9d8cf;border-radius:999px;background:#eef4f0;color:#2D6B50;font:600 11px/1 Hanken Grotesk,sans-serif;letter-spacing:.04em;padding:.35rem .7rem;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rv-edge.up{top:4px}.rv-edge.down{bottom:4px}.rv-edge:hover{background:#2D6B50;color:#fff}.rv-cm .rp{margin:.5rem 0 0 .4rem;padding-left:.55rem;border-left:2px solid #e6e6e2}
 .rv-cm .rp .av{width:18px;height:18px;line-height:18px;font-size:.6rem}
 .rv-cm textarea.edit{margin-top:0;min-height:64px}
 .rv-cm textarea{width:100%;min-height:54px;font:13px/1.45 'Hanken Grotesk',sans-serif;padding:.4rem;border:1px solid #e0ded8;border-radius:3px;margin-top:.4rem;resize:vertical}

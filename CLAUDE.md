@@ -170,11 +170,12 @@ embedded map code are never rewritten.
 
 Related: see the no-em-dashes rule in my writing style — both exist so the writing sounds like me.
 
-**The em-dash rule applies to BODY PROSE only** (updated 2026-09-21). It is about how my
-sentences read, so it covers the words in an article: paragraphs, headings, captions, pull
-quotes, field-notes entries. It does **not** cover `<title>`, meta/`og:description`, or UI
-copy such as the 404 page and buttons, where an em dash is a typographic separator rather
-than a voice choice. Do not flag or "fix" those, and do not count them in an audit.
+**The em-dash rule applies to PARAGRAPH PROSE only** (updated 2026-10-20). It is about how my
+sentences read, so it covers the sentences in an article's paragraphs and captions. It does
+**not** cover titles and headings, bullets and list items (including the `<b>Term</b> —
+description` separator), `<title>`, meta/`og:description`, or UI copy such as the 404 page and
+buttons, where an em dash is a typographic separator rather than a voice choice. Do not flag
+or "fix" those, and do not count them in an audit (`tools/prose_check.py` reports `<p>` only).
 
 ## Batched Tasks — Finish the Whole List
 
@@ -218,6 +219,12 @@ The 60 is the whole `<title>`, as the browser tab and Google show it (the editor
 counts to 60), so a ` - getawayguide` ending counts against it: drop the ending when it would
 push a title over, never the place names. (The cap was ~70 from 2026-09-21 to 2026-10-02, when
 every title went back under 60.)
+
+**Related-article blocks are part of the launch too** (2026-10-23): `tools/guide_cards.py` puts the
+guide card under a field-notes city heading whose guide is live, and `tools/explore_more.py` picks the
+three "Explore More" cards at the end of every live page (Kevin's rules; his pins in
+`tools/explore_pins.json` are kept). Both run from `retire_field_notes.py` and `publish_country.py`;
+never add those cards by hand.
 
 `dateModified` comes from the last commit that changed the page's **prose**, not `git log -1`
 — sitewide asset passes touch every page at once, and publishing that everywhere is untrue

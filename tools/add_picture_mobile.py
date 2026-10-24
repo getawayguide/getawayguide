@@ -17,12 +17,16 @@ Safe to re-run: images already inside <picture> are skipped.
 
 import os
 import re
+import sys
 from pathlib import Path
 
 BASE    = Path(__file__).resolve().parent.parent
 IMAGES  = BASE / 'Images'
 WEB     = IMAGES / 'web'
 EXCLUDE = {'web', 'Index', 'Bio', 'dest-cards'}
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index('--page') + 1] if '--page' in sys.argv[:-1] else None
 
 _dir_cache = {}
 def real_name(directory, name):
@@ -54,7 +58,7 @@ def wrap(tag, web_src, orig_src):
             f'</picture>')
 
 total_pages = 0
-for page in sorted(BASE.glob('*/*.html')):
+for page in ([BASE / PAGE] if PAGE else sorted(BASE.glob('*/*.html'))):
     html = page.read_text(encoding='utf-8')
     body_start = html.find('class="article-body"')
     if body_start < 0:

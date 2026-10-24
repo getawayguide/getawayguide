@@ -22,7 +22,7 @@
   const L = { defs: null, countries: [], country: null, tab: 'overview', results: {}, finished: null, job: null,
               current: null, rerun: null, kevin: { hints: {}, ticks: {} }, open: {}, sel: {}, busy: {},
               plan: 'keep', retire: null,
-              loadSeq: 0, loading: { runs: false, hints: false }, starting: false, ranRels: null, detail: null,
+              loadSeq: 0, showSeq: 0, loading: { runs: false, hints: false }, starting: false, ranRels: null, detail: null,
               started: 0, pendingRerun: null, tickChain: {}, touched: {} };
 
   // ------------------------------------------------------------------ look
@@ -39,7 +39,24 @@
   .ln-wrap{max-width:1320px;margin:0 auto;padding:22px 28px 60px}
   .ln-top{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
   .ln-eyebrow{display:block;font-size:.6rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ln-mute);margin-bottom:4px}
-  .ln-country{font-family:'Newsreader',Georgia,serif;font-size:1.9rem;font-weight:400;color:var(--ln-ink);background:transparent;border:0;
+  /* the country picker is the Covers tool's flagged dropdown (2026-10-14); the native select stays for its value */
+  .ln-country{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+  .ln-fsel{position:relative;width:280px;margin-top:2px}
+  .ln-fsel-btn{width:100%;display:flex;align-items:center;gap:9px;height:34px;padding:0 10px;border:1px solid rgba(28,40,33,.16);border-radius:6px;background:#fff;
+    color:var(--ln-ink);font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;text-align:left}
+  .ln-fsel-btn:hover{border-color:rgba(28,40,33,.32)}
+  .ln-fsel.open .ln-fsel-btn{border-color:var(--ln-green);box-shadow:0 0 0 3px rgba(45,107,80,.14)}
+  .ln-fsel-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ln-fsel-chev{width:6px;height:6px;border-right:1.5px solid #1C2821;border-bottom:1.5px solid #1C2821;transform:rotate(45deg) translateY(-2px);flex:none}
+  .ln-fsel-list{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;background:#fff;border:1px solid rgba(28,40,33,.14);border-radius:8px;
+    box-shadow:0 12px 32px rgba(28,40,33,.16);padding:5px;max-height:60vh;overflow:auto}
+  .ln-fsel-g{font-family:'Hanken Grotesk',sans-serif;font-size:.56rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8a948e;padding:7px 9px 3px}
+  .ln-fsel-o{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;color:#1C2821;cursor:pointer}
+  .ln-fsel-o:hover{background:#F3F6F4}
+  .ln-fsel-o.on{background:rgba(45,107,80,.09);color:var(--ln-green);font-weight:600}
+  .ln-cfl{width:18px;height:13px;border-radius:2px;object-fit:cover;flex:none;display:inline-block}
+  .ln-cfl.none{background:#E8E7E1}
+  .ln-country-x{font-family:'Newsreader',Georgia,serif;font-size:1.9rem;font-weight:400;color:var(--ln-ink);background:transparent;border:0;
     padding:0 26px 0 0;margin:0;cursor:pointer;appearance:none;-webkit-appearance:none;line-height:1.15;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231C2821' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right 2px center}
@@ -217,11 +234,12 @@
     return Object.assign({}, r, { status, items, summary });
   }
   function tally(rel) {
-    const t = { fail: 0, warn: 0, pass: 0, error: 0 };
+    const t = { fail: 0, warn: 0, pass: 0, error: 0, none: 0 };
     for (const d of (L.defs ? L.defs.claude : [])) {
       if (rel && d.scope === 'country') continue;
       const v = viewOf(d.id, rel);
-      if (v && t[v.status] !== undefined) t[v.status]++;
+      if (!v) { t.none++; continue; }                 // not run for this page (a partial run ran only some)
+      if (t[v.status] !== undefined) t[v.status]++;
     }
     return t;
   }
@@ -234,6 +252,7 @@
       return `Checking${L.current ? ': ' + defTitle(L.current) : '…'}${L.detail ? ' (' + L.detail + ')' : ''}${t}`;
     }
     if (L.loading.runs) return 'Loading…';
+    if (L.loadFailed && !L.finished) return 'Could not load the last run';
     return L.finished ? 'Last run ' + new Date(L.finished).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Not run yet';
   }
   const updateWhen = () => { const w = $('.ln-when', root()); if (w) w.textContent = whenText(); };
@@ -295,8 +314,9 @@
         if (a && a.kind === 'field-notes' && L.plan === 'retire' && !onlyFieldNotes())
           return `<button class="ln-tab${L.tab === k ? ' on' : ''}" ${attrs}>${icon('field-notes')}${esc(label)}<span class="n retire">retires</span></button>`;
         const bad = t.fail + t.error;
+        // no green check while a check has not run yet (mid-run, or a run that was lost; stress test 2026-10-09)
         const n = bad ? `<span class="n fail">${bad}</span>` : t.warn ? `<span class="n warn">${t.warn}</span>`
-          : (L.finished || Object.keys(L.results).length) && !L.loading.hints && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
+          : !t.none && (L.finished || Object.keys(L.results).length) && !L.loading.hints && allMine(a ? [a.rel] : pages().map(p => p.rel)) ? '<span class="n pass">✓</span>' : '';
         return `<button class="ln-tab${L.tab === k ? ' on' : ''}" ${attrs}>${icon(a ? a.kind : 'overview')}${esc(label)}${n}</button>` + (i === 0 ? '<span class="sep" aria-hidden="true"></span>' : '');
       }).join('')}</nav>
       <button class="ln-tabarrow r" type="button" aria-label="More tabs" hidden><span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span></button></div>
@@ -304,8 +324,7 @@
     </div>`;
     r.scrollTop = keep;
     tabArrows(r);
-    fitSelect($('#ln-country', r));
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { const s = $('#ln-country', r); if (s) fitSelect(s); });
+    flagSelect($('#ln-country', r));
     wire();
     refocus(r, focus);
   }
@@ -313,6 +332,67 @@
   function countryGroup(x) {
     const draft = x.articles.some(a => !a.live), fn = x.articles.every(a => a.kind === 'field-notes');
     return !draft ? 'Launched' : fn ? 'Field notes drafts' : 'Ready to launch';
+  }
+  // the country's flag: by its folder slug (the Covers tool keys the same list by album name)
+  const FLAG = { albania: 'al', argentina: 'ar', armenia: 'am', australia: 'au', bosnia: 'ba', brazil: 'br', colombia: 'co', egypt: 'eg',
+    'el-salvador': 'sv', georgia: 'ge', greece: 'gr', guatemala: 'gt', india: 'in', israel: 'il', italy: 'it', japan: 'jp', jordan: 'jo',
+    kosovo: 'xk', mexico: 'mx', 'new-zealand': 'nz', nicaragua: 'ni', 'north-macedonia': 'mk', peru: 'pe', philippines: 'ph',
+    serbia: 'rs', tanzania: 'tz', vietnam: 'vn', croatia: 'hr', montenegro: 'me', spain: 'es', portugal: 'pt', france: 'fr', thailand: 'th',
+    morocco: 'ma', cuba: 'cu', chile: 'cl', indonesia: 'id', germany: 'de', netherlands: 'nl', belgium: 'be', uk: 'gb', turkiye: 'tr', turkey: 'tr',
+    estonia: 'ee', finland: 'fi', hungary: 'hu', latvia: 'lv', slovenia: 'si', sweden: 'se', switzerland: 'ch', paraguay: 'py', bali: 'id',
+    patagonia: 'cl', amsterdam: 'nl', ibiza: 'es', normandy: 'fr', paris: 'fr', copenhagen: 'dk', cologne: 'de', munich: 'de' };
+  function flagImg(slug) {
+    const k = String(slug || '').toLowerCase().replace(/[_\s]+/g, '-').replace(/-(guide|ig|in-depth-guide|field-notes|\d{4})$/g, '');
+    const code = FLAG[k] || FLAG[k.split('-')[0]];
+    return code ? `<img class="ln-cfl" src="${API}/site/Images/web/flags/${code}.png" alt="" width="18" height="13">` : '<span class="ln-cfl none"></span>';
+  }
+  // the Covers tool's flagged dropdown: a native <select> keeps the value and the change event
+  // one dropdown at a time: every redraw builds a new one, so the document listeners belong to the module and
+  // point at the current box (15 tab switches added 32 listeners and the open list closed on every redraw;
+  // stress test 2026-10-15)
+  const FSEL = { box: null, list: null, open: null, btn: null };
+  function flagSelect(sel) {
+    if (!sel || sel.__flagged) return;
+    sel.__flagged = true;
+    const wasOpen = !!(FSEL.list && !FSEL.list.hidden);
+    const box = document.createElement('div');
+    box.className = 'ln-fsel';
+    box.innerHTML = '<button type="button" class="ln-fsel-btn" aria-haspopup="listbox" aria-label="Country"></button><div class="ln-fsel-list" role="listbox" hidden></div>';
+    sel.after(box);
+    const btn = box.firstChild, list = box.lastChild;
+    const label = o => o ? o.textContent.replace(/\s+/g, ' ').trim() : '';
+    const paint = () => { const o = sel.selectedOptions[0]; btn.innerHTML = flagImg(o && o.value) + `<span class="ln-fsel-t">${esc(label(o) || '—')}</span><i class="ln-fsel-chev"></i>`; };
+    const open = on => {
+      list.hidden = !on; box.classList.toggle('open', on);
+      if (!on) return;
+      list.innerHTML = [...sel.children].map(g => g.tagName === 'OPTGROUP'
+        ? `<div class="ln-fsel-g">${esc(g.label)}</div>` + [...g.children].map(o => `<div class="ln-fsel-o${o.selected ? ' on' : ''}" role="option" data-v="${esc(o.value)}">${flagImg(o.value)}<span>${esc(label(o))}</span></div>`).join('')
+        : `<div class="ln-fsel-o${g.selected ? ' on' : ''}" role="option" data-v="${esc(g.value)}">${flagImg(g.value)}<span>${esc(label(g))}</span></div>`).join('');
+      const on_ = list.querySelector('.on'); if (on_) on_.scrollIntoView({ block: 'nearest' });
+    };
+    btn.onclick = e => { e.stopPropagation(); open(list.hidden); };
+    list.onclick = e => { const o = e.target.closest('.ln-fsel-o'); if (!o) return; sel.value = o.dataset.v; open(false); paint(); sel.dispatchEvent(new Event('change', { bubbles: true })); };
+    // keyboard: arrows move through the rows, Enter picks, Escape closes
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (list.hidden) open(true);
+        const rows = [...list.querySelectorAll('.ln-fsel-o')], i = rows.findIndex(r => r.classList.contains('on'));
+        const j = Math.max(0, Math.min(rows.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)));
+        rows.forEach((r, k) => r.classList.toggle('on', k === j)); if (rows[j]) rows[j].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && !list.hidden) {
+        e.preventDefault(); const on_ = list.querySelector('.ln-fsel-o.on'); if (on_) on_.click();
+      }
+    });
+    Object.assign(FSEL, { box, list, open, btn });
+    if (!flagSelect.wired) {
+      flagSelect.wired = true;
+      document.addEventListener('click', e => { if (FSEL.box && !FSEL.box.contains(e.target)) FSEL.open(false); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && FSEL.list && !FSEL.list.hidden) { FSEL.open(false); FSEL.btn.focus(); } });
+    }
+    sel.tabIndex = -1;                                     // the hidden native select is not a tab stop
+    paint();
+    if (wasOpen) open(true);                               // a redraw while you were choosing keeps the list open
   }
   function countryOptions() {
     return ['Ready to launch', 'Field notes drafts', 'Launched'].map(g => {
@@ -475,7 +555,7 @@
       </div>`;
   }
   const summaryLine = t => L.loading.runs ? 'loading…' : (L.finished || Object.keys(L.results).length)
-    ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix${t.error ? ` · ${t.error} couldn’t run` : ''}` : 'not run yet';
+    ? `${t.pass} passed · ${t.warn} to look at · ${t.fail} to fix${t.error ? ` · ${t.error} couldn’t run` : ''}${t.none ? ` · ${t.none} not run yet` : ''}` : 'not run yet';
 
   function kevinGrid() {
     const defs = kevinDefs('article');
@@ -499,7 +579,7 @@
       const notRun = L.ranRels && !L.ranRels.includes(a.rel) && !L.job;
       return `<tr data-tab="${esc(a.rel)}" tabindex="0"><td><div class="nm">${esc(shortTitle(a))}</div><div class="k">${esc(a.rel.split('/').pop())}</div></td>
         <td class="c-st"><span class="ln-pill${a.live ? ' live' : ''}">${a.live ? 'Live' : 'Draft'}</span>${a.kind === 'field-notes' && L.plan === 'retire' ? ' <span class="ln-pill retire">Retires</span>' : ''}</td>
-        <td>${gone ? '<span class="k">retires at launch</span>' : L.loading.runs ? '<span class="k">loading…</span>' : run && !notRun ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.error ? `<span class="f">${s.error} couldn’t run</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn && !s.error ? '<span class="p">all clear</span>' : ''}</span>` : '<span class="k">not run</span>'}</td>
+        <td>${gone ? '<span class="k">retires at launch</span>' : L.loading.runs ? '<span class="k">loading…</span>' : run && !notRun ? `<span class="ln-counts">${s.fail ? `<span class="f">${s.fail} to fix</span>` : ''}${s.error ? `<span class="f">${s.error} couldn’t run</span>` : ''}${s.warn ? `<span class="w">${s.warn} to look at</span>` : ''}${!s.fail && !s.warn && !s.error ? (s.none ? `<span class="k">${s.pass} of ${s.pass + s.none} checks run</span>` : '<span class="p">all clear</span>') : ''}</span>` : '<span class="k">not run</span>'}</td>
         <td>${gone ? '' : L.loading.hints ? '<span class="k">loading…</span>' : `<span class="ln-bar"><i style="width:${k.of ? Math.round(k.done / k.of * 100) : 0}%"></i></span><span class="k">${k.done} of ${k.of}</span>`}</td></tr>`;
     }).join('');
     return `<div class="ln-ov ln-card"><table class="ln-table"><thead><tr><th>Page</th><th class="c-st">Status</th><th>Claude</th><th>You</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -655,10 +735,12 @@
       let j;
       try { j = await api('/api/launch/job/' + job); misses = 0; }
       catch (e) {
-        // the photo server restarted and forgot the run (or stopped answering): say so instead of spinning
-        if (e.status === 404 || ++misses > 20) {
+        // the photo server restarted and forgot the run, or has not answered for a minute: say which,
+        // instead of spinning (a 14 s silence used to be called a restart; stress test 2026-10-09)
+        if (e.status === 404 || ++misses > 85) {
           if (L.job === job) { L.job = null; L.rerun = null; L.current = null; L.detail = null; render(); }
-          toast('The run stopped: the photo server restarted. Run the checks again.', 7000);
+          toast(e.status === 404 ? 'The run was lost: the photo server restarted. Run the checks again.'
+                                 : 'The photo server stopped answering, so the run can’t be followed. Open this tab again later to see the rest.', 8000);
           return;
         }
         updateWhen();
@@ -684,7 +766,7 @@
     const seq = ++L.loadSeq, want = L.country, stale = () => L.loadSeq !== seq || L.country !== want;
     L.job = null; L.rerun = null; L.current = null; L.detail = null; L.starting = false; L.pendingRerun = null;
     L.results = {}; L.finished = null; L.ranRels = null; L.kevin = { hints: {}, ticks: {} }; L.touched = {}; L.open = {};
-    L.plan = 'keep'; L.retire = null; L.loading = { runs: true, hints: true };
+    L.plan = 'keep'; L.retire = null; L.loading = { runs: true, hints: true }; L.loadFailed = false;
     L.tabScroll = 0; L.tabShown = null;                  // a new country starts its tab row at the left
     if (L.tab !== 'overview' && !art(L.tab)) { L.tab = 'overview'; store.set('tab:' + want, 'overview'); }   // a tab that no longer exists
     render();
@@ -711,20 +793,31 @@
       }
       render();
       if (act && act.job) follow(act.job, act.only && act.only.length ? act.only : null, act.started ? Date.parse(act.started) : Date.now());
-    } catch (e) { if (!stale()) { L.loading.runs = false; render(); toast('The photo server did not answer.'); } }
+    } catch (e) {
+      if (stale()) return;
+      // one failed answer showed "Not run yet" over a complete run on disk, for good (stress test 2026-10-09):
+      // once more after a moment, then say what happened
+      if (!L.retried) { L.retried = true; setTimeout(() => { if (!stale()) loadCountry(); }, 3000); return; }
+      L.retried = false; L.loading.runs = false; L.loadFailed = true; render(); toast('The photo server did not answer, so the last run could not be loaded.');
+    }
   }
 
   async function show() {
     const r = root();
     if (!r) return;
+    const seq = ++L.showSeq;
     if (!L.defs) {
       r.innerHTML = '<div class="ln-empty">Loading…</div>';
       try {
         const [d, a] = await Promise.all([api('/api/launch/checks'), api('/api/launch/articles')]);
+        if (L.showSeq !== seq && L.defs) return;         // a later show() got there first
         L.defs = d; L.countries = a.countries || [];
       } catch (e) {
-        L.defs = null;
-        r.innerHTML = '<div class="ln-empty"><b>The photo server isn’t running.</b><br>Double-click <b>Editor Suite.cmd</b> in your Travel Blog folder, then open this tab again.</div>';
+        // a first load that failed late used to replace a checklist another show() had already drawn
+        // (stress test 2026-10-09), and the message blamed a .cmd the keeper has made unnecessary
+        if (L.defs || L.showSeq !== seq) return;
+        r.innerHTML = '<div class="ln-empty"><b>The photo server isn’t answering.</b><br>It restarts by itself; this tab tries again in a moment. If it stays down, open the editor again from the taskbar icon.</div>';
+        setTimeout(() => { const la = document.getElementById('app-launch'); if (!L.defs && la && !la.hidden) show(); }, 6000);
         return;
       }
       // open on the country of the article in the editor, else the last one chosen
@@ -737,10 +830,27 @@
       await loadCountry();
       return;
     }
-    // coming back: the hints (review status, titles) may have changed while you were away
-    try { const kev = await api('/api/launch/kevin', { rels: rels() }); L.kevin = { hints: kev.hints || {}, ticks: kev.ticks || {} }; } catch (e) {}
+    // coming back: the hints (review status, titles) and the last run may have changed while you were away.
+    // The answers are checked against the country shown NOW: a late one wiped another country's ticks
+    // (stress test 2026-10-09). Not more than once in 15 s (1,000 view switches made 198 calls).
     if (!(history.state && history.state.launch)) nav('replace');
     render();
+    if (Date.now() - (L.kevinAt || 0) < 15000) return;
+    const want = L.country, lseq = L.loadSeq, stale = () => L.showSeq !== seq || L.loadSeq !== lseq || L.country !== want;
+    const body = { rels: rels() };
+    try {
+      const [kev, last, act] = await Promise.all([api('/api/launch/kevin', body), api('/api/launch/last', body).catch(() => null), api('/api/launch/active', body).catch(() => null)]);
+      if (stale()) return;
+      L.kevinAt = Date.now();
+      const t = kev.ticks || {};
+      for (const k of Object.keys(L.touched)) t[k] = L.kevin.ticks[k] || {};
+      L.kevin = { hints: kev.hints || {}, ticks: t };
+      if (last && (last.finished || null) !== L.finished && !L.job) {      // a run finished (or was lost) while away
+        L.results = last.results || {}; L.finished = last.finished || null; L.ranRels = last.rels || null;
+      }
+      render();
+      if (act && act.job && L.job !== act.job) follow(act.job, act.only && act.only.length ? act.only : null, act.started ? Date.parse(act.started) : Date.now());
+    } catch (e) {}
   }
   window.__launchShow = show;
   window.__launch = L;                                   // test seam

@@ -30,9 +30,14 @@ Chrome (.tmp/tier_sweep.py), detail climbs from 1.0x to a peak near 1.9x and fal
 still say which screen each file is for. The phone tier stays 1x/2x/3x (bytes matter there,
 and at 3x density a fraction of a device pixel does not show).
 
+A photo whose files are all there, at the widths needed, and newer than its original is not cut
+again (2026-10-16: every run re-cut every photo of the page, most of the minutes a compress took);
+an original rewritten since (an Edit re-bakes it) is newer, so its photo is cut again. --force
+cuts everything.
+
 Needs the photo server (http://127.0.0.1:5003) for /site/.
 
-    python tools/fit_image_tiers.py "Drafts/.Full Articles/armenia/yerevan.html" [...] [--dry-run] [--only=TEXT ...]
+    python tools/fit_image_tiers.py "Drafts/.Full Articles/armenia/yerevan.html" [...] [--dry-run] [--only=TEXT ...] [--force]
 """
 import io
 import math
@@ -111,7 +116,56 @@ def cut(orig, web_base, desk, mob, dry):
     return made
 
 
-def run(rels, dry=False, only=()):
+def existing_widths(orig, web_base, tag, n):
+    """the widths of this photo's cut files for one tier set (desktop "" or phone "-mob"), when all n exist, are
+    non-empty, newer than the original and ascending; else None"""
+    try:
+        o_mt = Path(orig).stat().st_mtime
+    except OSError:
+        return None
+    out = []
+    for i in range(n):
+        ws = set()
+        for ext in (".jpg", ".webp"):
+            f = Path(str(web_base) + "%s-%dx%s" % (tag, i + 1, ext))
+            try:
+                st = f.stat()
+                if st.st_size == 0 or st.st_mtime < o_mt:
+                    return None
+                with Image.open(f) as im:
+                    ws.add(im.size[0])
+            except OSError:
+                return None
+        if len(ws) != 1:
+            return None
+        out.append(ws.pop())
+    return out if out == sorted(out) and len(set(out)) == len(out) else None
+
+
+def current(orig, web_base, desk, mob):
+    """True when every file of this photo is already cut at these widths, after its original was last written,
+    and none is empty (a cut stopped halfway leaves a 0-byte file)"""
+    try:
+        o_mt = Path(orig).stat().st_mtime
+    except OSError:
+        return False
+    for tag, ws in (("", desk), ("-mob", mob)):
+        for i, w in enumerate(ws):
+            for ext in (".jpg", ".webp"):
+                f = Path(str(web_base) + "%s-%dx%s" % (tag, i + 1, ext))
+                try:
+                    st = f.stat()
+                    if st.st_size == 0 or st.st_mtime < o_mt:
+                        return False
+                    with Image.open(f) as im:
+                        if im.size[0] != w:
+                            return False
+                except OSError:
+                    return False
+    return True
+
+
+def run(rels, dry=False, only=(), force=False):
     data = measure(rels)
     need = {}                                       # web base (repo path) -> [[desk px per place], phone px at 393, orig, orig width]
     seen = {}                                       # (page, index) -> (web base, desk px here, phone px here)
@@ -150,13 +204,27 @@ def run(rels, dry=False, only=()):
         nd = lo if hi <= 1.42 * lo else hi
         desk = widths(nd, ow, DESK_MULT)            # an original too small for these is served as it is (cutting it smaller only loses pixels)
         mob = widths(nm * PHONE_MAX / 393, ow)
+        # One set of files serves every page the photo is on. A page fitted on its own must never cut the files
+        # NARROWER than they are: another page that draws the photo wider still declares the old widths, and
+        # was left serving a 592 px file in a 576 px slot (stress test 2026-10-23). Wider existing files are kept
+        # and declared as they are; --force recuts regardless.
+        if not force:
+            for tag, ws in (("", desk), ("-mob", mob)):
+                have = existing_widths(orig, Path(k), tag, len(ws))
+                if have and have[0] > ws[0]:
+                    if tag: mob = have
+                    else: desk = have
         tiers[k] = (desk, mob, nd, nm)
+        if not (force or only) and current(orig, Path(k), desk, mob):     # --only asks for those photos to be cut
+            print("  %-60s desk %s  phone %s  (already cut)" % (Path(k).relative_to(ROOT / "Images" / "web"), desk, mob))
+            continue
         made = cut(orig, Path(k), desk, mob, dry)
         print("  %-60s desk %s  phone %s" % (Path(k).relative_to(ROOT / "Images" / "web"), desk, mob))
     # the markup: real widths, and sizes as drawn
     for rel in rels:
         p = ROOT / rel
         raw = io.open(p, encoding="utf-8", newline="").read()
+        stamp = p.stat().st_mtime_ns
         page_dir = p.parent
         blocks = list(PICTURE.finditer(raw))
         s, pos, out = raw, 0, []
@@ -185,6 +253,9 @@ def run(rels, dry=False, only=()):
         out.append(raw[pos:])
         s = "".join(out)
         if s != raw and not dry:
+            if p.stat().st_mtime_ns != stamp:        # saved while the tiers were cut: a write now would drop that save
+                print("! %s changed while this ran; its srcsets were not rewritten (queue it again)" % rel)
+                sys.exit(3)
             io.open(p, "w", encoding="utf-8", newline="").write(s)
         print("%s%s: %d picture(s) sized" % ("[dry] " if dry else "", rel, sum(1 for (r, _) in seen if r == rel)))
 
@@ -196,7 +267,7 @@ def main():
         return 2
     # --only=TEXT (repeatable): recut only the photos whose web path contains TEXT; the rest are left alone
     only = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--only=")]
-    run(rels, dry="--dry-run" in sys.argv, only=only)
+    run(rels, dry="--dry-run" in sys.argv, only=only, force="--force" in sys.argv)
     return 0
 
 

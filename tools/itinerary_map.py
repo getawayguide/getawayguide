@@ -26,10 +26,16 @@ CONFIG SCHEMA (see tools/itinerary_maps/el-salvador.json for a full example):
     dots[]          {name,lat,lon,anchor,dx,dy}  small un-numbered markers
     airport         {name,lat,lon,anchor,dx,dy}  optional ✈ marker
     legs[]          {a,b,label,dash,chip_off,chip_side}  a/b index stops or "air"
+                    sailing legs: "via":[[lat,lon],...] sea waypoints and/or "bow":0.3
+                    a trail map (2026-10-19): "outline_file": rings [[lon,lat],...] from tools/osm_coast_land.py
+                    instead of the country (a 20 km box is a few vertices in Natural Earth); per-leg "color";
+                    "legend": {"pos": "tl|tr|bl|br", "items": [{"label", "color", "dash"}]}
+                    draw a smooth curve that stays on the water (blue-cruise.json)
 
 Label dx/dy are hand-tuned per map (good placement depends on geography); use
 --shot to iterate quickly.
 """
+import html
 import json, math, os, sys, io, subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,6 +85,14 @@ def load_geojson():
 
 _OUTLINES = {}
 _LAKES_CACHE = None
+
+
+def _outline_file(path):
+    """(K, projected rings) from a JSON list of rings [[lon, lat], ...] (tools/osm_coast_land.py), no simplifying"""
+    rings = json.load(open(path, encoding="utf-8"))
+    lats = [pt[1] for r in rings for pt in r]
+    K = math.cos(math.radians((max(lats) + min(lats)) / 2.0))
+    return K, [[(pt[0] * K, -pt[1]) for pt in r] for r in rings]
 
 
 def _outline(iso3, keep, kc, simplify):
@@ -136,7 +150,10 @@ def build(cfg):
 
     keep = cfg.get("area_keep", co.AREA_KEEP_RATIO)  # lower to keep small islands
     kc = cfg.get("keep_containing")
-    K, pr = _outline(cfg["iso3"], keep, kc, simplify)
+    if cfg.get("outline_file"):
+        K, pr = _outline_file(os.path.join(ROOT, cfg["outline_file"]))
+    else:
+        K, pr = _outline(cfg["iso3"], keep, kc, simplify)
 
     xs = [p[0] for r in pr for p in r]; ys = [p[1] for r in pr for p in r]
     minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
@@ -286,7 +303,7 @@ def build(cfg):
         fs = wl.get("size", 12)
         B.append(f'<g transform="{stamp_tf(wx, wy)}"><text x="0" y="0" text-anchor="middle" font-size="{fs}" '
                  f'font-weight="500" font-style="italic" letter-spacing="2" fill="{P.get("water_ink", "#5F93A8")}">'
-                 f'{wl["name"].upper()}</text></g>')
+                 f'{html.escape(wl["name"].upper())}</text></g>')
         if wl.get("href") and not EDIT:
             B[-1] = f'<a class="imap-link" href="{wl["href"]}">{B[-1]}</a>'
     # In "focus" mode the viewBox crops to the stops/labels only (the country
@@ -311,8 +328,45 @@ def build(cfg):
     for li, leg in enumerate(cfg.get("legs", [])):
         x1, y1 = leg_pt(leg["a"]); x2, y2 = leg_pt(leg["b"])
         dash = f' stroke-dasharray="{2*AFS:.1f} {5*AFS:.1f}"' if leg.get("dash") else ""
-        B.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-                 f'stroke="{P["route"]}" stroke-width="{1.6*AFS:.2f}"{dash} stroke-linecap="round"/>')
+        lc = leg.get("color") or P["route"]                   # a trail map colors each segment
+        if leg.get("via") or leg.get("bow"):
+            # a sailing leg: a smooth curve that stays on the water. "via" = [[lat,lon],...]
+            # sea waypoints it passes through; "bow" alone = a single arc bowed sideways by
+            # that fraction of the leg's length (positive = left of the a->b direction).
+            pts = [(x1, y1)] + [T(la, lo) for la, lo in leg.get("via", [])] + [(x2, y2)]
+            if len(pts) == 2:
+                L0 = math.hypot(x2 - x1, y2 - y1) or 1
+                k = leg["bow"]
+                pts.insert(1, ((x1 + x2) / 2 + (y2 - y1) * k, (y1 + y2) / 2 - (x2 - x1) * k))
+                d = (f'M {x1:.1f} {y1:.1f} Q {2*pts[1][0]-(x1+x2)/2:.1f} {2*pts[1][1]-(y1+y2)/2:.1f} '
+                     f'{x2:.1f} {y2:.1f}')
+            else:
+                d = f'M {pts[0][0]:.1f} {pts[0][1]:.1f}'
+                for i in range(len(pts) - 1):          # Catmull-Rom through every point -> cubic Beziers
+                    p0 = pts[i - 1] if i else pts[i]
+                    p1, p2 = pts[i], pts[i + 1]
+                    p3 = pts[i + 2] if i + 2 < len(pts) else p2
+                    c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
+                    c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
+                    d += f' C {c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {p2[0]:.1f} {p2[1]:.1f}'
+            for px_, py_ in pts:
+                ex(px_, py_)
+            B.append(f'<path d="{d}" fill="none" stroke="{lc}" stroke-width="{(leg.get("width") or 1.6)*AFS:.2f}"{dash} '
+                     f'stroke-linecap="round" stroke-linejoin="round"/>')
+            pick_d = d
+        else:
+            B.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                     f'stroke="{lc}" stroke-width="{(leg.get("width") or 1.6)*AFS:.2f}"{dash} stroke-linecap="round"/>')
+            pick_d = f'M {x1:.1f} {y1:.1f} L {x2:.1f} {y2:.1f}'
+        if EDIT:
+            # the route pen (tools/map_editor.py): click the leg to add a waypoint, drag a waypoint, double-click
+            # it to remove it. Handles are placed by lat/lon, so the editor maps a drag back through data-proj.
+            B.append(f'<path class="legpick" data-idx="{li}" d="{pick_d}" fill="none" stroke="transparent" stroke-width="18" '
+                     f'stroke-linecap="round" stroke-linejoin="round"/>')
+            for k, (la, lo) in enumerate(leg.get("via", [])):
+                vx_, vy_ = T(la, lo)
+                B.append(f'<g class="eh vh" data-kind="via" data-idx="{li}" data-k="{k}" data-x="{vx_:.1f}" data-y="{vy_:.1f}" '
+                         f'transform="translate({vx_:.1f} {vy_:.1f})"><circle r="6" fill="#fff" stroke="{P["route"]}" stroke-width="1.6"/></g>')
         lab = (leg.get("label") or "").upper()
         if not lab:
             continue  # connector line only, no transport pill
@@ -355,7 +409,7 @@ def build(cfg):
         x, y = T(dot["lat"], dot["lon"])
         ddx, ddy, danc = dot.get("dx", 12), dot.get("dy", 4), dot.get("anchor", "start")
         dlabel = (f'<text x="{ddx}" y="{ddy}" text-anchor="{danc}" '
-                  f'font-size="10.5" font-style="italic" fill="{P["muted"]}">{dot["name"]}</text>')
+                  f'font-size="10.5" font-style="italic" fill="{P["muted"]}">{html.escape(dot["name"])}</text>')
         if dot.get("href") and not EDIT:          # a dot can link too (a city with its own guide)
             dlabel = f'<a class="imap-link" href="{dot["href"]}">{dlabel}</a>'
         B.append(f'<g transform="{stamp_tf(x, y)}">'
@@ -385,7 +439,7 @@ def build(cfg):
             lines[0] = prefix + lines[0]
             name = max(lines, key=len)
             lbl = "".join(f'<text x="{dx}" y="{dy + 16*k}" text-anchor="{anc}" font-size="14" '
-                          f'font-weight="600" letter-spacing="1.5" fill="{P["ink"]}">{ln}</text>' for k, ln in enumerate(lines))
+                          f'font-weight="600" letter-spacing="1.5" fill="{P["ink"]}">{html.escape(ln)}</text>' for k, ln in enumerate(lines))
             dd = 16 * (len(lines) - 1)                  # the days lines sit under the last name line
             if s.get("days"):
                 lbl += (f'<text x="{dx}" y="{dy+dd+15}" text-anchor="{anc}" font-size="10" '
@@ -426,7 +480,28 @@ def build(cfg):
     pad = cfg.get("crop_pad", 44 if (cfg.get("focus") or cfg.get("focus_span")) else 26)
     vx, vy = BB[0] - pad, BB[1] - pad
     vw, vh = (BB[2] - BB[0]) + 2 * pad, (BB[3] - BB[1]) + 2 * pad
-    head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}" '
+    lg = cfg.get("legend")
+    if lg and lg.get("items"):
+        # a box of line samples + labels in a corner of the window, at the annotation size (a stamp)
+        items = lg["items"]
+        fs, row, sw = 13, 19, 24                  # bigger than the day labels: a legend is read, not glanced at
+        tw = max(len(it.get("label", "")) for it in items) * fs * 0.58
+        bw, bh = sw + 10 + tw + 20, row * len(items) + 14
+        pos = lg.get("pos", "tl")
+        lx = (vx + 12) if "l" in pos else (vx + vw - 12 - bw * AFS)
+        ly = (vy + 12) if "t" in pos else (vy + vh - 12 - bh * AFS)
+        L = [f'<g transform="translate({lx:.1f} {ly:.1f}) scale({AFS:.3f})">',
+             f'<rect x="0" y="0" width="{bw:.1f}" height="{bh:.1f}" rx="5" fill="{P["bg"]}" fill-opacity=".93" stroke="{P["chip"]}" stroke-width="1"/>']
+        for i, it in enumerate(items):
+            yy = 7 + row * i + row / 2
+            dsh = ' stroke-dasharray="2 5"' if it.get("dash") else ""
+            L.append(f'<line x1="10" y1="{yy:.1f}" x2="{10 + sw}" y2="{yy:.1f}" stroke="{it.get("color") or P["route"]}" '
+                     f'stroke-width="{it.get("width") or 2.4}"{dsh} stroke-linecap="round"/>')
+            L.append(f'<text x="{sw + 20}" y="{yy + fs * 0.36:.1f}" font-size="{fs}" fill="{P["ink"]}" font-weight="500">{it.get("label", "")}</text>')
+        L.append('</g>')
+        B += L
+    proj = f' data-proj="{minx} {miny} {scale} {PAD + ML} {PAD + MT} {K}"' if EDIT else ""
+    head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}"{proj} '
             f'xmlns="http://www.w3.org/2000/svg" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif">')
     bg = f'<rect x="{vx:.0f}" y="{vy:.0f}" width="{vw:.0f}" height="{vh:.0f}" fill="{P["bg"]}"/>'
     return "\n".join([head, bg] + B + ["</svg>"]), round(vw), round(vh)

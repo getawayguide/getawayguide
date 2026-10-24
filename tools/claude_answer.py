@@ -62,9 +62,10 @@ def write_answer(key, tid, reply, find=None, replace=None, status="answered", ex
     data = redline.comments_load(key)
     for t in data.get("threads", []):
         if t["id"] == tid:
-            t.setdefault("replies", []).append({"author": "Claude", "created": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            t.setdefault("replies", []).append({"author": "Claude", "created": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()),   # UTC like the editor's, so replies sort in order
                                                 "id": "re" + format(int(time.time() * 1000), "x"), "text": reply})
             t["status"] = status
+            t["at"] = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())   # stamped: the newest state wins when tabs merge
             if find is not None and replace is not None:
                 t["edit"] = {"find": find, "replace": replace}
             if extra:
@@ -197,13 +198,14 @@ def finish(key, tid, t, html, txt):
     reply = ans.get("reply") or "Done."
     edits = [e for e in (ans.get("edits") or []) if isinstance(e, dict) and e.get("find") and e.get("replace") is not None]
     if edits:
-        good = [e for e in edits if html.count(e["find"]) >= 1]
+        # exactly once: a find that occurs twice was placed on the first one, not the one commented on
+        good = [e for e in edits if html.count(e["find"]) == 1]
         if not good:
             return write_answer(key, tid, reply + " (None of the passages matched the article exactly, so nothing was applied.)", status="failed")
         note = "" if len(good) == len(edits) else " (%d of %d passages didn't match exactly and were left out.)" % (len(edits) - len(good), len(edits))
         return write_answer(key, tid, reply + note, extra={"edits": [{"find": e["find"], "replace": e["replace"]} for e in good]})
     find, rep = ans.get("find") or "", ans.get("replace") or ""
-    if not find or html.count(find) < 1:
+    if not find or html.count(find) != 1:
         return write_answer(key, tid, reply + " (The passage to replace didn't match the article exactly, so it is offered "
                             "on the card instead of applied.)", find=a.get("quote", ""), replace=rep, status="answered")
     return write_answer(key, tid, reply, find=find, replace=rep)
@@ -283,7 +285,10 @@ if __name__ == "__main__":
         f = Path(a.find_file).read_text(encoding="utf-8") if a.find_file else None
         r = Path(a.replace_file).read_text(encoding="utf-8") if a.replace_file else None
         if f is not None:
-            html = article_for(a.key).read_text(encoding="utf-8")
+            try:
+                html = article_for(a.key).read_text(encoding="utf-8")
+            except (ValueError, OSError):
+                html = f                                 # a test store with no article: nothing to check against
             if html.count(f) != 1:
                 print("warning: find occurs %d times in the file on disk (the editor matches its own copy)" % html.count(f))
         t = write_answer(a.key, a.thread, a.reply or "Done.", f, r)

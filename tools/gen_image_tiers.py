@@ -35,8 +35,9 @@ passed to every save. Dropping it makes the photos render visibly grey.
   py tools/gen_image_tiers.py --country Kosovo
   py tools/gen_image_tiers.py                      # every country
 """
-import argparse, os, sys
+import argparse, os, re, sys
 from pathlib import Path
+from urllib.parse import unquote
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -62,16 +63,32 @@ def original_for(web_stem: Path):
     return None
 
 
-def base_images(country=None):
-    """Every web image that is a BASE (not already a -1x/-2x/-3x or -mob-* file)."""
+def page_stems(page):
+    """the photos a page uses, as lower-case Images/web/<Country>/<path>/<Name> stems, whichever copy it names
+    (the original, the desktop file, a tier, a mobile file)"""
+    txt = (ROOT / page).read_text(encoding="utf-8")
+    out = set()
+    for u in re.findall(r'Images/[^"\',\s)]+\.(?:jpe?g|png|webp|heic)', txt, re.I):
+        rel = unquote(u)[len("Images/"):]
+        rel = rel[len("web/"):] if rel.startswith("web/") else rel
+        stem = re.sub(r"-(?:mob-)?[123]x$", "", rel.rsplit(".", 1)[0])
+        out.add(str(WEB / stem).lower())
+    return out
+
+
+def base_images(country=None, page=None):
+    """Every web image that is a BASE (not already a -1x/-2x/-3x or -mob-* file); with page, only that page's."""
     roots = [WEB / country] if country else [d for d in WEB.iterdir()
                                              if d.is_dir() and d.name not in SKIP_DIRS]
+    mine = page_stems(page) if page else None
     for r in roots:
         if not r.is_dir():
             continue
         for p in sorted(r.rglob("*.jpg")):
             stem = p.stem
             if "-mob-" in stem or stem.endswith(("-1x", "-2x", "-3x")):
+                continue
+            if mine is not None and str(p.with_suffix("")).lower() not in mine:
                 continue
             yield p
 
@@ -91,12 +108,13 @@ def save(img, dest: Path, icc, dry):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--country")
+    ap.add_argument("--page", help="only the photos this page (repo path) uses")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="rewrite tiers that exist")
     a = ap.parse_args()
 
     made = skipped = missing = 0
-    for web in base_images(a.country):
+    for web in base_images(a.country, a.page):
         stem = web.with_suffix("")
         orig = original_for(stem)
         if not orig:

@@ -1,82 +1,83 @@
 {
-  "airport": {
-    "anchor": "end",
-    "dx": -10.1,
-    "dy": -19.2,
-    "lat": 40.1473,
-    "lon": 44.3959,
-    "name": "EVN Airport"
+ "airport": {
+  "anchor": "end",
+  "dx": -10.1,
+  "dy": -19.2,
+  "lat": 40.1473,
+  "lon": 44.3959,
+  "name": "EVN Airport"
+ },
+ "country_width": 460,
+ "dots": [
+  {
+   "anchor": "end",
+   "dx": -11,
+   "dy": 4,
+   "lat": 40.5639,
+   "lon": 45.011,
+   "name": "Lake Sevan"
   },
-  "country_width": 460,
-  "dots": [
-    {
-      "anchor": "end",
-      "dx": -11,
-      "dy": 4,
-      "lat": 40.5639,
-      "lon": 45.011,
-      "name": "Lake Sevan"
-    },
-    {
-      "anchor": "start",
-      "dx": 11,
-      "dy": 4,
-      "lat": 40.1407,
-      "lon": 44.8178,
-      "name": "Garni & Geghard"
-    },
-    {
-      "anchor": "start",
-      "dx": 11,
-      "dy": 4,
-      "lat": 39.8784,
-      "lon": 44.5761,
-      "name": "Khor Virap"
-    }
-  ],
-  "iso3": "ARM",
-  "legs": [
-    {
-      "a": 0,
-      "b": 1,
-      "chip_dx": -20.2,
-      "chip_dy": -10.4,
-      "chip_off": 0,
-      "chip_side": 0,
-      "label": "Marshrutka · 2.5 hr"
-    }
-  ],
-  "margins": {
-    "b": 130,
-    "l": 240,
-    "r": 240,
-    "t": 130
+  {
+   "anchor": "start",
+   "dx": 11,
+   "dy": 4,
+   "lat": 40.1407,
+   "lon": 44.8178,
+   "name": "Garni & Geghard"
   },
-  "simplify": 110,
-  "slug": "armenia",
-  "smooth": true,
-  "stops": [
-    {
-      "anchor": "end",
-      "days": "Days 1–5",
-      "dx": -22.5,
-      "dy": 8.5,
-      "href": "#yerevan",
-      "lat": 40.1792,
-      "lon": 44.4991,
-      "n": 1,
-      "name": "Yerevan"
-    },
-    {
-      "anchor": "start",
-      "days": "Days 6–7",
-      "dx": 14,
-      "dy": -14,
-      "href": "#gyumri",
-      "lat": 40.7929,
-      "lon": 43.8465,
-      "n": 2,
-      "name": "Gyumri"
-    }
-  ]
+  {
+   "anchor": "start",
+   "dx": 11,
+   "dy": 4,
+   "lat": 39.8784,
+   "lon": 44.5761,
+   "name": "Khor Virap"
+  }
+ ],
+ "iso3": "ARM",
+ "legs": [
+  {
+   "a": 0,
+   "b": 1,
+   "chip_dx": -20.2,
+   "chip_dy": -10.4,
+   "chip_off": 0,
+   "chip_side": 0,
+   "label": "Marshrutka · 2.5 hr"
+  }
+ ],
+ "margins": {
+  "b": 130,
+  "l": 240,
+  "r": 240,
+  "t": 130
+ },
+ "simplify": 110,
+ "slug": "armenia",
+ "smooth": true,
+ "stops": [
+  {
+   "anchor": "end",
+   "days": "Days 1–5",
+   "dx": -22.5,
+   "dy": 8.5,
+   "href": "#yerevan",
+   "lat": 40.1792,
+   "lon": 44.4991,
+   "n": 1,
+   "name": "Yerevan"
+  },
+  {
+   "anchor": "start",
+   "days": "Days 6–7",
+   "dx": 14,
+   "dy": -14,
+   "href": "#gyumri",
+   "lat": 40.7929,
+   "lon": 43.8465,
+   "n": 2,
+   "name": "Gyumri"
+  }
+ ],
+ "page": "armenia/armenia-itinerary.html"
 }

@@ -33,6 +33,10 @@ from pathlib import Path
 
 from flask import Blueprint, abort, jsonify, request, send_file
 
+# every child gets a hidden console of its own: under the pythonw launcher a console program
+# (git, PowerShell, python.exe) otherwise opens a visible window (QA 2026-10-08)
+_NOWIN = 0x08000000 if __import__("sys").platform == "win32" else 0
+
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
@@ -51,10 +55,23 @@ def _read(p):
 
 
 def safe_rel(r):
-    """a page path a request may name: relative, inside the site, an .html file that exists"""
-    if not isinstance(r, str) or not r.endswith(".html") or r.startswith(("/", "\\")) or ":" in r or ".." in r.replace("\\", "/").split("/"):
+    """a page path a request may name: relative, inside the site, an .html file that exists. Returned in ONE
+    spelling (forward slashes, no ./, the case the disk has): the compress queue held the same draft under
+    five spellings, and a page open under one was compressed under another (stress test 2026-10-15)."""
+    if not isinstance(r, str) or not r.lower().endswith(".html") or r.startswith(("/", "\\")) or ":" in r or ".." in r.replace("\\", "/").split("/"):
         return None
-    return r if (ROOT / r).is_file() else None
+    if r.replace("\\", "/").lstrip("./").startswith(".tmp/"):
+        return None                                # scratch pages never reach the site-wide pipeline
+    p = ROOT / r.replace("\\", "/")
+    if not p.is_file():
+        return None
+    try:
+        real, root = p.resolve(), ROOT.resolve()
+        if root != real and root not in real.parents:
+            return None
+        return real.relative_to(root).as_posix()
+    except (OSError, ValueError):
+        return None
 
 
 SAFE_HREF = re.compile(r"^(?:\.\./)*[\w-]+(?:/[\w-]+)*\.html(?:#[\w-]+)?$")
@@ -176,9 +193,14 @@ def body_span(html):
     return start, (end if end > 0 else len(html))
 
 
+XM_RE = re.compile(r'<section class="xm[^>]*>.*?</section><!-- /explore-more -->', re.S)
+
+
 def body_of(html):
     s, e = body_span(html)
-    return html[s:e]
+    # the Explore More cards repeat other pages' titles, blurbs and photos by design (tools/explore_more.py):
+    # not this page's prose or photos
+    return XM_RE.sub("", html[s:e])
 
 
 def resolve_rel(href, page_rel):
@@ -891,6 +913,90 @@ def c_country_page(ctx):
                   tool={"kind": "editor-page", "label": "Open the country page", "rel": idx})
 
 
+def c_home_tile(ctx):
+    """the home page's Explore tile for a country with a live country page opens that page, not the field notes
+    (Kevin, 2026-10-24: "Turkiye card on home should link to the index card"). The launch does it (retire_field_notes
+    step 1b); this catches a tile left behind."""
+    h = _read(ROOT / "index.html"); dest = _read(ROOT / "destinations.html")
+    items, will = [], []
+    for country in ctx["countries"]:
+        live = (ROOT / country / "index.html").is_file()
+        m = re.search(r'<a class="tile" href="%s/(field-notes|index)\.html">.*?</a>' % re.escape(country), h, re.S)
+        if not m:
+            continue
+        if not live:
+            will.append({"page": "index.html", "detail": "Tile opens the field notes until the country page is live", "value": country})
+            continue
+        if m.group(1) != "index" or "Read Guide" not in m.group(0):
+            items.append({"page": "index.html", "detail": "The home tile still opens the field notes / says Read Notes", "value": country})
+        # the destinations card: opens the country page, wears the badge, says Read Guide (Kevin, 2026-10-24)
+        dc = re.search(r"<div class=\"home-dest-card\"[^>]*location\.href='%s/(field-notes|index)\.html'[^>]*>.*?art-card-btn\">([^<]*)</span>" % re.escape(country), dest, re.S)
+        if dc and (dc.group(1) != "index" or dc.group(2) != "Read Guide" or "art-card-badge" not in dc.group(0)):
+            items.append({"page": "destinations.html", "detail": "The destinations card should open the country page, wear the In-Depth badge and say Read Guide", "value": country + " (" + dc.group(2) + ")"})
+        # the map's entry: its url is what the hover box reads ("Read Guide" for an index.html url)
+        me = re.search(r'"[A-Z]{2}":\s*\{\s*name:\s*"[^"]*",\s*url:\s*"%s/(field-notes|index)\.html"' % re.escape(country), dest)
+        if me and me.group(1) != "index":
+            items.append({"page": "destinations.html", "detail": "The map's entry still opens the field notes, so its hover box says Field Notes", "value": country})
+    if items:
+        return result("warn", count_label(len(items), "card") + " not treating this as a guide country (the launch tool's steps 1 and 1b fix it: python tools/retire_field_notes.py <slug> --keep-field-notes).", items)
+    return result("pass", "The home tile and the destinations card open the country page and say Read Guide." if ctx["countries"] else "No country in this set.", will)
+
+
+def c_guide_cards(ctx):
+    """a kept field-notes page carries the guide card under each city whose guide is live (tools/guide_cards.py;
+    Kevin, 2026-10-23). The launch adds them (retire_field_notes.py, step 5b); this says which, and catches a guide
+    that went live without one."""
+    import guide_cards as gc
+    launching = {r.rsplit("/", 1)[-1] for r in ctx["set"] if ctx["kind"][r] not in ("country", "field-notes")}
+    will, missing, pages = [], [], []
+    for country in ctx["countries"]:
+        fn = ROOT / country / "field-notes.html"
+        rel = "%s/field-notes.html" % country
+        if not fn.is_file() or not gc.published(fn):
+            continue
+        if field_notes_plan(country) == "retire":
+            continue
+        live_guides = gc.guide_files(ROOT / country)
+        for sec, guide in gc.section_guides(fn, live_guides | launching):
+            live = guide in live_guides
+            if live and not gc.has_card(fn, guide):
+                missing.append({"page": rel, "detail": "Guide is live, no card in this section", "value": "#%s -> %s" % (sec, guide)})
+                pages.append(rel)
+            elif not live and guide in launching:
+                will.append({"page": rel, "detail": "Gets its guide card at launch", "value": "#%s -> %s" % (sec, guide)})
+    if missing:
+        return result("warn", count_label(len(missing), "field-notes section") + " without the card for %s guide." % agree(len(missing), "its", "their"),
+                      missing + will, fix={"kind": "guide-cards", "label": "Add the guide cards", "pages": sorted(set(pages))})
+    if will:
+        return result("pass", "The launch adds %s to the field notes." % count_label(len(will), "guide card"), will)
+    return result("pass", "No field-notes section needs a guide card.")
+
+
+def c_explore(ctx):
+    """every launching page ends with the three Explore More cards (tools/explore_more.py; Kevin, 2026-10-23). The
+    launch picks them again across the site; this catches a page that never got them, or a card pointing at a
+    page that is not there."""
+    items, pages, will = [], [], []
+    for rel in ctx["set"]:
+        if ctx["kind"][rel] == "country":
+            continue
+        h = ctx["html"][rel]
+        if 'id="explore-more"' not in h:
+            if rel.startswith("Drafts/"):                     # a draft gets its cards when it goes live
+                will.append({"page": rel, "detail": "Gets its Explore More cards at launch"})
+            else:
+                items.append({"page": rel, "detail": "No Explore More cards"}); pages.append(rel)
+            continue
+        for t in re.findall(r'class="xm-c" href="([^"]+)"', h):
+            if not (ROOT / rel).parent.joinpath(t.split("#")[0]).resolve().is_file():
+                items.append({"page": rel, "detail": "An Explore More card points at a page that is not there", "value": t}); pages.append(rel)
+    if not items:
+        return result("pass", "The launch adds the Explore More cards to %s; every live page has three that resolve." % count_label(len(will), "draft") if will
+                      else "Every page ends with three Explore More cards that resolve.", will)
+    return result("warn", count_label(len(items), "Explore More problem") + ".", items,
+                  fix={"kind": "explore", "label": "Pick the cards again", "pages": sorted(set(pages))})
+
+
 def c_coverage(ctx):
     import coverage_check as cc
     out = []
@@ -917,13 +1023,19 @@ def c_render(ctx):
     args = [sys.executable, str(TOOLS / "prelaunch_render.py")] + list(ctx["set"])
     try:
         pr = subprocess.Popen(args, cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                              encoding="utf-8", errors="replace")
+                              encoding="utf-8", errors="replace", creationflags=_NOWIN)
         def follow():                                  # "3/10" lines on stderr: the tab shows the progress
             for line in pr.stderr:
                 if line.startswith("PROGRESS ") and ctx.get("progress"):
                     ctx["progress"]("page %s of %s" % tuple(line.split()[1].split("/")))
         tf = threading.Thread(target=follow, daemon=True); tf.start()
-        out, _ = pr.communicate(timeout=900)
+        # stdout on its own reader: communicate() also read stderr, so it and follow() took turns with
+        # the PROGRESS lines and only 1 or 2 of 7 to 10 reached the tab (stress test 2026-10-09)
+        chunks = []
+        to = threading.Thread(target=lambda: chunks.append(pr.stdout.read()), daemon=True); to.start()
+        pr.wait(timeout=900)
+        to.join(timeout=60)
+        out = "".join(chunks)
         data = json.loads((out or "").strip().splitlines()[-1])
     except Exception as e:
         try: pr.kill()
@@ -1019,12 +1131,15 @@ CLAUDE = [
     ("cards", "Search & sharing", "Each article has its own card and share image", "Not the country's placeholder, and the share image cut from the card's photo.", c_cards),
     ("dates", "Search & sharing", "One date per page", "The date under the subtitle and dateModified agree.", c_dates),
     ("country-page", "Country", "The country page has a card for every article", "An article with no card is only findable by search.", c_country_page),
+    ("home-tile", "Country", "Home tile and destinations card treat it as a guide", "A guide country's home tile and destinations card open its country page and say Read Guide; the card wears the In-Depth badge.", c_home_tile),
+    ("guide-cards", "Country", "Field notes point to the new guides", "A field-notes section whose city has its own guide gets the guide card under its heading (tools/guide_cards.py).", c_guide_cards),
+    ("explore", "Links", "Explore More cards at the end of every page", "Three related articles by Kevin's rules (tools/explore_more.py); pinned slots kept.", c_explore),
     ("coverage", "Country", "Everything in the field notes made it into an article", "coverage_check.py (Sevanavank, the Black Wall and the plane once fell through).", c_coverage),
     ("render", "Rendering", "Loads clean and sharp at phone, tablet and desktop width", "Broken images, photos softer than the screen, sideways scroll and script errors at 393, 820 and 1440 px, and 1440 on a 1x monitor.", c_render),
 ]
 
 # the checks that are about the launch as a whole; every other one is reported per article
-COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage"}
+COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage", "guide-cards", "home-tile"}
 
 KEVIN = [
     # (id, title, why, tool kind, tool label, scope)
@@ -1219,7 +1334,7 @@ def api_run():
     d = request.get_json(force=True) or {}
     rels = [r for r in (safe_rel(x) for x in d.get("rels") or []) if r]
     if not rels:
-        return jsonify({"ok": False, "error": "choose an article"}), 400
+        return jsonify({"ok": False, "error": "This country has no pages to check yet."}), 400
     only = sorted(set(d.get("only") or []))
     jid = uuid.uuid4().hex[:10]
     with _lock:
@@ -1335,6 +1450,8 @@ def api_tick():
             row[cid] = {"at": datetime.now().isoformat(timespec="seconds")}
         else:
             row.pop(cid, None)
+            if not row:
+                t.pop(key, None)                      # an emptied row does not stay behind as {} (QA 2026-10-08)
         STATE.mkdir(parents=True, exist_ok=True)
         TICKS.write_text(json.dumps(t, indent=1, ensure_ascii=False), encoding="utf-8")
     return jsonify({"ok": True, "tick": t.get(key, {}).get(cid)})
@@ -1348,21 +1465,23 @@ def api_fix():
     d = request.get_json(force=True) or {}
     kind = d.get("kind")
     if kind == "relink":
-        items = [i for i in d.get("items") or [] if isinstance(i, dict) and i.get("apply") and (ROOT / i.get("page", "")).is_file()]
+        # safe_rel, like every other kind: `ROOT / "C:/abs/path"` IS that absolute path on Windows, so the
+        # old is_file() test let a request rewrite any file on the machine (QA 2026-10-08)
+        items = [i for i in d.get("items") or [] if isinstance(i, dict) and i.get("apply") and safe_rel(i.get("page"))]
         done, missed = relink_apply(items)
         return jsonify({"ok": True, "log": "%s relinked%s." % (count_label(len(done), "link"), ", %d not found (the page changed; run again)" % len(missed) if missed else ""),
                         "pages": sorted({i["page"] for i in done})})
     if kind == "mentions":
-        items = [i for i in d.get("items") or [] if isinstance(i, dict) and (ROOT / i.get("page", "")).is_file()]
+        items = [i for i in d.get("items") or [] if isinstance(i, dict) and safe_rel(i.get("page"))]
         done, missed = mentions_apply(items)
         return jsonify({"ok": True, "log": "%s linked%s." % (count_label(len(done), "mention"), ", %d skipped (the text moved; run again)" % len(missed) if missed else ""),
                         "pages": sorted({i["page"] for i in done})})
     if kind == "photos":
-        pages = [p for p in d.get("pages") or [] if p.startswith("Drafts/.Full Articles/") and (ROOT / p).is_file()]
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and p.startswith("Drafts/.Full Articles/")]
         logs = []
         for p in pages:
             r = subprocess.run([sys.executable, str(TOOLS / "draft_images.py"), p], cwd=str(ROOT), capture_output=True,
-                               text=True, encoding="utf-8", errors="replace", timeout=3600)
+                               text=True, encoding="utf-8", errors="replace", timeout=3600, creationflags=_NOWIN)
             logs.append("%s: %s" % (Path(p).name, "done" if r.returncode == 0 else "failed: " + (r.stderr or r.stdout)[-300:]))
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": pages})
     if kind == "share":
@@ -1379,6 +1498,19 @@ def api_fix():
                 r = {"log": "%s: Covers did not answer (%s)" % (Path(p).name, e)}
             logs.append(r.get("log") or r.get("error") or "")
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": d.get("pages") or []})
+    if kind == "explore":
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p]
+        r = subprocess.run([sys.executable, str(TOOLS / "explore_more.py")] + pages, cwd=str(ROOT), capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=600, creationflags=_NOWIN)
+        return jsonify({"ok": True, "log": (r.stdout or r.stderr).strip()[-800:], "pages": pages})
+    if kind == "guide-cards":
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and p.endswith("/field-notes.html")]
+        logs = []
+        for p in pages:
+            r = subprocess.run([sys.executable, str(TOOLS / "guide_cards.py"), p], cwd=str(ROOT), capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=300, creationflags=_NOWIN)
+            logs.append((r.stdout or r.stderr).strip()[-600:])
+        return jsonify({"ok": True, "log": "\n".join(logs), "pages": pages})
     if kind == "dates":
         pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p]
         logs = []
@@ -1386,7 +1518,7 @@ def api_fix():
             args = [sys.executable, str(TOOLS / "article_dates.py"), "--fix", "--match", p]
             if p.startswith("Drafts/"):
                 args.append("--drafts")
-            r = subprocess.run(args, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
+            r = subprocess.run(args, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, creationflags=_NOWIN)
             logs.append((r.stdout or r.stderr).strip()[-300:])
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": pages})
     return jsonify({"ok": False, "error": "no such fix"}), 400

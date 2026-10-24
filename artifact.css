@@ -2155,32 +2155,26 @@ body.gg-home, body.gg-home .page { background:#fff; }
        list item or its own paragraph. The first three rendered at 600 and the
        link at 400, so names changed weight down the same list. Whatever opens
        an entry is 600; a linked one keeps the green and the underline. ---- */
-.artbody li > a:first-child,
-.artbody p > a:first-child,
+/* a link that opens an entry is NOT bolded any more (Kevin, 2026-10-23: "do not bold first link"): the rule
+   reached 611 links that merely sat first in a sentence. A name that should be bold carries its own <b>. */
 .artbody li > b:first-child,
 .artbody p > b:first-child,
 .artbody li > strong:first-child,
 .artbody p > strong:first-child,
 .artbody li > u:first-child,
 .artbody p > u:first-child,
-.article-body li > a:first-child,
-.article-body p > a:first-child,
 .article-body li > b:first-child,
 .article-body p > b:first-child,
 .article-body li > strong:first-child,
 .article-body p > strong:first-child,
 .article-body li > u:first-child,
 .article-body p > u:first-child,
-.fn-section li > a:first-child,
-.fn-section p > a:first-child,
 .fn-section li > b:first-child,
 .fn-section p > b:first-child,
 .fn-section li > strong:first-child,
 .fn-section p > strong:first-child,
 .fn-section li > u:first-child,
 .fn-section p > u:first-child,
-.measure li > a:first-child,
-.measure p > a:first-child,
 .measure li > b:first-child,
 .measure p > b:first-child,
 .measure li > strong:first-child,
@@ -2237,7 +2231,7 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
 @media (max-width:768px) { nav .nav-search.active { right:24px; } }
 
 /* ---- the in-depth marker is the same dot in both places it appears ---- */
-.nav-fulldot, .art-card-badge .dot { width:6px !important; height:6px !important;
+.nav-fulldot, .art-card-badge .dot, .fn-section a.gb-card .dot, .xm .dot { width:6px !important; height:6px !important;
   border-radius:50% !important; background:var(--accent) !important; }
 .art-card-badge { border-radius:0 !important;
   background:rgba(18,26,21,.55) !important; font-family:var(--body) !important;
@@ -4152,3 +4146,67 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
    attribute stayed in force: an 800x374 photo drawn 576 wide came out 576x374, squeezed to 1.54:1 from
    2.14:1. The pre-redesign site set height:auto inline. Cropped shots size their img inside .fr; leave them. */
 :is(.one-shot, .day-shot):not(.cropped) img { height:auto; }
+
+/* ---- Guide card: a field-notes section whose city has its own published guide (Kevin, 2026-10-23: option 2 of
+   the guide-badge mock-ups). Written by tools/guide_cards.py right under .fn-city-hd; the photo column is 168 px on
+   desktop (its files are cut at 1.85/2.8/3.7x that) and the card stacks with a 16:9 photo on a phone. The link
+   rules above target p a / li a only, so none of them reach this card. ---- */
+.fn-section a.gb-card { display:grid; grid-template-columns:168px minmax(0,1fr); margin:0 0 24px; background:rgba(45,107,80,.07);
+  border:1px solid rgba(45,107,80,.18); border-radius:0; overflow:hidden; text-decoration:none; color:var(--ink);
+  font-weight:400; transition:box-shadow .15s; }   /* "sage wash", square (Kevin, 2026-10-24: "2 is the best", "use the square version") */
+.fn-section a.gb-card:hover { box-shadow:0 6px 18px rgba(28,40,33,.12); text-decoration:none; }
+.fn-section a.gb-card picture { display:block; min-width:0; overflow:hidden; }
+.fn-section a.gb-card img { display:block; width:100%; height:100%; min-height:132px; max-width:none; margin:0;
+  object-fit:cover; border-radius:0; transition:transform .45s ease; }
+.fn-section a.gb-card:hover img { transform:scale(1.05); }           /* the photo pops on roll-over (Kevin, 2026-10-24) */
+.fn-section a.gb-card .t { display:flex; flex-direction:column; justify-content:center; gap:5px; padding:14px 18px; min-width:0; }
+.fn-section a.gb-card .k { display:flex; align-items:center; gap:7px; font:600 10.5px var(--body); letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); }
+.fn-section a.gb-card .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; }
+.fn-section a.gb-card .h { font:500 21px/1.2 var(--display); letter-spacing:-.01em; color:var(--ink); }
+.fn-section a.gb-card .d { font:400 14px/1.5 var(--body); color:var(--faint); }
+.fn-section a.gb-card .b { margin-top:6px; font:600 13px var(--body); color:var(--accent); }
+.fn-section a.gb-card:hover .h { text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+@media (max-width:768px) {
+  .fn-section a.gb-card { grid-template-columns:minmax(0,1fr); }
+  .fn-section a.gb-card img { height:auto; min-height:0; aspect-ratio:16/9; }
+}
+
+/* ---- Explore More: three related articles at the end of every article and field-notes page (Kevin, 2026-10-23:
+   option 1 of the related-articles mock-ups on desktop and tablet, the thumbnail rows on a phone). Written by
+   tools/explore_more.py; the cards are 227 px wide in the 729 px column, so their files are cut at 1.85/2.8/3.7x
+   of that. The link rules above target p a / li a only, so none of them reach these cards. ---- */
+.xm { margin-top:40px; border-top:1px solid var(--line); padding-top:36px; font-family:var(--body); color:var(--ink); }
+.xm .xm-h { font:400 30px/1.1 var(--display) !important; letter-spacing:-.012em; margin:0 0 24px !important; padding:0 !important; border:0 !important; color:var(--ink); }
+.xm .xm-g { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+.xm a.xm-c { display:flex; flex-direction:column; gap:9px; min-width:0; text-decoration:none !important; color:var(--ink) !important; font-weight:400 !important; }
+.xm a.xm-c:hover .xm-t { text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+.xm picture { display:block; }
+.xm img { display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; border-radius:2px; margin:0 !important; max-width:none; }
+.xm .xm-k { display:flex; align-items:center; gap:7px; font:600 11px var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+.xm .xm-k.g { color:var(--accent); }
+.xm .xm-t { font:400 21px/1.2 var(--display); letter-spacing:-.01em; }
+.xm .xm-d { font:400 14px/1.5 var(--body); color:var(--faint); }
+.xm .xm-m { font:400 12.5px var(--body); color:var(--faint); }
+@media (max-width:768px) {
+  .xm .xm-g { grid-template-columns:minmax(0,1fr); gap:0; }
+  .xm a.xm-c { display:grid; grid-template-columns:104px minmax(0,1fr); grid-template-rows:auto auto; gap:4px 14px; align-items:center; padding:14px 0; border-bottom:1px solid rgba(28,40,33,.1); }
+  .xm a.xm-c:last-child { border-bottom:0; }
+  .xm picture { grid-row:1 / span 2; }
+  .xm .xm-t { font-size:19px; }
+  .xm .xm-d, .xm .xm-m { display:none; }
+}
+
+/* ---- a country card's overlay can be lighter or heavier than the site's: Covers' Thumbnail mode writes
+   --card-scrim on the card (Kevin, 2026-10-24: "add a bar to reduce the scrim on the thumbnail picker") ---- */
+.country-article-card-overlay { opacity:var(--card-scrim,1); }
+
+/* ---- About on a tablet (Kevin, 2026-10-24: "doesn't condense very well"): between the phone break and ~1024 px the
+   360 px photo column left the text a narrow strip and the 60 / 6 / 1 stats wrapped one per line. The hero stacks
+   there like the phone, and the stats share one row at every width. ---- */
+@media (max-width:1024px) {
+  .about-grid { grid-template-columns:1fr; gap:26px; }
+  .about-grid > div:first-child { max-width:420px; }
+}
+.ab-stats .ab-s { flex:1 1 90px; min-width:0; }
+.ab-stats.plain { gap:24px; }

@@ -167,6 +167,12 @@ def check(html, drafting=False):
         # Headings are reported separately: CLAUDE.md lists them as covered, lint_site has
         # always skipped them, and that is Kevin's call rather than this tool's.
         heading = m.group(1).lower() in ("h1", "h2", "h3", "h4")
+        # Kevin, 2026-10-20: "update em dash rule to apply to text/paragraphs only, titles and bullets are fine".
+        # So a heading or a list item is never reported; only a <p> is.
+        if heading or m.group(1).lower() == "li":
+            inner_dashes = []
+        else:
+            inner_dashes = list(re.finditer("—", inner))
         # Bounded on purpose. Slicing `inner[:dash]` for every dash is quadratic, and a
         # paragraph holding thousands of them (a pathological paste) took the request down.
         # The rule only ever looks back to the block opening or the previous sentence, so a
@@ -180,7 +186,7 @@ def check(html, drafting=False):
         WINDOW, MAX = 4000, 12
         OPEN = re.compile(r"<(?:li|p|h[1-4])[^>]*>", re.I)
         seen = 0
-        for h in re.finditer("—", inner):
+        for h in inner_dashes:
             if seen >= MAX:
                 add("em-dash", "More em dashes below this one on the same line.", text,
                     min(len(text) - 1, 0), min(len(text), 1), None, "low")

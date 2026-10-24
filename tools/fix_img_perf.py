@@ -16,6 +16,9 @@ import glob, os, re, sys, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DRY = "--dry-run" in sys.argv
+# --page <repo path>: that one page only (the compress queue's run for one article must not rewrite another
+# article that is open in the editor, 2026-10-16)
+PAGE = sys.argv[sys.argv.index("--page") + 1] if "--page" in sys.argv[:-1] else None
 IMG = re.compile(r"<img\b[^>]*>")
 
 # Page furniture that must never be mistaken for the LCP image: nav flags (.fl),
@@ -55,7 +58,7 @@ def dims(page, tag):
 
 
 def main():
-    pages = sorted(glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True))
+    pages = [os.path.join(ROOT, PAGE)] if PAGE else sorted(glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True))
     n_load = n_dim = n_eager = 0
     touched = 0
     for p in pages:

@@ -30,11 +30,16 @@ import json
 import re
 import statistics
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from flask import Flask, abort, jsonify, request, send_file
 from PIL import Image, ImageFilter, ImageOps, ImageStat
+
+# every child gets a hidden console of its own: under the pythonw launcher a console program
+# (git, PowerShell, python.exe) otherwise opens a visible window (QA 2026-10-08)
+_NOWIN = 0x08000000 if __import__("sys").platform == "win32" else 0
 
 try:
     import pillow_heif
@@ -142,6 +147,48 @@ HERO_FAIR = 1920         # below this it is visibly soft even at 1x
 THUMB_W = 340            # strip thumbnail width
 POOL = ThreadPoolExecutor(max_workers=min(4, (os.cpu_count() or 4)))   # was 8: decodes starved the requests
 _ACTIVE = {"album": None}            # the album on screen: warm-up for any other is skipped
+# At most four photos are decoded at once, request threads and pools together, and one variant is
+# built once however many ask for it. A scan with the strip open took Covers from 59 MB to 588 MB
+# (stress test 2026-10-09).
+_DECODE_GATE = threading.BoundedSemaphore(4)
+_build_locks, _build_guard = {}, threading.Lock()
+
+
+class _one_build:
+    def __init__(self, key):
+        self.key = str(key)
+
+    def __enter__(self):
+        with _build_guard:
+            ent = _build_locks.setdefault(self.key, [threading.Lock(), 0])
+            ent[1] += 1
+        self.ent = ent
+        ent[0].acquire()
+        return self
+
+    def __exit__(self, *a):
+        self.ent[0].release()
+        with _build_guard:
+            self.ent[1] -= 1
+            if self.ent[1] <= 0:
+                _build_locks.pop(self.key, None)
+
+
+def _atomic_write(path, text):
+    """write beside it, then replace: a kill mid-write left a store half-written, and Covers then
+    failed to read it (stress test 2026-10-09). Retried while a reader holds the file for a moment."""
+    path = Path(path)
+    tmp = path.with_name("%s.%d.%d.tmp" % (path.name, os.getpid(), threading.get_ident()))
+    tmp.write_text(text, encoding="utf-8")
+    for i in range(6):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if i == 5:
+                tmp.unlink(missing_ok=True)
+                raise
+            time.sleep(0.1 * (i + 1))
 # QA 2026-10-02: scan_album() blocked the /photos request behind every warm() job already queued
 # (thousands after a few albums), so a changed album never loaded. Scans measure on their own pool.
 SCAN_POOL = ThreadPoolExecutor(max_workers=3)
@@ -156,7 +203,7 @@ ALBUM_COUNTRY = {
     "mexico": "Mexico", "new zealand": "New Zealand", "nicaragua": "Nicaragua",
     "north macedonia": "North Macedonia", "patagonia": "Chile", "peru": "Peru",
     "philippines": "Philippines", "serbia": "Serbia", "turkey 2.0": "Türkiye",
-    "vietnam": "Vietnam",
+    "turkey": "Türkiye", "turkey ig": "Türkiye", "greece": "Greece", "vietnam": "Vietnam",
 }
 TITLES = {
     "Albania": "Albania Travel Guide: Himarë, Valbona to Theth Hike",
@@ -217,13 +264,16 @@ def albums():
                     "pickScrim": pick.get("scrim", 100) if pick else 100,
                     "pickTitle": pick.get("title", "") if pick else "",
                     "pickAngle": pick.get("angle", 0) if pick else 0,
+                    "pickFlip": flip_arg(pick.get("flip")) if pick else "",
+                    "pickSharpen": pick.get("sharpen", 0) if pick else 0,
                     "stars": starred.get(country, [])})
     return out
 
 
-def cache_path(src, w, crop, ratio, angle=0.0):
+def cache_path(src, w, crop, ratio, angle=0.0, flip="", sharpen=0):
     key = (f"{src}|{src.stat().st_mtime_ns}|{w}|"
-           f"{('c%.4f' % ratio) if crop else 'f'}|a{angle:.2f}")
+           f"{('c%.4f' % ratio) if crop else 'f'}|a{angle:.2f}" + (f"|f{flip}" if flip else "")
+           + (f"|s{int(sharpen)}" if sharpen else ""))
     return CACHE / (hashlib.md5(key.encode()).hexdigest() + ".jpg")
 
 
@@ -245,34 +295,87 @@ def straighten(im, angle):
     return rot.crop((int(cx - cw / 2), int(cy - ch / 2), int(cx - cw / 2) + cw, int(cy - ch / 2) + ch))
 
 
-def build(src, w, crop, ratio=None, angle=0.0):
+def flip_arg(s):
+    """'h', 'v', 'hv' or '' from whatever the client or a saved pick sends."""
+    s = str(s or "").lower()
+    return ("h" if "h" in s else "") + ("v" if "v" in s else "")
+
+
+def apply_flip(im, flip):
+    """Mirror the photo: 'h' left-to-right, 'v' top-to-bottom, 'hv' both. Always BEFORE the
+    straighten, the order the stage previews it (CSS scales, then rotates) and the order
+    gen_hero_variants / gen_card_variants cut it."""
+    flip = flip_arg(flip)
+    if "h" in flip:
+        im = ImageOps.mirror(im)
+    if "v" in flip:
+        im = ImageOps.flip(im)
+    return im
+
+
+def build(src, w, crop, ratio=None, angle=0.0, flip="", sharpen=0):
     """Render one cached variant. `crop` cuts the same shape the hero uses."""
     ratio = ratio or HERO_RATIO
-    cp = cache_path(src, w, crop, ratio, angle)
+    flip = flip_arg(flip)
+    sharpen = int(max(0, min(100, float(sharpen or 0))))
+    cp = cache_path(src, w, crop, ratio, angle, flip, sharpen)
     if cp.exists():
         return cp
-    im = Image.open(src)
+    if sharpen:
+        # sharpen the cached unsharpened cut of this very size: decoding the original again for every
+        # slider value took 2 s on a 5712 px HEIC and 45 s on a panorama (stress test 2026-10-15)
+        base = build(src, w, crop, ratio, angle, flip, 0)
+        with _one_build(cp), _DECODE_GATE:
+            if cp.exists():
+                return cp
+            from gen_hero_variants import sharpen as _sharpen
+            im = Image.open(base)
+            icc = im.info.get("icc_profile")
+            tmp = cp.with_name(cp.stem + f".{threading.get_ident()}.part.jpg")
+            _sharpen(im.convert("RGB"), sharpen).save(tmp, "JPEG", quality=80, icc_profile=icc)
+            try:
+                tmp.replace(cp)
+            except OSError:
+                tmp.unlink(missing_ok=True)
+                if not cp.exists():
+                    raise
+            return cp
+    rotated = abs(float(angle or 0)) > 1e-3
+    # the un-rotated base first, before the gate: it takes the gate itself, and a thread holding a
+    # permit while it waited for a second one could deadlock four of them
+    base_path = build(src, int(w * 1.25), False, ratio) if rotated else None
+    with _one_build(cp), _DECODE_GATE:
+        if cp.exists():
+            return cp
+        return _build_now(src, w, crop, ratio, angle, cp, base_path, flip)
+
+
+def _build_now(src, w, crop, ratio, angle, cp, base_path, flip="", sharpen=0):
+    im = Image.open(src if base_path is None else base_path)
     try:                                  # JPEG decodes at 1/2, 1/4, 1/8 for free
         im.draft("RGB", (w * 2, int(w * 2 / ratio)))
     except Exception:
         pass
     im = ImageOps.exif_transpose(im)
     icc = im.info.get("icc_profile")      # Display P3, must survive the convert
-    if abs(float(angle or 0)) > 1e-3:
+    if flip:
+        im = apply_flip(im, flip)         # before the straighten, like every other cut
+    if base_path is not None:
         # Rotate a cached, already-scaled JPEG of the photo, not the 5712px HEIC: decoding
         # the HEIC and rotating it full size took 7 s per drag step, and the stage sat
         # untilted until it arrived, which read as the slider doing nothing (Kevin,
         # 2026-09-26). The un-rotated variant at 1.25x the served width is built once and
         # cached like every other render; each angle then costs a JPEG decode and a
         # rotate at that size.
-        base = Image.open(build(src, int(w * 1.25), False, ratio))
-        base.load()
-        im = straighten(base.convert("RGB"), angle)
+        im = straighten(im.convert("RGB"), angle)
     if crop:
         im = ImageOps.fit(im, (w, round(w / ratio)), Image.LANCZOS,
                           centering=(0.5, 0.5))
     elif im.width > w:
         im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+    if sharpen:                           # after the resize, as gen_hero_variants cuts the files
+        from gen_hero_variants import sharpen as _sharpen
+        im = _sharpen(im.convert("RGB"), sharpen)
     # written aside first so a half-encoded file is never served: two threads
     # can ask for the same variant at once
     tmp = cp.with_name(cp.stem + f".{threading.get_ident()}.part.jpg")
@@ -414,8 +517,11 @@ def photos():
         return jsonify(hit[1])
     # the scan survives a restart: 400 headers off a synced folder is 15 seconds
     idx = CACHE / (hashlib.md5(folder.name.encode()).hexdigest() + ".index.json")
-    if idx.exists():
-        saved = json.loads(idx.read_text(encoding="utf-8"))
+    try:
+        saved = json.loads(idx.read_text(encoding="utf-8")) if idx.exists() else {}
+    except (OSError, ValueError):
+        saved = {}                                   # torn or locked: scan_album rebuilds it
+    if saved:
         if saved.get("stamp") == stamp:
             _PHOTO_CACHE[folder.name] = (stamp, saved["rows"])
             warm(folder.name, saved["rows"])
@@ -444,7 +550,7 @@ def scan_album(folder, stamp, idx, mapper=None):
     rows = sorted((r for r in rows if r), key=lambda r: r["name"])
     _PHOTO_CACHE[folder.name] = (stamp, rows)
     try:
-        idx.write_text(json.dumps({"stamp": stamp, "rows": rows}), encoding="utf-8")
+        _atomic_write(idx, json.dumps({"stamp": stamp, "rows": rows}))
     except OSError:
         pass
     return rows
@@ -526,23 +632,50 @@ def img():
     crop = request.args.get("crop") == "1"
     ratio = shape_ratio(request.args.get("shape", "home"),
                         request.args.get("vw", DEFAULT_VW))
+    import math
     try:
-        angle = max(-10.0, min(10.0, float(request.args.get("a", 0) or 0)))
-    except ValueError:
+        angle = float(request.args.get("a", 0) or 0)
+        angle = max(-10.0, min(10.0, angle)) if math.isfinite(angle) else 0.0
+    except (ValueError, OverflowError):
         angle = 0.0
-    r = send_file(build(src, w, crop, ratio, angle), mimetype="image/jpeg")
+    flip = flip_arg(request.args.get("f", ""))
+    try:
+        sharp = float(request.args.get("s", 0) or 0)
+        sharp = max(0, min(100, int(sharp))) if math.isfinite(sharp) else 0
+    except (ValueError, OverflowError):
+        sharp = 0
+    path = build(src, w, crop, ratio, angle, flip, sharp)
+    # a file another thread is replacing cannot be opened for a moment on Windows: that answered 500
+    # and the tile stayed blank (stress test 2026-10-09)
+    for i in range(6):
+        try:
+            r = send_file(path, mimetype="image/jpeg")
+            break
+        except PermissionError:
+            if i == 5:
+                raise
+            time.sleep(0.05 * (i + 1))
     r.headers["Cache-Control"] = "public, max-age=604800"
     return r
 
 
+_SAVE_LOCK = threading.Lock()     # one hero build at a time: two tabs saving different photos for one article
+                                  # wrote a set made of both (7 files of X, the JPEG of Y; stress test 2026-10-16)
+
+
 @app.post("/save")
 def save():
+    with _SAVE_LOCK:
+        return _save_locked()
+
+
+def _save_locked():
     picks = read_picks()
     body = dict(request.json)
     body["path"] = _posix(body.get("path", ""))
     # one pick per ARTICLE when one is linked; explore mode (no article) keeps the country slot
     picks[body.get("article") or body["country"]] = body
-    PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
+    _atomic_write(PICKS, json.dumps(picks, indent=1, ensure_ascii=False))
     out = {"ok": True, "saved": str(PICKS)}
     # With an article open in the editor, Save also BUILDS the hero: the eight files under
     # Images/web/<Country>/ cut from the archive original at the chosen angle. The editor
@@ -551,18 +684,42 @@ def save():
     if article and slug:
         import re as _re, subprocess, sys as _sys
         slug = _re.sub(r"[^a-z0-9-]", "", slug.lower())
-        web = SITE / "Images" / "web" / _web_country(body["country"])
+        # the ARTICLE's country folder. A pick from the "Turkey IG" album was saved with country "Turkey IG"
+        # and the hero went into a new Images/web/Turkey IG/ while the page lived in Turkiye (2026-10-15)
+        folder = _web_country(body["country"])
+        if not (SITE / "Images" / "web" / folder).is_dir():
+            # a country with no web folder yet (a new draft) gets one under ITS name; never the album's, and never
+            # a path part that is not a country
+            known = (SITE / "Images" / folder).is_dir() or any(d.is_dir() and d.name.lower().replace(" ", "-") == folder.lower().replace(" ", "-")
+                                                              for d in [*(SITE.iterdir()), *((SITE / "Drafts" / ".Full Articles").iterdir() if (SITE / "Drafts" / ".Full Articles").is_dir() else [])])
+            if not folder or folder.lower() in ("drafts", ".tmp", "images", "web") or folder.startswith(".") or not known:
+                # a country nothing on the site knows (no archive folder, no page folder, no draft folder) gets no hero
+                # folder of its own ("Zz QA O Nowhere" got eight files; stress test 2026-10-23)
+                out.update({"built": False, "slug": slug, "web": "", "log": "no country for this page (%r): the hero was not built" % body["country"]})
+                return jsonify(out)
+            (SITE / "Images" / "web" / folder).mkdir(parents=True, exist_ok=True)
+        web = SITE / "Images" / "web" / folder
         src = resolve_src(body["path"])
         if src.is_file() and slug:
             args = [_sys.executable, str(SITE / "tools" / "gen_hero_variants.py"), str(src),
                     "--out", str(web), "--slug", slug, "--force"]
             if abs(float(body.get("angle") or 0)) > 1e-3:
                 args += ["--angle", str(float(body["angle"]))]
-            r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=600)
+            if flip_arg(body.get("flip")):
+                args += ["--flip", flip_arg(body["flip"])]
+            try:
+                sharpen = float(body.get("sharpen") or 0)
+            except (TypeError, ValueError):
+                sharpen = 0.0
+            if 1 <= sharpen <= 100:
+                args += ["--sharpen", str(sharpen)]
+            r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=600, creationflags=_NOWIN)
             if r.returncode == 0:
-                _refit(["Images/web/%s/hero-%s.webp" % (body["country"], slug)], [])
+                _refit(["Images/web/%s/hero-%s.webp" % (web.name, slug)], [])
             out.update({"built": r.returncode == 0, "slug": slug,
-                        "web": "Images/web/" + body["country"],
+                        # the FOLDER's name, not the album's: "Türkiye" went into Antalya's page while the files
+                        # live in Images/web/Turkiye, so the hero 404'd and showed blank (Kevin, 2026-10-10)
+                        "web": "Images/web/" + web.name,
                         "log": "\n".join((r.stdout or r.stderr or "").strip().splitlines()[-4:])})
     return jsonify(out)
 
@@ -590,7 +747,7 @@ def _refit(web_files, pages):
     tool = str(SITE / "tools" / "fit_backgrounds.py")
     try:
         if web_files:
-            subprocess.run([_sys.executable, tool, "--refresh"] + web_files, cwd=str(SITE), capture_output=True, timeout=600)
+            subprocess.run([_sys.executable, tool, "--refresh"] + web_files, cwd=str(SITE), capture_output=True, timeout=600, creationflags=_NOWIN)
         if pages:
             subprocess.Popen([_sys.executable, tool] + pages, cwd=str(SITE), stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
@@ -607,7 +764,7 @@ def find_card(h, name):
 
 
 
-def _country_card(index_path, file_name, up, slug, country, pos):
+def _country_card(index_path, file_name, up, slug, country, pos, scrim=100):
     """Point the country page's card for `file_name` at card-<slug> with a position per slot.
     The inline background carries the 2:3 position (every width over 768); --pm carries the phone
     16:9 one, which artifact.css applies at 768 and below."""
@@ -621,12 +778,18 @@ def _country_card(index_path, file_name, up, slug, country, pos):
     web = "%sImages/web/%s/card-%s" % (up, country, slug)
     style = ("background:url('{w}.jpg') {d}/cover no-repeat;background-image:image-set(url('{w}.webp') type('image/webp'), "
              "url('{w}.jpg') type('image/jpeg'));--pm:{p};cursor:pointer").format(w=web, d=pos.get("card", "50% 50%"), p=pos.get("phone", "50% 50%"))
+    try:
+        sc = max(0, min(160, int(round(float(scrim)))))
+    except (TypeError, ValueError):
+        sc = 100
+    if sc != 100:                                # the card's overlay, lighter or heavier than the site's (Kevin, 2026-10-24)
+        style += ";--card-scrim:%s" % (("%.2f" % (sc / 100)).rstrip("0").rstrip("."))
     if tag.startswith("<a"):                     # a link card keeps its own display rules
         style = "display:block;text-decoration:none;" + style
     new = re.sub(r'\sstyle="[^"]*"', "", tag)
     new = new[:-1].rstrip("/").rstrip() + ' style="%s">' % style
     h = h[:s0] + new + h[e0:]
-    index_path.write_text(h, encoding="utf-8")
+    _atomic_write(index_path, h)
     return True
 
 
@@ -648,15 +811,16 @@ def _listing_cards(rel, slug, country, pos):
         style = (' style="background-image:image-set(url(\'{w}.webp\') type(\'image/webp\'), url(\'{w}.jpg\') type(\'image/jpeg\'));'
                  'background-size:cover;background-position:{d};--pm:{p}"').format(w=web, d=pos.get("list", "50% 50%"), p=pos.get("phone", "50% 50%"))
         h = pat.sub(lambda m: m.group(1) + style + m.group(2), h)
-        f.write_text(h, encoding="utf-8")
+        _atomic_write(f, h)
         wrote.append(name)
     return wrote
 
 
-def _share_image(src, dst, pos, angle=0.0):
+def _share_image(src, dst, pos, angle=0.0, flip=""):
     """The 1200x630 share image, cut from the same original at the 'og' crop (x%, y%)."""
     im0 = ImageOps.exif_transpose(Image.open(src)); icc = im0.info.get("icc_profile")
-    im = straighten(im0.convert("RGB"), angle) if abs(angle) > 1e-3 else im0.convert("RGB")
+    im = apply_flip(im0.convert("RGB"), flip)
+    im = straighten(im, angle) if abs(angle) > 1e-3 else im
     w, h = im.size; ar = 1200 / 630
     try:
         px, py = [float(v.strip().rstrip("%")) / 100 for v in pos.split()]
@@ -685,30 +849,34 @@ def save_thumb():
         return jsonify({"ok": False, "error": "the cards' photo is a web copy; pick its original from the strip first"}), 400
     src = resolve_src(body["path"])
     angle = float(body.get("angle") or 0)
+    flip = flip_arg(body.get("flip"))
     pos = body.get("positions") or {}
     og_path = body.get("og_path") or body["path"]
     og_angle = float(body.get("og_angle") if body.get("og_path") else angle)
+    og_flip = flip_arg(body.get("og_flip")) if body.get("og_path") else flip
     picks = json.loads(THUMB_PICKS.read_text(encoding="utf-8")) if THUMB_PICKS.exists() else {}
     picks[rel] = body
-    THUMB_PICKS.write_text(json.dumps(picks, indent=1, ensure_ascii=False), encoding="utf-8")
+    _atomic_write(THUMB_PICKS, json.dumps(picks, indent=1, ensure_ascii=False))
     web = SITE / "Images" / "web" / country
     args = [_sys.executable, str(SITE / "tools" / "gen_card_variants.py"), str(src), "--out", str(web), "--slug", slug]
     if abs(angle) > 1e-3:
         args += ["--angle", str(angle)]
-    r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=300)
+    if flip:
+        args += ["--flip", flip]
+    r = subprocess.run(args, capture_output=True, text=True, cwd=str(SITE), timeout=300, creationflags=_NOWIN)
     if r.returncode != 0:
         return jsonify({"ok": False, "error": (r.stderr or r.stdout)[-300:]}), 500
     page = (SITE / rel)
     up = "../" * (len(Path(rel).parts) - 1)
     wrote = []
-    if _country_card(page.parent / "index.html", page.name, up, slug, country, pos):
+    if _country_card(page.parent / "index.html", page.name, up, slug, country, pos, body.get("scrim", 100)):
         wrote.append((page.parent / "index.html").relative_to(SITE).as_posix())
     wrote += _listing_cards(rel, slug, country, pos)
     og = None
     if pos.get("og") and not og_path.startswith("web:"):     # a web-copy share image stays as it is
         stem = Path(rel).stem
         dst = SITE / "Images" / "web" / "og" / ("%s-%s.jpg" % (page.parent.name, stem))
-        _share_image(resolve_src(og_path), dst, pos["og"], og_angle)
+        _share_image(resolve_src(og_path), dst, pos["og"], og_angle, og_flip)
         og = dst.relative_to(SITE).as_posix()
         _point_og(page, og)
     _refit(["Images/web/%s/card-%s.webp" % (country, slug)], wrote)
@@ -724,12 +892,12 @@ def _thumb_picks():
 
 
 def _web_original(img, rel):
-    """(path, angle, how) of the archive photo a site image was cut from, or None"""
+    """(path, angle, how, flip) of the archive photo a site image was cut from, or None"""
     import glob as _glob
     name = Path(img).name
     tp = _thumb_picks().get(rel) or {}
     if re.match(r"card-.+\.(?:jpg|webp)$", name) and tp.get("path"):
-        return tp["path"], float(tp.get("angle") or 0), "thumbnail"
+        return tp["path"], float(tp.get("angle") or 0), "thumbnail", flip_arg(tp.get("flip"))
     m = re.match(r"hero-(.+?)(?:-2x|-mob-1x|-mob)?\.(?:jpg|webp)$", name)
     if m:
         picks = read_picks()
@@ -737,7 +905,7 @@ def _web_original(img, rel):
         if not (isinstance(hp, dict) and hp.get("slug") == m.group(1) and hp.get("path")):
             hp = next((v for v in picks.values() if isinstance(v, dict) and v.get("slug") == m.group(1) and v.get("path")), None)
         if hp:
-            return hp["path"], float(hp.get("angle") or 0), "hero"
+            return hp["path"], float(hp.get("angle") or 0), "hero", flip_arg(hp.get("flip"))
     if img.startswith("Images/web/"):
         stem = re.sub(r"-(?:mob-)?[123]x$|-mob$|-card(?:-[123]x)?$", "", img.split("Images/web/", 1)[1].rsplit(".", 1)[0])
         base = SITE / "Images" / stem
@@ -746,10 +914,10 @@ def _web_original(img, rel):
         if not found and root.is_dir():          # El Salvador's web copies sit one folder above their originals
             found = sorted(c for c in root.rglob(_glob.escape(Path(stem).name) + ".*") if c.suffix.lower() in EXT)
         if found:
-            return "site:" + found[0].relative_to(SITE).as_posix(), 0.0, "original"
+            return "site:" + found[0].relative_to(SITE).as_posix(), 0.0, "original", ""
         hit = _match_original(img, rel)
         if hit:
-            return hit, 0.0, "original"
+            return hit, 0.0, "original", ""
     return None
 
 
@@ -818,7 +986,7 @@ def _pos_xy(pos):
     return [a, b]
 
 
-def _photo_row(path, angle):
+def _photo_row(path, angle, flip=""):
     """What the stage needs to show a photo: name, size (after rotation and straightening) and tier"""
     src = resolve_src(path, display=True)
     try:
@@ -829,7 +997,8 @@ def _photo_row(path, angle):
     except Exception:
         return None
     tier = "good" if w >= HERO_MIN else "fair" if w >= HERO_FAIR else "low"
-    return {"path": path, "name": src.name, "w": w, "h": h, "heroW": w, "tier": tier, "angle": angle}
+    return {"path": path, "name": src.name, "w": w, "h": h, "heroW": w, "tier": tier, "angle": angle,
+            "flip": flip_arg(flip)}
 
 
 def _slide(small, ref0):
@@ -933,7 +1102,7 @@ def _crop_match(img, rel):
     hit = [best[1], best[2], best[3]] if best and best[0] <= 12 else None
     cache[key] = hit
     try:
-        MATCH_CACHE.write_text(json.dumps(cache, indent=1, ensure_ascii=False), encoding="utf-8")
+        _atomic_write(MATCH_CACHE, json.dumps(cache, indent=1, ensure_ascii=False))
     except Exception:
         pass
     return tuple(hit) if hit else None
@@ -973,11 +1142,11 @@ def _site_to_orig(W, H, card_ar, crop, slot_ar, pos):
 SLOT_AR = {"card": 294 / 441, "list": 395 / 296, "phone": 353 / 199, "og": 1200 / 630}
 
 
-def _og_offset(og_file, path, angle):
+def _og_offset(og_file, path, angle, flip=""):
     """Where the 1200x630 share image sits in a photo, as [x, y] percentages, or None when it was
     not cut from this photo. Compared small and in grey: the cut is the same pixels at another scale."""
     try:
-        small = Image.open(build(resolve_src(path, display=True), 480, False, None, angle)).convert("L")
+        small = Image.open(build(resolve_src(path, display=True), 480, False, None, angle, flip)).convert("L")
         og = Image.open(og_file).convert("L")
     except Exception:
         return None
@@ -992,7 +1161,9 @@ def thumb_current():
     """The article's thumbnails as the site shows them now: the cards' photo, as an archive original
     where it can be traced, with each slot's crop; the share image is always the cards' photo."""
     body = request.json or {}
-    return jsonify(_current(body.get("rel") or "", body.get("slots") or []))
+    out = _current(body.get("rel") or "", body.get("slots") or [])
+    out["scrim"] = (_thumb_picks().get(body.get("rel") or "") or {}).get("scrim", 100)
+    return jsonify(out)
 
 
 def _current(rel, slot_list):
@@ -1007,13 +1178,13 @@ def _current(rel, slot_list):
         if not found and img.startswith("Images/web/"):
             cm = _crop_match(img, rel)                # a card cut at a crop of its original
             if cm:
-                found, crop = (cm[0], 0.0, "crop"), (cm[1], cm[2])
-        path, angle, how = found if found else ("web:" + img, 0.0, "web")
+                found, crop = (cm[0], 0.0, "crop", ""), (cm[1], cm[2])
+        path, angle, how, flip = found if found else ("web:" + img, 0.0, "web", "")
     elif tp.get("path"):
-        path, angle, how = tp["path"], float(tp.get("angle") or 0), "thumbnail"
+        path, angle, how, flip = tp["path"], float(tp.get("angle") or 0), "thumbnail", flip_arg(tp.get("flip"))
     else:
         return out                               # nothing set yet: the stage stays on whatever you pick
-    photo = _photo_row(path, angle)
+    photo = _photo_row(path, angle, flip)
     if not photo:
         return out
     photo["how"] = how
@@ -1042,18 +1213,18 @@ def _current(rel, slot_list):
     # the share image: find which photo it was cut from, and where
     og_img = (slots.get("og") or {}).get("img")
     if og_img and (SITE / og_img).is_file():
-        cands = [(path, angle)]
+        cands = [(path, angle, flip)]
         hp = read_picks().get(rel)
-        for c in ([(tp["path"], float(tp.get("angle") or 0))] if tp.get("path") else []) + \
-                 ([(hp["path"], float(hp.get("angle") or 0))] if isinstance(hp, dict) and hp.get("path") else []):
+        for c in ([(tp["path"], float(tp.get("angle") or 0), flip_arg(tp.get("flip")))] if tp.get("path") else []) + \
+                 ([(hp["path"], float(hp.get("angle") or 0), flip_arg(hp.get("flip")))] if isinstance(hp, dict) and hp.get("path") else []):
             if c[0] not in [x[0] for x in cands]:
                 cands.append(c)
-        for cp, ca in cands:
+        for cp, ca, cf in cands:
             if cp.startswith("web:"):
                 continue
-            xy = _og_offset(SITE / og_img, cp, ca)
+            xy = _og_offset(SITE / og_img, cp, ca, cf)
             if xy:
-                row = photo if cp == path else _photo_row(cp, ca)
+                row = photo if cp == path else _photo_row(cp, ca, cf)
                 out["og"] = dict(row or {}, xy=xy, how="same" if cp == path else "other")
                 break
     # Kevin (2026-09-30): the share image is the cards' photo. Cut from anything else, it is shown
@@ -1079,7 +1250,7 @@ def _point_og(page, dst):
     h = page.read_text(encoding="utf-8")
     h2 = re.sub(r'(<meta\s+(?:property|name)="(?:og:image|twitter:image)"\s+content=")[^"]*(")', lambda m: m.group(1) + url + m.group(2), h)
     if h2 != h:
-        page.write_text(h2, encoding="utf-8")
+        _atomic_write(page, h2)
     return h2 != h
 
 
@@ -1100,7 +1271,8 @@ def recut_share():
     if ph["path"].startswith("web:"):
         return jsonify({"ok": False, "error": "the card's original was not found; pick it in Covers"}), 400
     dst = "Images/web/og/%s-%s.jpg" % (page.parent.name, page.stem)
-    _share_image(resolve_src(ph["path"]), SITE / dst, "%s%% %s%%" % tuple(og["xy"]), float(ph.get("angle") or 0))
+    _share_image(resolve_src(ph["path"]), SITE / dst, "%s%% %s%%" % tuple(og["xy"]), float(ph.get("angle") or 0),
+                 ph.get("flip") or "")
     _point_og(page, dst)
     return jsonify({"ok": True, "log": "%s: share image cut from %s." % (page.name, ph["name"]), "og": dst})
 
@@ -1129,7 +1301,7 @@ def star():
         lst.append(body["path"])
         on = True
     stars = {k: v for k, v in stars.items() if v}
-    STARS.write_text(json.dumps(stars, indent=1, ensure_ascii=False), encoding="utf-8")
+    _atomic_write(STARS, json.dumps(stars, indent=1, ensure_ascii=False))
     return jsonify(ok=True, starred=on, count=len(stars.get(body["country"], [])))
 
 
@@ -1203,10 +1375,10 @@ PAGE = r"""<!doctype html>
   .navband .nb-burger i { display:block; width:calc(20px * var(--navk,1));
     height:calc(1.5px * var(--navk,1)); background:rgba(28,40,33,.8); }
   /* the scrim strength is live: not every photo needs the same weight */
-  .thumb-mode .cpy, .thumb-mode .navband, .thumb-mode #scrim-ctl { display:none !important; }
+  .thumb-mode .cpy, .thumb-mode .navband, .thumb-mode #sharp-ctl { display:none !important; }   /* the scrim slider stays: Kevin, 2026-10-24 */
   /* a portrait card at the stage's full width ran far below the window: fit the frame to the height */
   .thumb-mode .hero { width:min(100%, calc((100vh - 230px) * var(--shape, 1))); margin:0 auto; }
-  .thumb-mode .veil { opacity:1 !important; background:linear-gradient(transparent 35%, rgba(6,10,8,.88)) !important; }
+  .thumb-mode .veil { opacity:var(--scrim,1) !important; background:linear-gradient(transparent 35%, rgba(6,10,8,.88)) !important; }   /* the slider lightens the card's overlay */
   .thumb-mode .hero[data-slot="og"] .veil { display:none; }
   .thumb-mode .hero::after { content:attr(data-card-title); position:absolute; left:1.25rem; right:1.25rem; bottom:1.5rem;
     font:400 1.05rem/1.35 Fraunces, Georgia, serif; color:#F4F1EA; pointer-events:none; }
@@ -1357,6 +1529,8 @@ PAGE = r"""<!doctype html>
   .strip-hidden .strip{visibility:hidden;padding:0;border:0}
   .strip-hidden .main > .side-handle{margin-right:-30px}
   .strip-hidden .main > .side-handle svg{transform:rotate(180deg)}
+  #flip-ctl{gap:4px}
+  #flip-ctl .flipbtn.on{background:#1C2821;color:#fff;border-color:#1C2821}
   .full .main > .side-handle{display:none}       /* full bleed already hides the strip */
   .full .main{grid-template-columns:minmax(0,1fr) !important}
   .full .main > .stage{grid-column:1}
@@ -1456,6 +1630,14 @@ with the window.">
     <span id="anglename" style="cursor:pointer">Straighten</span>
     <input type="range" id="angle" min="-5" max="5" step="0.1" value="0"><b id="anglev">0.0&deg;</b>
   </span>
+  <span class="scrim-ctl" id="sharp-ctl" title="Sharpen the hero files this photo is cut into: an unsharp mask applied after each resize, on the copies the site serves. The original is never changed. 0 is off; 30 to 50 is light. The stage shows it, so judge it at Full bleed. Double-click the word to reset. Heroes only: the thumbnail files are not sharpened.">
+    <span id="sharpname" style="cursor:pointer">Sharpen</span>
+    <input type="range" id="sharp" min="0" max="100" step="5" value="0"><b id="sharpv">0</b>
+  </span>
+  <span class="scrim-ctl" id="flip-ctl" title="Mirror the photo. A flip is cut into the hero files on Save, like the straighten.">
+    <button class="q flipbtn" id="fliph" title="Flip horizontally: left becomes right">&#8596; Flip</button>
+    <button class="q flipbtn" id="flipv" title="Flip vertically: top becomes bottom">&#8597; Flip</button>
+  </span>
   <span class="scrim-ctl" id="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
@@ -1495,8 +1677,17 @@ with the window.">
 <script>
 (function sideHandle() {
   const btn = document.getElementById('side-handle');
-  const apply = on => { document.documentElement.classList.toggle('strip-hidden', on); btn.title = (on ? 'Show ' : 'Hide ') + 'the photo strip (Ctrl+\\)';
-    btn.setAttribute('aria-label', (on ? 'Show ' : 'Hide ') + 'the photo strip'); btn.setAttribute('aria-expanded', String(!on)); };
+  // the strip at zero width collapses to a fraction of its height, the browser clamps its scroll to that, and
+  // the clamped value is what came back when it reopened (Kevin, 2026-10-10: "when you reopen the position on
+  // the sidebar moves"): the position is kept across the hide and put back once the strip has its width again
+  let kept = null;
+  const apply = on => {
+    const strip = document.getElementById('strip');
+    if (on && strip) kept = strip.scrollTop;
+    document.documentElement.classList.toggle('strip-hidden', on); btn.title = (on ? 'Show ' : 'Hide ') + 'the photo strip (Ctrl+\\)';
+    btn.setAttribute('aria-label', (on ? 'Show ' : 'Hide ') + 'the photo strip'); btn.setAttribute('aria-expanded', String(!on));
+    if (!on && strip && kept != null) { const k = kept; kept = null; strip.scrollTop = k; requestAnimationFrame(() => { strip.scrollTop = k; }); }
+  };
   let on = false; try { on = localStorage.getItem('side:heroes') === '1'; } catch (e) {}
   apply(on);
   btn.onclick = () => { on = !on; apply(on); try { localStorage.setItem('side:heroes', on ? '1' : '0'); } catch (e) {} };
@@ -1513,7 +1704,8 @@ async function copyForClaude() {
   const target = ARTICLE ? ARTICLE.rel : ((country || 'this country') + "'s country hero (explore mode)");
   const shapeName = $('shape').selectedOptions[0] ? $('shape').selectedOptions[0].textContent : $('shape').value;
   const txt = `Set the hero for ${target} to the photo ${cur.name} (album: ${album}, file: ${cur.path}).\n` +
-    `Placement: ${shapeName}. Scrim: ${$('scrimv').textContent}. Straighten: ${$('anglev').textContent.replace('\u00b0', ' degrees')}.\n` +
+    `Placement: ${shapeName}. Scrim: ${$('scrimv').textContent}. Straighten: ${$('anglev').textContent.replace('\u00b0', ' degrees')}.` +
+    ` Flip: ${flip ? ({ h: 'horizontal', v: 'vertical', hv: 'horizontal and vertical' })[flip] : 'none'}.\n` +
     `Title on the hero: ${$('title').value}\n\nCrop CSS from the hero picker:\n\n${$('cropcss').textContent.trim()}\n`;
   let ok = false;
   try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {
@@ -1569,6 +1761,8 @@ async function loadAlbums() {
              data-crops='${JSON.stringify(r.pickCrops)}' data-scrim="${r.pickScrim}"
              data-pick-title="${(r.pickTitle || '').replace(/"/g, '&quot;')}"
              data-pick-angle="${r.pickAngle || 0}"
+             data-pick-flip="${r.pickFlip || ''}"
+             data-pick-sharpen="${r.pickSharpen || 0}"
              data-stars="${(r.stars || []).join('|')}">${r.picked ? '✓ ' : '· '}${albumLabel(r)}</option>`
   ).join('');
   const done = rows.filter(r => r.picked).length;
@@ -1583,7 +1777,8 @@ async function loadAlbums() {
 let ARTICLE = null, PICKS = {};
 fetch('/picks').then(r => r.json()).then(p => { PICKS = p || {}; }).catch(() => {});
 // the linked article's own saved pick, if it has one (picks are stored per article)
-const articlePick = () => ARTICLE && PICKS[ARTICLE.rel] && (PICKS[ARTICLE.rel].country || '').toLowerCase() === (country || '').toLowerCase() ? PICKS[ARTICLE.rel] : null;
+const foldC = s => (s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();   // Türkiye = Turkiye
+const articlePick = () => ARTICLE && PICKS[ARTICLE.rel] && foldC(PICKS[ARTICLE.rel].country) === foldC(country) ? PICKS[ARTICLE.rel] : null;
 window.addEventListener('message', async ev => {
   const d = ev.data;
   if (!d || d.type !== 'article-context') return;
@@ -1594,7 +1789,7 @@ window.addEventListener('message', async ev => {
   // Switch first, then fetch the saved picks: waiting on them made the switch feel stuck.
   if ((ARTICLE && ARTICLE.rel) !== before) articleAlbum(); else applyArticle();
   try { PICKS = await (await fetch('/picks')).json(); } catch (e) {}
-  if (ARTICLE && $('album').options.length) render(true);   // restore this article's pick
+  if (ARTICLE && $('album').options.length && (ARTICLE.rel !== before)) render(true);   // restore this article's pick (a resend of the SAME article keeps your unsaved slider moves)
 });
 // switch to the open article's album; if the album list is not in yet, loadAlbums() calls
 // this again when it is
@@ -1603,8 +1798,18 @@ function articleAlbum() {
   if (!d || !$('album').options.length) { applyArticle(); return; }
   const fold = s => (s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();   // Türkiye = Turkiye
   const opts = [...$('album').options].filter(o => o.value !== '__article__');
-  const opt = d.country && (opts.find(o => fold(o.dataset.country) === fold(d.country)) || opts.find(o => fold(o.value).startsWith(fold(d.country))));
+  // the NEWEST trip to that country, as the editor's sidebar and Blog Picks choose. The first in the
+  // list was "Greece (2023)", the island trip, for every Meteora and Thessaloniki article (stress test 2026-10-09)
+  const year = o => +((o.value.match(/\((\d{4})\)/) || [])[1] || 0);
+  const newest = xs => xs.reduce((a, o) => (!a || year(o) > year(a) ? o : a), null);
+  let opt = d.country && (newest(opts.filter(o => fold(o.dataset.country) === fold(d.country))) || newest(opts.filter(o => fold(o.value).startsWith(fold(d.country)))));
+  // the album the saved hero actually came from wins over the newest trip (Fethiye's is "Turkey IG")
+  { const saved = PICKS[d.rel], alb = saved && saved.path ? String(saved.path).split('/')[0] : '';
+    const so = alb && opts.find(o => o.value === alb); if (so) opt = so; }
   if (opt && $('album').value !== opt.value) { $('album').value = opt.value; loadStrip(); }
+  // a different article in the SAME album: the photo, tilt and crops were still the last article's,
+  // under a chip naming the new one (QA 2026-10-08). loadStrip is where they reset.
+  else if (opt) loadStrip();
   else applyArticle();
 }
 function articleOption() {
@@ -1662,7 +1867,7 @@ async function loadStrip() {
   const my = ++STRIP_GEN, want = album;
   const ctx = want + '|' + (ARTICLE ? ARTICLE.rel : '');
   if (window.__stripCtx !== undefined && window.__stripCtx !== ctx) {   // another album or article: the old photo is not its pick
-    cur = null; picW = 0; crops = { desktop: 50, laptop: 50, phone: 50 }; if (angle) setAngle(0);
+    cur = null; picW = 0; crops = { desktop: 50, laptop: 50, phone: 50 }; if (flip) setFlip('', false); if (sharp) setSharp(0, false); if (angle) setAngle(0);
     document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
   }
   window.__stripCtx = ctx;
@@ -1719,9 +1924,11 @@ function render(restore) {
   $('picks-only').onclick = () => { PICKS_ONLY = !PICKS_ONLY; try { localStorage.setItem('heroPicksOnly', PICKS_ONLY ? '1' : '0'); } catch (e) {} render(true); };
   if (restore && saved && shape !== 'thumb') {
     const t = document.querySelector(`.strip .t[data-p="${CSS.escape(saved)}"]`);
-    const src = ap ? { dataset: { crops: JSON.stringify(ap.crops || {}), scrim: ap.scrim, pickAngle: ap.angle } } : sel;
+    const src = ap ? { dataset: { crops: JSON.stringify(ap.crops || {}), scrim: ap.scrim, pickAngle: ap.angle, pickFlip: ap.flip || '', pickSharpen: ap.sharpen || 0 } } : sel;
     if (t) { pick(t); crops = readCrops(src); applyCrop();
              setScrim(+src.dataset.scrim || 100);
+             setFlip(src.dataset.pickFlip || '', false);      // before the angle: one cut, not two
+             setSharp(+src.dataset.pickSharpen || 0, false);
              setAngle(+src.dataset.pickAngle || 0);
              t.scrollIntoView({block:'center'}); }
   } else if (keep) {
@@ -1834,8 +2041,9 @@ function wantW() {
    downgrade once a bigger one is loaded */
 function loadPic(force) {
   if (!cur) { return; }
-  const sp = stagePhoto(), a = sp === cur ? angle : (+sp.angle || 0);
-  if (sp.path + '|' + a !== picKey) { force = true; picKey = sp.path + '|' + a; }
+  const sp = stagePhoto(), a = sp === cur ? angle : (+sp.angle || 0), f = sp === cur ? flip : (sp.flip || '');
+  const s = (sp === cur && $('shape').value !== 'thumb') ? sharp : 0;   // the thumbnail files are not sharpened
+  if (sp.path + '|' + a + '|' + f + '|' + s !== picKey) { force = true; picKey = sp.path + '|' + a + '|' + f + '|' + s; }
   const w = full ? wantW() : 1600;
   if (!force && w <= picW) { return; }
   picW = w;
@@ -1845,9 +2053,20 @@ function loadPic(force) {
     applyCrop();
     if (full && wantW() > picW) { loadPic(); }   // the first guess used a stand-in ratio
   };
-  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(sp.path) + (a ? '&a=' + a : '');
+  img.src = '/img?w=' + w + '&p=' + encodeURIComponent(sp.path) + (a ? '&a=' + a : '') + (f ? '&f=' + f : '') + (s ? '&s=' + s : '');
 }
-let angle = 0, picKey = '';
+let angle = 0, flip = '', picKey = '', sharp = 0;
+// Sharpen: 0-100, cut into the served hero files on Save (gen_hero_variants --sharpen, and the per-window
+// files fit_backgrounds cuts). Like the tilt it belongs to one photo.
+function setSharp(v, reload) {
+  sharp = Math.max(0, Math.min(100, Math.round((+v || 0) / 5) * 5));
+  $('sharp').value = sharp;
+  $('sharpv').textContent = sharp;
+  if (reload !== false) { picW = 0; loadPic(true); }
+}
+$('sharp').addEventListener('input', e => { $('sharpv').textContent = e.target.value; });   // the number follows the drag
+$('sharp').addEventListener('change', e => setSharp(+e.target.value));                        // one cut, on release (arrow keys fire it too)
+$('sharpname').addEventListener('dblclick', () => setSharp(0));
 // Thumbnail mode: the share image is its own file, so it can be a different photo from the cards
 let OG = null;
 function onOgSlot() { return $('shape').value === 'thumb' && BP[bpi] && BP[bpi].key === 'og'; }
@@ -1874,6 +2093,27 @@ $('angle').addEventListener('input', e => {
   }, 400);
 });
 $('anglename').addEventListener('dblclick', () => setAngle(0));
+// Flip: 'h' (left-right), 'v' (top-bottom), 'hv' or ''. Like the tilt it belongs to one photo and is
+// cut into the files on Save; the server mirrors BEFORE it straightens, the order CSS previews it.
+function setFlip(v, reload) {
+  const t = String(v || '').toLowerCase();
+  const f = (t.includes('h') ? 'h' : '') + (t.includes('v') ? 'v' : '');
+  const changed = f !== flip;
+  flip = f;
+  $('fliph').classList.toggle('on', flip.includes('h'));
+  $('flipv').classList.toggle('on', flip.includes('v'));
+  if (reload !== false && changed) { picW = 0; loadPic(true); }     // a new cut of the photo
+}
+function toggleFlip(axis) {
+  if (!cur) return;
+  const img = $('pic');
+  // mirror what is on screen at once; the real cut replaces it when it loads
+  img.style.transform = axis === 'h' ? 'scaleX(-1)' : 'scaleY(-1)';
+  img.addEventListener('load', () => { img.style.transform = ''; }, { once: true });
+  setFlip(flip.includes(axis) ? flip.replace(axis, '') : flip + axis);
+}
+$('fliph').onclick = () => toggleFlip('h');
+$('flipv').onclick = () => toggleFlip('v');
 let resizeT = null;
 window.addEventListener('resize', () => {
   clearTimeout(resizeT);
@@ -1923,7 +2163,10 @@ function pollQuality() {
   const mine = album;
   qTimer = setInterval(async () => {
     if (album !== mine) { return clearInterval(qTimer); }
-    QUAL = await (await fetch('/quality?album=' + encodeURIComponent(mine))).json();
+    if (document.hidden) return;                 // a hidden tab polled every 1.2 s (stress test 2026-10-09)
+    try { QUAL = await (await fetch('/quality?album=' + encodeURIComponent(mine))).json(); }
+    catch (e) { return; }                        // a missed poll is retried on the next tick
+    if (album !== mine) return;
     if (!applyFocusFlags() && QUAL.done >= ALL.length) { clearInterval(qTimer); }
   }, 1200);
 }
@@ -1935,6 +2178,8 @@ function pick(t, allSlots) {
   t.classList.add('on');
   OG = null;                     // the share image is the cards' photo (Kevin, 2026-09-30)
   if (angle) setAngle(0);        // a tilt belongs to one photo (QA 2026-10-02: it carried over); a saved pick sets its own after this
+  if (flip) setFlip('', false);  // and so does a flip
+  if (sharp) setSharp(0, false); // and a sharpen
   cur = { path: t.dataset.p, name: t.dataset.name, w: +t.dataset.w,
           tier: t.dataset.tier, ar: tileAr(t) };
   crops = { desktop: 50, laptop: 50, phone: 50 };
@@ -2026,7 +2271,7 @@ function applyCrop() {
     : 'Drag the photo to set the crop.';
 
   const cls = '.hero .slide img.hp-' + slug(country);
-  const bake = angle ? '<i>/* cut with: python tools/gen_hero_variants.py &lt;original&gt; --angle ' + angle + ' ... */</i>\n' : '';
+  const bake = (angle || flip) ? '<i>/* cut with: python tools/gen_hero_variants.py &lt;original&gt;' + (angle ? ' --angle ' + angle : '') + (flip ? ' --flip ' + flip : '') + ' ... */</i>\n' : '';
   const line = i => cls + ' { object-position:' + posFor(i).replace(
     /([\d.]+%)(?!\s*})/, m => m) + '; }';
   const mark = i => {
@@ -2151,7 +2396,9 @@ async function restoreThumb(slots) {
     $('meta').innerHTML = `<span><b>${P.name}</b></span>`;
     place();
   };
+  setFlip(P.flip || '', false);
   setAngle(+P.angle || 0, false);
+  setScrim(+(r.scrim ?? 100));                     // the card's saved scrim, 100 when it has none
   const folder = P.path.startsWith('site:') ? '__article__' : P.path.split('/')[0];
   if (P.path.startsWith('web:') || ![...$('album').options].some(o => o.value === folder)) return direct();
   showPhoto(P.path, ok => { if (my !== THUMB_GEN) return; if (ok) place(); else direct(); });
@@ -2170,20 +2417,24 @@ window.addEventListener('message', ev => {
 $('same-hero').onclick = () => {
   const hp = ARTICLE && PICKS[ARTICLE.rel];
   if (!hp || !hp.path) return toast('This article\'s hero was not saved from the Hero Picker, so pick its photo from the strip');
-  showPhoto(hp.path, ok => { if (ok) { setAngle(+hp.angle || 0); applyCrop(); toast('The hero photo: now set each thumbnail crop'); } });
+  showPhoto(hp.path, ok => { if (ok) { setFlip(hp.flip || '', false); setAngle(+hp.angle || 0); applyCrop(); toast('The hero photo: now set each thumbnail crop'); } });
 };
 async function saveThumb() {
   if (!cur) return toast('Pick a photo first');
   if (!ARTICLE) return toast('Open the article in the editor first: a thumbnail belongs to an article');
   const positions = {}, rounded = {};
   BP.forEach((b, i) => { positions[b.key] = posFor(i); rounded[b.key] = Math.round((crops[b.key] ?? 50) * 10) / 10; });
+  if ($('save').disabled) return;                    // a double-click ran two builds on the same files
+  $('save').disabled = true;
   const body = { article: ARTICLE.rel, country: ARTICLE.country || country, path: cur.path, name: cur.name,
-                 slug: (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, ''), angle: angle,
-                 positions: positions, crops: rounded,
-                 og_path: OG ? OG.path : cur.path, og_angle: OG ? (+OG.angle || 0) : angle };
+                 slug: (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, ''), angle: angle, flip: flip,
+                 positions: positions, crops: rounded, scrim: scrim,
+                 og_path: OG ? OG.path : cur.path, og_angle: OG ? (+OG.angle || 0) : angle,
+                 og_flip: OG ? (OG.flip || '') : flip };
   let r;
   try { r = await (await fetch('/save_thumb', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(); }
   catch (e) { return toast('The Covers server did not answer'); }
+  finally { $('save').disabled = false; }
   if (!r.ok) return toast('Thumbnail not saved: ' + (r.error || ''));
   toast('Thumbnail saved: ' + r.card.split('/').pop() + (r.pages.length ? ', ' + r.pages.map(p => p.split('/').slice(-2).join('/')).join(', ') : '') + (r.og ? ' and the share image' : ''));
   if (window.parent !== window) parent.postMessage({ type: 'thumb-saved', card: r.card, pages: r.pages, og: r.og }, '*');
@@ -2196,27 +2447,38 @@ $('save').onclick = async () => {
   // objectPositionY is kept so anything reading the old schema still works; it
   // is the desktop value, and only when the desktop axis is the vertical one
   const legacy = geomFor(0).axis === 'y' ? rounded.desktop : 50;
-  const body = { country, path: cur.path, name: cur.name,
+  if ($('save').disabled) return;                  // a second click 250 ms later ran two builds on the same files
+  $('save').disabled = true;
+  if (ARTICLE) toast('Saving the pick and cutting the hero files (this can take a minute)…', 8000);
+  const body = { country: ARTICLE ? (ARTICLE.country || country) : country,   // the ARTICLE's country folder, never the album's name
+                 path: cur.path, name: cur.name,
                  crops: rounded,
                  objectPosition: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) },
                  objectPositionY: legacy,
                  scrim: scrim,
                  angle: angle,
+                 flip: flip,
+                 sharpen: sharp,
                  title: $('title').value,
                  article: ARTICLE ? ARTICLE.rel : '',
                  slug: ARTICLE ? (ARTICLE.heroSlug || (ARTICLE.rel || '').split('/').pop().replace(/\.html$/, '')) : '' };
-  const r = await (await fetch('/save', { method: 'POST',
-    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+  let r;
+  try {
+    r = await (await fetch('/save', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+  } finally { $('save').disabled = false; }
   if (ARTICLE) PICKS[ARTICLE.rel] = body;
   if (r && r.built !== undefined) {
     if (!r.built) { toast('Pick saved, but the hero files did not build: ' + (r.log || '').slice(-120)); }
     else if (window.parent !== window) {
-      parent.postMessage({ type: 'heroes-saved', slug: r.slug, web: r.web, country: country, scrim: scrim,
-        positions: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) }, angle: angle }, '*');
+      // rel: the editor only writes the hero into the article it was built for (QA 2026-10-08: a hero
+      // built for Thessaloniki landed in Meteora, opened while the build ran)
+      parent.postMessage({ type: 'heroes-saved', rel: body.article || '', slug: r.slug, web: r.web, country: country, scrim: scrim,
+        positions: { desktop: posFor(0), laptop: posFor(1), phone: posFor(2) }, angle: angle, flip: flip }, '*');
       toast('Hero built. The article editor has the new hero; save the article to keep it.');
     }
   }
-  if (!(r && r.built)) toast(ARTICLE ? 'Pick saved.' : 'Pick saved for ' + country + '.');   // a built hero keeps its own message
+  if (!(r && r.built !== undefined)) toast(ARTICLE ? 'Pick saved.' : 'Pick saved for ' + country + '.');   // a build (ok or not) keeps its own message
   const keep = $('album').value;
   await loadAlbums.reload(keep);
 };
@@ -2252,10 +2514,12 @@ loadAlbums.reload = async keep => {
   if (t) { t.classList.add('saved'); }
 };
 
-function toast(t) {
+let _toastT = null;
+function toast(t, ms) {
   const el = $('toast');
   el.textContent = t; el.classList.add('on');
-  setTimeout(() => el.classList.remove('on'), 2600);
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => el.classList.remove('on'), ms || 2600);
 }
 
 /* the three rules the site actually has, and the widest one judged at this
@@ -2302,10 +2566,10 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
   const LABEL = { 'Amsterdam _ Utrecht (2023)': 'Amsterdam & Utrecht (2023)',
                   'Normandy + Paris (2023)': 'Normandy & Paris (2023)' };
   const labelOf = name => LABEL[name] || name;
-  const albumKey = name => String(labelOf(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
+  const albumKey = name => String(labelOf(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').replace(/\s+(ig|guide)$/, '').split(/\s*[&+,]\s*/)[0].trim();
   window.albumEmoji = name => EMOJI[albumKey(name)] || '';
   window.albumFlag = function (name) {
-    const k = String(labelOf(name) || '').toLowerCase().replace(/\s*\(\d{4}\).*$/, '').replace(/\s+\d+(\.\d+)?$/, '').split(/\s*[&+,]\s*/)[0].trim();
+    const k = albumKey(name);                        // strips the year, "2.0" and "IG"/"Guide" (Turkey IG had no flag)
     const code = ALIAS[k] || ISO[k];
     return code ? 'http://127.0.0.1:5003/site/Images/web/flags/' + code + '.png' : '';
   };

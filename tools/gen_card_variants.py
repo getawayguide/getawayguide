@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--out", required=True, help="directory under Images/web/")
     ap.add_argument("--slug", required=True, help="card-<slug>.jpg")
     ap.add_argument("--angle", type=float, default=0.0, help="straighten first (same as the hero picker's slider)")
+    ap.add_argument("--flip", default="", help="mirror first: h (left-right), v (top-bottom) or hv")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -61,6 +62,11 @@ def main():
 
     src = ImageOps.exif_transpose(Image.open(src_path))
     icc = src.info.get("icc_profile")          # grab BEFORE convert()
+    flip = "".join(c for c in (a.flip or "").lower() if c in "hv")
+    if "h" in flip:                             # mirror BEFORE the straighten, as the picker previews it
+        src = ImageOps.mirror(src)
+    if "v" in flip:
+        src = ImageOps.flip(src)
     if abs(a.angle) > 1e-3:                    # the hero generator's rotate-and-inscribe, to the pixel
         w0, h0 = src.size
         rad = math.radians(abs(a.angle))
