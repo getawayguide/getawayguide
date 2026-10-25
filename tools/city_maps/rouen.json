@@ -3,7 +3,7 @@
   "kicker": "France",
   "city": "Rouen",
   "osm": ".tmp/rouen_osm.json",
-  "article": "Drafts/france/field-notes.html",
+  "article": "Drafts/Field Notes/france/field-notes.html",
   "embed": {
     "pre": " leaning half-timbered houses, is one of the prettiest streets in the city</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"mont-saint-michel\""

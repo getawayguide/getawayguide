@@ -14,7 +14,7 @@ ARTICLES = [  # (page, backup album)
     ("Drafts/.Full Articles/armenia/yerevan.html", "Armenia (2026)"),
     ("Drafts/.Full Articles/armenia/armenia-itinerary.html", "Armenia (2026)"),
     ("Drafts/.Full Articles/armenia/gyumri.html", "Armenia (2026)"),
-    ("Drafts/guatemala/field-notes.html", "Guatemala (2026)"),
+    ("Drafts/Full Articles/guatemala/antigua.html", "Guatemala (2026)"),
     ("kosovo/field-notes.html", "Kosovo (2025)"),
 ]
 errors = []

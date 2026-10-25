@@ -166,7 +166,8 @@ def has_card(page, guide):
 def process(page, dry):
     page = Path(page).resolve()
     folder = page.parent
-    s = page.read_text(encoding="utf-8")
+    with open(page, encoding="utf-8", newline="") as fh:   # keep the page's own line endings (2026-10-24)
+        s = fh.read()
     nl = "\r\n" if "\r\n" in s else "\n"
     cards = country_cards(folder)
     s = CARD_RE.sub("", s)                         # rebuilt from scratch: a stale card never survives

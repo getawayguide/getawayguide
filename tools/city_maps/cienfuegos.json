@@ -3,7 +3,7 @@
   "kicker": "Cuba",
   "city": "Cienfuegos",
   "osm": ".tmp/cienfuegos_osm.json",
-  "article": "Drafts/cuba/field-notes.html",
+  "article": "Drafts/Field Notes/cuba/field-notes.html",
   "embed": {
     "pre": " far more useful (for meals, drivers and tips) than the tired state hotels</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"varadero\""

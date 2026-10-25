@@ -3,7 +3,7 @@
   "kicker": "Morocco",
   "city": "Fez",
   "osm": ".tmp/fez_osm.json",
-  "article": "Drafts/morocco/field-notes.html",
+  "article": "Drafts/Field Notes/morocco/field-notes.html",
   "embed": {
     "pre": "uscous, kefta tagine, an array of Moroccan salads, and pastilla or briouat</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"chefchaouen\""

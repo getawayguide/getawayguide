@@ -61,7 +61,7 @@ def load_allow():
 def pages(drafts=False):
     pats = [os.path.join(ROOT, "*.html"), os.path.join(ROOT, "*", "*.html")]
     if drafts:
-        pats.append(os.path.join(ROOT, "Drafts", "*", "field-notes.html"))
+        pats += __import__("draft_paths").abs_globs(name="field-notes.html")
         # The articles actually being written live in Drafts/.Full Articles/
         # <country>/. glob NEVER matches a directory whose name starts with a
         # dot unless the pattern spells the dot out, and the skip below used to
@@ -69,7 +69,7 @@ def pages(drafts=False):
         # notes and none of the ~44 real articles. Every prose check therefore
         # passed on files it had never opened, which is why spelling and typo
         # problems kept being found by eye during review instead of here.
-        pats.append(os.path.join(ROOT, "Drafts", ".Full Articles", "*", "*.html"))
+        pats += __import__("draft_paths").abs_globs(folders=("Upcoming", "Full Articles"))
     for p in sorted({q for pat in pats for q in glob.glob(pat)}):
         rel = os.path.relpath(p, ROOT).replace("\\", "/")
         # .Archive is the retired tree; .Full Articles is live work.

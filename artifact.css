@@ -4196,6 +4196,14 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   .xm .xm-t { font-size:19px; }
   .xm .xm-d, .xm .xm-m { display:none; }
 }
+/* the itinerary template: the block is a .measure column inside .artbody, where the column rules zeroed its margin
+   and padding, so the rule sat 18px under the text and touched the heading. It spaces exactly as on an article
+   (Gyumri): 40px to the rule, 36px to the heading, 64px to the footer (40px on a phone, where .artbody pads 40px
+   itself). The "Last updated" line now sits above the block as the column's last line, without its own rule
+   (Kevin, 2026-10-24: "have all articles conform to the gyumri draft"). */
+.artbody > .xm.measure { margin:40px auto 64px !important; padding-top:36px !important; }
+.artbody > .measure.gg-updated { margin:0 auto !important; padding-top:0 !important; border-top:0 !important; }
+@media (max-width:768px) { .artbody > .xm.measure { margin-bottom:0 !important; } }
 
 /* ---- a country card's overlay can be lighter or heavier than the site's: Covers' Thumbnail mode writes
    --card-scrim on the card (Kevin, 2026-10-24: "add a bar to reduce the scrim on the thumbnail picker") ---- */

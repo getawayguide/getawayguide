@@ -289,6 +289,12 @@ async def _raster(svg, W, H, dpr=2):
         png = await pg.locator("#t").screenshot(); await br.close(); return png
 
 
+def _href(u):
+    """a URL for a double-quoted href: & < > " escaped, the apostrophe left alone (an &#x27; is re-serialized as ' by
+    the browser, so the editor's save safeguard counted the link as lost; 2026-10-24)"""
+    return html.escape(u, quote=False).replace('"', "&quot;")
+
+
 def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
     cfg = json.load(open(cfg_path, encoding="utf-8"))
     if article:
@@ -706,7 +712,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
                     lab = (f'<text class="cmlab" data-side="{side}" x="{x + dx:.1f}" y="{y + dy:.1f}" text-anchor="{anc}" '
                            f'font-size="{10.5 * ps:.1f}" font-weight="600" fill="{INK}" '
                            f'stroke="{LAND}" stroke-width="{3.2 * ps:.1f}">{html.escape(name)}</text>')
-                o.append(f'<a href="{html.escape(HREF[name])}" target="_blank" rel="noopener"><g class="{cls}" data-i="{i}" data-name="{html.escape(name)}">'
+                o.append(f'<a href="{_href(HREF[name])}" target="_blank" rel="noopener"><g class="{cls}" data-i="{i}" data-name="{html.escape(name)}">'
                          f'<g transform="translate({x:.1f} {y:.1f}) scale({ps})">'
                          f'<path d="{PIN}" transform="translate(0.7 1.5)" fill="#000" opacity="0.2"/>'
                          f'<path d="{PIN}" fill="{fill}" stroke="#fff" stroke-width="1.1"/>{mk}'
@@ -733,7 +739,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             h.append(f'<div class="cmhead">{html.escape(label)}</div>')
             for i, (name, la, lo, c, key) in items:
                 ac = " active" if active == i else ""
-                h.append(f'<a class="cmrow{ac}" data-i="{i}" href="{html.escape(HREF[name])}" target="_blank" rel="noopener">'
+                h.append(f'<a class="cmrow{ac}" data-i="{i}" href="{_href(HREF[name])}" target="_blank" rel="noopener">'
                          f'<span class="num" style="background:{fill};color:{badge_text}">{i}</span><span class="nm">{html.escape(name)}</span></a>')
         for hdr, trips, mark in [("MULTI-DAY TRIP", MULTITRIPS, "↗"), ("DAY TRIPS", DAYTRIPS, "↗"),
                                  ("ACTIVITIES", ACTIVITIES, "✦")]:  # legend-only sections
@@ -741,7 +747,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             h.append(f'<div class="cmhead">{hdr}</div>')
             for dt in trips:
                 tm = f'<span class="dt-time"> ({html.escape(dt["time"])})</span>' if dt["time"] else ""
-                h.append(f'<a class="cmrow cmrow-dt" href="{html.escape(dt["href"])}" target="_blank" rel="noopener">'
+                h.append(f'<a class="cmrow cmrow-dt" href="{_href(dt["href"])}" target="_blank" rel="noopener">'
                          f'<span class="num num-dt">{mark}</span><span class="nm">{html.escape(dt["name"])}{tm}</span></a>')
         h.append('</div>'); return "\n".join(h)
 

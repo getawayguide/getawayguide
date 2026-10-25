@@ -217,7 +217,22 @@ def apply(slug, decisions=None, root=None, dry=False):
     if problems:
         return {"ok": False, "problems": problems}
 
-    for op, f, a, b, _ in plan:
+    # The grammar changes land by POSITION in the article as it was, all at once. Applied one after another with
+    # str.replace, a change whose new text held a later change's find made that one land twice: Franz Josef
+    # (2026-10-24) got two "West Coast on the Way" sections and lost its "Getting to Franz Josef".
+    gram = {c["id"] for c in changes if c["kind"] == "grammar"}
+    g_ops = [(a, b) for op, f, a, b, cid in plan if op == "replace" and f == p["article"] and cid in gram]
+    if g_ops:
+        s0 = get(p["article"])
+        spots = sorted((s0.find(a), s0.find(a) + len(a), b) for a, b in g_ops)
+        if any(x[1] > y[0] for x, y in zip(spots, spots[1:])):
+            return {"ok": False, "problems": ["two accepted changes touch the same text"]}
+        for i, j, rep in reversed(spots):
+            s0 = s0[:i] + rep + s0[j:]
+        files[p["article"]] = s0
+    for op, f, a, b, cid in plan:
+        if op == "replace" and f == p["article"] and cid in gram:
+            continue                                     # already placed above
         s = get(f)
         if op == "replace":
             s = s.replace(a, b)
@@ -309,7 +324,7 @@ def slug_for(rel):
 
 def comments_key(rel):
     """comments are per ARTICLE, proposal or not: 'armenia/yerevan.html' -> 'armenia__yerevan'"""
-    parts = [x for x in rel.replace("\\", "/").split("/") if x and x not in ("Drafts", ".Full Articles")]
+    parts = [x for x in rel.replace("\\", "/").split("/") if x and x not in ("Drafts", ".Full Articles", "Upcoming", "Full Articles", "Field Notes", ".Archive")]
     return "__".join(re.sub(r"[^A-Za-z0-9-]+", "-", x.lstrip(".").rsplit(".", 1)[0]) for x in parts[-2:])
 
 

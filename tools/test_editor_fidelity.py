@@ -10,7 +10,7 @@ own sheets in the editor (before it, only guide pages had them)."""
 
 import asyncio, json, os, sys
 from playwright.async_api import async_playwright
-PAGES = sys.argv[1:] or ["Drafts/.Full Articles/turkiye/antalya.html", "Drafts/.Full Articles/turkiye/blue-cruise.html", "greece/thessaloniki.html"]
+PAGES = sys.argv[1:] or ["turkiye/antalya.html", "Drafts/Upcoming/north-macedonia/skopje.html", "greece/thessaloniki.html"]
 PROPS = ["display", "margin-top", "margin-bottom", "font-family", "font-size", "line-height", "color", "font-weight", "letter-spacing",
          "text-align", "background-color", "border-top-width", "border-bottom-width", "grid-template-columns", "width"]
 SEL = ["p", "p + p", "h2.article-h2", "h3.article-h3", "h2.article-h2 + *", ".img-pair", ".img-pair > span", ".img-landscape", ".img-caption",

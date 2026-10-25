@@ -3,7 +3,7 @@
   "kicker": "Spain",
   "city": "Barcelona",
   "osm": ".tmp/barcelona_osm.json",
-  "article": "Drafts/spain/field-notes.html",
+  "article": "Drafts/Field Notes/spain/field-notes.html",
   "embed": {
     "pre": "celona is notorious for pickpockets, especially on La Rambla and the metro</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"madrid\""

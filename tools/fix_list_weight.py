@@ -65,7 +65,7 @@ def fix(html):
 
 def pages():
     seen = set()
-    for pat in ("**/*.html", "Drafts/.Full Articles/*/*.html"):
+    for pat in ["**/*.html"] + __import__("draft_paths").globs(folders=("Upcoming", "Full Articles")):
         for p in glob.glob(os.path.join(ROOT, pat), recursive=True):
             rel = os.path.relpath(p, ROOT).replace("\\", "/")
             if rel.startswith(SKIP) or rel in seen:

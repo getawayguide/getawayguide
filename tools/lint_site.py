@@ -53,7 +53,7 @@ def pages():
     # --drafts has to name that path explicitly.
     found = glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True)
     if INCLUDE_DRAFTS:
-        found += glob.glob(os.path.join(ROOT, "Drafts", ".Full Articles", "*", "*.html"))
+        found += [p for pat in __import__("draft_paths").abs_globs() for p in glob.glob(pat)]
     for p in sorted(set(found)):
         r = rel(p)
         if r.startswith("Drafts/") and not INCLUDE_DRAFTS: continue

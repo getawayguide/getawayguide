@@ -41,7 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
-DRAFTS = ROOT / "Drafts" / ".Full Articles"
+import draft_paths as dp          # where the drafts live (Upcoming / Full Articles / Field Notes; 2026-10-24)
 STATE = ROOT / ".tmp" / "prelaunch"
 TICKS = STATE / "ticks.json"
 ALIASES = TOOLS / "relink_aliases.json"
@@ -109,19 +109,13 @@ def draft_twins(rel):
     """the draft paths a live page was launched from"""
     if rel.startswith("Drafts/"):
         return []
-    out = ["Drafts/.Full Articles/" + rel]
-    if rel.endswith("/field-notes.html"):
-        out.append("Drafts/" + rel)
-    return out
+    c, p = (rel.split("/", 1) + [""])[:2]
+    return ["Drafts/%s/%s" % (f, rel) for f in dp.WORK]
 
 
 def live_twin(rel):
-    """where a draft goes when it is published: Drafts/.Full Articles/<c>/<p> -> <c>/<p>"""
-    if rel.startswith("Drafts/.Full Articles/"):
-        return rel[len("Drafts/.Full Articles/"):]
-    if rel.startswith("Drafts/") and rel.endswith("/field-notes.html"):
-        return rel[len("Drafts/"):]
-    return rel
+    """where a draft goes when it is published: Drafts/<folder>/<c>/<p> -> <c>/<p>"""
+    return dp.live_rel(rel) if rel.startswith("Drafts/") else rel
 
 
 def countries():
@@ -135,15 +129,8 @@ def countries():
         c = out.setdefault(country, {"country": country, "label": "", "articles": []})
         c["articles"].append({"rel": rel, "title": title_of(h) or p.stem, "kind": kind_of(rel), "status": status,
                               "live": status == "live" or (ROOT / live_twin(rel)).is_file()})
-    if DRAFTS.is_dir():
-        for d in sorted(DRAFTS.iterdir()):
-            if d.is_dir() and not d.name.startswith("."):
-                for p in sorted(d.glob("*.html")):
-                    add(d.name, p.relative_to(ROOT).as_posix(), "draft")
-    for d in sorted((ROOT / "Drafts").iterdir()):
-        fn = d / "field-notes.html"
-        if d.is_dir() and not d.name.startswith(".") and fn.is_file():
-            add(d.name, fn.relative_to(ROOT).as_posix(), "draft")
+    for p in dp.draft_pages():                        # Upcoming, Full Articles and Field Notes (2026-10-24)
+        add(p.parent.name, p.relative_to(ROOT).as_posix(), "draft")
     for d in sorted(ROOT.iterdir()):
         idx = d / "index.html"
         if d.is_dir() and d.name not in ("Drafts", "archive", ".tmp", "tools") and idx.is_file() and "country-article-card" in _read(idx):
@@ -676,7 +663,7 @@ def c_photos(ctx):
                 items.append({"page": rel, "detail": "Full-resolution original", "value": src.rsplit("/", 1)[-1]})
     if not items:
         return result("pass", "Every body photo is a compressed web copy.")
-    fixable = [r for r in {i["page"] for i in items} if r.startswith("Drafts/.Full Articles/")]
+    fixable = [r for r in {i["page"] for i in items} if r.startswith(dp.PREFIXES[:2])]
     return result("fail", "%s still at full resolution: a phone downloads the original." % count_label(len(items), "photo"), items,
                   fix={"kind": "photos", "label": "Run the photo pipeline", "pages": fixable} if fixable else None)
 
@@ -694,7 +681,7 @@ def c_tiers(ctx):
     if not items:
         return result("pass", "Every <picture> and hero has its phone, tablet and 2x/3x files.")
     high = any(i["sev"] == "high" for i in items)
-    fixable = sorted({i["page"] for i in items if i["page"].startswith("Drafts/.Full Articles/")})
+    fixable = sorted({i["page"] for i in items if i["page"].startswith(dp.PREFIXES[:2])})
     kinds = {}
     for i in items:
         k = "missing files" if "not published" in i["detail"] else "single-size sources" if "single size" in i["detail"] else "no WebP" if "WebP" in i["detail"] else "originals as fallback" if "original" in i["detail"] else "other"
@@ -972,6 +959,21 @@ def c_guide_cards(ctx):
     return result("pass", "No field-notes section needs a guide card.")
 
 
+def c_folders(ctx):
+    """a launching country's live folder holds live pages only (Kevin, 2026-10-24: "remove any files that are not online
+    anymore like armenia field notes, those belong in the archive folder. Add this to the launch process"). A retired
+    page's address is a 301 in _redirects and the page lives in Drafts/.Archive (tools/site_archive.py); the retire step
+    of a launch does it, and this catches a stub or a stray file left in the folder."""
+    import site_archive
+    items = [{"page": rel, "detail": "A redirect stub: the address belongs in _redirects, the page in Drafts/.Archive" if kind == "stub"
+              else "Not a page: it belongs in Drafts/.Archive", "value": detail if kind == "stub" else rel.split("/")[-1]}
+             for kind, rel, detail in site_archive.plan(ctx["countries"])]
+    if not items:
+        return result("pass", "Each country folder holds its live pages and nothing else.")
+    return result("warn", count_label(len(items), "file") + " in the country folder that is not on the site.", items,
+                  fix={"kind": "archive", "label": "Move them to the archive", "pages": sorted({i["page"] for i in items})})
+
+
 def c_explore(ctx):
     """every launching page ends with the three Explore More cards (tools/explore_more.py; Kevin, 2026-10-23). The
     launch picks them again across the site; this catches a page that never got them, or a card pointing at a
@@ -987,6 +989,9 @@ def c_explore(ctx):
             else:
                 items.append({"page": rel, "detail": "No Explore More cards"}); pages.append(rel)
             continue
+        n = h.count('id="explore-more"')
+        if n > 1:        # the itinerary layout's "xm measure" block went unrecognized and stacked a copy per run (2026-10-24)
+            items.append({"page": rel, "detail": "%d Explore More blocks stacked on one page" % n}); pages.append(rel)
         for t in re.findall(r'class="xm-c" href="([^"]+)"', h):
             if not (ROOT / rel).parent.joinpath(t.split("#")[0]).resolve().is_file():
                 items.append({"page": rel, "detail": "An Explore More card points at a page that is not there", "value": t}); pages.append(rel)
@@ -1003,8 +1008,8 @@ def c_coverage(ctx):
     for country in ctx["countries"]:
         fn = ROOT / country / "field-notes.html"
         if not fn.exists():
-            fn = ROOT / "Drafts" / country / "field-notes.html"
-        arts = sorted((DRAFTS / country).glob("*.html")) or sorted(p for p in (ROOT / country).glob("*.html") if p.name != "field-notes.html")
+            fn = next(iter(dp.field_notes(country)), fn)
+        arts = dp.articles(country) or sorted(p for p in (ROOT / country).glob("*.html") if p.name != "field-notes.html")
         if not fn.exists() or not arts:
             continue
         texts = [cc.prose(p) for p in arts]
@@ -1134,12 +1139,13 @@ CLAUDE = [
     ("home-tile", "Country", "Home tile and destinations card treat it as a guide", "A guide country's home tile and destinations card open its country page and say Read Guide; the card wears the In-Depth badge.", c_home_tile),
     ("guide-cards", "Country", "Field notes point to the new guides", "A field-notes section whose city has its own guide gets the guide card under its heading (tools/guide_cards.py).", c_guide_cards),
     ("explore", "Links", "Explore More cards at the end of every page", "Three related articles by Kevin's rules (tools/explore_more.py); pinned slots kept.", c_explore),
+    ("folders", "Country", "The country folder holds live pages only", "A retired page's address is a 301 in _redirects and the page is in Drafts/.Archive; nothing else sits in the folder (tools/site_archive.py).", c_folders),
     ("coverage", "Country", "Everything in the field notes made it into an article", "coverage_check.py (Sevanavank, the Black Wall and the plane once fell through).", c_coverage),
     ("render", "Rendering", "Loads clean and sharp at phone, tablet and desktop width", "Broken images, photos softer than the screen, sideways scroll and script errors at 393, 820 and 1440 px, and 1440 on a 1x monitor.", c_render),
 ]
 
 # the checks that are about the launch as a whole; every other one is reported per article
-COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage", "guide-cards", "home-tile"}
+COUNTRY_SCOPE = {"repeats", "dup-photos", "country-page", "coverage", "guide-cards", "home-tile", "folders"}
 
 KEVIN = [
     # (id, title, why, tool kind, tool label, scope)
@@ -1215,7 +1221,7 @@ def _ctx(rels, client):
     cs = sorted({r.split("/")[-2] for r in rels})
     all_country = []
     for c in cs:
-        all_country += [p.relative_to(ROOT).as_posix() for p in sorted((DRAFTS / c).glob("*.html"))] if (DRAFTS / c).is_dir() else []
+        all_country += [p.relative_to(ROOT).as_posix() for p in dp.draft_pages(c)]
         all_country += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / c).glob("*.html"))] if (ROOT / c).is_dir() else []
     from page_variants import blank_hidden          # hidden layout variants are not content
     return {"set": rels, "html": {r: blank_hidden(_read(ROOT / r)) for r in rels}, "kind": {r: kind_of(r) for r in rels},
@@ -1477,7 +1483,7 @@ def api_fix():
         return jsonify({"ok": True, "log": "%s linked%s." % (count_label(len(done), "mention"), ", %d skipped (the text moved; run again)" % len(missed) if missed else ""),
                         "pages": sorted({i["page"] for i in done})})
     if kind == "photos":
-        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and p.startswith("Drafts/.Full Articles/")]
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and p.startswith(dp.PREFIXES[:2])]
         logs = []
         for p in pages:
             r = subprocess.run([sys.executable, str(TOOLS / "draft_images.py"), p], cwd=str(ROOT), capture_output=True,
@@ -1498,6 +1504,12 @@ def api_fix():
                 r = {"log": "%s: Covers did not answer (%s)" % (Path(p).name, e)}
             logs.append(r.get("log") or r.get("error") or "")
         return jsonify({"ok": True, "log": "\n".join(logs), "pages": d.get("pages") or []})
+    if kind == "archive":                            # tools/site_archive.py over the countries those files are in
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and not p.startswith(("Drafts/", "archive/"))]
+        countries = sorted({p.split("/")[0] for p in pages if "/" in p})
+        r = subprocess.run([sys.executable, str(TOOLS / "site_archive.py")] + countries, cwd=str(ROOT), capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=300, creationflags=_NOWIN)
+        return jsonify({"ok": r.returncode == 0, "log": (r.stdout or r.stderr).strip()[-800:], "pages": pages})
     if kind == "explore":
         pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p]
         r = subprocess.run([sys.executable, str(TOOLS / "explore_more.py")] + pages, cwd=str(ROOT), capture_output=True, text=True,

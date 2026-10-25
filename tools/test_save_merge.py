@@ -11,7 +11,16 @@ from playwright.sync_api import sync_playwright
 
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ART = "Drafts/.Full Articles/.qa-scratch/athens.html"
+# the test's own copy of the Athens draft, in a folder of its own that it makes and removes (the shared
+# .qa-scratch folder of tracked copies was deleted on 2026-10-24; Kevin: "do we need .qa-scratch, if not delete it")
+import atexit
+import shutil
+
+SCR = ROOT / "Drafts" / "Full Articles" / ".qa-scratch-merge"
+SCR.mkdir(exist_ok=True)
+shutil.copy2(ROOT / "Drafts" / "Full Articles" / "greece" / "athens.html", SCR / "athens.html")
+atexit.register(lambda: shutil.rmtree(SCR, ignore_errors=True))
+ART = "Drafts/Full Articles/.qa-scratch-merge/athens.html"
 EDITOR = (ROOT / "editor.html").as_uri() + "#editor"
 
 # a stub that behaves like a real file: getFile() returns what was last written to it

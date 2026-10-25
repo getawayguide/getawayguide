@@ -3,7 +3,7 @@
   "kicker": "Spain",
   "city": "Madrid",
   "osm": ".tmp/madrid_osm.json",
-  "article": "Drafts/spain/field-notes.html",
+  "article": "Drafts/Field Notes/spain/field-notes.html",
   "embed": {
     "pre": "rid stays up famously late, so a central room means you can just walk home</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"seville\""

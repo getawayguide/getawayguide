@@ -59,10 +59,9 @@ def main():
     elif slug:
         pats = ["%s/field-notes.html" % slug,
                 "Drafts/%s/field-notes.html" % slug,
-                "Drafts/.Full Articles/%s/*.html" % slug]
+                ] + __import__("draft_paths").globs(slug)
     else:
-        pats = ["*/field-notes.html", "Drafts/*/field-notes.html",
-                "Drafts/.Full Articles/*/*.html"]
+        pats = ["*/field-notes.html"] + __import__("draft_paths").globs()
     total = 0
     for f in sorted({q for pat in pats for q in glob.glob(os.path.join(ROOT, pat))}):
         rel0 = os.path.relpath(f, ROOT).replace("\\", "/")

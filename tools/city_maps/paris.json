@@ -3,7 +3,7 @@
   "kicker": "France",
   "city": "Paris",
   "osm": ".tmp/paris_osm.json",
-  "article": "Drafts/france/field-notes.html",
+  "article": "Drafts/Field Notes/france/field-notes.html",
   "embed": {
     "pre": " everything else. Paris is expensive, so book early and expect small rooms</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

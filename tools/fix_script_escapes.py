@@ -53,11 +53,11 @@ def main():
 
     if a.slug:
         files = [p for p in (os.path.join(ROOT, "%s/field-notes.html" % a.slug),
-                             os.path.join(ROOT, "Drafts/%s/field-notes.html" % a.slug))
+                             __import__("draft_paths").locate(a.slug, "field-notes.html") or os.path.join(ROOT, "Drafts/Field Notes/%s/field-notes.html" % a.slug))
                  if os.path.exists(p)]
     else:
         files = sorted(glob.glob(os.path.join(ROOT, "*", "*.html")) +
-                       glob.glob(os.path.join(ROOT, "Drafts", "*", "field-notes.html")))
+                       [str(p) for p in __import__("draft_paths").field_notes()])
 
     total = touched = 0
     for p in files:

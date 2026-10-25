@@ -111,10 +111,10 @@ def main():
     a = ap.parse_args()
     fn = ROOT / a.country / "field-notes.html"
     if not fn.exists():
-        fn = ROOT / "Drafts" / a.country / "field-notes.html"
+        fn = next(iter(__import__("draft_paths").field_notes(a.country)), ROOT / "Drafts" / "Field Notes" / a.country / "field-notes.html")
     if not fn.exists():
         raise SystemExit("no field notes for %s" % a.country)
-    arts = sorted((ROOT / "Drafts" / ".Full Articles" / a.country).glob("*.html"))
+    arts = __import__("draft_paths").articles(a.country)
     if not arts:
         arts = sorted(p for p in (ROOT / a.country).glob("*.html") if p.name != "field-notes.html")
     texts = [prose(p) for p in arts]

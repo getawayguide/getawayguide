@@ -3,7 +3,7 @@
   "kicker": "Italy",
   "city": "Milan",
   "osm": ".tmp/milan_osm.json",
-  "article": "Drafts/italy/field-notes.html",
+  "article": "Drafts/Field Notes/italy/field-notes.html",
   "embed": {
     "pre": " is a business city, so weekend hotel rates are often cheaper than midweek</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

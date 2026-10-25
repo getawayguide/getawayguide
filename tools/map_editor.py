@@ -258,8 +258,10 @@ def page_for(slug):
     # prefer the live page; fall back to the Drafts/ copy if not yet published
     if (ROOT / slug / "field-notes.html").exists():
         return f"{slug}/field-notes.html"
-    if (ROOT / "Drafts" / slug / "field-notes.html").exists():
-        return f"Drafts/{slug}/field-notes.html"
+    import draft_paths as _dp                       # Drafts/Field Notes or Drafts/Upcoming (2026-10-24)
+    hit = _dp.locate(slug, "field-notes.html")
+    if hit:
+        return hit
     return f"{slug}/field-notes.html"
 
 
@@ -332,7 +334,7 @@ def api_catalog():
                 c = json.loads(p.read_text(encoding="utf-8"))
             except Exception:
                 continue
-            parts = [x for x in (c.get("article") or "").split("/") if x and x not in ("Drafts", ".Full Articles")]
+            parts = [x for x in (c.get("article") or "").split("/") if x and x not in ("Drafts", ".Full Articles", "Upcoming", "Full Articles", "Field Notes", ".Archive")]
             country = parts[0] if len(parts) > 1 else "other"
             page = (c.get("article") or "").rsplit("/", 1)[-1].replace(".html", "")
             where = "field notes" if page == "field-notes" else "guide"

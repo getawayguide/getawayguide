@@ -106,7 +106,7 @@ def live_pages():
 
 
 def draft_pages():
-    pats = ["Drafts/.Full Articles/*/*.html", "Drafts/*/field-notes.html"]
+    pats = __import__("draft_paths").globs()
     out = []
     for pat in pats:
         for p in sorted(ROOT.glob(pat)):

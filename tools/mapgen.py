@@ -79,7 +79,7 @@ CAP = {"see": 13, "eat": 5, "stay": 3}  # keep the legend under ~24 rows
 
 def article_path(slug):
     """Live article if it exists, else the Drafts/ copy (drafts sit one folder deeper)."""
-    for rel in (f"{slug}/field-notes.html", f"Drafts/{slug}/field-notes.html"):
+    for rel in (f"{slug}/field-notes.html", f"Drafts/Upcoming/{slug}/field-notes.html", f"Drafts/Field Notes/{slug}/field-notes.html"):
         if os.path.exists(f"{ROOT}/{rel}"):
             return rel
     raise SystemExit(f"no article found for {slug} (looked in ./ and Drafts/)")

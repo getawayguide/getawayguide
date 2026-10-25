@@ -22,7 +22,7 @@ FIG = '<figure class="citymap-fig">'
 def articles():
     """Every live + draft field-notes page (and any other html) holding a city map."""
     seen = []
-    for pat in ("*/field-notes.html", "Drafts/*/field-notes.html", "*.html"):
+    for pat in ["*/field-notes.html"] + __import__("draft_paths").globs(name="field-notes.html") + ["*.html"]:
         for p in glob.glob(os.path.join(ROOT, pat)):
             if p not in seen:
                 seen.append(p)

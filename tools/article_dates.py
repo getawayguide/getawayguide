@@ -89,7 +89,7 @@ def pages(include_drafts):
             continue
         yield p, r, False
     if include_drafts:
-        for pat in ("Drafts/.Full Articles/*/*.html", "Drafts/*/field-notes.html"):
+        for pat in __import__("draft_paths").globs():
             for p in sorted(ROOT.glob(pat)):
                 r = p.relative_to(ROOT).as_posix()
                 if "/.Archive/" not in r:

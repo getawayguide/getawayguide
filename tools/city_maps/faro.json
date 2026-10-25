@@ -3,7 +3,7 @@
   "kicker": "Portugal",
   "city": "Faro",
   "osm": ".tmp/faro_osm.json",
-  "article": "Drafts/portugal/field-notes.html",
+  "article": "Drafts/Field Notes/portugal/field-notes.html",
   "embed": {
     "pre": "ion, so a night here is usually plenty before moving on to Lagos or Lisbon</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"lisbon\""

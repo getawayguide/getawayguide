@@ -3,7 +3,7 @@
   "kicker": "Thailand",
   "city": "Krabi",
   "osm": ".tmp/krabi_osm.json",
-  "article": "Drafts/thailand/field-notes.html",
+  "article": "Drafts/Field Notes/thailand/field-notes.html",
   "embed": {
     "pre": "way, which turns magical once the day-trippers leave in the late afternoon</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"phi-phi\""

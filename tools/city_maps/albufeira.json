@@ -3,7 +3,7 @@
   "kicker": "Portugal",
   "city": "Albufeira",
   "osm": ".tmp/albufeira_osm.json",
-  "article": "Drafts/portugal/field-notes.html",
+  "article": "Drafts/Field Notes/portugal/field-notes.html",
   "embed": {
     "pre": "p terrace to pregame on, right next to the old town and close to the beach</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"faro\""

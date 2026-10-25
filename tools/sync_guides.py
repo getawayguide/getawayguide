@@ -99,14 +99,32 @@ def lead(page):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
+def saved_crops(live):
+    """the list/phone crops Kevin saved for this article in Covers (Save thumbnail), whichever path it was saved under"""
+    import json
+    sys.path.insert(0, str(ROOT / "tools"))
+    import draft_paths as dp
+    try:
+        tp = json.loads((ROOT / ".tmp" / "thumb_picks.json").read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    pick = tp.get(live) or next((v for k, v in tp.items() if dp.live_rel(k) == live), None) or {}
+    return pick.get("positions") or {}
+
+
 def card_html(name, slug, c):
     label = LABEL.get(c["tag"], c["tag"])
     if c["tag"] == "City Guide":
         label = " ".join(w.capitalize() for w in c["href"][:-5].split("-"))
     img = re.sub(r"^(\.\./)+", "", c["img"])
-    return ('<a href="%s/%s"><div class="card-img bg" style="background-image:url(\'%s\');background-size:cover;'
-            'background-position:%s"></div><div class="kick">%s · %s</div><div class="serif card-h">%s</div>'
-            '<div class="card-p">%s</div></a>' % (slug, c["href"], img, c["pos"], html.escape(label), html.escape(name),
+    style = "background-image:url('%s');background-size:cover;background-position:%s" % (img, c["pos"])
+    crops = saved_crops("%s/%s" % (slug, c["href"]))
+    m = re.match(r"(Images/web/[^/]+/card-[\w-]+)\.(?:jpg|webp)$", img)
+    if m and crops.get("list"):            # Covers' card: the 4:3 crop he set for this card, and his phone crop
+        style = ("background-image:image-set(url('%s.webp') type('image/webp'), url('%s.jpg') type('image/jpeg'));"
+                 "background-size:cover;background-position:%s;--pm:%s" % (m.group(1), m.group(1), crops["list"], crops.get("phone", crops["list"])))
+    return ('<a href="%s/%s"><div class="card-img bg" style="%s"></div><div class="kick">%s · %s</div><div class="serif card-h">%s</div>'
+            '<div class="card-p">%s</div></a>' % (slug, c["href"], style, html.escape(label), html.escape(name),
                                                   c["title"], lead("%s/%s" % (slug, c["href"]))))
 
 

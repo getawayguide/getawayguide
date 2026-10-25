@@ -1,0 +1,5 @@
+# Netlify redirects (docs.netlify.com/routing/redirects). A page that is no longer on the site keeps its
+# address alive here as a 301 instead of a stub file in its country folder; the page itself lives in
+# Drafts/.Archive. Written by tools/site_archive.py (Kevin, 2026-10-24).
+/armenia/field-notes.html                /armenia/                    301
+/armenia/field-notes                     /armenia/                    301

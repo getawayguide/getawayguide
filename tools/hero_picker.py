@@ -691,7 +691,7 @@ def _save_locked():
             # a country with no web folder yet (a new draft) gets one under ITS name; never the album's, and never
             # a path part that is not a country
             known = (SITE / "Images" / folder).is_dir() or any(d.is_dir() and d.name.lower().replace(" ", "-") == folder.lower().replace(" ", "-")
-                                                              for d in [*(SITE.iterdir()), *((SITE / "Drafts" / ".Full Articles").iterdir() if (SITE / "Drafts" / ".Full Articles").is_dir() else [])])
+                                                              for d in [*(SITE.iterdir()), *[x for f in ("Upcoming", "Full Articles", "Field Notes") if (SITE / "Drafts" / f).is_dir() for x in (SITE / "Drafts" / f).iterdir()]])
             if not folder or folder.lower() in ("drafts", ".tmp", "images", "web") or folder.startswith(".") or not known:
                 # a country nothing on the site knows (no archive folder, no page folder, no draft folder) gets no hero
                 # folder of its own ("Zz QA O Nowhere" got eight files; stress test 2026-10-23)
@@ -797,20 +797,23 @@ def _listing_cards(rel, slug, country, pos):
     """The home page's Recent Dispatches and posts.html's Guides link to PUBLISHED articles through a
     `.card-img` block (4:3 on a monitor, 16:9 on a phone). When one points at this article, it gets
     the card photo inline with both crops; a draft has no such card yet, so nothing is touched."""
-    live = rel.replace("Drafts/.Full Articles/", "")
+    import draft_paths as _dp
+    live = _dp.live_rel(rel)
     wrote = []
     for name in ("index.html", "posts.html"):
         f = SITE / name
         if not f.is_file():
             continue
         h = f.read_text(encoding="utf-8")
-        pat = re.compile(r'(<a href="%s"[^>]*>\s*<div class="card-img bg[^"]*")(?: style="[^"]*")?(>)' % re.escape(live))
+        # any other attribute stays where it is: fit_backgrounds tags a card data-bgfit="N" right after its style, and the
+        # old pattern (style, then '>') skipped every such card, so the home and posts cards never took the new crop
+        pat = re.compile(r'(<a href="%s"[^>]*>\s*<div class="card-img bg[^"]*")((?:\s+[\w:-]+="[^"]*")*)(\s*>)' % re.escape(live))
         if not pat.search(h):
             continue
         web = "Images/web/%s/card-%s" % (country, slug)
         style = (' style="background-image:image-set(url(\'{w}.webp\') type(\'image/webp\'), url(\'{w}.jpg\') type(\'image/jpeg\'));'
                  'background-size:cover;background-position:{d};--pm:{p}"').format(w=web, d=pos.get("list", "50% 50%"), p=pos.get("phone", "50% 50%"))
-        h = pat.sub(lambda m: m.group(1) + style + m.group(2), h)
+        h = pat.sub(lambda m: m.group(1) + style + re.sub(r'\s+style="[^"]*"', "", m.group(2)) + m.group(3), h)
         _atomic_write(f, h)
         wrote.append(name)
     return wrote
@@ -1049,7 +1052,7 @@ def _slide(small, ref0):
 
 
 def _album_photos(rel):
-    """the backup album photos of an article's country (Drafts/.Full Articles/armenia/x -> Armenia (2026))"""
+    """the backup album photos of an article's country (Drafts/Upcoming/armenia/x -> Armenia (2026))"""
     folder = Path(rel).parent.name.lower()
     out = []
     for a in albums():
@@ -1392,6 +1395,33 @@ PAGE = r"""<!doctype html>
      402px phone frame drew a 57px headline and full-size padding. */
   .cpy { position:absolute; left:var(--cx,96px); right:var(--cx,96px);
     bottom:var(--cb,54px); pointer-events:none; }
+  /* ---- the three-up view (Kevin, 2026-10-24: "fix the cover editor so it edits specifically for the 3 aspect
+     ratios I am trying to solve for ... it is hard to see what I want to do"): every rule's frame at the site's own
+     shape, side by side, each dragged on its own. The phone frame used to be blown up to the stage's width. ---- */
+  .tri { display:none; }
+  .tri-on .tri { display:grid; gap:14px; margin:0 0 8px; align-items:start; }
+  .tri-on .hero, .tri-on #bleed { display:none !important; }
+  .tri .tri-col { display:grid; gap:14px; align-content:start; }
+  .tri .tri-f { display:grid; gap:5px; }
+  .tri .tri-cap { display:flex; gap:8px; align-items:baseline; font:600 10.5px/1.2 'Hanken Grotesk',sans-serif;
+    letter-spacing:.1em; text-transform:uppercase; color:#6b746e; white-space:nowrap; overflow:hidden; }
+  .tri .tri-cap b { color:#1C2821; font-weight:700; }
+  .tri .tri-cap span { margin-left:auto; letter-spacing:.03em; text-transform:none; font-weight:500; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .tri .tri-box { position:relative; overflow:hidden; background:#e9e7e1 center/cover no-repeat; border-radius:2px;
+    cursor:grab; outline:2px solid transparent; outline-offset:2px; touch-action:none; user-select:none; }
+  .tri .tri-f.on .tri-box { outline-color:#2D6B50; }
+  .tri .tri-f.on .tri-cap b { color:#2D6B50; }
+  .tri .tri-box.x { cursor:ew-resize; }
+  .tri .tri-box.y { cursor:ns-resize; }
+  .tri .tri-box .tv { position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, rgba(18,26,21,.46) 0%, rgba(18,26,21,.16) 38%, rgba(18,26,21,.86) 100%); }
+  .thumb-mode .tri .tri-box .tv { background:linear-gradient(transparent 35%, rgba(6,10,8,.88)); }
+  .tri .tri-box .tn { position:absolute; left:0; right:0; top:0; background:rgba(255,255,255,.96);
+    border-bottom:1px solid rgba(28,40,33,.1); pointer-events:none; }
+  .tri .tri-box .tc { position:absolute; pointer-events:none; color:#F4F1EA; }
+  .tri .tri-box .tc .te { font-family:'Hanken Grotesk',sans-serif; font-weight:600; letter-spacing:.16em; text-transform:uppercase; opacity:.9; }
+  .tri .tri-box .tc .th { font-family:Newsreader,Georgia,serif; font-weight:400; letter-spacing:-.01em; }
+  .tri .tri-box .tc .tt { font-family:'Hanken Grotesk',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
   .cropcss { background:#12160f; color:#93a199; border:1px solid #27322b;
     border-radius:7px; padding:11px 13px; font-size:11.5px; line-height:1.6;
     overflow-x:auto; margin:.6rem 0 0; white-space:pre; }
@@ -1638,14 +1668,19 @@ with the window.">
     <button class="q flipbtn" id="fliph" title="Flip horizontally: left becomes right">&#8596; Flip</button>
     <button class="q flipbtn" id="flipv" title="Flip vertically: top becomes bottom">&#8597; Flip</button>
   </span>
+  <span class="scrim-ctl" id="dev-ctl" title="Open this photo in the article editor's develop window (light, color, masks, erase) and bring the developed copy back here to frame. The copy is filed under Images/ like any article photo; the Backup original is never changed. Develop again reopens it with every slider as it was.">
+    <button class="q" id="develop">&#9998; Develop</button>
+  </span>
   <span class="scrim-ctl" id="scrim-ctl" title="How heavy the overlay sits on this photo">
     Scrim <input type="range" id="scrim" min="0" max="160" value="100"><b id="scrimv">100%</b>
   </span>
   <button class="q" id="bleed" title="Hide the strip and show the hero edge to edge, the size the site cuts it (F)">Full bleed</button>
+  <button class="q" id="triview" title="Switch between every frame side by side and one frame on a mock of the page">Page view</button>
   <span class="tools-gap"></span>
   <button class="q" id="same-hero" hidden title="Use the photo this article's hero was cut from, for continuity">Same photo as the hero</button>
   <button id="save">Save pick</button>
     </div>
+    <div class="tri" id="tri"></div>
     <div class="hero" id="hero">
       <img id="pic" draggable="false" alt="">
       <div class="veil"></div>
@@ -2414,6 +2449,32 @@ window.addEventListener('message', ev => {
   if (i !== bpi) { bpi = i; $('vw').value = String(i); applyShape(); }
   restoreThumb(ev.data.slots || null);
 });
+// ✎ Develop (Kevin, 2026-10-24: "can allow covers to be edited by our photo editor?"): the article editor's
+// develop window is the only one there is, so the photo goes up to the editor (the suite frames this page),
+// comes back as a developed copy under Images/<Country>/, and is framed here like any other photo.
+$('develop').onclick = () => {
+  if (!cur) return toast('Pick a photo first');
+  if (window.parent === window) return toast('Open Covers from the editor suite: the develop window lives in the article editor');
+  if (cur.path.startsWith('web:')) return toast('This photo has no original to develop: it is a site copy');
+  parent.postMessage({ type: 'hero-develop', path: cur.path, name: cur.name, album: $('album').value, country: country,
+                       article: ARTICLE ? ARTICLE.rel : '', thumb: $('shape').value === 'thumb' }, '*');
+};
+window.addEventListener('message', ev => {
+  const d = ev.data;
+  if (!d || d.type !== 'hero-developed' || !d.path) return;
+  // the developed copy takes the stage with the crops and scrim as they are; a tilt or flip was baked into
+  // it by the develop window, so this page's own start from 0 again
+  document.querySelectorAll('.strip .t.on').forEach(x => x.classList.remove('on'));
+  OG = null;
+  if (angle) setAngle(0, false);
+  if (flip) setFlip('', false);
+  const w = +d.w || 0;
+  cur = { path: d.path, name: d.name || d.path.split('/').pop(), w: w, ar: d.h ? w / d.h : (cur ? cur.ar : 0),
+          tier: w >= 2880 ? 'good' : w >= 1920 ? 'fair' : 'low' };
+  picW = 0; picKey = ''; loadPic(true); applyCrop();
+  $('meta').innerHTML = `<span><b>${cur.name}</b></span><span class="good">developed copy</span>`;
+  toast('The developed copy is on the stage: frame it and Save pick');
+});
 $('same-hero').onclick = () => {
   const hp = ARTICLE && PICKS[ARTICLE.rel];
   if (!hp || !hp.path) return toast('This article\'s hero was not saved from the Hero Picker, so pick its photo from the strip');
@@ -2545,6 +2606,143 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
   send();
   parent.postMessage({ type: 'heroes-ready' }, '*');     // ask for the open article
 }
+</script>
+<script>
+/* ============== THE THREE-UP VIEW (Kevin, 2026-10-24) ==============
+   Every rule's frame (Monitor, Laptop, Phone; or the thumbnail slots) at the site's own shape, sized to fit side by
+   side, each showing the photo the way that rule crops it, with the scrim, the nav band and the headline drawn to
+   scale. Drag inside any frame to set that rule's crop; the old one-at-a-time page mock is "Page view". */
+(function () {
+  const tri = document.getElementById('tri'), btn = document.getElementById('triview');
+  if (!tri || !btn) return;
+  let on = true;
+  try { on = localStorage.getItem('hp-tri') !== '0'; } catch (e) {}
+  let sig = '', drag = null;
+  const isThumb = () => document.body.classList.contains('thumb-mode');
+  function ratioOf(i) { const b = boxOf(i); return b.w / b.h; }
+  function srcAr(i) {
+    const ph = slotPhoto(i), pic = document.getElementById('pic');
+    return ph && ph.ar ? ph.ar : (pic.naturalWidth ? pic.naturalWidth / pic.naturalHeight : 0);
+  }
+  function srcFor(i) {
+    const ph = slotPhoto(i), pic = document.getElementById('pic');
+    if (ph && ph !== cur && ph.path)        // the share image may be cut from another photo
+      return '/img?w=1600&p=' + encodeURIComponent(ph.path) + (+ph.angle ? '&a=' + ph.angle : '') + (ph.flip ? '&f=' + ph.flip : '');
+    return pic.currentSrc || pic.src || '';
+  }
+  function sizes() {
+    // the stage's CONTENT width: its 26px padding counted as room pushed the phone frame off the right edge
+    const st = tri.parentElement, cs = getComputedStyle(st);
+    const W = Math.max(320, (st.clientWidth || 900) - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0) - 6), g = 14, n = BP.length;
+    const ar = BP.map((b, i) => ratioOf(i));
+    const avail = Math.max(280, window.innerHeight - tri.getBoundingClientRect().top - 120);
+    if (!isThumb() && n === 3) {             // Monitor over Laptop on the left, the Phone beside them
+      let L = (W - g * (1 + ar[2])) / (1 + ar[2] / ar[0] + ar[2] / ar[1]);
+      const H = L / ar[0] + g + L / ar[1];
+      if (H > avail) L *= avail / H;
+      const R = ar[2] * (L / ar[0] + g + L / ar[1]);
+      return { cols: [[0, 1], [2]], w: [L, L, R] };
+    }
+    let h = Math.min(250, (avail - 60) / 2);     // the four thumbnail frames fit in two rows, in the window
+    const total = ar.reduce((t, a) => t + a * h, 0) + g * (n - 1);
+    if (total < W * 2) h = Math.min(h, (W - g) / Math.max(...ar));
+    return { cols: null, w: ar.map(a => a * h) };
+  }
+  function frame(i, fw) {
+    const b = boxOf(i);
+    return '<div class="tri-f" data-i="' + i + '" style="width:' + fw.toFixed(1) + 'px"><div class="tri-cap"><b>' + BP[i].label +
+      '</b>' + b.w + '&times;' + Math.round(b.h) + '<span class="tri-crop"></span></div>' +
+      '<div class="tri-box" style="aspect-ratio:' + b.w + ' / ' + b.h + '"><div class="tv"></div><div class="tn"></div>' +
+      '<div class="tc"><div class="te"></div><div class="th"></div><div class="tt"></div></div></div></div>';
+  }
+  window.renderTri = function (rebuild) {
+    if (!on) return;
+    const sz = sizes(), shape = $('shape').value;
+    const key = shape + '|' + BP.map(b => b.key).join(',') + '|' + sz.w.map(x => Math.round(x)).join(',');
+    if (rebuild === true || key !== sig) {
+      sig = key;
+      tri.style.gridTemplateColumns = sz.cols ? sz.w[0].toFixed(1) + 'px ' + sz.w[2].toFixed(1) + 'px' : '1fr';
+      tri.innerHTML = sz.cols
+        ? sz.cols.map(c => '<div class="tri-col">' + c.map(i => frame(i, sz.w[i])).join('') + '</div>').join('')
+        : '<div class="tri-col" style="display:flex;flex-wrap:wrap;gap:14px">' + BP.map((b, i) => frame(i, sz.w[i])).join('') + '</div>';
+    }
+    const thumb = isThumb(), navOn = !['wide', 'thumb'].includes(shape);
+    tri.querySelectorAll('.tri-f').forEach(el => {
+      const i = +el.dataset.i, box = el.querySelector('.tri-box');
+      const fw = box.clientWidth || sz.w[i], b = boxOf(i), k = fw / b.w, g = geomFor(i), phone = BP[i].vw <= 768;
+      const v = Number.isFinite(crops[BP[i].key]) ? crops[BP[i].key] : 50;
+      const px = n => (n * k).toFixed(1) + 'px';
+      box.style.backgroundImage = cur ? 'url("' + srcFor(i) + '")' : 'none';
+      box.style.backgroundPosition = g.axis === 'x' ? v + '% 50%' : '50% ' + v + '%';
+      box.classList.toggle('x', g.axis === 'x');
+      box.classList.toggle('y', g.axis === 'y');
+      el.classList.toggle('on', i === bpi);
+      el.querySelector('.tri-crop').textContent = cur && g.travel > 0.5 ? 'crop ' + Math.round(v) + '% · keeps ' + Math.round(g.shown * 100) + '% of the photo' : (cur ? 'the whole photo fits' : '');
+      const tv = box.querySelector('.tv');
+      tv.style.opacity = String(scrim / 100);
+      tv.style.display = thumb && BP[i].key === 'og' ? 'none' : '';
+      const tn = box.querySelector('.tn');
+      tn.style.display = navOn ? '' : 'none';
+      tn.style.height = px(phone ? NAV_H_PHONE : NAV_H);
+      const tc = box.querySelector('.tc'), te = tc.querySelector('.te'), th = tc.querySelector('.th'), tt = tc.querySelector('.tt');
+      if (thumb) {
+        tc.style.cssText = 'left:' + px(20) + ';right:' + px(20) + ';bottom:' + px(24);
+        te.textContent = ''; tt.textContent = '';
+        th.textContent = BP[i].key === 'og' ? '' : (ARTICLE ? ARTICLE.h1 : $('title').value);
+        th.style.cssText = 'font-size:' + px(16.8) + ';line-height:1.35';
+      } else {
+        tc.style.cssText = 'left:' + px(phone ? 20 : 96) + ';right:' + px(phone ? 20 : 96) + ';bottom:' + px(phone ? 19.2 : 54.4);
+        te.textContent = $('eb').textContent; te.style.fontSize = px(10.24);
+        th.textContent = $('h1').textContent;
+        th.style.cssText = 'font-size:' + px(phone ? 26 : Math.min(54.4, Math.max(32, BP[i].vw * .036))) + ';line-height:' + (phone ? 1.14 : 1.06) + ';margin:' + px(6) + ' 0 ' + px(9);
+        tt.textContent = shape === 'wide' ? '' : 'Read the guide \u2192'; tt.style.fontSize = px(9.92);
+      }
+    });
+  };
+  function setOn(v) {
+    on = !!v;
+    document.documentElement.classList.toggle('tri-on', on);
+    btn.textContent = on ? 'Page view' : 'Three-up view';
+    try { localStorage.setItem('hp-tri', on ? '1' : '0'); } catch (e) {}
+    if (on) renderTri(true); else if (typeof applyShape === 'function') applyShape();
+  }
+  btn.onclick = () => setOn(!on);
+  tri.addEventListener('pointerdown', e => {
+    const f = e.target.closest('.tri-f');
+    if (!f || !cur) return;
+    const i = +f.dataset.i;
+    if (i !== bpi) { bpi = i; $('vw').value = String(i); applyShape(); }
+    const el = tri.querySelector('.tri-f[data-i="' + i + '"]'), box = el.querySelector('.tri-box'), g = geomFor(i);
+    drag = { i: i, box: box, axis: g.axis, at: g.axis === 'x' ? e.clientX : e.clientY,
+             from: Number.isFinite(crops[BP[i].key]) ? crops[BP[i].key] : 50 };
+    try { box.setPointerCapture(e.pointerId); } catch (x) {}
+    e.preventDefault();
+  });
+  tri.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const src = srcAr(drag.i);
+    if (!src) return;
+    const r = drag.box.getBoundingClientRect();
+    const spare = drag.axis === 'x' ? r.height * src - r.width : r.width / src - r.height;
+    if (spare <= 0.5) return;
+    const now = drag.axis === 'x' ? e.clientX : e.clientY;
+    const v = drag.from - (now - drag.at) / spare * 100;
+    if (!Number.isFinite(v)) return;
+    crops[BP[drag.i].key] = Math.max(0, Math.min(100, v));
+    applyCrop();
+  });
+  const end = () => { drag = null; };
+  tri.addEventListener('pointerup', end);
+  tri.addEventListener('pointercancel', end);
+  // the frames follow everything that changes the picture: the crop, the scrim, the title, a new photo or shape
+  const ac = window.applyCrop;
+  window.applyCrop = function () { const r = ac.apply(this, arguments); renderTri(); return r; };
+  const ss = window.setScrim;
+  window.setScrim = function () { const r = ss.apply(this, arguments); renderTri(); return r; };
+  $('title').addEventListener('input', () => renderTri());
+  window.addEventListener('resize', () => renderTri());
+  setOn(on);
+})();
 </script>
 <script>
 /* ============== ALBUM FLAGS + THE FLAGGED DROPDOWN (2026-09-27) ============== */

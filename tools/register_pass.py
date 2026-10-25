@@ -113,7 +113,7 @@ def report(html):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--drafts", action="store_true", help="all Drafts/*/field-notes.html")
+    ap.add_argument("--drafts", action="store_true", help="every field-notes draft (Drafts/Field Notes, Drafts/Upcoming)")
     ap.add_argument("--skip", default="", help="comma-separated slugs to leave alone")
     ap.add_argument("--gen-budget", type=int, default=1,
                     help='"genuinely" allowed per file before varying it away')
@@ -122,7 +122,7 @@ def main():
     a = ap.parse_args()
 
     skip = {s.strip() for s in a.skip.split(",") if s.strip()}
-    files = a.files or (sorted(glob.glob(os.path.join(ROOT, "Drafts", "*", "field-notes.html")))
+    files = a.files or (sorted([str(p) for p in __import__("draft_paths").field_notes()])
                         if a.drafts else [])
     total = 0
     for p in files:

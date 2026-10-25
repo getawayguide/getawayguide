@@ -17,8 +17,11 @@ Salvador is, and nothing on the site points at the field notes any more:
   4. every other link    to <slug>/field-notes.html in a live page (other countries' field notes,
                          the home page, posts) now opens <slug>/index.html; a link to a section
                          keeps nothing of the old anchor, the country page has none of them
-  5. the page itself     becomes a redirect to the country page (noindex, canonical, meta refresh
-                         and location.replace), so old links and bookmarks still land somewhere
+  5. the page itself     goes to Drafts/.Archive/<slug>/ and its address becomes a 301 to the country page in
+                         _redirects (tools/site_archive.py; Kevin, 2026-10-24: "remove any files that are not online
+                         anymore like armenia field notes, those belong in the archive folder"), so old links and
+                         bookmarks still land and the country folder holds live pages only. Until 2026-10-24 the page
+                         was overwritten with a redirect stub that stayed in the folder.
   5b. guide cards       a kept field-notes page gets a card under each city heading whose city now has its own
                          guide (tools/guide_cards.py; Kevin, 2026-10-23)
   6b. Explore More       the three related-article cards at the end of every live page are picked again
@@ -55,7 +58,8 @@ NOT_SITE = {"editor.html"}                     # the editor is a tool that lives
 
 def live_pages():
     out = subprocess.run(["git", "ls-files", "*.html"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8").stdout.split("\n")
-    pages = [p for p in out if p and not p.startswith(("archive/", "Drafts/", ".tmp/", "tools/")) and p not in NOT_SITE]
+    pages = [p for p in out if p and not p.startswith(("archive/", "Drafts/", ".tmp/", "tools/")) and p not in NOT_SITE
+             and (ROOT / p).is_file()]               # a page archived since the last commit is still in the index
     # a page published in this same launch may not be in the index yet
     for p in ROOT.glob("*/*.html"):
         r = p.relative_to(ROOT).as_posix()
@@ -109,7 +113,8 @@ def plan(slug):
     except Exception:
         in_full = False
     sm = (ROOT / "sitemap.xml").read_text(encoding="utf-8") if (ROOT / "sitemap.xml").is_file() else ""
-    stub = fn.is_file() and 'http-equiv="refresh"' in _read(page)
+    import site_archive
+    stub = (fn.is_file() and 'http-equiv="refresh"' in _read(page)) or (not fn.is_file() and site_archive.redirected(page))
     return {"country": slug, "name": name, "iso2": iso2, "continent": cont, "page": page,
             "live": fn.is_file() and not stub, "retired": stub,
             "country_page": "%s/index.html" % slug, "country_page_live": (ROOT / slug / "index.html").is_file(),
@@ -120,7 +125,7 @@ def plan(slug):
                 ("%s joins the nav as a guide (green dot) on all %d pages that carry the nav" % (name, nav_pages)) if nav_pages
                 else "%s joins the nav as a guide (green dot) once pages carry the nav (none do yet)" % name,
                 "%d other link(s) on %d page(s) move to the country page" % (sum(i["links"] for i in inbound), len(inbound)),
-                "%s becomes a redirect to %s/index.html, so old links still land" % (page, slug),
+                "%s moves to Drafts/.Archive and its address 301s to %s/index.html, so old links still land" % (page, slug),
                 "The sitemap and site search drop it"]}
 
 
@@ -218,10 +223,9 @@ def apply(slug, dry=False, force=False, keep=False):
             if not dry:
                 io.open(ROOT / r, "w", encoding="utf-8", newline="").write(new)
     log.append("links moved to %s/index.html on %d page(s)" % (slug, moved))
-    # 5. the page becomes a redirect
-    log.append("%s -> redirect to index.html" % p["page"])
-    if not dry:
-        io.open(ROOT / p["page"], "w", encoding="utf-8", newline="").write(STUB.format(name=name, domain=DOMAIN, slug=slug))
+    # 5. the page goes to the archive; its address becomes a 301 in _redirects (2026-10-24, not a stub any more)
+    import site_archive
+    log += site_archive.retire(p["page"], "%s/index.html" % slug, dry)
     return log + _finish(dry, p["page"])
 
 
@@ -244,6 +248,11 @@ def home_tile(slug, dry=False):
 
 def _finish(dry, page=None):
     log = []
+    # 5c. the country folder holds live pages only: a stub or stray file goes to Drafts/.Archive (tools/site_archive.py;
+    #     Kevin, 2026-10-24: "remove any files that are not online anymore ... Add this to the launch process")
+    if page and "/" in page:
+        import site_archive
+        log += ["folder: " + ln for ln in site_archive.sweep([page.split("/")[0]], dry)]
     # 5b. guide cards (Kevin, 2026-10-23: "add field notes badges as part of launch steps"): a field-notes section
     #     whose city now has its own published guide gets the card under its heading (tools/guide_cards.py). A
     #     retired page is a redirect by now, so only a kept page gets them.

@@ -41,8 +41,7 @@ def article_for(key):
         raise ValueError("comments key %r names no country folder" % key)
     country, stem = key.split("__", 1)
     for c in (country, "." + country):                     # a dot-folder keeps its name in the key, minus the dot
-        for p in (ROOT / "Drafts" / ".Full Articles" / c / (stem + ".html"),
-                  ROOT / "Drafts" / c / (stem + ".html"), ROOT / c / (stem + ".html")):
+        for p in [ROOT / "Drafts" / f / c / (stem + ".html") for f in ("Upcoming", "Full Articles", "Field Notes")] + [ROOT / c / (stem + ".html")]:
             if p.exists():
                 return p
     raise ValueError("no article for " + key)

@@ -3,7 +3,7 @@
   "kicker": "Spain",
   "city": "Ibiza",
   "osm": ".tmp/ibiza_osm.json",
-  "article": "Drafts/spain/field-notes.html",
+  "article": "Drafts/Field Notes/spain/field-notes.html",
   "embed": {
     "pre": "'t expect quiet, and it's a taxi or bus from the big clubs near Ibiza Town</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

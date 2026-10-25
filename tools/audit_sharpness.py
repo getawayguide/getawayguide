@@ -23,7 +23,7 @@ pages = sys.argv[2:]
 if not pages:
     live = [f for f in subprocess.run(["git", "ls-files", "*.html"], capture_output=True, text=True, encoding="utf-8").stdout.split("\n")
             if f and not f.startswith(("archive/", "Drafts/", ".tmp/")) and f != "editor.html"]
-    pages = live + sorted(f.replace("\\", "/") for f in glob.glob("Drafts/.Full Articles/*/*.html") + glob.glob("Drafts/*/field-notes.html"))
+    pages = live + sorted(f.replace("\\", "/") for f in __import__("draft_paths").glob_rels())
 PROBE = r"""async () => {
   document.querySelectorAll('img[loading="lazy"]').forEach(i => { i.loading = 'eager'; });
   const imgs = [...document.images].filter(i => !i.closest('nav') || i.classList.contains('nav-map-thumb'));

@@ -74,7 +74,7 @@ def pages(only=None):
 
 def country_of(rel):
     parts = Path(rel).parts
-    if rel.startswith("Drafts/.Full Articles/"):
+    if rel.startswith(("Drafts/Upcoming/", "Drafts/Full Articles/", "Drafts/Field Notes/")):
         slug = parts[2]
     elif rel.startswith("Drafts/"):
         slug = parts[1]

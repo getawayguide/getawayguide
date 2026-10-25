@@ -386,6 +386,16 @@
     #tb-blocks-pop .bk .x:hover { color:#C0533A; }
     #tb-blocks-pop .bk-sec { font:600 .56rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#8a948e; padding:.5rem .5rem .2rem; }
     #tb-blocks.open .tb-more-pop { display:flex; }
+    /* Wide, Block and the ⋯ sit together (2026-10-24): neither is pushed to the bar's far end, and Block's
+       menu opens rightward from its own edge instead of back over the photo buttons */
+    /* Dictate: red while recording, a soft green on the paragraph it just wrote */
+    #tb-dictate[data-state="rec"] { color:#C0533A; background:rgba(192,83,58,.08); }
+    #tb-dictate[data-state="rec"] .tbi { animation: dict-pulse 1.1s ease-in-out infinite; }
+    #tb-dictate[data-state="busy"] { opacity:.7; cursor:progress; }
+    @keyframes dict-pulse { 50% { opacity:.35; } }
+    #editor p.dictated { background:rgba(45,107,80,.09); transition:background 1.2s ease; }
+    #tb-blocks, #tb-more { margin-left:0; }
+    #tb-blocks-pop { left:0; right:auto; }
     .sidebar-foot { padding:.7rem .8rem; border-top:1px solid var(--b-subtle); }
 
     /* TOOLBAR */
@@ -712,9 +722,8 @@
     #pk-toggle.on { background:#2D6B50 !important; border-color:#2D6B50 !important; color:#fff !important; }
     #pk-bar { scrollbar-gutter:stable; display:flex; flex-direction:column; gap:6px; }
     /* Thumbnails: the same button as Blog Picks, and a panel of previews (2026-09-30) */
-      font:600 .62rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; width:100%; flex:none; }
     #th-toggle { height:34px; border-radius:8px; background:#F0F0EB; border:1px solid #F0F0EB; color:#1C2821; box-sizing:border-box;
-      font:600 .62rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; width:100%;
+      font:600 11px/1 'Hanken Grotesk',sans-serif; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; width:100%; padding:5px 8px;   /* the same type as Blog Picks (Kevin, 2026-10-24) */
       display:flex; align-items:center; justify-content:center; gap:6px; transition:background .15s, color .15s, border-color .15s; }
     #th-toggle:hover { background:#E7E7E0; border-color:#E7E7E0; }
     #th-toggle.on { background:#2D6B50; border-color:#2D6B50; color:#fff; }
@@ -1867,7 +1876,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 </div>
 
 <script src="launch.js?v=9a930cec" defer></script>
-<script src="review.js?v=a0c8e441" defer></script>
+<script src="review.js?v=9194078d" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1974,8 +1983,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         <button class="tool-btn" onclick="insertImage()" title="Add a photo from a file on this computer: it is copied into Images/ and cut like any other photo"><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m21 16-5-5-9 9"/></svg><span>Image</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/></svg><span>Pair</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="1.5"/></svg><span>Portrait</span></button>
-        <div class="tb-more" id="tb-blocks"><button class="tool-btn" onmousedown="saveSelection()" onclick="blocksToggle()" title="Insert one of the site's blocks (day head, tip, budget table), or one you saved">▦ Block</button><div class="tb-more-pop" id="tb-blocks-pop"></div></div>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="1.5"/></svg><span>Wide</span></button>
+        <!-- Block sits between Wide and the ⋯ (Kevin, 2026-10-24: "block should be next to wide and next to the dots") -->
+        <div class="tb-more" id="tb-blocks"><button class="tool-btn" onmousedown="saveSelection()" onclick="blocksToggle()" title="Insert one of the site's blocks (day head, tip, budget table), or one you saved">▦ Block</button><div class="tb-more-pop" id="tb-blocks-pop"></div></div>
       </div>
       <!-- font, size and color live behind the ⋯ (Kevin, 2026-09-27) -->
       <div class="tb-more" id="tb-more">
@@ -2017,6 +2027,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           </div>
         </div>
       </div>
+          <!-- Dictate (Kevin, 2026-10-24): talk it out, edit the transcript; local Whisper, nothing leaves the laptop -->
+      <button class="tool-btn" id="tb-dictate" type="button" title="Dictate a paragraph (Ctrl+Alt+D): click, talk, click again. Transcribed on this computer and put in a new paragraph after the one the cursor is in. Esc cancels."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg><span>Dictate</span></button>
     </div>
 
     <div class="editor-scroll">
@@ -2291,7 +2303,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       <div class="pf"><label>Name <input id="pub-name" value="${escHtml(nm)}"></label><label>Code <input id="pub-iso" maxlength="2" value="${iso}" style="width:3.5em"></label>
       <label>Continent <select id="pub-cont">${['', 'europe', 'americas', 'asia', 'africa', 'oceania'].map(c => `<option${c === cont ? ' selected' : ''}>${c}</option>`).join('')}</select></label></div>
       <div class="pb"><button id="pub-dry" class="ap-btn">Dry run</button><button id="pub-go" class="ap-btn" disabled>Publish</button><span id="pub-st"></span></div>
-      <pre id="pub-log">Moves Drafts/${slug}/field-notes.html live, wires the nav, index and destinations cards, builds the thumbnail and the SEO metadata. Nothing is pushed. Run the dry run first.</pre></div>`;
+      <pre id="pub-log">Moves the ${escHtml(nm)} field-notes draft live, wires the nav, index and destinations cards, builds the thumbnail and the SEO metadata. Nothing is pushed. Run the dry run first.</pre></div>`;
     document.body.appendChild(d);
     d.querySelector('.px').onclick = () => d.remove();
     const run = async dry => {
@@ -2313,7 +2325,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   }, true);
   function apRow(r, i) {
     const badges = [];
-    const pm = /^Drafts\/([a-z-]+)\/field-notes\.html$/.exec(r.rel);
+    const pm = /^Drafts\/(?:Upcoming|Field Notes)\/([a-z-]+)\/field-notes\.html$/.exec(r.rel);   // a field-notes draft (2026-10-24 folders)
     if (pm) badges.push(`<button class="ap-pub" data-slug="${pm[1]}" title="Publish this country's field notes">Publish…</button>`);
     if (r.round) badges.push(`<span class="ap-b round" title="${escHtml(r.round.title || '')}">${r.round.changes} to review</span>`);
     const n = (r.comments || 0);                       // Claude tasks are open comments too; one count
@@ -3054,7 +3066,11 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const date = kids.find(e => /^[A-Z][a-z]{2,8} \d{1,2}, \d{4}$/.test(T(e)));
     const kick = hero && (hero.querySelector('.kick') || kids.find(e => e !== date && e.tagName === 'P' && T(e).length < 40));
     const esc = t => (t || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-    const src = img ? 'http://127.0.0.1:5003/site/' + decodeURIComponent(img).replace(/^(\.\.\/)+/, '').split('/').map(encodeURIComponent).join('/') : '';
+    // Covers re-cuts a hero under the SAME file names, so the redraw named the URL Chrome already held and it
+    // kept painting the old photo (Kevin, 2026-10-24: "the cover doesn't load after a new one is saved"). A save
+    // in Covers sets __heroBust; every masthead drawn after that asks for the files fresh.
+    const src = img ? 'http://127.0.0.1:5003/site/' + decodeURIComponent(img).replace(/^(\.\.\/)+/, '').split('/').map(encodeURIComponent).join('/')
+                      + (window.__heroBust ? '?v=' + window.__heroBust : '') : '';
     m.classList.toggle('plain', !img);
     m.classList.toggle('ah', isAh);
     m.innerHTML = (img ? `<div class="mh-img" style="background-image:url('${src}');background-position:${esc(pos)}"></div><div class="mh-veil" style="opacity:${scrim ? scrim[1] : 1}"></div>` : '') +
@@ -7235,7 +7251,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
             .trim();
   }
 
-  // Which album the open article is about: "Drafts/.Full Articles/armenia/
+  // Which album the open article is about: "Drafts/Upcoming/armenia/
   // yerevan.html" -> "Armenia" -> "Armenia (2026)". Same derivation the crop
   // modal and Blog Picks use, so all three agree.
   // Takes the album names to choose from, so the photo library and Blog Picks
@@ -7257,6 +7273,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         || newest(names.filter(a => a.toLowerCase().startsWith(lc)))
         || '';
   }
+  window.plDefaultCountry = plDefaultCountry;      // the Library opens on the same album (its own <script>)
 
   window.plSetCountry = function (album) {
     if (PL.backupRoot === null) return;
@@ -8440,19 +8457,27 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // Only when the head says nothing: a page with neither a canonical link nor og:url.
     if (!m) return (window.review && review.state && review.state.rel) || null;
     // The canonical link names where the page will be PUBLISHED, which for a draft is not
-    // where it is. Returning it bare said Drafts/.Full Articles/armenia/yerevan.html was
+    // where it is. Returning it bare said Drafts/Upcoming/armenia/yerevan.html was
     // armenia/yerevan.html: a path that does not exist, a depth of 1 instead of 3, and
     // imported photos written as ../Images/... The stylesheet depth says which tree it is
     // really in, the same way review.js resolveRel() has always done it.
     const d = depthFromStyles();
-    const prefix = d >= 3 ? 'Drafts/.Full Articles/' : d === 2 ? 'Drafts/' : '';
-    return prefix + m[1] + '/' + m[2];
+    if (d >= 3) {
+      // every draft is three folders down (Drafts/Upcoming|Full Articles|Field Notes/<c>/; 2026-10-24), so the depth
+      // no longer says which folder: the photo server looks the page up
+      try {
+        const r = await (await fetch(API + '/api/locate?country=' + encodeURIComponent(m[1]) + '&page=' + encodeURIComponent(m[2]), { cache: 'no-store' })).json();
+        if (r && r.rel) return r.rel;
+      } catch (e) {}
+      return 'Drafts/Full Articles/' + m[1] + '/' + m[2];
+    }
+    return (d === 2 ? 'Drafts/' : '') + m[1] + '/' + m[2];
   }
   window.articleRelPath = articleRelPath;
 
   // How many folders the open article sits below the site root, i.e. how many
   // "../" a saved image path needs. A live page links "../styles.css", a draft in
-  // Drafts/.Full Articles/<country>/ links "../../../styles.css". Defaulting to 1
+  // Drafts/<folder>/<country>/ links "../../../styles.css". Defaulting to 1
   // without a folder is what saved draft photos as "../Images/..." and broke them
   // outside the editor.
   function depthFromStyles() {
@@ -8472,7 +8497,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     return depthFromStyles();
   }
   // The country folder of an article path: "albania/x.html", "Drafts/albania/x.html"
-  // and "Drafts/.Full Articles/armenia/x.html" all give the country slug.
+  // and "Drafts/Full Articles/armenia/x.html" all give the country slug.
   // The open article's country, city and kind, with no site folder needed.
   //   country : the folder ("armenia" -> "Armenia"), from the canonical link
   //   kind    : 'city' | 'itinerary' | 'top10' | 'index' | 'field-notes' | ''
@@ -8503,9 +8528,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     return { rel, country, city, kind, slug };
   };
 
+  const DRAFT_FOLDERS = ['Upcoming', 'Full Articles', 'Field Notes'];   // Drafts/<folder>/<country>/ (2026-10-24)
   function articleSlug(rel) {
     if (!rel) return '';
-    const parts = rel.split('/').filter(x => x !== 'Drafts' && !x.startsWith('.'));
+    const parts = rel.split('/').filter(x => x !== 'Drafts' && !x.startsWith('.') && !DRAFT_FOLDERS.includes(x));
     return parts.length > 1 ? parts[0] : '';
   }
   window.articleDepth = articleDepth;
@@ -8536,6 +8562,34 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   }
 
+  // Covers' ✎ Develop (Kevin, 2026-10-24): the photo on Covers' stage went through this develop window; bake it
+  // into the archive like an article photo (Images/<Country>/<City>/, recipe inside, so Develop again reopens it
+  // with everything) and hand the copy back to Covers to frame. Nothing is placed in the article.
+  async function heroDevelopInsert(photo, drop, country, city) {
+    const go = $('#crop-go');
+    let lastdev = null; try { lastdev = { dev: CM.dev, angle: CM.angleDeg || 0, stats: devStats() }; } catch (e) {}
+    const body = JSON.stringify({ root: photo.root, path: photo.path, country, city,
+          rot: CM.rot || 0, flip: CM.flip || null, angle: CM.angleDeg || 0, token: CM.eraseToken || null,
+          masks: masksForImport(), dev: CM.dev, recipe: { erases: CM.erases || [] } });
+    const job = window.__jobs ? window.__jobs.local('Developing ' + photo.name + ' for Covers') : null;
+    closeCropModal();
+    go.disabled = false;
+    if (window.showView) showView('heroes');                 // back to Covers while the bake runs
+    let r;
+    try {
+      r = await (await fetch(API + '/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })).json();
+      if (!r.ok) throw new Error(r.detail || r.error || 'import failed');
+    } catch (err) {
+      if (job) job.fail((err && err.message) || String(err));
+      if (window.toast) toast('The develop failed for ' + photo.name + ': ' + ((err && err.message) || err) + '. Is the photo server running?', 9000);
+      return;
+    }
+    try { if (lastdev) localStorage.setItem('pl-lastdev', JSON.stringify(lastdev)); } catch (e) {}
+    const f = document.getElementById('heroes-frame');
+    if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'hero-developed', path: 'site:' + r.src, name: r.src.split('/').pop(), w: r.w, h: r.h, thumb: !!drop.thumb }, '*');
+    if (job) job.done('on Covers’ stage as ' + r.src.split('/').pop());
+  }
+
   async function performInsert() {
     if (ER.busy && ER.job && CM.pending && ER.job.path === CM.pending.photo.path) {
       CM.insertAfterErase = true;                 // the insert follows the erase the moment it lands
@@ -8553,6 +8607,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const alt = $('#crop-alt').value.trim();
     const caption = $('#crop-caption').value.trim();
     if (!country) { $('#crop-country').focus(); return; }
+    if (drop.where === 'hero') return heroDevelopInsert(photo, drop, country, city);   // Covers' photo: baked, never placed
     // a locked crop is the committed framing; otherwise read the live rect
     const st = CM.cropLock || rectState();
     const { posX, posY, zoom } = st;
@@ -11959,7 +12014,7 @@ void main(){
   async function openCropForPhoto(photo, drop) {
     const cropGen = ++_cropOpenGen;
     if (!fileHandle) { alert('Open an article first.'); return; }
-    if (!(drop && drop.edit)) window.__recipeFor = null;   // only ✎ Edit brings a recipe; a fresh open starts clean
+    if (!(drop && (drop.edit || drop.hero))) window.__recipeFor = null;   // only ✎ Edit (and Covers' Develop) brings a recipe; a fresh open starts clean
     cropOpening(true);
     // a stage image for the PREVIOUS photo that is still loading is stale now: without this it
     // landed while this one's metadata was on its way and put that photo (and its file name as
@@ -12011,7 +12066,7 @@ void main(){
         if (section || (n.parentElement && n.parentElement.id === 'editor')) break;
       }
       hint.textContent = 'Writing alt text from the photo…'; hint.style.display = 'block';
-      (drop && drop.edit ? Promise.resolve({ json: () => ({ ok: false }) }) :   // ✎ Edit keeps the alt text you wrote; no Claude call
+      (drop && (drop.edit || drop.hero) ? Promise.resolve({ json: () => ({ ok: false }) }) :   // ✎ Edit keeps the alt text you wrote; a cover has none; no Claude call
       fetch(API + '/api/alt_text', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         // the city the PHOTO was taken in when its GPS knows it: the article's city is where it is filed,
         // not necessarily where it was shot (a Geghard photo is not "Geghard, Gyumri")
@@ -12187,7 +12242,7 @@ void main(){
       $('#crop-angle-name').style.opacity = '';
       $('#crop-angle-name').title = 'Double-click to reset';
       resetLockUI(true);
-      $('#crop-go').textContent = 'Insert';
+      $('#crop-go').textContent = drop && drop.hero ? 'Use in Covers' : 'Insert';
       if (!keep && drop && drop.edit && drop.el) {
         // ✎ Edit: the alt and caption the photo already has (they were replaced by a fresh Claude alt and an
         // empty caption field; stress test 2026-10-15)
@@ -13029,6 +13084,7 @@ let GEO = null, PLACE = '';          // /api/geo for CUR, and the chosen place
 let VIEW = [], IDX = -1, PICKS = [];
 
 let _albumsBusy = false, _albumsBusyAt = 0, _albumsEver = false;
+let _albumsScrollOn = false;      // the next draw of the list scrolls to the open album (the Library followed an article)
 async function loadAlbums() {
   // The 6 s tick must not queue a second call behind a slow server: ten of
   // these piled up in one tab and starved every other route. (And a guard with no end stuck for 8
@@ -13090,6 +13146,7 @@ async function loadAlbums() {
   }
   $('#hdr-albums').innerHTML =
     `${d.albums.length} albums · ${totN.toLocaleString()} photos &amp; videos · ${(totMb/1000).toFixed(1)} GB`;
+  if (_albumsScrollOn) { _albumsScrollOn = false; const on = box.querySelector('.alb.on'); if (on) on.scrollIntoView({ block: 'center' }); }
 }
 
 let _photosGen = 0, _photosSig = '', _photosAlbum = null;
@@ -13647,7 +13704,7 @@ $('#f-send').onclick = async () => {
   let rel = ''; try { rel = await window.articleRelPath(); } catch (e) {}
   const name = (rel || document.getElementById('file-name').textContent || 'the open article').split('/').pop();
   if (!confirm('Insert ' + chosen.length + ' photo' + (chosen.length === 1 ? '' : 's') + ' at the end of ' + name + '?\nPortraits go in as pairs, landscapes full width; crop them afterwards with ✎ Edit.')) return;
-  const m = /^(?:Drafts\/(?:\.Full Articles\/)?)?([^/]+)\//.exec(rel || '');
+  const m = /^(?:Drafts\/(?:(?:Upcoming|Full Articles|Field Notes|\.Archive|\.Full Articles)\/)?)?([^/]+)\//.exec(rel || '');
   const country = m ? m[1].split('-').map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ') : '';
   if (!country) { alert('Open the article from the site folder first: its country names the Images/ folder the photos are filed in.'); return; }
   const city = PLACE ? PLACE.replace(/,.*$/, '').trim() : '';
@@ -13656,7 +13713,7 @@ $('#f-send').onclick = async () => {
   showView('editor');
   try {
     const root = (await (await fetch(API + '/api/pick_root')).json()).root;
-    // ../ per folder level of the article (greece/x.html = 1, Drafts/.Full Articles/turkiye/x.html = 3)
+    // ../ per folder level of the article (greece/x.html = 1, Drafts/Full Articles/turkiye/x.html = 3)
     const depth = rel ? rel.split('/').length - 1 : (typeof window.__articleDepth === 'function' ? await window.__articleDepth() : 1);
     const blocks = []; let pair = [];
     const flush = () => { if (pair.length) { blocks.push(pairHtml(pair)); pair = []; } };
@@ -13804,7 +13861,27 @@ window.__libOpen = async function (album, place) {
     await new Promise(r => setTimeout(r, 250));
   }
 };
-window.__libRefresh = function () { loadAlbums(); if (CUR) loadPhotos(); refreshPickCount(); };
+// With an article open, the Library opens on the trip the Editor's photo sidebar shows, which follows the
+// article's country (Kevin, 2026-10-24: "When I have an article open, the photo editor should default to the
+// country of the album that I have open"). It used to keep whatever album was last viewed, or Albania, the first.
+// Once per album: an album clicked by hand here stays until the sidebar moves to another trip (a new article).
+let _libFollowed = null;
+async function libFollowArticle() {
+  if (!(typeof window.__getOriginalHTML === 'function' && window.__getOriginalHTML())) return;   // no article open
+  let want = (document.getElementById('pl-country') || {}).value || '';
+  if (!want && window.plDefaultCountry) {            // the sidebar has not loaded its trips yet
+    try { const d = await (await fetch(API + '/api/albums')).json(); want = await window.plDefaultCountry(d.albums.map(a => a.name)); } catch (e) {}
+  }
+  if (!want || want === _libFollowed) return false;
+  _libFollowed = want;
+  if (want === CUR) return false;
+  await window.__libOpen(want);
+  return true;
+}
+window.__libRefresh = async function () {
+  try { if (await libFollowArticle()) _albumsScrollOn = true; } catch (e) {}   // the list draws after the switch, so the draw scrolls to it
+  loadAlbums(); if (CUR) loadPhotos(); refreshPickCount();
+};
 window.__libCloseLight = function () { if ($('#light').classList.contains('open')) closeLight(); };
 })();
 </script>
@@ -13892,7 +13969,7 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     const h1 = doc && (doc.querySelector('.article-hero h1, .article-title, h1'));
     const lead = doc && doc.querySelector('.article-lead');
     const rel = (window.__articleRel || '');
-    const m = /^(?:Drafts\/(?:\.Full Articles\/)?)?([^/]+)\//.exec(rel);   // Drafts/<country>/field-notes.html is that country, not "Drafts"
+    const m = /^(?:Drafts\/(?:(?:Upcoming|Full Articles|Field Notes|\.Archive|\.Full Articles)\/)?)?([^/]+)\//.exec(rel);   // Drafts/<folder>/<country>/x.html is that country, not "Drafts"
     const folder = m ? m[1] : '';
     const country = folder.split('-').map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
     // the page's current hero files are hero-<slug>.*; the picker rebuilds under that name
@@ -13928,7 +14005,33 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
       if (_thumbWant) setTimeout(() => { const f = document.getElementById('heroes-frame'); if (f && f.contentWindow && _thumbWant) f.contentWindow.postMessage(_thumbWant, '*'); }, 400);
     }
     if (ev.origin === HEROES && ev.data && (ev.data.type === 'thumb-edit-ok' || ev.data.type === 'thumb-saved')) _thumbWant = null;
+    if (ev.origin === HEROES && ev.data && ev.data.type === 'hero-develop') heroDevelop(ev.data);
   });
+  // Covers' ✎ Develop: its stage photo opens in this editor's develop window (the only one there is), and the
+  // baked copy goes back to Covers (heroDevelopInsert). An album photo is a {root, path} pair on the Backup
+  // source; a developed copy already under Images/ reopens its LIBRARY source with the recipe baked into it.
+  async function heroDevelop(d) {
+    if (!fileHandle) { if (window.toast) toast('Open the article first: the develop window works on the open article.'); return; }
+    let photo = null;
+    try {
+      if (d.path.startsWith('site:')) {
+        const ref = d.path.slice(5);
+        let rec = null;
+        try { rec = await (await fetch(API + '/api/recipe?path=' + encodeURIComponent(ref))).json(); } catch (e) {}
+        if (rec && rec.ok) { window.__recipeFor = { path: rec.path, recipe: rec.recipe }; photo = { root: rec.root, path: rec.path, name: rec.name }; }
+        else {
+          const o = await (await fetch(API + '/api/resolve_original?path=' + encodeURIComponent(ref))).json();
+          if (!o.ok) throw new Error(o.error || 'no archive original');
+          window.__recipeFor = null; photo = { root: o.root, path: o.path, name: o.name };
+        }
+      } else {
+        const root = (await (await fetch(API + '/api/pick_root')).json()).root;
+        window.__recipeFor = null; photo = { root, path: d.path, name: d.name || d.path.split('/').pop() };
+      }
+    } catch (e) { if (window.toast) toast('That photo could not be opened for developing: ' + (e.message || e), 7000); return; }
+    showView('editor');                                       // the develop window lives in the Editor view
+    window.openCropForPhoto(photo, { where: 'hero', el: null, hero: true, thumb: !!d.thumb });
+  }
 
   // The picker built a hero: rewrite this page's hero to use it. The hero lives outside the
   // editable body, in the page the body came from, so the change goes into originalHTML and
@@ -13986,13 +14089,22 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
       html = html.replace(/(<style id="hero-tiers">[\s\S]*?)(<\/style>)/, (m, a, b) => a + rules + b);
     else
       html = html.replace(/<\/head>/, '<style id="hero-tiers">\n' + rules + '</style>\n</head>');
-    if (html === before) { alert('The picker built the hero files, but this page has no hero block I recognise; nothing changed.'); return; }
-    window.__setOriginalHTML(html);
+    // A new photo cut under the hero's own name with the same crop leaves the page text exactly as it was. That
+    // is not "no hero block": the files on disk ARE the new photo, so the masthead is redrawn and there is just
+    // nothing to save. It used to stop here with an alert and leave the old photo up (2026-10-24, Skopje).
+    const sameText = html === before;
+    if (sameText && !ours(d.slug)) { alert('The picker built the hero files, but this page has no hero block I recognise; nothing changed.'); return; }
+    if (!sameText) window.__setOriginalHTML(html);
+    window.__heroBust = Date.now();           // the files kept their names: the masthead must not reuse the cached photo
     { const keep = window.__mastheadDraft && window.__mastheadDraft();     // a title being typed survives the new photo
       if (window.__renderMasthead) __renderMasthead(html);
       if (keep) keep(); }
-    setDirty(true);
     const status = document.getElementById('save-status');
+    if (sameText) {
+      if (!isDirty) { status.textContent = '✓ New hero in place · same file names, nothing to save'; status.className = 'save-status saved'; }
+      return;
+    }
+    setDirty(true);
     status.textContent = '● Unsaved · hero updated from the picker';
     status.className = 'save-status unsaved';
   });
@@ -14483,6 +14595,115 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     paint();
   };
   document.addEventListener('DOMContentLoaded', () => { flagSelect(document.getElementById('pl-country')); flagSelect(document.getElementById('pk-album')); });
+})();
+</script>
+<script>
+/* ============== DICTATION (Kevin, 2026-10-24) ==============
+   "can you add in voice to text functionality that was suggested earlier?" -- a record button that transcribes locally
+   into a new paragraph. The audio is decoded and resampled to 16 kHz mono WAV here (so the server needs no ffmpeg), sent
+   to the photo server's /api/transcribe (faster-whisper small.en on the CPU, the article's names as its vocabulary,
+   American spelling after), and the text lands in a NEW paragraph after the block the cursor was in (an empty
+   paragraph takes it instead). One undo step; Esc while recording cancels. */
+(function () {
+  const btn = document.getElementById('tb-dictate');
+  if (!btn) return;
+  const label = btn.querySelector('span');
+  const ed = () => document.getElementById('editor');
+  let rec = null, stream = null, chunks = [], started = 0, timer = null, anchor = null, busy = false, cancelled = false;
+  const say = (t, ms) => (window.toast ? window.toast(t, ms || 6000) : alert(t));
+  function setState(st, txt) { btn.dataset.state = st; label.textContent = txt; }
+  function rememberCaret() {
+    const sel = getSelection();
+    if (sel.rangeCount && ed().contains(sel.anchorNode)) anchor = sel.getRangeAt(0).cloneRange();
+  }
+  function blockOf(node) {
+    const root = ed();
+    while (node && node.parentNode !== root) node = node.parentNode;
+    return node && node.parentNode === root ? node : null;
+  }
+  async function start() {
+    if (busy) return;
+    if (typeof fileHandle === 'undefined' || !fileHandle) { say('Open an article first.'); return; }
+    rememberCaret();
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+    } catch (e) {
+      say('The microphone is blocked for this page. Allow it in Chrome (the icon at the right of the address bar), then press Dictate again.', 9000);
+      return;
+    }
+    chunks = []; cancelled = false;
+    const type = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+    rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = finish;
+    rec.start(1000);
+    started = Date.now();
+    const tick = () => { const t = Math.round((Date.now() - started) / 1000); label.textContent = 'Stop ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+    setState('rec', 'Stop 0:00'); timer = setInterval(tick, 500);
+  }
+  function stop(cancel) { cancelled = !!cancel; if (rec && rec.state !== 'inactive') rec.stop(); }
+  async function finish() {
+    clearInterval(timer);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (cancelled) { setState('idle', 'Dictate'); return; }
+    busy = true;
+    const secs = Math.round((Date.now() - started) / 1000);
+    setState('busy', 'Transcribing\u2026');
+    try {
+      const wav = await toWav16k(new Blob(chunks, { type: (rec && rec.mimeType) || 'audio/webm' }));
+      let rel = '';
+      try { rel = (typeof window.articleRelPath === 'function' ? await window.articleRelPath() : '') || ''; } catch (e) {}
+      const res = await fetch(API + '/api/transcribe?rel=' + encodeURIComponent(rel), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav });
+      const r = await res.json();
+      if (!r.ok) throw new Error(r.error || 'the photo server could not transcribe it');
+      if (!r.text) say('No speech in that recording.');
+      else place(r.text);
+    } catch (e) {
+      say('Dictation failed: ' + ((e && e.message) || e) + (secs ? '' : ''), 9000);
+    }
+    busy = false; setState('idle', 'Dictate');
+  }
+  async function toWav16k(blob) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let audio;
+    try { audio = await ctx.decodeAudioData(await blob.arrayBuffer()); } finally { ctx.close(); }
+    const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(audio.duration * 16000)), 16000);
+    const src = off.createBufferSource(); src.buffer = audio; src.connect(off.destination); src.start();
+    const pcm = (await off.startRendering()).getChannelData(0);
+    const n = pcm.length, ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+    const w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 16000, true);
+    v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) { const x = Math.max(-1, Math.min(1, pcm[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
+    return new Blob([ab], { type: 'audio/wav' });
+  }
+  function place(text) {
+    const root = ed();
+    if (window.__History) window.__History.checkpoint();
+    const blk = anchor && root.contains(anchor.startContainer) ? blockOf(anchor.startContainer) : null;
+    let p;
+    if (blk && blk.tagName === 'P' && !blk.textContent.trim()) { p = blk; p.textContent = text; }
+    else {
+      p = document.createElement('p'); p.textContent = text;
+      if (blk) blk.after(p); else root.appendChild(p);
+    }
+    p.classList.add('dictated');
+    setTimeout(() => { p.classList.remove('dictated'); if (!p.className) p.removeAttribute('class'); }, 4000);
+    p.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const r = document.createRange(); r.selectNodeContents(p); r.collapse(false);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    anchor = r.cloneRange();                       // the next dictation follows this one
+    if (typeof setDirty === 'function') setDirty(true);
+    return p;
+  }
+  btn.addEventListener('mousedown', e => { e.preventDefault(); rememberCaret(); });   // the caret stays where it was
+  btn.addEventListener('click', () => (rec && rec.state === 'recording') ? stop(false) : start());
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.altKey && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); (rec && rec.state === 'recording') ? stop(false) : start(); }
+    else if (e.key === 'Escape' && rec && rec.state === 'recording') { e.preventDefault(); e.stopPropagation(); stop(true); }
+  }, true);
+  window.__dictation = { place: place, toWav16k: toWav16k, remember: rememberCaret };   // test seam
 })();
 </script>
 </body>

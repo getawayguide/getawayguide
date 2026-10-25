@@ -46,7 +46,7 @@ def block(pfx, open_cls):
 def main():
     pats = [os.path.join(ROOT, "*.html"), os.path.join(ROOT, "*", "*.html")]
     if DRAFTS:
-        pats.append(os.path.join(ROOT, "Drafts", "*", "field-notes.html"))
+        pats += __import__("draft_paths").abs_globs(name="field-notes.html")
     changed = skipped = 0
     for p in sorted({q for pat in pats for q in glob.glob(pat)}):
         rel = os.path.relpath(p, ROOT).replace("\\", "/")

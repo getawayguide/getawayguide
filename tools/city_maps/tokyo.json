@@ -3,7 +3,7 @@
   "kicker": "Japan",
   "city": "Tokyo",
   "osm": ".tmp/tokyo_osm.json",
-  "article": "Drafts/japan/field-notes.html",
+  "article": "Drafts/Field Notes/japan/field-notes.html",
   "embed": {
     "pre": " basic (mine creaked all night), but the location and price make up for it</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"kyoto\""

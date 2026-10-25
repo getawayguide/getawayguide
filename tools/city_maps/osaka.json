@@ -3,7 +3,7 @@
   "kicker": "Japan",
   "city": "Osaka",
   "osm": ".tmp/osaka_osm.json",
-  "article": "Drafts/japan/field-notes.html",
+  "article": "Drafts/Field Notes/japan/field-notes.html",
   "embed": {
     "pre": "the neon and the food, and it's a short walk to Shinsekai and Den Den Town</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"hiroshima\""

@@ -3,7 +3,7 @@
   "kicker": "Morocco",
   "city": "Marrakesh",
   "osm": ".tmp/marrakesh_osm.json",
-  "article": "Drafts/morocco/field-notes.html",
+  "article": "Drafts/Field Notes/morocco/field-notes.html",
   "embed": {
     "pre": "medina. Alcohol is limited to licensed spots; the local beer is Casablanca</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

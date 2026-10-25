@@ -401,7 +401,7 @@ def source_path(root_idx, rel):
 # ---------------------------------------------------------------- article pages
 def article_pages():
     pages = []
-    for pat in ("*/*.html", "Drafts/*/field-notes.html"):
+    for pat in ("*/*.html", "Drafts/Field Notes/*/field-notes.html", "Drafts/Upcoming/*/field-notes.html"):
         for p in sorted(ROOT.glob(pat)):
             if ".tmp" in p.parts or p.parts[0] == ".tmp":
                 continue
@@ -1834,8 +1834,9 @@ def api_publish():
     name, iso2, cont = (d.get("name") or "").strip(), re.sub(r"[^a-z]", "", (d.get("iso2") or "").lower()), d.get("continent") or ""
     if not slug or not name or len(iso2) != 2 or cont not in ("europe", "americas", "asia", "africa", "oceania"):
         return jsonify({"ok": False, "log": "Needs the country's name, its two-letter code and a continent."}), 400
-    if not (Path(ROOT) / "Drafts" / slug / "field-notes.html").exists():
-        return jsonify({"ok": False, "log": "No Drafts/%s/field-notes.html to publish." % slug}), 400
+    import draft_paths as _dp
+    if not _dp.locate(slug, "field-notes.html"):
+        return jsonify({"ok": False, "log": "No field-notes draft for %s (Drafts/Upcoming or Drafts/Field Notes) to publish." % slug}), 400
     args = [sys.executable, str(Path(ROOT) / "tools" / "publish_country.py"), slug, "--name", name, "--iso2", iso2, "--continent", cont]
     if d.get("dry", True):
         args.append("--dry-run")
@@ -2505,6 +2506,101 @@ def _straighten_record(dest, src_root, src_path, angle):
         _atomic_write(STRAIGHTEN_FILE, json.dumps(recs, indent=1))
     except OSError:
         pass
+
+
+# ---------------------------------------------------------------- dictation (Kevin, 2026-10-24)
+# "can you add in voice to text functionality that was suggested earlier?": the editor records, turns the audio into
+# 16 kHz mono WAV in the browser (so nothing here needs ffmpeg) and posts it; faster-whisper's small English model
+# transcribes it on this machine (int8 on the CPU: about 3.5x faster than real time; nothing leaves the laptop).
+# Whisper gets the open article's own names as its vocabulary (map links and headings), which turned "Khrushchevoe"
+# and "Vytola" into Krushevo and Bitola in the test, and the text then goes through americanize (Kevin's rule).
+WHISPER_DIR = Path(ROOT) / ".tmp" / "photo_editor" / "models" / "faster-whisper-small.en"
+_WHISPER = {"model": None}
+_WHISPER_LOCK = threading.Lock()
+
+
+def _whisper():
+    if _WHISPER["model"] is None:
+        from faster_whisper import WhisperModel
+        _WHISPER["model"] = WhisperModel(str(WHISPER_DIR), device="cpu", compute_type="int8",
+                                         cpu_threads=max(2, (os.cpu_count() or 8) // 2))
+    return _WHISPER["model"]
+
+
+def _dictation_prompt(rel):
+    """the article's own place names and headings, so Whisper spells them the way the page does"""
+    import html as _html
+    import draft_paths as _dp
+    page = (Path(ROOT) / rel).resolve()
+    if Path(ROOT).resolve() not in page.parents or page.suffix != ".html" or not page.is_file():
+        return ""
+    h = page.read_text(encoding="utf-8", errors="replace")
+    names = []
+    for t in (re.findall(r'<a href="https://www\.google\.com/maps/[^"]*"[^>]*>(.*?)</a>', h)
+              + re.findall(r"<h[1-3]\b[^>]*>(.*?)</h[1-3]>", h, re.S)):
+        t = _html.unescape(re.sub(r"<[^>]+>", "", t)).strip()
+        if t and len(t) < 40 and t not in names:
+            names.append(t)
+    country = _dp.country_of(rel).replace("-", " ").title()
+    return ((country + ". ") if country else "") + ", ".join(names)[:800]
+
+
+@app.route("/api/transcribe", methods=["POST", "OPTIONS"])
+def api_transcribe():
+    """body: a WAV (16 kHz mono from the editor; any WAV soundfile reads); ?rel=<article> for the vocabulary.
+    -> {ok, text, seconds, audio_seconds}"""
+    if request.method == "OPTIONS":
+        return "", 204
+    if not (WHISPER_DIR / "model.bin").is_file():
+        return jsonify({"ok": False, "error": "the dictation model is not on this computer (.tmp/photo_editor/models/"
+                                              "faster-whisper-small.en): Claude can download it again"}), 503
+    data = request.get_data(cache=False)
+    if not data or len(data) > 200 * 1024 * 1024:
+        return jsonify({"ok": False, "error": "no audio arrived"}), 400
+    import io as _io
+    import numpy as np
+    import soundfile as sf
+    try:
+        a, sr = sf.read(_io.BytesIO(data), dtype="float32")
+    except Exception:
+        return jsonify({"ok": False, "error": "the recording could not be read"}), 400
+    if a.ndim > 1:
+        a = a.mean(axis=1)
+    if sr != 16000:
+        n = max(1, int(len(a) * 16000 / sr))
+        a = np.interp(np.linspace(0, len(a) - 1, n), np.arange(len(a)), a).astype("float32")
+    dur = len(a) / 16000.0
+    if dur < 0.4:
+        return jsonify({"ok": True, "text": "", "seconds": 0, "audio_seconds": round(dur, 1)})
+    rel = (request.args.get("rel") or "").replace("\\", "/")
+    prompt = _dictation_prompt(rel) if rel else ""
+    t0 = time.time()
+    try:
+        with _WHISPER_LOCK:
+            segs, _info = _whisper().transcribe(a, language="en", beam_size=5, vad_filter=True,
+                                                initial_prompt=prompt or None)
+            text = " ".join(seg.text.strip() for seg in segs).strip()
+    except Exception as e:
+        return jsonify({"ok": False, "error": "transcription failed: %s" % str(e)[:200]}), 500
+    try:
+        import americanize as _am
+        text = _am.convert(text)[0]
+    except Exception:
+        pass
+    return jsonify({"ok": True, "text": text, "seconds": round(time.time() - t0, 1), "audio_seconds": round(dur, 1)})
+
+
+@app.route("/api/locate")
+def api_locate():
+    """Which draft folder holds <country>/<page> (Drafts/Upcoming, Full Articles or Field Notes). Every draft is three
+    folders down since the 2026-10-24 reorganization, so the editor's depth guess no longer says which folder it is in
+    when no site folder is connected; it asks here. {rel: null} when no draft has that name."""
+    import draft_paths as _dp
+    country = re.sub(r"[^a-z0-9-]", "", (request.args.get("country") or "").lower())
+    page = os.path.basename(request.args.get("page") or "")
+    if not country or not page.endswith(".html"):
+        return jsonify({"ok": False, "rel": None}), 400
+    return jsonify({"ok": True, "rel": _dp.locate(country, page)})
 
 
 @app.route("/api/pick_root")
@@ -3699,15 +3795,8 @@ def _articles_inventory():
         r = _article_row(p, p.relative_to(root).as_posix(), "live")
         if r:
             rows.append(r)
-    for p in sorted((root / "Drafts").glob("*/*.html")):
-        if p.parts[len(root.parts) + 1].startswith("."):
-            continue
-        r = _article_row(p, p.relative_to(root).as_posix(), "draft")
-        if r:
-            rows.append(r)
-    for p in sorted((root / "Drafts" / ".Full Articles").glob("*/*.html")):
-        if p.parts[len(root.parts) + 2].startswith("."):      # a dot-folder is scratch, not a country
-            continue
+    import draft_paths as _dp                      # Upcoming, Full Articles, Field Notes (2026-10-24)
+    for p in _dp.draft_pages():
         r = _article_row(p, p.relative_to(root).as_posix(), "draft")
         if r:
             rows.append(r)
@@ -3864,7 +3953,8 @@ def api_thumbs():
             phone = {"img": img, "pos": pm or pos, "note": "" if pm else "same crop as the country card: none set for phones yet"}
     slots.append(dict(key="card", label="Country page card", where="the country page, on a monitor or tablet", ratio="2 / 3",
                       **(card or {"img": None, "pos": "50% 50%", "note": "this article has no card on its country page"})))
-    live = rel.replace("Drafts/.Full Articles/", "")
+    import draft_paths as _dp
+    live = _dp.live_rel(rel)
     lst = None
     for name in ("index.html", "posts.html"):
         f = ROOT / name
@@ -3883,9 +3973,22 @@ def api_thumbs():
             img, pos, pm = parse_style(rule.group(1), "") if rule else (None, "50% 50%", None)
         lst = {"img": img, "pos": pos, "note": "on " + ("the home page" if name == "index.html" else "posts.html")}
         break
-    slots.append(dict(key="list", label="Home & posts card", where="Recent Dispatches and the posts list", ratio="4 / 3",
-                      **(lst or {"img": (card or {}).get("img"), "pos": "50% 50%",
-                                 "note": "not on the home page yet (drafts aren't): shown with the card photo"})))
+    # the crops Kevin saved in Covers (Save thumbnail): what a draft's home/posts card WILL show, and the phone crop
+    # when a card carries no --pm of its own
+    pick = {}
+    try:
+        tp = json.loads((ROOT / ".tmp" / "thumb_picks.json").read_text(encoding="utf-8"))
+        pick = tp.get(rel) or next((v for k, v in tp.items() if _dp.live_rel(k) == live), {}) or {}
+    except Exception:
+        pick = {}
+    saved = (pick.get("positions") or {}) if isinstance(pick, dict) else {}
+    if not lst:
+        lst = {"img": (card or {}).get("img"), "pos": saved.get("list", "50% 50%"),
+               "note": "not on the home page yet (drafts aren't): shown with the crop you saved in Covers" if saved.get("list")
+                       else "not on the home page yet (drafts aren't): shown with the card photo"}
+    if phone and phone.get("note") and saved.get("phone"):
+        phone = {"img": phone.get("img"), "pos": saved["phone"], "note": ""}
+    slots.append(dict(key="list", label="Home & posts card", where="Recent Dispatches and the posts list", ratio="4 / 3", **lst))
     slots.append(dict(key="phone", label="Phone card", where="both cards on a phone", ratio="16 / 9",
                       **(phone or {"img": None, "pos": "50% 50%", "note": ""})))
     og = None

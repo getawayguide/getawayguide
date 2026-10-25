@@ -58,8 +58,7 @@ def articles(slug=None, live=False):
         # placeholders and were never swept, because this only ever globbed the field notes.
         pats = ["%s/*.html" % (slug or "*")]
     else:
-        pats = ["Drafts/%s/field-notes.html" % (slug or "*"),
-                "Drafts/.Full Articles/%s/*.html" % (slug or "*")]
+        pats = __import__("draft_paths").globs(slug or "*")
     out = []
     for pat in pats:
         out += [p.replace("\\", "/") for p in glob.glob(os.path.join(ROOT, pat))]

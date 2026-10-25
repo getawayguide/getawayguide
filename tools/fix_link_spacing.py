@@ -61,10 +61,10 @@ def main():
     a = ap.parse_args()
     if a.slug:
         files = [p for p in (os.path.join(ROOT, "%s/field-notes.html" % a.slug),
-                             os.path.join(ROOT, "Drafts/%s/field-notes.html" % a.slug))
+                             __import__("draft_paths").locate(a.slug, "field-notes.html") or os.path.join(ROOT, "Drafts/Field Notes/%s/field-notes.html" % a.slug))
                  if os.path.exists(p)]
     else:
-        files = sorted(glob.glob(os.path.join(ROOT, "Drafts/*/field-notes.html")))
+        files = sorted([str(p) for p in __import__("draft_paths").field_notes()])
     total = 0
     for f in files:
         html = io.open(f, encoding="utf-8").read()

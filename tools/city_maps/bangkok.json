@@ -3,7 +3,7 @@
   "kicker": "Thailand",
   "city": "Bangkok",
   "osm": ".tmp/bangkok_osm.json",
-  "article": "Drafts/thailand/field-notes.html",
+  "article": "Drafts/Field Notes/thailand/field-notes.html",
   "embed": {
     "pre": "g Khao San hostels that promise a party vibe but deliver an empty building</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"chiang-mai\""

@@ -31,13 +31,17 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
-DRAFTS = ROOT / "Drafts" / ".Full Articles"
+import draft_paths as dp          # Drafts/Upcoming and Drafts/Full Articles (2026-10-24)
 PINS = ROOT / "tools" / "explore_pins.json"
 OUT_DIR = ROOT / "Images" / "web" / "explore"
 DESK = (420, 636, 840)          # the card is ~227 px wide in the 729 px column: 1.85x / 2.8x / 3.7x (never ~1x/2x)
 MOB = (104, 208, 312)           # the phone thumbnail is 104 px wide: 1x / 2x / 3x
 WPM = 230
-BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm"[^>]*>.*?</section><!-- /explore-more -->', re.S)
+# "xm" alone (articles, field notes) or "xm measure" (the itinerary template). It matched only the first, so every run
+# stacked another block on the two live itineraries (four each by 2026-10-24).
+BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section><!-- /explore-more -->', re.S)
+# the itinerary template's standing footnote; it belongs to the article, so it goes above the block, not under it
+UPDATED_RE = re.compile(r'[ \t]*<div class="measure gg-updated">.*?</div>', re.S)
 
 # the countries on the site: name, continent, centroid, and which site countries they border
 COUNTRIES = {
@@ -139,9 +143,9 @@ def catalog():
     pages' mtimes: the editor's panel asks on every open, and reading 80 pages took seconds."""
     files = []
     for country in COUNTRIES:
-        for folder in (ROOT / country, DRAFTS / country):
-            if folder.is_dir():
-                files += [(p, p.stat().st_mtime) for p in sorted(folder.glob("*.html"))]
+        if (ROOT / country).is_dir():
+            files += [(p, p.stat().st_mtime) for p in sorted((ROOT / country).glob("*.html"))]
+        files += [(p, p.stat().st_mtime) for p in dp.articles(country)]
     sig = tuple(files)
     if _CACHE.get("sig") == sig:
         return _CACHE["cat"]
@@ -162,8 +166,7 @@ def _catalog():
             if not published(p):
                 continue
             cat[p.relative_to(ROOT).as_posix()] = entry(p, country, cards, draft=False)
-        dfolder = DRAFTS / country
-        for p in sorted(dfolder.glob("*.html")) if dfolder.is_dir() else []:
+        for p in dp.articles(country):
             if p.name == "index.html" or p.name == "field-notes.html":
                 continue
             cat[p.relative_to(ROOT).as_posix()] = entry(p, country, {}, draft=True)
@@ -380,13 +383,24 @@ def anchor(s):
 
 def apply_page(rel, cat, pins, dry=False):
     p = ROOT / rel
-    s = p.read_text(encoding="utf-8")
+    with open(p, encoding="utf-8", newline="") as fh:      # keep the page's own line endings (a mixed CRLF/LF file lost its CRLFs, 2026-10-24)
+        s = fh.read()
     nl = "\r\n" if "\r\n" in s else "\n"
     s = BLOCK_RE.sub("", s)
     chosen = picks(rel, cat, pins)
     at, extra = anchor(s)
     if at is None or not chosen:
         return chosen, "SKIPPED: no place for the block" if at is None else "SKIPPED: nothing to point to"
+    if extra:
+        # the template puts "Last updated" after .artbody closes, which left it under the cards; move it in as the
+        # column's last line so the page ends like every article: text, the block, the footer (Kevin, 2026-10-24:
+        # "have all articles conform to the gyumri draft")
+        u = UPDATED_RE.search(s, at)
+        if u and not s[at:u.start()].replace("</div>", "", 1).strip():
+            line = u.group(0).strip()
+            s = s[:at] + s[at:u.start()] + s[u.end():]
+            s = s[:at] + "  " + line + nl + s[at:]
+            at, extra = anchor(s)
     blk = block_html(rel, chosen, dry)
     if extra:
         blk = blk.replace('<section class="xm"', '<section class="xm%s"' % extra, 1)

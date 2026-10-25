@@ -239,8 +239,7 @@ _index_lock = threading.Lock()
 
 def _sources():
     files = (glob.glob(str(ROOT / "*" / "*.html"))
-             + glob.glob(str(ROOT / "Drafts" / "*" / "*.html"))
-             + glob.glob(str(ROOT / "Drafts" / ".Full Articles" / "*" / "*.html"))
+             + [str(p) for p in __import__("draft_paths").draft_pages()]
              + glob.glob(str(ROOT / "tools" / "city_maps" / "*.json"))
              + glob.glob(str(ROOT / "tools" / "itinerary_maps" / "*.json")))
     return sorted(set(files))
@@ -275,8 +274,7 @@ def _build():
     # greedy [^"]* so the LAST !3d!4d pair in the URL is captured: a Maps URL
     # often carries an earlier pair for the previous place the map was showing
     link = re.compile(r'<a href="https://www\.google\.com/maps/place/[^"]*?!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)(?![^"]*!3d)[^"]*"[^>]*>(.*?)</a>', re.S)
-    for f in (glob.glob(str(ROOT / "*" / "*.html")) + glob.glob(str(ROOT / "Drafts" / "*" / "*.html"))
-              + glob.glob(str(ROOT / "Drafts" / ".Full Articles" / "*" / "*.html"))):
+    for f in (glob.glob(str(ROOT / "*" / "*.html")) + [str(p) for p in __import__("draft_paths").draft_pages()]):
         try:
             s = Path(f).read_text(encoding="utf-8", errors="replace")
         except OSError:

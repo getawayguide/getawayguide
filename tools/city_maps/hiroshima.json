@@ -3,7 +3,7 @@
   "kicker": "Japan",
   "city": "Hiroshima",
   "osm": ".tmp/hiroshima_osm.json",
-  "article": "Drafts/japan/field-notes.html",
+  "article": "Drafts/Field Notes/japan/field-notes.html",
   "embed": {
     "pre": "kes it a good spot to slow down for a day after a long stretch on the road</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"other\""

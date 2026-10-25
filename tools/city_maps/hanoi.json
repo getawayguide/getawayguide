@@ -3,7 +3,7 @@
   "kicker": "Vietnam",
   "city": "Hanoi",
   "osm": ".tmp/hanoi_osm.json",
-  "article": "Drafts/vietnam/field-notes.html",
+  "article": "Drafts/Field Notes/vietnam/field-notes.html",
   "embed": {
     "pre": "eric heart of the city, if a noisy one, and everything is on your doorstep</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"ha-long-bay\""

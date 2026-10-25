@@ -70,14 +70,15 @@
       "cat": "stay",
       "match": "old town hostel oh",
       "lat": 41.1148218,
-      "lon": 20.7996612
+      "lon": 20.7996612,
+      "href": "https://www.google.com/maps/place/Hostel+Old+Town/@41.1147942,20.7996983,17z/data=!4m9!3m8!1s0x1350ddb93de73279:0x9344b9f80489550c!5m2!4m1!1i2!8m2!3d41.1147942!4d20.7996983!16s%2Fg%2F11fm2lr8dn?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "day_trips": [
     {
       "name": "Lake Boat Tour",
       "time": "Full Day",
-      "href": "https://www.getyourguide.com/booking/G3X1Q10W2MV13J2B277Z8M4MPJ4KGFSH"
+      "href": "https://www.getyourguide.com/saint-naum-l139036/ohrid-boat-tour-sv-naum-zaum-trpejca-bbq-lale-tours-t781355/"
     }
   ],
   "district_labels": [

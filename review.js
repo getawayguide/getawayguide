@@ -453,9 +453,15 @@
       const cm = new RegExp('<ins class="rl ed struct[^"]*" data-id="' + id + '"').exec(h);   // ids are letters and digits
       const cs = cm ? cm.index : -1;
       const se = cs >= 0 ? h.indexOf('</sup>', cs) : -1, fs = se >= 0 ? se + 6 : -1;
-      let key = null;
+      let key = null, gapLen = 0;
       if (fs >= 0) { const tail = h.slice(fs), k = locate(tail, c.find); const off = k ? tail.indexOf(k) : -1;
-        if (off >= 0 && !tail.slice(0, off).trim()) key = k; }
+        // drawn chrome may sit between the chip and the fragment: the editor puts its table of contents right before
+        // the first <h2>, so an intro above that heading had the box in the gap and could never be accepted
+        // (Ohrid round 2, 2026-10-24). Chrome is redrawn, so it may go with the passage; real text may not.
+        let blank = off >= 0 && !tail.slice(0, off).trim();
+        if (off >= 0 && !blank) { const t = document.createElement('template'); t.innerHTML = tail.slice(0, off);
+          t.content.querySelectorAll('[data-chrome]').forEach(x => x.remove()); blank = !t.innerHTML.trim(); }
+        if (blank) { key = k; gapLen = off; } }
       if (!key) {
         if (!silent) toast('This passage was edited after the change was proposed, so the change no longer fits. Reject it, or make the edit by hand.', 7000);
         return;
@@ -465,7 +471,7 @@
       const rep = (c.inner || []).reduce((t, i) => { const g = byId(i);
         return g && g.kind === 'grammar' && g.find && state.st[i] !== false && t.includes(g.find) ? t.split(g.find).join(g.replace) : t; }, c.replace);
       if (H()) H().checkpoint();
-      e.innerHTML = h.slice(0, cs) + rep + h.slice(fs + key.length);        // chip, number and fragment out; the new text in
+      e.innerHTML = h.slice(0, cs) + rep + h.slice(fs + gapLen + key.length);   // chip, number, gap and fragment out; the new text in
       anchorComments();
     } else {
       if (H()) H().checkpoint();
@@ -1567,8 +1573,11 @@
            || /property="og:url"[^>]+content="https?:\/\/[^\/"]+\/([a-z0-9-]+)\/([a-z0-9-]+\.html)"/i.exec(head);
     if (!m) return null;
     const depth = window.articleDepth ? await window.articleDepth() : 1;
-    const prefix = depth >= 3 ? 'Drafts/.Full Articles/' : depth === 2 ? 'Drafts/' : '';
-    return prefix + m[1] + '/' + m[2];
+    if (depth >= 3) {                       // Drafts/Upcoming|Full Articles|Field Notes: the server knows which (2026-10-24)
+      try { const r = await (await fetch(API + '/api/locate?country=' + encodeURIComponent(m[1]) + '&page=' + encodeURIComponent(m[2]), { cache: 'no-store' })).json(); if (r && r.rel) return r.rel; } catch (e) {}
+      return 'Drafts/Full Articles/' + m[1] + '/' + m[2];
+    }
+    return (depth === 2 ? 'Drafts/' : '') + m[1] + '/' + m[2];
   }
   document.addEventListener('article-loaded', async () => {
     const rel = await resolveRel();

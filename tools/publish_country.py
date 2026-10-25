@@ -4,12 +4,12 @@ publish_country.py — move a field-notes country from Drafts/ to the live site
 and wire it in everywhere. Formalizes the manual protocol (first used for Tanzania).
 
 Does, in order:
-  1. Move Drafts/<slug>/field-notes.html -> <slug>/field-notes.html (fix ../../ -> ../)
+  1. Move Drafts/Upcoming|Field Notes/<slug>/field-notes.html -> <slug>/field-notes.html (fix ../../../ -> ../)
   2. Regenerate the grouped Field Notes nav dropdown on every page (grouped by continent)
   3. Insert the index.html flag-card (alphabetical)
   4. Insert the destinations.html grid card (data-continent) + fieldNotesMap entry
   5. Compress the thumbnail -> Images/web/dest-cards/<slug>.jpg (portrait 600x900, q85, keep ICC)
-  6. Remove the empty Drafts/<slug>/ folder
+  6. Remove the empty Drafts/<folder>/<slug>/ folder
   7. Rebuild search-index.js so the new country/text is searchable (also adds the
      search.js script tag to the moved page, which drafts lack)
   8. SEO metadata — keyword <title>/og:title, "<Country> Travel Guide" H1, trimmed
@@ -188,21 +188,24 @@ def main():
     tag = "[dry-run] " if DRY else ""
     log = []
 
-    src = os.path.join(ROOT, "Drafts", slug, "field-notes.html")
+    import draft_paths as _dp          # Drafts/Upcoming or Drafts/Field Notes (2026-10-24)
+    src = os.path.join(ROOT, _dp.locate(slug, "field-notes.html") or os.path.join("Drafts", "Field Notes", slug, "field-notes.html"))
+    src_dir = os.path.dirname(src)
     dst = os.path.join(ROOT, slug, "field-notes.html")
     if not os.path.exists(src): sys.exit("ERROR: draft not found: %s" % rel(src))
     if os.path.exists(dst) and not DRY: sys.exit("ERROR: live page already exists: %s" % rel(dst))
 
     # 1. move + fix path depth (+ ensure the site-search script tag, which draft
     #    pages don't have — a subpage loads it from ../)
-    html = read(src).replace("../../", "../")
+    # a draft sits three folders down (Drafts/<folder>/<slug>/), a live page one
+    html = read(src).replace("../../../", "../")
     assert "../../" not in html
     if "search.js" not in html and "</body>" in html:
         html = html.replace("</body>", '<script defer src="../search.js"></script>\n</body>', 1)
     if not DRY:
         os.makedirs(os.path.join(ROOT, slug), exist_ok=True)
         write(dst, html)
-    log.append("moved draft -> %s (../../ -> ../, +search.js)" % rel(dst))
+    log.append("moved draft -> %s (../../../ -> ../, +search.js)" % rel(dst))
 
     # 2. nav is regenerated for every page in step 4c (needs the updated destinations data first)
 
@@ -326,10 +329,10 @@ def main():
 
     # 6. remove draft folder
     if not DRY:
-        try: shutil.rmtree(os.path.join(ROOT, "Drafts", slug))
+        try: shutil.rmtree(src_dir)
         except Exception:
-            os.system('rm -rf "%s"' % os.path.join(ROOT, "Drafts", slug))
-    log.append("removed Drafts/%s/" % slug)
+            os.system('rm -rf "%s"' % src_dir)
+    log.append("removed %s/" % rel(src_dir))
 
     # 6b. a new field-notes page is one more article: recount the home hero's "N and counting." and keep
     #     the posts page's Guides section in step (tools/sync_guides.py; Kevin, 2026-10-02)
@@ -368,7 +371,7 @@ def main():
             c = _json.load(open(cfgp, encoding="utf-8"))
         except Exception:
             continue
-        if c.get("article") in ("%s/field-notes.html" % slug, "Drafts/%s/field-notes.html" % slug):
+        if c.get("article") in ("%s/field-notes.html" % slug, "Drafts/%s/field-notes.html" % slug, rel(src).replace("\\", "/")):
             maps.append((os.path.basename(cfgp)[:-5], c))
     if maps:
         art = read(dst) if os.path.exists(dst) else html   # dry-run: use the in-memory page
@@ -545,8 +548,7 @@ def main():
                    "%d pin(s) off - run: py tools/check_pin_coords.py" % bad))
 
         # publishing changes the nav on live pages only, so every remaining draft goes stale
-        drafts = [os.path.basename(os.path.dirname(p)) for p in
-                  glob.glob(os.path.join(ROOT, "Drafts", "*", "field-notes.html"))]
+        drafts = [p.parent.name for p in __import__("draft_paths").field_notes()]
         if drafts:
             r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "update_draft_nav.py")] + drafts,
                                cwd=ROOT, capture_output=True, text=True)
@@ -580,8 +582,8 @@ def main():
                             % (slug, len(missing_nav), ", ".join(missing_nav[:3])))
         if not os.path.exists(dst):
             problems.append("live page %s was not written" % rel(dst))
-        if os.path.exists(os.path.join(ROOT, "Drafts", slug)):
-            problems.append("Drafts/%s/ still exists" % slug)
+        if os.path.exists(src_dir):
+            problems.append("%s/ still exists" % rel(src_dir))
         if problems:
             log.append("VERIFY FAILED:")
             log += ["    ! " + p for p in problems]

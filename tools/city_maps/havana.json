@@ -3,7 +3,7 @@
   "kicker": "Cuba",
   "city": "Havana",
   "osm": ".tmp/havana_osm.json",
-  "article": "Drafts/cuba/field-notes.html",
+  "article": "Drafts/Field Notes/cuba/field-notes.html",
   "embed": {
     "pre": "es (drivers, restaurant tips, currency questions) for the rest of the trip</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"cienfuegos\""

@@ -3,7 +3,7 @@
   "kicker": "France",
   "city": "Nice",
   "osm": ".tmp/nice_osm.json",
-  "article": "Drafts/france/field-notes.html",
+  "article": "Drafts/Field Notes/france/field-notes.html",
   "embed": {
     "pre": "t, and much cheaper than staying in the glossy towns like Monaco or Cannes</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"rouen\""

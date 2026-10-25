@@ -3,7 +3,7 @@
   "kicker": "Portugal",
   "city": "Lisbon",
   "osm": ".tmp/lisbon_osm.json",
-  "article": "Drafts/portugal/field-notes.html",
+  "article": "Drafts/Field Notes/portugal/field-notes.html",
   "embed": {
     "pre": "ner noreferrer\">Bairro Alto</a> if you want the nightlife on your doorstep</li>\n    </ul>\n",
     "post": "  </div>\n  <div class=\"fn-section\" id=\"sintra\""
