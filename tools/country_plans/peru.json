@@ -1,0 +1,128 @@
+{
+  "country": "peru",
+  "label": "Peru",
+  "cc": "pe",
+  "folder": "Drafts/Full Articles/peru",
+  "field_notes": "peru/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "americas",
+    "Americas"
+  ],
+  "region": "South America",
+  "trip": "Apr 29 to May 17, 2024, solo, the last leg of his round-the-world year: flew Buenos Aires > Santiago > Lima > Puerto Maldonado Apr 29; Paradise Yakari Amazon lodge Apr 30-May 3 (4-day tour + Taricaya Ecoreserve add-on); night bus to Cusco May 3-4; Cusco May 4-5; Rainbow Mountain + Red Valley May 6; Inca Jungle trek May 7-9; Machu Picchu May 10, train to Ollantaytambo; Sacred Valley by private driver May 11 back to Cusco; Humantay Lake May 12; Cusco May 13, evening flight to Lima; Lima May 13-16 (Palomino Islands sea lions May 15, paragliding, historic center, Huaca Pucllana, Larco Museum May 16); flew out just after midnight",
+  "album": "Peru (2024)",
+  "albums": {
+    "Peru (2024)": "Apr 29 to May 16, 2024 by capture date (733 files): Puerto Maldonado/Amazon Apr 29-May 3, Cusco May 4-5 and 13, Rainbow Mountain May 6, Inca Jungle trek May 7-9, Machu Picchu May 10, Sacred Valley May 11, Humantay Lake May 12, Lima May 14-16; GPS on almost all; check GPS"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "peru-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; a 2-week core in the route-map order: Lima 2 > Cusco 3 (acclimatize; Rainbow Mountain day trip) > Sacred Valley 1 > Inca Jungle trek to Machu Picchu 4 (or another trek, or a night in Aguas Calientes) > the Amazon from Puerto Maldonado 4 (fly from Cusco, fly out via Lima); 'with 3 weeks' adds Humantay Lake, a slower Cusco and Lima, and one of Huaraz, Arequipa or Huacachina (he has not been; Pisac and Iquitos too); he did it the other way round in 18 days (flew into Puerto Maldonado, night bus up to Cusco, ended in Lima)"
+    },
+    {
+      "file": "top-10-peru.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "cusco.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "cusco",
+      "writer": "B",
+      "note": "May 4-5, 11 night, 12-13: Boleto Turístico, Plaza de Armas and the Sunday parade, the free walking tour, Saqsaywaman, Q'enco, the viewpoints (San Cristóbal, Cristo Blanco, San Blas), San Blas and Siete Borreguitos, the museums, San Blas and San Pedro markets; `## Day Trips from Cusco {#day-trips}` with `### Rainbow Mountain {#rainbow-mountain}` (May 6, with Red Valley) and `### Humantay Lake {#humantay-lake}` (May 12); Mr. Cuy, Chira, Xapiri Ground, Qosqo Maki, Café Panam, Los Toldos; Viajero Kokopelli; altitude told here; Machu Picchu and the Sacred Valley are their own pages, link them"
+    },
+    {
+      "file": "machu-picchu-inca-jungle-trek.html",
+      "type": "guide",
+      "kicker": "Hiking Guide",
+      "writer": "C",
+      "note": "Experience-guide shape (like torres-del-paine-w-trek / mostar-day-trip): May 7-10 with Machu Picchu Reservations: day 1 downhill bike from ~4,000 m to Huamanmarca (50 km), rafting on the Lucumayo near Santa Maria, the farm-house night; day 2 coffee roasting, a stretch of Inca trail, the basket river crossing, hot springs, Santa Teresa; day 3 zipline, Aguas Calientes; day 4 walking up the stairs, circuit 4 + Waynapicchu, circuit 1/2, bus down, train to Ollantaytambo; the other routes (Inca Trail, Salkantay, single day, Aguas Calientes) as advice; tickets and circuits; rainy season; no city map in the field notes"
+    },
+    {
+      "file": "sacred-valley.html",
+      "type": "guide",
+      "kicker": "Region Guide",
+      "map": "sacred-valley",
+      "writer": "B",
+      "note": "May 10 evening to May 11: the train arrival in Ollantaytambo (told once in the Machu Picchu page; link it), Casa Samay Mountain View and its rooftop, Apu Veronica; the private driver for 180 soles who drew the route; Ollantaytambo ruins, Maras salt mines (20 soles, not on the Boleto), Moray, lunch in Maras (Restaurante Inkasal), Chinchero, drop in Cusco; Pisac as advice only (he did not go); shorter guide, 2,000 to 3,000 words"
+    },
+    {
+      "file": "lima.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "lima",
+      "writer": "B",
+      "note": "May 13 evening to May 16: the Malecón from Miraflores to Barranco (Love Park, the lighthouse, Larcomar), Barranco, the Palomino Islands sea lion swim (his favorite), the paragliding trike, the historic center and the San Francisco catacombs, Huaca Pucllana, Larco Museum; Popular de aquí y de allá, the anticuchos place, La Lucha, Especiale; Selina Posada then Rainbow Hostel, Miraflores vs Barranco; flying out of Lima"
+    },
+    {
+      "file": "puerto-maldonado-amazon.html",
+      "type": "guide",
+      "kicker": "Experience Guide",
+      "writer": "C",
+      "note": "Apr 29 to May 3: Puerto Maldonado vs Iquitos, getting there (he flew Lima > Puerto Maldonado), the town and Tambopata Hostel, the Paradise Yakari 4-day tour ($330) day by day (farm, Monkey Island, night boat; macaw clay lick, canopy walk and zipline, Lake Sandoval; piranha fishing, the native village; Taricaya Ecoreserve add-on), Burgos's and Meysis Garden, the night bus up to Cusco (told here)"
+    }
+  ],
+  "cards": [
+    {
+      "file": "peru-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Peru Travel Guide with Perfect 2-Week Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Peru Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-peru.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in Peru",
+      "place": "Top 10"
+    },
+    {
+      "file": "cusco.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Cusco",
+      "place": "Cusco"
+    },
+    {
+      "file": "machu-picchu-inca-jungle-trek.html",
+      "tag": "Hiking Guide",
+      "title": "Machu Picchu via the Inca Jungle Trek",
+      "place": "Machu Picchu"
+    },
+    {
+      "file": "sacred-valley.html",
+      "tag": "Region Guide",
+      "title": "Sacred Valley Guide: Ollantaytambo, Maras, Moray & Chinchero",
+      "place": "Sacred Valley"
+    },
+    {
+      "file": "lima.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Lima",
+      "place": "Lima"
+    },
+    {
+      "file": "puerto-maldonado-amazon.html",
+      "tag": "Experience Guide",
+      "title": "Peru's Amazon: A 4-Day Jungle Tour from Puerto Maldonado",
+      "place": "Amazon"
+    }
+  ]
+}

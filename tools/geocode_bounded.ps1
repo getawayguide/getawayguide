@@ -5,7 +5,7 @@
 # Input : .tmp/geotsv.txt  -- key<TAB>name<TAB>city<TAB>country   (from .tmp/geotsv.py)
 # Output: .tmp/geo.json    -- merged {key: [lat, lon]}, saved incrementally
 $ProgressPreference = 'SilentlyContinue'
-$ua = @{ "User-Agent" = "getawayguide-citymap/1.0 (kevindphan@gmail.com)" }
+$ua = @{ "User-Agent" = "getawayguide-citymap/1.0 (+https://getawayguide.io)" }
 $geoPath = ".tmp\geo.json"
 $geo = @{}
 if (Test-Path $geoPath) {

@@ -1,0 +1,136 @@
+{
+  "slug": "krushevo",
+  "kicker": "North Macedonia",
+  "city": "Krushevo",
+  "osm": ".tmp/krushevo_osm.json",
+  "article": "Drafts/Upcoming/north-macedonia/krushevo.html",
+  "embed": {
+    "pre": "  <!-- city map: krushevo -->\n",
+    "post": "  <!-- /city map: krushevo -->\n"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.35
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.55,
+    "init_x": 0.5,
+    "init_y": 0.22
+  },
+  "pois": [
+    {
+      "name": "Makedonium (Ilinden Monument)",
+      "cat": "see",
+      "match": "makedonium",
+      "lat": 41.3774136,
+      "lon": 21.2483418
+    },
+    {
+      "name": "Nikola Karev Monument",
+      "cat": "see",
+      "match": "nikola karev",
+      "href": "https://en.wikipedia.org/wiki/Nikola_Karev",
+      "lat": 41.3752,
+      "lon": 21.2466
+    },
+    {
+      "name": "Toše Proeski Memorial House",
+      "cat": "see",
+      "match": "proeski memorial",
+      "lat": 41.37434,
+      "lon": 21.2462564
+    },
+    {
+      "name": "Church of St. Nicholas & Main Square",
+      "cat": "see",
+      "match": "church of st. nicholas",
+      "lat": 41.368343,
+      "lon": 21.2489413
+    },
+    {
+      "name": "Nikola Martinoski Gallery",
+      "cat": "see",
+      "match": "martinoski gallery",
+      "lat": 41.3688922,
+      "lon": 21.2523034
+    },
+    {
+      "name": "Unmarked Viewpoint",
+      "cat": "see",
+      "match": "unmarked viewpoint",
+      "href": "https://www.google.com/maps/place/41%C2%B022'09.3%22N+21%C2%B014'41.1%22E/@41.3692485,21.2346008,15z/data=!4m7!1m2!2m1!1sHotels!3m3!8m2!3d41.36925!4d21.24475?entry=ttu&g_ep=EgoyMDI2MTAyMC4wIKXMDSoASAFQAw%3D%3D",
+      "lat": 41.36925,
+      "lon": 21.24475
+    },
+    {
+      "name": "City Cemetery (Sunset View)",
+      "cat": "see",
+      "match": "city cemetery",
+      "href": "https://www.google.com/maps/place/City+Cemetery+Krusevo/@41.3742402,21.248726,17z/data=!3m1!4b1!4m6!3m5!1s0x1356cf1a009dc1fd:0x70a5f33c123d9539!8m2!3d41.3742402!4d21.248726!16s%2Fg%2F11g6989jp7?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyNS4wIKXMDSoASAFQAw%3D%3D",
+      "lat": 41.3742402,
+      "lon": 21.248726
+    },
+    {
+      "name": "Mechkin Kamen",
+      "cat": "see",
+      "match": "mechkin kamen",
+      "lat": 41.3376543,
+      "lon": 21.2580923,
+      "frame": false
+    },
+    {
+      "name": "Stanič Ski Center",
+      "cat": "see",
+      "match": "stanič ski",
+      "lat": 41.3689484,
+      "lon": 21.2363027,
+      "frame": false
+    },
+    {
+      "name": "Krushevo Bus Station",
+      "cat": "see",
+      "match": "krushevo bus station",
+      "lat": 41.3678208,
+      "lon": 21.2501524
+    },
+    {
+      "name": "Krushevska Odaja",
+      "cat": "eat",
+      "match": "krushevska odaja",
+      "lat": 41.3735254,
+      "lon": 21.245728
+    },
+    {
+      "name": "Marchelo Lounge Bar",
+      "cat": "eat",
+      "match": "marchelo",
+      "lat": 41.3686215,
+      "lon": 21.2485896
+    },
+    {
+      "name": "Hotel Montana Palace",
+      "cat": "stay",
+      "match": "hotel montana palace",
+      "lat": 41.3646225,
+      "lon": 21.2531956
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Prilep",
+      "time": "Half Day",
+      "match": "prilep"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 41.3665,
+      "lon": 21.2455
+    }
+  ]
+}

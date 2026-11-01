@@ -74,7 +74,7 @@ PREV = f"{ROOT}/.tmp/previews"
 IMGDIR = f"{ROOT}/Images/web/city-maps"
 
 # ---- shared site palette / conventions (do not vary per city) ----------------
-LAND = "#F4F2EC"; WATER = "#B4D3D9"; PARK = "#CFE3C6"; TOP = "#FFFFFF"
+LAND = "#F4F2EC"; WATER = "#B4D3D9"; PARK = "#CFE3C6"; WOOD = "#D9E6CC"; TOP = "#FFFFFF"   # WOOD: forest/wood land cover, a tint under the parks (Krushevo, 2026-10-30)
 CASING = "#E6E1D4"; INK = "#1C2821"; KICKER = "#2D6B50"
 CAT = {"see":  ("ATTRACTIONS",        "#245A43", "#ffffff", "#245A43"),
        "eat":  ("RESTAURANTS & BARS", "#C8DDD5", "#1C2821", "#3B6B54"),
@@ -105,7 +105,7 @@ def parse_osm(elements):
     """Split a raw Overpass export into water polygons/lines, parks, roads, coastline, and
     water-island rings (islands that are HOLES in a water multipolygon, e.g. Stockholm's
     Kungsholmen in Lake Mälaren — filled back as LAND so they don't render flooded)."""
-    water, parks, roads, coast, water_islands = [], [], {k: [] for k in ROADW}, [], []
+    water, parks, roads, coast, water_islands, woods = [], [], {k: [] for k in ROADW}, [], [], []
     for el in elements:
         t = el.get("tags", {})
         if el["type"] == "way" and "geometry" in el:
@@ -115,6 +115,7 @@ def parse_osm(elements):
             elif t.get("natural") == "water" or t.get("waterway") == "riverbank" or "water" in t: water.append(g)
             elif t.get("waterway") in ("river", "canal"): water.append(("line", g))
             elif t.get("leisure") in ("park", "garden") or t.get("landuse") == "recreation_ground": parks.append(g)
+            elif t.get("natural") == "wood" or t.get("landuse") == "forest": woods.append(g)
         elif el["type"] == "relation" and t.get("natural") == "water":
             # a water multipolygon (e.g. the Río de la Plata, Lake Mälaren) arrives as many
             # separate boundary ways — chain outer members into rings so the body FILLS.
@@ -123,7 +124,12 @@ def parse_osm(elements):
             mem = el.get("members", [])
             water.extend(assemble_rings([m["geometry"] for m in mem if m.get("role") == "outer" and m.get("geometry")]))
             water_islands.extend(assemble_rings([m["geometry"] for m in mem if m.get("role") == "inner" and m.get("geometry")]))
-    return water, parks, roads, coast, water_islands
+        elif el["type"] == "relation" and (t.get("natural") == "wood" or t.get("landuse") == "forest"):
+            # forest multipolygons (the pine slopes around Krushevo): outer rings only; a clearing
+            # inside one is rare enough at city scale to paint over
+            mem = el.get("members", [])
+            woods.extend(assemble_rings([m["geometry"] for m in mem if m.get("role") == "outer" and m.get("geometry")]))
+    return water, parks, roads, coast, water_islands, woods
 
 
 def assemble_rings(ways):
@@ -307,7 +313,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
     # already published are reused and no OSM export is needed (2026-09-29: Overpass was timing
     # out, and three maps only needed a link or a pin fixed). The frame must not have changed.
     osm = [] if keep_base else json.load(open(f"{ROOT}/{cfg['osm']}", encoding="utf-8-sig"))["elements"]  # -sig: PowerShell Out-File writes a BOM
-    water, parks, roads, coast, water_islands = parse_osm(osm)
+    water, parks, roads, coast, water_islands, woods = parse_osm(osm)
     up = "../" * cfg["article"].count("/")   # relative depth to repo root (live=../, draft=../../)
 
     # Grouping: default is the see/eat/stay categories. A config may instead define
@@ -497,6 +503,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             elif len(w) > 2:
                 s = proj_str(w); water_s.append(("poly", s)) if s else None
         parks_s = [s for p in parks if len(p) > 2 and (s := proj_str(p))]
+        woods_s = [s for p in woods if len(p) > 2 and (s := proj_str(p))]
         roads_s = {cls: [s for g in roads[cls] if (s := proj_str(g))] for cls in ROADW}
 
         def basemap():
@@ -548,6 +555,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
             for isl in water_islands:
                 s = proj_str(isl)
                 if s: o.append(f'<polygon points="{s}" fill="{LAND}"/>')
+            for s in woods_s: o.append(f'<polygon points="{s}" fill="{WOOD}"/>')   # under the parks and roads
             for s in parks_s: o.append(f'<polygon points="{s}" fill="{PARK}"/>')
             for cls in MAJOR:
                 for s in roads_s.get(cls, []):

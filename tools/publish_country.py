@@ -158,7 +158,7 @@ def build_nav(pfx, by_cont):
     side = ['          <a href="%sdestinations.html#explore-map" class="nav-map-card">' % pfx,
             '            <span class="nav-map-title">Explore the Interactive Map</span>',
             '            <img src="%sImages/web/nav-map-preview.png" class="nav-map-thumb" width="280" height="150" '
-            'loading="lazy" decoding="async" alt="World map of the countries I have travelled to">' % pfx,
+            'loading="lazy" decoding="async" alt="World map of the countries I have traveled to">' % pfx,
             '          </a>',
             '          <span class="nav-dropdown-continent" %s>Explore by Continent</span>' % _DARK]
     side += ['          <a href="%sdestinations.html#%s" class="nav-dropdown-continent">%s%s</a>'

@@ -1,0 +1,38 @@
+{
+  "country": "croatia",
+  "label": "Croatia",
+  "cc": "hr",
+  "folder": "Drafts/Full Articles/croatia",
+  "field_notes": "croatia/field-notes.html",
+  "date": "2026-10-30",
+  "date_line": "Oct 30, 2026",
+  "continent": ["europe", "Europe"],
+  "region": "Balkans",
+  "trip": "Two trips in 2023. Trip 1, May 28 to June 2 (solo): fly Istanbul > Dubrovnik 28th, a day in Dubrovnik's old town, Krilo catamaran to Split that evening; Split 28-31 (Klis 29th, skipped his flight on the 30th to stay); bus Split > Dubrovnik 31st; Dubrovnik 31 May-2 June (Lokrum 1st); fly out via Istanbul 2nd. Zagreb: one night in transit, Aug 20-21 (Basel > Zagreb flight, bus on to Ljubljana). Trip 2, Aug 27 to 31 (with his friend Jordan): fly Budapest > Split and ferry to Hvar 27th; Hvar 27-29; ferry Hvar > Split 29th; Split 29-31 (Blue Lagoon/Trogir boat tour 30th); bus Split > Dubrovnik 31st, sunset at the Buža bars, night bus on to Kotor (Montenegro)",
+  "album": "Croatia (2023)",
+  "albums": {
+    "Croatia (2023)": "trip 1, May 28 to June 2, 2023: Dubrovnik (28th, 31st-2nd), Split (29th-31st), Lokrum (1st)",
+    "Croatia 2.0 (2023)": "trip 2, Aug 27 to 31, 2023: Hvar (27th-29th), Split and the Blue Lagoon/Trogir boat tour (29th-31st), Dubrovnik at sunset (31st)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {"file": "index.html", "type": "index", "writer": "A"},
+    {"file": "croatia-itinerary.html", "type": "itinerary", "writer": "A", "note": "HTML from the Guatemala pre-photo template; one week on the Dalmatian coast in the route map's order and days: Split 3 (Klis, the Blue Lagoon/Trogir boat day) > ferry 1 hr > Hvar 2 > ferry 3.5 hr > Dubrovnik 2 (Lokrum), with ways to stretch it to 10 days (Krka, a third Hvar day, the Pakleni Islands); Kevin never took the Hvar > Dubrovnik ferry (he went back via Split and the bus), say so; Kotor (Montenegro) and Mostar (Bosnia) as extensions linking the LIVE field notes only; Zagreb, Plitvice, Zadar, Istria and the other islands as 'if you have more time' (Kevin only spent a transit night in Zagreb and has not been to the others)"},
+    {"file": "top-10-croatia.html", "type": "top10", "writer": "A"},
+    {"file": "split.html", "type": "guide", "kicker": "City Guide", "map": "split", "writer": "B", "note": "two visits: May 2023 solo at Booze & Snooze, Aug 2023 with a friend at the Cornaro Hotel; Klis Fortress and the Blue Lagoon/Trogir boat tour as their own sections; Krka is field-notes advice only (he has not been); the Split > Hvar ferry is told once, in hvar.html, link it"},
+    {"file": "hvar.html", "type": "guide", "kicker": "Island Guide", "map": "hvar", "writer": "B", "note": "Aug 27-29, 2023; rain cancelled the boat tours, so an honest shorter guide: the ferry from Split, the fortress at sunset, Dalmatino, Dva Ribara, Hula Hula, the bar crawl, Hostel Villa Skansi; the Pakleni Islands, Carpe Diem and the scooter loop are field-notes advice he did not get to"},
+    {"file": "dubrovnik.html", "type": "guide", "kicker": "City Guide", "map": "dubrovnik", "writer": "C", "note": "three passes: the arrival day May 28 (walls, Rector's Palace, Franciscan pharmacy, Jesuit Stairs, Lovrijenac), May 31-June 2 (Revelin, Lokrum, Hostel Angelina) and the Aug 31 sunset at the Buža bars before the night bus to Kotor; Lokrum as its own section; Mount Srđ and the Homeland War Museum are field-notes advice only (no journal visit); onward links to the LIVE Montenegro and Bosnia field notes only"}
+  ],
+  "cards": [
+    {"file": "croatia-itinerary.html", "tag": "Travel Guide", "title": "Croatia Travel Guide with Perfect 1-Week Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Croatia Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-croatia.html", "tag": "Top 10", "title": "Top 10 Things to Do in Croatia", "place": "Top 10"},
+    {"file": "split.html", "tag": "City Guide", "title": "The Ultimate Guide to Split", "place": "Split"},
+    {"file": "hvar.html", "tag": "Island Guide", "title": "Hvar: Croatia's Most Glamorous Island", "place": "Hvar"},
+    {"file": "dubrovnik.html", "tag": "City Guide", "title": "The Ultimate Guide to Dubrovnik", "place": "Dubrovnik"}
+  ]
+}

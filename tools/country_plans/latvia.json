@@ -1,0 +1,48 @@
+{
+  "country": "latvia",
+  "label": "Latvia",
+  "cc": "lv",
+  "folder": "Drafts/Full Articles/latvia",
+  "field_notes": "latvia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Baltics",
+  "trip": "Sun Aug 6 (afternoon) to Tue Aug 8, 2023, solo: bus from Tallinn, Riga Central Market, St. Peter's Church tower, the House of the Blackheads, the Art Nouveau district and its museum, the park, bars with hostel people; flew to Stockholm Aug 8",
+  "album": "Latvia (2023)",
+  "albums": {
+    "Latvia (2023)": "Aug 6 to 8, 2023, Riga only. Never use Tallinn (Estonia) or Stockholm (Sweden) photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "riga.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "riga",
+      "writer": "B",
+      "note": "Aug 6-8, 2023; the Central Market, St. Peter's viewing deck, the House of the Blackheads (reconstruction; the Tallinn one is linked from the live Estonia field notes), the Art Nouveau quarter, the Freedom Monument and parks, the Radisson Blu Skyline Bar sunset he missed, where to eat and stay; field-notes 'Other Places' (Jūrmala, Sigulda, Cēsis) as advice; arrival from Tallinn links the live Estonia field notes, the flight to Stockholm the live Sweden field notes"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Latvia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "riga.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Riga",
+      "place": "Riga"
+    }
+  ],
+  "single_city": true
+}

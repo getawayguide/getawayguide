@@ -4177,6 +4177,8 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
    tools/explore_more.py; the cards are 227 px wide in the 729 px column, so their files are cut at 1.85/2.8/3.7x
    of that. The link rules above target p a / li a only, so none of them reach these cards. ---- */
 .xm { margin-top:40px; border-top:1px solid var(--line); padding-top:36px; font-family:var(--body); color:var(--ink); }
+/* a bordered last bullet right above Explore More drew a second rule 40px above .xm's own (Kevin, 2026-10-31: "double line at the end ... should only be one") */
+:is(ul,ol):has(+ section.xm) > li:last-child { border-bottom:0 !important; }
 .xm .xm-h { font:400 30px/1.1 var(--display) !important; letter-spacing:-.012em; margin:0 0 24px !important; padding:0 !important; border:0 !important; color:var(--ink); }
 .xm .xm-g { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
 .xm a.xm-c { display:flex; flex-direction:column; gap:9px; min-width:0; text-decoration:none !important; color:var(--ink) !important; font-weight:400 !important; }

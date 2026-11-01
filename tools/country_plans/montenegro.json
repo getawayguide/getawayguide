@@ -1,0 +1,76 @@
+{
+  "country": "montenegro",
+  "label": "Montenegro",
+  "cc": "me",
+  "folder": "Drafts/Full Articles/montenegro",
+  "field_notes": "montenegro/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Balkans",
+  "trip": "Thu Aug 31 (late evening) to Sat Sep 2, 2023, solo, at the end of a Croatia trip: night bus Dubrovnik > Kotor Aug 31; Kotor Sep 1 (old town, North Gate, market, then the Bay of Kotor boat tour: Perast from the water, Our Lady of the Rocks, the submarine tunnel, Mamula, the Blue Cave), local bus to Perast the same afternoon (the abandoned fort, the waterfront, ice cream, a wine tasting, sunset); Sep 2 sunrise hike to the San Giovanni fortress, lunch at Cesare, bus past Budva to Podgorica, taxi to the airport, flew to Athens",
+  "album": "Montenegro (2023)",
+  "albums": {
+    "Montenegro (2023)": "Sep 1 to 2, 2023 by capture time: Kotor old town Sep 1 about 09-11h, the boat tour about 11-14h (Perast from the water, Our Lady of the Rocks, the submarine tunnel, Mamula, the Blue Cave), Perast about 15-19h (sunset ~18-19h), the San Giovanni sunrise hike Sep 2 05-07h; check GPS to tell the tour from Perast. No other album has Montenegro: never use Croatia 2.0 (2023) (Dubrovnik, Aug 31) or Greece (2023) (Athens, from Sep 2 evening)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "montenegro-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; two-place set, so NO top 10 exists: never link top-10-montenegro.html. 3 days on the Bay of Kotor: Day 1 Kotor old town, the walls and the market; Day 2 the bay boat tour in the morning and the bus to Perast for the afternoon and sunset; Day 3 the sunrise San Giovanni hike, then onward (Podgorica airport, Budva, Albania or Dubrovnik). He did it in about a day and a half (arrived late Aug 31, left after lunch Sep 2). 'If you have more time': Budva and Sveti Stefan (he only saw Budva from the bus), Lovćen and the Njegoš Mausoleum, Durmitor (friends did hut-to-hut hiking), Podgorica as an airport only; he has not been to any of these"
+    },
+    {
+      "file": "kotor.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "kotor",
+      "writer": "B",
+      "note": "Aug 31 night arrival by bus from Dubrovnik (the border-guard scene), Sep 1-2: the old town (St. Tryphon, the walls and Kampana Tower, the North Gate and its green stream, the food market, the cats), the sunrise San Giovanni hike (Sep 2, 5:10 AM, down by 7:30), `## Bay of Kotor Boat Tour {#bay-tour}` as an h2 (Our Lady of the Rocks, the submarine tunnel, Mamula from the water, the Blue Cave and the swim), a short `## Day Trips from Kotor {#day-trips}` (Perast linked to perast.html, Lovćen and the Njegoš Mausoleum, Budva and Sveti Stefan as advice), Konoba Roma and Cesare, Old Town Hostel; leaving: the bus via Budva to Podgorica and the taxi to the airport"
+    },
+    {
+      "file": "perast.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "writer": "B",
+      "note": "Sep 1 afternoon to dark: the local bus from Kotor (no stops, writing on the ground, hourly but up to an hour late, right along the water with no railing) told here once, the waterfront and its dock seating, the bell tower, the wedding and the fancy hotels, the climb to the abandoned Fort of the Holy Cross, ice cream twice, the wine tasting, the sunset bench, boats out to Our Lady of the Rocks (the tour stop is told in kotor.html#our-lady-of-the-rocks); he stayed in Kotor and ate no named meal in Perast, so Where to Eat and Where to Stay are short and honest; no city map in the field notes; 1,300 to 2,000 words"
+    }
+  ],
+  "cards": [
+    {
+      "file": "montenegro-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Montenegro Travel Guide with Perfect 3-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Montenegro Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "kotor.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to Kotor and the Bay of Kotor",
+      "place": "Kotor"
+    },
+    {
+      "file": "perast.html",
+      "tag": "Day Trip Guide",
+      "title": "Perast: A Half-Day Trip from Kotor",
+      "place": "Perast"
+    }
+  ]
+}

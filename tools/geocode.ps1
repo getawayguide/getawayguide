@@ -1,6 +1,6 @@
 param([string]$cc = "")
 $ProgressPreference = 'SilentlyContinue'
-$ua = @{ "User-Agent" = "getawayguide-citymap/1.0 (kevindphan@gmail.com)" }
+$ua = @{ "User-Agent" = "getawayguide-citymap/1.0 (+https://getawayguide.io)" }
 $geoPath = ".tmp\geo.json"
 $geo = @{}
 if (Test-Path $geoPath) {

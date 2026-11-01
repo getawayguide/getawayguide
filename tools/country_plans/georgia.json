@@ -1,0 +1,126 @@
+{
+  "country": "georgia",
+  "label": "Georgia",
+  "cc": "ge",
+  "folder": "Drafts/Full Articles/georgia",
+  "field_notes": "georgia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Caucasus",
+  "trip": "One solo trip, Jun 15 (late) to Jun 23, 2025, the first leg of a Georgia & the Balkans trip (in from Istanbul, out to Prishtina). Jun 16 Tbilisi; Jun 17 Kazbegi group day tour (Ananuri and the Zhinvali Reservoir, the Friendship Monument, Gergeti Trinity Church); Jun 18 Kakheti wine group tour (bread baking, Bodbe, Sighnaghi, a Kvareli family winery, KTW Wine House); Jun 19 train to Kutaisi; Jun 20 BudgetGeorgia transfer to Mestia; Jun 21 Mestia morning, Ushguli day tour, back to Kutaisi; Jun 22 GoTrip driver Kutaisi > Chiatura > Gori > Mtskheta > Tbilisi; Jun 23 dawn flight out",
+  "album": "Georgia (2025)",
+  "albums": {
+    "Georgia (2025)": "the whole trip by capture date: Jun 16 Tbilisi; Jun 17 Kazbegi tour; Jun 18 Kakheti tour; Jun 19 the train and Kutaisi; Jun 20 the drive to Mestia and Mestia; Jun 21 Mestia morning and Ushguli; Jun 22 Chiatura, Gori, Mtskheta; check GPS where present"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "georgia-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; 10 days in the route map's order: Tbilisi 3 (the city; Kazbegi day; Kakheti day) > Mtskheta/Gori/Uplistsikhe day > train to Kutaisi (Chiatura) > Svaneti 3 (Mestia, Ushguli, Chalaadi or the Mestia-Ushguli trek as the stretch) > back to Tbilisi; Kevin did the core in 8 days, in a different order (he did the Mtskheta/Gori day on the way back from Kutaisi by GoTrip): say so; Batumi, Kutaisi's day trips and Armenia (LIVE ../../../armenia/index.html) as extensions"
+    },
+    {
+      "file": "top-10-georgia.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "tbilisi.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "tbilisi",
+      "writer": "B",
+      "note": "Jun 15-19 and Jun 22-23, 2025; the city itself, where to eat and drink (Georgian food is one of the best reasons to come), where to stay; the day trips each have their own page: link them, do not retell them"
+    },
+    {
+      "file": "kazbegi-day-trip.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "writer": "C",
+      "note": "Jun 17, 2025 group tour from Tbilisi (about $20): Ananuri and the Zhinvali Reservoir, the Georgian Military Highway, the Friendship Monument, Gergeti Trinity Church above Stepantsminda; his favorite of the day trips (the field notes order them by favorite)"
+    },
+    {
+      "file": "kakheti-wine-tour.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "writer": "C",
+      "note": "Jun 18, 2025 group tour from Tbilisi: bread baking, Bodbe Monastery, Sighnaghi and the Tamada statue, a Kvareli family winery (qvevri, orange wine, chacha), KTW Wine House"
+    },
+    {
+      "file": "svaneti.html",
+      "type": "guide",
+      "kicker": "Region Guide",
+      "writer": "D",
+      "note": "Jun 19-21, 2025: getting there (train to Kutaisi, BudgetGeorgia transfer to Mestia, and every other option from the field notes), Mestia (the towers, the Khergiani museum tower roof), the Ushguli tour (Queen Tamar's castle viewpoint, Lamaria, the wildflowers), Chalaadi Glacier and the Mestia-Ushguli trek as advice he did not do; his personal highlight of Georgia"
+    },
+    {
+      "file": "mtskheta-gori-day-trip.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "writer": "D",
+      "note": "Jun 22, 2025: he did it as a GoTrip private-driver day from Kutaisi back to Tbilisi with four stops (Chiatura's cable cars and mines, Gori and the Stalin Museum, Mtskheta's Svetitskhoveli and Jvari); tell that honestly and also how to do Mtskheta, Gori and Uplistsikhe as a day trip from Tbilisi (marshrutka or tour); Uplistsikhe only if the journal has him there"
+    }
+  ],
+  "cards": [
+    {
+      "file": "georgia-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Georgia Travel Guide with Perfect 10-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Georgia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-georgia.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in Georgia",
+      "place": "Top 10"
+    },
+    {
+      "file": "tbilisi.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Tbilisi",
+      "place": "Tbilisi"
+    },
+    {
+      "file": "kazbegi-day-trip.html",
+      "tag": "Day Trip Guide",
+      "title": "Kazbegi Day Trip from Tbilisi: Gergeti Trinity Church",
+      "place": "Kazbegi"
+    },
+    {
+      "file": "kakheti-wine-tour.html",
+      "tag": "Day Trip Guide",
+      "title": "Kakheti Wine Tour from Tbilisi: Sighnaghi & Qvevri Wine",
+      "place": "Kakheti"
+    },
+    {
+      "file": "svaneti.html",
+      "tag": "Region Guide",
+      "title": "Svaneti Guide: Mestia, Ushguli & the Caucasus Towers",
+      "place": "Svaneti"
+    },
+    {
+      "file": "mtskheta-gori-day-trip.html",
+      "tag": "Day Trip Guide",
+      "title": "Mtskheta, Gori & Chiatura: A Day Through Central Georgia",
+      "place": "Mtskheta & Gori"
+    }
+  ]
+}

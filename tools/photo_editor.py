@@ -4018,4 +4018,20 @@ if __name__ == "__main__":
     from werkzeug.serving import WSGIRequestHandler
     WSGIRequestHandler.timeout = 120
     _sweep_stale_temps()
+    # Every album's 400 px tiles, built once in the background (Kevin, 2026-10-25: "Side bar loads very slowly in the
+    # photo library"): 8,875 of 16,895 photos had no tile, so the first open of any album decoded each HEIC on the spot
+    # (2 to 3 s a screenful). Two minutes after start, so the editor's own first requests go first; each build still
+    # yields to live tile requests (_yield_to_thumbs), and an album already complete costs one stat per photo.
+    def _warm_every_album():
+        time.sleep(120)
+        try:
+            for d in sorted(BACKUP.iterdir()):
+                if not d.is_dir() or d.name.startswith(("_", ".")):
+                    continue
+                paths = [p for p in d.iterdir() if p.is_file() and p.suffix.lower() in IMG_EXTS and not is_stray_thumb(p.name)]
+                warm_library(d.name, paths)
+        except Exception:
+            pass
+    if os.environ.get("PHOTO_EDITOR_NO_WORKER") != "1":
+        threading.Thread(target=_warm_every_album, daemon=True, name="warm-every-album").start()
     app.run(port=int(os.environ.get("PHOTO_EDITOR_PORT", 5003)), debug=False, threaded=True)   # a test instance runs beside the live one

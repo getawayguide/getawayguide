@@ -1,0 +1,49 @@
+{
+  "country": "netherlands",
+  "label": "Netherlands",
+  "cc": "nl",
+  "folder": "Drafts/Full Articles/netherlands",
+  "field_notes": "netherlands/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Western Europe",
+  "trip": "Two short solo visits. Oct 15-18, 2021 (flew in from Boston via Lisbon, the Hyatt Regency in Plantage): Albert Cuyp Market, the Heineken Experience, the Red Light District, the ferry to NDSM and the STRAAT Museum, ADE at Jimmy Woo, the Pancake Bakery, Dam Square, the Jordaan, a canal boat tour, the Rijksmuseum; flew to Copenhagen Oct 18. Aug 12-14, 2023 (flew in from Ibiza, the Hoxton and the Flying Pig): a day in Utrecht with its market and poffertjes on Aug 13; flew to Basel Aug 14",
+  "album": "Copenhagen, Amsterdam & London (2021)",
+  "albums": {
+    "Copenhagen, Amsterdam & London (2021)": "shared album; Amsterdam is Oct 16 midday to Oct 18 about 2:30 pm, 2021 (~45 photos, most on Oct 17). Oct 14 is Boston, Oct 18 evening to Oct 21 is Copenhagen and Malmö, Oct 21 evening to 23 is London: never use those. Almost no GPS; go by capture date and what is in the frame",
+    "Amsterdam _ Utrecht (2023)": "Aug 12-14, 2023 (~25 photos): Aug 12 8:40-9:10 pm Amsterdam (Centraal to the Hoxton), Aug 13 12:30-2 pm Amsterdam, Aug 13 4-5:15 pm Utrecht. Never use a frame with his Dutch friend in it (several Utrecht shots around 5:10 pm are of the two of them). No GPS; go by time and what is in the frame"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "amsterdam.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "amsterdam",
+      "writer": "B",
+      "note": "both visits (Oct 2021, Aug 2023); the canal ring, the Jordaan and a canal boat tour, Dam Square and the Royal Palace, Albert Cuyp Market (stroopwafel, herring, poffertjes), the ferry to NDSM and the STRAAT Museum, the Rijksmuseum, the Red Light District, the Heineken Experience (his 'too touristy' verdict); Vondelpark and the Anne Frank House as advice; `## Day Trip to Utrecht {#utrecht}` (Aug 13, 2023: 20 minutes by train, the market, poffertjes, he liked it more than Amsterdam); `## Festivals {#festivals}` (ADE 2021 at Jimmy Woo, King's Day as advice); field-notes 'Other Places' (Rotterdam, The Hague, Keukenhof, Giethoorn, Kinderdijk) as advice; the Pancake Bakery; stays at the Hyatt Regency (2021), the Hoxton and the Flying Pig (2023); arrival from Boston/Ibiza and departures to Copenhagen (live Denmark field notes) and Basel (live Switzerland field notes)"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Netherlands Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "amsterdam.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Amsterdam",
+      "place": "Amsterdam"
+    }
+  ],
+  "single_city": true
+}

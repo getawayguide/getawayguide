@@ -1,0 +1,116 @@
+{
+  "country": "india",
+  "label": "India",
+  "cc": "in",
+  "folder": "Drafts/Full Articles/india",
+  "field_notes": "india/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "asia",
+    "Asia"
+  ],
+  "region": "South Asia",
+  "trip": "Wed Feb 28 (night) to Wed Mar 6, 2024, from Saigon, mostly with a friend from home: Feb 29 Delhi; Mar 1 to Varanasi; Mar 2 Varanasi; Mar 3 overnight bus to Agra (Taj Mahal, Agra Fort) and on to Jaipur; Mar 4-5 Jaipur; Mar 6 Jaipur > Delhi > home",
+  "album": "India (2024)",
+  "albums": {
+    "India (2024)": "Feb 28 to Mar 6, 2024 by capture date: Feb 29 Delhi, Mar 1-2 Varanasi, Mar 3 Agra, Mar 4-5 Jaipur; check GPS"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "india-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; the Golden Triangle plus Varanasi, 10 days in the route map's order: Delhi 2 > Varanasi 2 > Agra 1-2 > Jaipur 2-3 > back to Delhi; Kevin did it in 7 rushed days (his own words: a tight schedule), say so; Udaipur, Rishikesh, Ladakh, Goa, Kerala as 'if you have more time' (he has not been)"
+    },
+    {
+      "file": "top-10-india.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "delhi.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "delhi",
+      "writer": "B",
+      "note": "Feb 28 night arrival (the taxi tout, the Uber, the Hindustan hostel) and Feb 29 (Akshardham, Humayun's Tomb, the Red Fort, Chandni Chowk, India Gate, Haldiram's), Mar 6 back through Delhi"
+    },
+    {
+      "file": "varanasi.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "varanasi",
+      "writer": "C",
+      "note": "Mar 1-2: the ghats, the Ganga Aarti, the boat on the Ganges, Kashi Vishwanath, the cremation ghats and the Aghori (told carefully and respectfully), Blue Lassi, Aadha-Aadha Café"
+    },
+    {
+      "file": "agra.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "agra",
+      "writer": "C",
+      "note": "Mar 3 after the 10-hour overnight bus from Varanasi: the Taj Mahal, Agra Fort, then on to Jaipur the same day; a shorter honest guide"
+    },
+    {
+      "file": "jaipur.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "jaipur",
+      "writer": "D",
+      "note": "Mar 3 night to Mar 6: the Pink City (Ajmeri Gate, Hawa Mahal, City Palace, Jantar Mantar, the bazaars), the forts (Amber, Jaigarh, Nahargarh), Govindam his favorite meal in India"
+    }
+  ],
+  "cards": [
+    {
+      "file": "india-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "India Travel Guide with Perfect 10-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "India Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-india.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in India",
+      "place": "Top 10"
+    },
+    {
+      "file": "delhi.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Delhi",
+      "place": "Delhi"
+    },
+    {
+      "file": "varanasi.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Varanasi",
+      "place": "Varanasi"
+    },
+    {
+      "file": "agra.html",
+      "tag": "City Guide",
+      "title": "Agra Guide: The Taj Mahal & Agra Fort",
+      "place": "Agra"
+    },
+    {
+      "file": "jaipur.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Jaipur",
+      "place": "Jaipur"
+    }
+  ]
+}

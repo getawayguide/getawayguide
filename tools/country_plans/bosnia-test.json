@@ -1,0 +1,24 @@
+{
+  "country": "bosnia",
+  "label": "Bosnia",
+  "cc": "ba",
+  "folder": "Drafts/Full Articles/bosnia",
+  "field_notes": "bosnia/field-notes.html",
+  "date": "2026-10-24",
+  "date_line": "Oct 24, 2026",
+  "continent": ["europe", "Europe"],
+  "region": "Balkans",
+  "shells": {
+    "guide": "Drafts/Full Articles/belgium/brussels.html",
+    "top10": "Drafts/Full Articles/belgium/top-10-belgium.html",
+    "index": "Drafts/Full Articles/belgium/index.html"
+  },
+  "cards": [
+    {"file": "bosnia-itinerary.html", "tag": "Travel Guide", "title": "Bosnia Travel Guide with Perfect 6-Day Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Bosnia Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-bosnia.html", "tag": "Top 10", "title": "Top 10 Things to Do in Bosnia", "place": "Top 10"},
+    {"file": "sarajevo.html", "tag": "City Guide", "title": "The Ultimate Guide to Sarajevo, Bosnia", "place": "Sarajevo"},
+    {"file": "mostar-day-trip.html", "tag": "Day Trip", "title": "Mostar & Herzegovina Day Trip from Sarajevo", "place": "Mostar"},
+    {"file": "jajce-travnik-day-trip.html", "tag": "Day Trip", "title": "Jajce & Travnik Day Trip from Sarajevo", "place": "Jajce & Travnik"}
+  ]
+}

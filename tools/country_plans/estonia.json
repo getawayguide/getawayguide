@@ -1,0 +1,48 @@
+{
+  "country": "estonia",
+  "label": "Estonia",
+  "cc": "ee",
+  "folder": "Drafts/Full Articles/estonia",
+  "field_notes": "estonia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Baltics",
+  "trip": "One solo visit, Fri Aug 4 to Sun Aug 6, 2023 (Round-the-World year; came by ferry from Helsinki, left by bus for Riga). Fri Aug 4: missed the 7:30 ferry, took the 9:00 one (a cruise-ship ferry with bars, slots and a roof deck); rain; dropped bags at The Monk's Bunk; lunch at Balti Jaama Turg (pork stew, a fig-and-licorice bun, Uzbek samsa); Toompea viewpoints (Patkuli, Kohtuotsa, Bishop's Garden), St. Mary's (Dome) Church, Alexander Nevsky Cathedral; the town wall and towers complex (the Maiden Tower cafe, the Danish flag legend, the professions/weapons museum); Vabamu museum (audio guide, the replica Soviet apartment); evening in Telliskivi with people from the hostel app: F-Hoone (25 dumplings in cream sauce for 8 euros), then Sveta Baar until late. Sat Aug 5: climbed St. Olaf's; laundry (the automated machine in a new mall rejected his US number); the Town Hall Pharmacy; the city walls; St. Catherine's Passage (underwhelming); lunch at Munga Kelder (pork roast, mild sauerkraut, cranberry rye bread); the House of the Blackheads (closed); a small two-room history museum; Pulla bakery (poppyseed bread); nap; dinner at Lido in the Ülemiste mall; a playground by the opera; cards at another hostel. Sun Aug 6: Bolt to the bus station early, 4-hour bus to Riga",
+  "album": "Estonia (2023)",
+  "albums": {
+    "Estonia (2023)": "the visit, Aug 4 to 6, 2023: Aug 4 the ferry from Helsinki, Balti Jaama Turg, Toompea viewpoints, Alexander Nevsky (no photos inside allowed), the wall towers, Vabamu, Telliskivi and Sveta Baar at night; Aug 5 St. Olaf's view, the Town Hall Square and pharmacy, the walls, St. Catherine's Passage, Munga Kelder, the House of the Blackheads, Lido; Aug 6 the bus to Riga. Never use Helsinki (Finland album) or Riga (Latvia album) photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "tallinn.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "tallinn",
+      "writer": "B",
+      "note": "Aug 4-6, 2023, The Monk's Bunk in the old town; getting there by the ferry from Helsinki (he missed the first one) and out by the 4-hour bus to Riga (link the LIVE Latvia field notes); the city as ### under {#the-city}: the Lower Town (Town Hall Square and pharmacy, St. Olaf's climb, the walls and towers, St. Catherine's Passage, the House of the Blackheads), `## Toompea Hill {#toompea}` (the three viewpoints, Alexander Nevsky, the Dome Church, the castle and Pikk Hermann), `## The Vabamu Museum {#vabamu}`, `## Telliskivi Creative City {#telliskivi}` (Balti Jaama Turg, F-Hoone, Sveta Baar, Fotografiska as advice); `## Beyond the Old Town {#beyond}` for Kadriorg/KUMU, the Open Air Museum, the KGB Museum as field-notes advice he has not done; `## Day Trips and Beyond Tallinn {#day-trips}` for Tartu, Lahemaa and Saaremaa as advice. Eat & drink: Balti Jaama Turg, Munga Kelder, Pulla, Lido, F-Hoone, Sveta Baar (journal) and Kooker, III Draakon, Whisper Sister (field notes, no journal visit). Stay: The Monk's Bunk"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Estonia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "tallinn.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Tallinn",
+      "place": "Tallinn"
+    }
+  ],
+  "single_city": true
+}

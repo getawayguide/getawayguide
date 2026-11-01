@@ -22,6 +22,10 @@ for ($i = 0; $i -lt $N; $i++) { for ($j = 0; $j -lt $N; $j++) {
   way["natural"="coastline"]($bbox);
   way["leisure"~"park|garden"]($bbox);
   way["landuse"="recreation_ground"]($bbox);
+  way["natural"="wood"]($bbox);
+  relation["natural"="wood"]($bbox);
+  way["landuse"="forest"]($bbox);
+  relation["landuse"="forest"]($bbox);
   relation["natural"="water"]($bbox);
 );
 out geom;
@@ -30,7 +34,7 @@ out geom;
   for ($try = 0; $try -lt 6 -and -not $ok; $try++) {
     $url = $mirrors[$try % 2]
     try {
-      $r = Invoke-WebRequest -Uri $url -Method Post -Body @{data=$q} -UserAgent "getawayguide-citymap/1.0 (kevindphan@gmail.com)" -TimeoutSec 300 -UseBasicParsing
+      $r = Invoke-WebRequest -Uri $url -Method Post -Body @{data=$q} -UserAgent "getawayguide-citymap/1.0 (+https://getawayguide.io)" -TimeoutSec 300 -UseBasicParsing
       $r.Content | Out-File -Encoding utf8 $out
       Write-Output ("{0} tile {1},{2} ok ({3:N1} MB)" -f $slug, $i, $j, ((Get-Item $out).Length / 1MB))
       $ok = $true

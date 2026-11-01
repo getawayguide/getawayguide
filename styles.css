@@ -872,6 +872,8 @@ p.essentials-header{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-w
 #toc-b .toc-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 2.5rem;align-items:start}
 #toc-b .toc-row{display:flex;align-items:baseline;gap:.55rem;padding:.38rem 0;border-bottom:1px solid var(--b-subtle)}
 #toc-b .toc-row:last-child{border-bottom:none}
+/* one column (a guide with few sections): the rows run the whole box, not half of it (2026-10-25) */
+#toc-b .toc-cols:has(> .toc-col:only-child){grid-template-columns:1fr}
 #toc-b .toc-num{font-family:'Montserrat',sans-serif;font-size:.65rem;font-weight:400;color:var(--terra);flex-shrink:0;line-height:1.6}
 #toc-b a.toc-link{font-family:'Jost',sans-serif;font-size:.85rem;font-weight:400;color:rgba(28,40,33,.85);text-decoration:none;transition:color .15s;line-height:1.5}
 #toc-b a.toc-link:hover,#toc-b a.toc-section-link:hover{color:var(--terra)}

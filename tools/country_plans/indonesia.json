@@ -1,0 +1,114 @@
+{
+  "country": "indonesia",
+  "label": "Indonesia",
+  "cc": "id",
+  "folder": "Drafts/Full Articles/indonesia",
+  "field_notes": "indonesia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "asia",
+    "Asia"
+  ],
+  "region": "Southeast Asia",
+  "trip": "Feb 1 to 6, 2024 (arrived late Jan 31 / Feb 1 from Queenstown, left for the Philippines Feb 6), Bali only, with a friend from home and a private driver for day trips: Canggu and Seminyak, Ubud, a north Bali day, the south around Uluwatu",
+  "album": "Bali (2024)",
+  "albums": {
+    "Bali (2024)": "Feb 1 to 6, 2024, Bali only; go by capture date and GPS: Canggu/Seminyak, Tanah Lot, Ubud, the north (Ulun Danu Beratan, coffee plantation), Uluwatu/GWK/Nusa Dua"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "indonesia-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; one week in Bali in the field notes' route-map order (Canggu/Seminyak 2 > Ubud 3 with the north Bali day trip > the south/Uluwatu 2), honest that he had about 5 days in the wet season; Nusa Penida, the Gili Islands, Lombok, Komodo, Java/Yogyakarta/Borobudur, Borneo as 'if you have more time' (he has not been)"
+    },
+    {
+      "file": "top-10-indonesia.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "canggu-seminyak.html",
+      "type": "guide",
+      "kicker": "Area Guide",
+      "map": "canggu",
+      "writer": "B",
+      "note": "the villa, the cafes, the beach clubs, Tanah Lot at sunset; the arrival from the airport"
+    },
+    {
+      "file": "ubud.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "writer": "C",
+      "note": "the Monkey Forest, Ubud Palace and the market, rice terraces and whatever the journal has; no city map in the field notes"
+    },
+    {
+      "file": "north-bali-day-trip.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "writer": "C",
+      "note": "the private-driver day from Ubud: Ulun Danu Beratan, the coffee plantation (kopi luwak, told honestly), and the other stops in the journal"
+    },
+    {
+      "file": "uluwatu-south-bali.html",
+      "type": "guide",
+      "kicker": "Area Guide",
+      "map": "south-bali",
+      "writer": "D",
+      "note": "Uluwatu Temple and the Kecak if the journal has it, GWK, Nusa Dua and the blowhole, Savaya; where he stayed in the south"
+    }
+  ],
+  "cards": [
+    {
+      "file": "indonesia-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Bali Travel Guide with Perfect 1-Week Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Indonesia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-indonesia.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in Bali",
+      "place": "Top 10"
+    },
+    {
+      "file": "canggu-seminyak.html",
+      "tag": "Area Guide",
+      "title": "Canggu & Seminyak Guide: Cafes, Beach Clubs & Tanah Lot",
+      "place": "Canggu"
+    },
+    {
+      "file": "ubud.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to Ubud",
+      "place": "Ubud"
+    },
+    {
+      "file": "north-bali-day-trip.html",
+      "tag": "Day Trip Guide",
+      "title": "North Bali Day Trip: Ulun Danu Beratan & Coffee Plantations",
+      "place": "North Bali"
+    },
+    {
+      "file": "uluwatu-south-bali.html",
+      "tag": "Area Guide",
+      "title": "Uluwatu & South Bali: Cliff Temples & Beach Clubs",
+      "place": "Uluwatu"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "country": "colombia",
+  "label": "Colombia",
+  "cc": "co",
+  "folder": "Drafts/Full Articles/colombia",
+  "field_notes": "colombia/field-notes.html",
+  "date": "2026-10-30",
+  "date_line": "Oct 30, 2026",
+  "continent": ["americas", "Americas"],
+  "region": "South America",
+  "trip": "March 30 to April 11, 2024: Medellin 30 Mar-3 Apr (Guatape day trip 1 Apr), Cartagena 3-6, San Bernardo Islands (Casa en el Agua) 6-8, Santa Marta 8-9, Tayrona 9-11, flying to Rio on the 11th",
+  "album": "Colombia (2024)",
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {"file": "index.html", "type": "index", "writer": "A"},
+    {"file": "colombia-itinerary.html", "type": "itinerary", "writer": "A", "note": "HTML from the Guatemala pre-photo template; Medellin (+ Guatape) > Cartagena > San Bernardo Islands > Santa Marta > Tayrona"},
+    {"file": "top-10-colombia.html", "type": "top10", "writer": "A"},
+    {"file": "medellin.html", "type": "guide", "kicker": "City Guide", "map": "medellin", "writer": "B", "note": "Guatape day trip as its own section of this guide"},
+    {"file": "cartagena.html", "type": "guide", "kicker": "City Guide", "map": "cartagena", "writer": "C"},
+    {"file": "san-bernardo-islands.html", "type": "guide", "kicker": "Island Guide", "writer": "C", "note": "Casa en el Agua, booked and reached from Cartagena"},
+    {"file": "santa-marta-tayrona.html", "type": "guide", "kicker": "Experience Guide", "writer": "B", "note": "Santa Marta stopover, The Valley Tayrona Hostel, the hike to Cabo San Juan and the hammock night"}
+  ],
+  "cards": [
+    {"file": "colombia-itinerary.html", "tag": "Travel Guide", "title": "Colombia Travel Guide with Perfect 2-Week Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Colombia Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-colombia.html", "tag": "Top 10", "title": "Top 10 Things to Do in Colombia", "place": "Top 10"},
+    {"file": "medellin.html", "tag": "City Guide", "title": "The Ultimate Guide to Medellín", "place": "Medellín"},
+    {"file": "cartagena.html", "tag": "City Guide", "title": "The Ultimate Guide to Cartagena", "place": "Cartagena"},
+    {"file": "san-bernardo-islands.html", "tag": "Island Guide", "title": "San Bernardo Islands: Two Nights on the Water", "place": "San Bernardo Islands"},
+    {"file": "santa-marta-tayrona.html", "tag": "Experience Guide", "title": "Santa Marta and Tayrona: Jungle Meets the Caribbean", "place": "Tayrona"}
+  ]
+}

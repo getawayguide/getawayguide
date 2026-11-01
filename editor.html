@@ -638,6 +638,7 @@
     #editor #toc-b .toc-cols, #editor .ed-toc .tc { display:grid; grid-template-columns:1fr 1fr; gap:0 40px; align-items:start; }
     #editor #toc-b .toc-row, #editor .ed-toc .tr { display:flex; align-items:baseline; gap:8.8px; padding:6.08px 0; border-bottom:1px solid rgba(28,40,33,.09); }
     #editor #toc-b .toc-row:last-child, #editor .ed-toc .tk > :last-child { border-bottom:none; }
+    #editor #toc-b .toc-cols:has(> .toc-col:only-child), #editor .ed-toc .tc:has(> .tk:only-child) { grid-template-columns:1fr; }   /* one column spans the box (2026-10-25) */
     #editor #toc-b .toc-num, #editor .ed-toc .tr::before { font-size:10.4px; line-height:16.64px; font-weight:400; color:#2D6B50; flex-shrink:0; }
     #editor #toc-b a.toc-link, #editor .ed-toc .tr::after { font-size:13.6px; line-height:20.4px; font-weight:400; color:rgba(28,40,33,.86); text-decoration:none; }
     #editor .ed-toc { user-select:none; cursor:default; }
@@ -734,18 +735,18 @@
     #xm-panel .xm-kind { font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:#2D6B50; }
     #xm-panel .xm-title { font-family:'Newsreader',serif; font-size:.9rem; line-height:1.2; }
     #xm-panel .xm-sel { width:100%; font:.72rem 'Hanken Grotesk',sans-serif; padding:5px 6px; border:1px solid #D9D7CF; border-radius:6px; background:#fff; color:#1C2821; }
-    #xm-panel .th-slot { padding-bottom:.8rem; border-bottom:1px solid #EDECE6; }
-    #th-panel { flex:3 1 0; min-height:140px; overflow-y:auto; padding:.5rem .6rem .8rem; border-bottom:1px solid #eceae3;
+    #xm-panel .th-slot { padding-bottom:.8rem; border-bottom:1px solid #EDECE6; }   /* plus the shared #th-panel rules below (2026-10-25) */
+    #th-panel, #xm-panel { flex:3 1 0; min-height:140px; overflow-y:auto; padding:.5rem .6rem .8rem; border-bottom:1px solid #eceae3;
       font-family:'Hanken Grotesk',sans-serif; color:#1C2821; }
-    #th-panel .th-top { font-size:.72rem; color:#6b7670; margin:.1rem 0 .7rem; line-height:1.4; }
-    #th-panel .th-slot { margin-bottom:1rem; }
-    #th-panel .th-h { display:flex; align-items:baseline; gap:.5rem; margin-bottom:.35rem; }
-    #th-panel .th-h b { font-size:.74rem; font-weight:600; }
-    #th-panel .th-h span { font-size:.66rem; color:#8a9790; flex:1; min-width:0; }
-    #th-panel .th-bar { position:sticky; top:-.5rem; z-index:2; background:#fff; margin:-.5rem -.6rem .6rem; padding:.5rem .6rem; }
-    #th-panel .th-edit { width:100%; height:32px; font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+    #th-panel .th-top, #xm-panel .th-top { font-size:.72rem; color:#6b7670; margin:.1rem 0 .7rem; line-height:1.4; }
+    #th-panel .th-slot, #xm-panel .th-slot { margin-bottom:1rem; }
+    #th-panel .th-h, #xm-panel .th-h { display:flex; align-items:baseline; gap:.5rem; margin-bottom:.35rem; }
+    #th-panel .th-h b, #xm-panel .th-h b { font-size:.74rem; font-weight:600; }
+    #th-panel .th-h span, #xm-panel .th-h span { font-size:.66rem; color:#8a9790; flex:1; min-width:0; }
+    #th-panel .th-bar, #xm-panel .th-bar { position:sticky; top:-.5rem; z-index:2; background:#fff; margin:-.5rem -.6rem .6rem; padding:.5rem .6rem; }
+    #th-panel .th-edit, #xm-panel .th-edit { width:100%; height:32px; font:600 .6rem/1 'Hanken Grotesk',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
       background:#fff; color:#1C2821; border:1px solid #D9D7CF; border-radius:8px; }
-    #th-panel .th-edit:hover { border-color:#2D6B50; color:#2D6B50; }
+    #th-panel .th-edit:hover, #xm-panel .th-edit:hover { border-color:#2D6B50; color:#2D6B50; }
     /* while the thumbnails are open they get the whole sidebar (Kevin, 2026-09-30: "hide the photo
        library section with drop down and previews when thumbnail is open so I can see the full space") */
     body.thumbs-open #photo-panel > :not(#pk-bar):not(#th-panel):not(#xm-panel) { display:none !important; }   /* the library, and the bars it adds at run time */
@@ -753,7 +754,7 @@
     #th-panel .th-box.card { width:62%; }             /* a portrait card at full width was taller than the panel */
     #th-panel .th-box .th-t { position:absolute; inset:auto 0 0 0; padding:1.6rem .7rem .6rem; color:#F4F1EA;
       font:400 .8rem/1.3 Fraunces, Georgia, serif; background:linear-gradient(transparent, rgba(6,10,8,.85)); }
-    #th-panel .th-note { font-size:.64rem; color:#8a9790; margin-top:.3rem; line-height:1.35; }
+    #th-panel .th-note, #xm-panel .th-note { font-size:.64rem; color:#8a9790; margin-top:.3rem; line-height:1.35; }
     #pk-panel { padding:.4rem .5rem .6rem; border-bottom:1px solid #eceae3; }
     /* The photo panel clips (overflow:hidden) and every part of it is a flex
        child, so nothing could scroll: an album's picks grew #pk-panel to its
@@ -1446,6 +1447,8 @@ main{overflow-y:auto;padding:1rem}
 
 }
 #app-library[hidden] { display:none !important; }
+/* the album's bar (title, Blog Picks, Compare, Best, the place menu) stays at the top while the photos scroll (Kevin, 2026-10-25) */
+#app-library #lib-toolbar { position:sticky; top:-16px; z-index:20; background:#F7F7F3; margin:-16px -16px .8rem; padding:16px 16px 10px; box-shadow:0 1px 0 rgba(28,40,33,.08); }   /* -16px: over main's own 16px padding, so no photo shows above it */
 /* razor-thin scrollbars, Mac style (2026-09-28): 4px, invisible until you hover the area that
    scrolls. No scrollbar-width here: Chrome ignores these -webkit rules whenever it is set. */
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -1876,7 +1879,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 </div>
 
 <script src="launch.js?v=9a930cec" defer></script>
-<script src="review.js?v=9194078d" defer></script>
+<script src="review.js?v=90ce61f6" defer></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -1980,13 +1983,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       </div>
       <div class="tool-divider"></div>
       <div class="tb-group" aria-label="Photos and layout">
-        <button class="tool-btn" onclick="insertImage()" title="Add a photo from a file on this computer: it is copied into Images/ and cut like any other photo"><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m21 16-5-5-9 9"/></svg><span>Image</span></button>
+        <!-- the Image button is gone (Kevin, 2026-10-25): photos go into the placeholders -->
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPair()" title="Two vertical photos side by side (the El Salvador layout). Inserts empty slots you can fill later."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="16" rx="1.5"/></svg><span>Pair</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('portrait')" title="One portrait photo placeholder (2:3) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="1.5"/></svg><span>Portrait</span></button>
         <button class="tool-btn" onmousedown="saveSelection()" onclick="insertPhotoSlot('landscape')" title="One landscape photo placeholder (3:2) at the cursor. Saves as a [PHOTO] marker; hover it and click the ✕ to remove it."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="1.5"/></svg><span>Wide</span></button>
         <!-- Block sits between Wide and the ⋯ (Kevin, 2026-10-24: "block should be next to wide and next to the dots") -->
         <div class="tb-more" id="tb-blocks"><button class="tool-btn" onmousedown="saveSelection()" onclick="blocksToggle()" title="Insert one of the site's blocks (day head, tip, budget table), or one you saved">▦ Block</button><div class="tb-more-pop" id="tb-blocks-pop"></div></div>
       </div>
+          <!-- Dictate (Kevin, 2026-10-24): talk it out, edit the transcript; local Whisper, nothing leaves the laptop -->
+      <button class="tool-btn" id="tb-dictate" type="button" title="Dictate a paragraph (Ctrl+Alt+D): click, talk, click again. Transcribed on this computer and put in a new paragraph after the one the cursor is in. Esc cancels."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg><span>Dictate</span></button>
       <!-- font, size and color live behind the ⋯ (Kevin, 2026-09-27) -->
       <div class="tb-more" id="tb-more">
         <button class="tool-btn" id="tb-more-btn" onmousedown="saveSelection()" onclick="document.getElementById('tb-more').classList.toggle('open')" title="Font, size and color" aria-haspopup="true" style="font-size:1rem;padding:.2rem .6rem">&#8943;</button>
@@ -2027,8 +2032,6 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           </div>
         </div>
       </div>
-          <!-- Dictate (Kevin, 2026-10-24): talk it out, edit the transcript; local Whisper, nothing leaves the laptop -->
-      <button class="tool-btn" id="tb-dictate" type="button" title="Dictate a paragraph (Ctrl+Alt+D): click, talk, click again. Transcribed on this computer and put in a new paragraph after the one the cursor is in. Esc cancels."><svg class="tbi" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg><span>Dictate</span></button>
     </div>
 
     <div class="editor-scroll">
@@ -3308,6 +3311,20 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // width of the editing area, the way .artbody fills the published page.
     editor.style.maxWidth = body.classList.contains('artbody') ? 'none'
                           : ((mw ? +mw[1] : 825) - 96) + 'px';   // minus 2 x 3rem
+    // The desktop JPEG tier a <picture> would show on this screen: the smallest candidate of its
+    // (min-width:769px) JPEG <source> on a 1x monitor, the next one up on a 2x/3x screen. The tiers
+    // are cut at 1.85x / 2.8x / 3.7x the drawn width (CLAUDE.md), so the smallest is already sharp at 1x.
+    const desktopTier = (srcs) => {
+      const pick = srcs.find(x => /min-width/.test(x.getAttribute('media') || '') && !x.getAttribute('type'))
+                || srcs.find(x => /min-width/.test(x.getAttribute('media') || ''))
+                || srcs.find(x => !x.getAttribute('type'));
+      if (!pick) return null;
+      const cands = (pick.getAttribute('srcset') || '').split(',').map(t => t.trim().split(/\s+/))
+        .filter(a => a[0]).map(a => ({ url: a[0], w: parseInt(a[1]) || 0 })).sort((a, b) => a.w - b.w);
+      if (!cands.length) return null;
+      const i = Math.min(cands.length - 1, (window.devicePixelRatio || 1) > 1.5 ? 1 : 0);
+      return cands[i].url;
+    };
     // The page's photo paths are article-relative ("../Images/..."): set straight into the editor they were
     // fetched from the wrong folder before being swapped for blobs (QA 2026-10-08: 1-8 ERR_FILE_NOT_FOUND
     // on every open). They are parked HERE, in the inert parsed page, before anything can load: the
@@ -3316,6 +3333,17 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       const srcs = [...pic.querySelectorAll('source')];
       if (!srcs.length) return;
       pic.dataset.sources = srcs.map(x => x.outerHTML).join('');
+      // The <img> inside a <picture> is the PHONE fallback (-mob-2x, ~460px wide). Drawn at the desktop
+      // width it is upscaled and soft, while the published page picks a desktop tier from the <source>s
+      // (Kevin, 2026-10-29: "this photo looks blurry in the editor, but completely fine on the html
+      // preview"). Show the desktop JPEG tier the page itself would pick; the fallback is saved back
+      // untouched (data-path keeps it, data-ed-show is only what the loop below fetches).
+      const im = pic.querySelector('img');
+      const cur = im && im.getAttribute('src');
+      if (im && cur && !/^(blob:|data:|https?:)/.test(cur)) {
+        const show = desktopTier(srcs);
+        if (show && show !== cur) im.setAttribute('data-ed-show', show);
+      }
       srcs.forEach(x => x.remove());
     });
     body.querySelectorAll('img[srcset]').forEach(im => {
@@ -3344,14 +3372,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const imgEls = editor.querySelectorAll('img');
     await Promise.all(Array.from(imgEls).map(async img => {
       const rawSrc = img.getAttribute('data-ed-src') || img.getAttribute('src');
-      img.removeAttribute('data-ed-src');
+      const showSrc = img.getAttribute('data-ed-show') || rawSrc;   // the desktop tier of a <picture>, see above
+      img.removeAttribute('data-ed-src'); img.removeAttribute('data-ed-show');
       if (!rawSrc || rawSrc.startsWith('blob:') || rawSrc.startsWith('data:') || rawSrc.startsWith('http')) return;
       img.setAttribute('data-path', rawSrc); // preserve original path for saving
       let shown = false;
       if (folderHandle) {
         try {
-          // rawSrc is like "Images/..." or "../Images/..." — traverse from the site root
-          const parts = decodeURIComponent(rawSrc).split('/').filter(p => p !== '..' && p !== '.');
+          // showSrc is like "Images/..." or "../Images/..." — traverse from the site root
+          const parts = decodeURIComponent(showSrc).split('/').filter(p => p !== '..' && p !== '.');
           let handle = folderHandle;
           for (let i = 0; i < parts.length - 1; i++) {
             handle = await handle.getDirectoryHandle(parts[i]);
@@ -3364,7 +3393,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
           // drawn (a recompress), the snapshot is dead and the frame stays empty, so re-read it
           // from the photo server, which serves the file as it is now
           img.addEventListener('error', () => {
-            img.src = 'http://127.0.0.1:5003/site/' + decodeURIComponent(rawSrc).replace(/^(\.\.\/)+/, '')
+            img.src = 'http://127.0.0.1:5003/site/' + decodeURIComponent(showSrc).replace(/^(\.\.\/)+/, '')
               .split('/').map(encodeURIComponent).join('/');
           }, { once: true });
         } catch(e) { /* fall through to the server */ }
@@ -3372,7 +3401,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       if (!shown) {
         // no folder connection (or lookup failed): the photo server also
         // serves the repo, so images still display in-line
-        const repoPath = decodeURIComponent(rawSrc).replace(/^(\.\.\/)+/, '');
+        const repoPath = decodeURIComponent(showSrc).replace(/^(\.\.\/)+/, '');
         img.src = 'http://127.0.0.1:5003/site/' +
           repoPath.split('/').map(encodeURIComponent).join('/');
         // If the server is down, this src fails silently and the article shows
@@ -7819,6 +7848,18 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // The dev server drops the odd connection under load (a burst of thumbnail
   // requests, an iCloud sync). A single failed fetch used to leave the place
   // bar silently missing; try three times before giving up.
+  // The town is the option itself (Kevin, 2026-10-25: "Instead of having an 'All of [Krushevo]' in the drop down menu,
+  // I should just be able to choose the bolded town option"): a bold "Krushevo (322)" picks the whole town, its places
+  // are indented under it. They used to be an <optgroup>, whose bold label can't be chosen, plus an "All of" row.
+  window.placeGroups = function (groups, mk) {
+    const IND = ' ';
+    (groups || []).forEach(g => {
+      const head = mk(g.city === 'Other' ? '' : 'city:' + g.city, g.city + ' (' + g.n + ')');
+      if (head) { head.style.fontWeight = '700'; head.className = 'pl-city'; if (g.city === 'Other') { head.disabled = true; head.value = ' other-head'; } }
+      const solo = g.places.length === 1 && g.places[0].name.toLowerCase() === g.city.toLowerCase();
+      if (!solo) g.places.forEach(p => mk(p.name, IND + p.name + ' (' + p.n + ')'));
+    });
+  };
   window.geoFetch = async function (url) {
     for (let i = 0; i < 3; i++) {
       try { const r = await fetch(url); if (r.ok) return await r.json(); }
@@ -7858,12 +7899,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       (parent || sel).appendChild(o); return o;
     };
     mk('', blank);
-    (geo.groups || []).forEach(g => {
-      const og = document.createElement('optgroup'); og.label = g.city + ' (' + g.n + ')';
-      if (g.city !== 'Other' && g.places.length > 1) mk('city:' + g.city, 'All of ' + g.city + ' (' + g.n + ')', og);
-      g.places.forEach(p => mk(p.name, p.name + ' (' + p.n + ')', og));
-      sel.appendChild(og);
-    });
+    window.placeGroups(geo.groups, mk);
     if (geo.noGps) mk(' nogps', 'No location data (' + geo.noGps + ')');
     sel.value = current || '';
     if (sel.value !== (current || '')) sel.value = '';
@@ -13229,9 +13265,7 @@ async function loadGeo() {
   sel.innerHTML = '';
   const mk = (v, t, parent) => { const o = document.createElement('option'); o.value = v; o.textContent = t; (parent || sel).appendChild(o); };
   mk('', d.pending ? `All places · locating ${d.pending}…` : `All places (${d.total})`);
-  d.groups.forEach(g => { const og = document.createElement('optgroup'); og.label = `${g.city} (${g.n})`;
-    if (g.city !== 'Other' && g.places.length > 1) mk('city:' + g.city, `All of ${g.city} (${g.n})`, og);
-    g.places.forEach(p => mk(p.name, `${p.name} (${p.n})`, og)); sel.appendChild(og); });
+  window.placeGroups(d.groups, (v, t) => { mk(v, t); return sel.lastElementChild; });
   if (d.noGps) mk(' nogps', `No location data (${d.noGps})`);
   sel.value = PLACE;
   if (sel.value !== PLACE) { PLACE = ''; sel.value = ''; }   // the chosen place no longer exists
@@ -14610,8 +14644,9 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
   const label = btn.querySelector('span');
   const ed = () => document.getElementById('editor');
   let rec = null, stream = null, chunks = [], started = 0, timer = null, anchor = null, busy = false, cancelled = false;
+  let onText = null, onState = null;          // a caller (the comment box) takes the text instead of the article
   const say = (t, ms) => (window.toast ? window.toast(t, ms || 6000) : alert(t));
-  function setState(st, txt) { btn.dataset.state = st; label.textContent = txt; }
+  function setState(st, txt) { if (onState) { onState(st, txt); if (st === 'idle') { onState = null; onText = null; } return; } btn.dataset.state = st; label.textContent = txt; }
   function rememberCaret() {
     const sel = getSelection();
     if (sel.rangeCount && ed().contains(sel.anchorNode)) anchor = sel.getRangeAt(0).cloneRange();
@@ -14657,6 +14692,7 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
       const r = await res.json();
       if (!r.ok) throw new Error(r.error || 'the photo server could not transcribe it');
       if (!r.text) say('No speech in that recording.');
+      else if (onText) onText(r.text);
       else place(r.text);
     } catch (e) {
       say('Dictation failed: ' + ((e && e.message) || e) + (secs ? '' : ''), 9000);
@@ -14703,7 +14739,11 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     if (e.ctrlKey && e.altKey && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); (rec && rec.state === 'recording') ? stop(false) : start(); }
     else if (e.key === 'Escape' && rec && rec.state === 'recording') { e.preventDefault(); e.stopPropagation(); stop(true); }
   }, true);
-  window.__dictation = { place: place, toWav16k: toWav16k, remember: rememberCaret };   // test seam
+  // record(onText, onState): another box's dictation (the review comment, 2026-10-25); the same mic, the text to the caller
+  window.__dictation = { place: place, toWav16k: toWav16k, remember: rememberCaret,
+    recording: () => !!(rec && rec.state === 'recording'), busy: () => busy,
+    record: (cb, st) => { if (rec && rec.state === 'recording') return stop(false); onText = cb; onState = st || null; start(); },
+    cancel: () => stop(true) };
 })();
 </script>
 </body>

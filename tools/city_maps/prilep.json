@@ -1,0 +1,105 @@
+{
+  "slug": "prilep",
+  "kicker": "North Macedonia",
+  "city": "Prilep",
+  "osm": ".tmp/prilep_osm.json",
+  "article": "Drafts/Upcoming/north-macedonia/krushevo.html",
+  "embed": {
+    "pre": "  <!-- city map: prilep -->\n",
+    "post": "  <!-- /city map: prilep -->\n"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.6,
+    "init_x": 0.5,
+    "init_y": 0.8
+  },
+  "pois": [
+    {
+      "name": "Clock Tower Square & Old Bazaar",
+      "cat": "see",
+      "match": "clock tower square",
+      "lat": 41.3459397,
+      "lon": 21.5550655
+    },
+    {
+      "name": "Čento Square",
+      "cat": "see",
+      "match": "čento square",
+      "href": "https://www.google.com/maps/place/Town+Square+Metodija+Andonov+Chento,+Prilep,+North+Macedonia/@41.3456922,21.5529415,17z/data=!3m1!4b1!4m6!3m5!1s0x1356ebe4323b485d:0xb38e2adbcdd44b4a!8m2!3d41.3456193!4d21.5533512!16s%2Fg%2F11bytp7b9g?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyMC4wIKXMDSoASAFQAw%3D%3D",
+      "lat": 41.3456922,
+      "lon": 21.5529415
+    },
+    {
+      "name": "Čarši Mosque (ruin)",
+      "cat": "see",
+      "match": "čarši mosque",
+      "href": "https://www.google.com/maps/place/Ruins+of+Mosque+(1475)/@41.3456079,21.5552688,17z/data=!4m10!1m2!2m1!1sCharshi+Mosque+Prilep!3m6!1s0x1356ebee62ea3423:0xc318e22b34ed95ad!8m2!3d41.3456339!4d21.5552767!15sChVDaGFyc2hpIE1vc3F1ZSBQcmlsZXCSARNoaXN0b3JpY2FsX2xhbmRtYXJr4AEA!16s%2Fg%2F11h48_7y98?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyMC4wIKXMDSoASAFQAw%3D%3D",
+      "lat": 41.3456079,
+      "lon": 21.5552688
+    },
+    {
+      "name": "City Park & Mound of the Unbeaten",
+      "cat": "see",
+      "match": "mound of the unbeaten",
+      "href": "https://www.google.com/maps/place/Park+of+the+Revolution/@41.3480998,21.5466254,14z/data=!4m10!1m2!2m1!1sMound+of+the+Unbeaten+Prilep!3m6!1s0x1356e9595a4568f9:0xf8b8d2a0e1ce7243!8m2!3d41.33486!4d21.5532835!15sChxNb3VuZCBvZiB0aGUgVW5iZWF0ZW4gUHJpbGVwWh4iHG1vdW5kIG9mIHRoZSB1bmJlYXRlbiBwcmlsZXCSAQRwYXJrmgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDI1V2MxUkhaRkpqV0VwVFdtcFNUbFV3VW5aVFJtaENXbGRHZUdWdVl4QULgAQD6AQQIXBBD!16s%2Fg%2F1tfq1yg5?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyMC4wIKXMDSoASAFQAw%3D%3D",
+      "lat": 41.3481,
+      "lon": 21.5466
+    },
+    {
+      "name": "Markovi Kuli (Marko's Towers)",
+      "cat": "see",
+      "match": "markovi kuli",
+      "lat": 41.3619106,
+      "lon": 21.5387456
+    },
+    {
+      "name": "Monastery of St. Archangel Michael",
+      "cat": "see",
+      "match": "archangel michael",
+      "lat": 41.3603207,
+      "lon": 21.5344718
+    },
+    {
+      "name": "Treskavec Monastery",
+      "cat": "see",
+      "match": "treskavec",
+      "lat": 41.403802,
+      "lon": 21.5382591,
+      "frame": false
+    },
+    {
+      "name": "Prilep Bus Station",
+      "cat": "see",
+      "match": "prilep bus station",
+      "lat": 41.3443602,
+      "lon": 21.5405018
+    },
+    {
+      "name": "Tabu Kafe",
+      "cat": "eat",
+      "match": "tabu kafe",
+      "lat": 41.3461116,
+      "lon": 21.55515
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "DOWNTOWN",
+      "lat": 41.3478,
+      "lon": 21.5612
+    },
+    {
+      "text": "VAROŠ",
+      "lat": 41.3585,
+      "lon": 21.5365
+    }
+  ]
+}

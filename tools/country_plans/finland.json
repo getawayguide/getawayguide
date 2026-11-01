@@ -1,0 +1,48 @@
+{
+  "country": "finland",
+  "label": "Finland",
+  "cc": "fi",
+  "folder": "Drafts/Full Articles/finland",
+  "field_notes": "finland/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Scandinavia",
+  "trip": "One solo visit, Wed Aug 2 to Fri Aug 4, 2023 (Round-the-World year; flew in from Paris Beauvais, left by ferry to Tallinn). Wed Aug 2 evening: the hour-long train from the airport through pine forest, silent and half empty; a kebab plate with tomato sauce at a kebab-pizza place at 9 pm; a clean, quiet hostel (The Yard Hostel per the field notes). Thu Aug 3, his one full day: Senate Square, Helsinki Cathedral, the House of Nobility, the Presidential Palace (reminded him of Washington DC, bland inside); the Market Square harbor market (a karjalanpiirakka-style meat-and-rice pie, good coffee); the 15-minute ferry to Suomenlinna (the roof deck, the island-dotted harbor, a near-empty small island still used by the navy, the shoreline and cannons, menthol mints, the church that doubles as a lighthouse, the run-down overgrown fortress, the dry dock); back to the bus station (50+ docks, confusing, Google Maps not working), a sugar-crusted cardamom pastry; the 1-hour bus to Porvoo (the colored riverside houses, the barn-like cathedral, quiet lanes, a Borgå lager at a riverside bar with a boat to eat on); dinner at Ravintola Kolme Kruunua (shaved reindeer with mashed potatoes and lingonberries, like a gyro; an Olvi III lager); drinks at Pub Peräkammari with two travelers from the hostel app. Fri Aug 4: missed the 7:30 ferry to Tallinn (gates close 20 minutes before), took the 9:00",
+  "album": "Finland (2023)",
+  "albums": {
+    "Finland (2023)": "the visit, Aug 2 to 4, 2023: Aug 2 the train in and the evening; Aug 3 Senate Square, the cathedral, the Market Square, the Suomenlinna ferry and islands, the bus station, Porvoo, dinner (reindeer); Aug 4 morning the ferry terminal / the ferry to Tallinn. Never use Paris (France) or Tallinn (Estonia album) photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "helsinki.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "helsinki",
+      "writer": "B",
+      "note": "Aug 2-4, 2023, one full day plus two half days; his honest verdict (field notes): not very impressed, 'far from my favorite European capital', eerily quiet, clean and well organized, Suomenlinna the highlight, pair it with Lapland or a ferry to Tallinn/Stockholm"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Finland Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "helsinki.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Helsinki",
+      "place": "Helsinki"
+    }
+  ],
+  "single_city": true
+}

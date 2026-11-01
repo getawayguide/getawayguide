@@ -2,6 +2,10 @@
 """Live alt text for the editor: Claude looks at the photo while you crop it (Kevin, 2026-09-28: "I don't like
 writing Alt text. When I choose an image, I would like the alt text to be prepopulated").
 
+Backends (2026-10-31): Gemini first, through tools/ask_gemini.py's generate() (free gemini-3.1-flash-lite, 2-9 s,
+same rules and place context, a 15 s budget); the Claude session below only when Gemini can't answer (the tool's
+exit-75 cases: quota, outage, bad model, no key) or runs out of time. ALT_GEMINI=0 skips Gemini.
+
 How it works: a small copy of the photo (768px) goes to ONE warm Claude Code session (the VS Code
 extension's claude.exe, Kevin's login; no API key), with what is known about where it was taken:
 the photo's GPS place, the city and country, and the article section it is going into. A warm
@@ -36,7 +40,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".tmp" / "alt_text_cache.json"
 WORK = ROOT / ".tmp" / "claude_cli"
 
-BRIEF = """You write alt text for photos on a travel blog, one photo per message.
+RULES = """You write alt text for photos on a travel blog, one photo per message.
 House style (the site's existing alt text): "<what is in the picture>, <place>, <country>".
 Rules:
 - One line in sentence case, under 125 characters, no period at the end.
@@ -46,8 +50,14 @@ Rules:
 - ARTICLE SECTION is the heading the photo sits under. Use a place name from it only when the photo plausibly shows that place; headings like "Where to Eat" are not places.
 - Do not start with "Image of", "Photo of" or "A picture of". No emoji, no hashtags, American spelling, no em dashes.
 - If people are in the photo, describe them generally ("two travelers", "a vendor"); never guess who they are.
-Reply with ONLY the alt text.
-Reply to this message with the single word READY."""
+Reply with ONLY the alt text."""
+BRIEF = RULES + "\nReply to this message with the single word READY."      # the Claude session's opening message
+
+# Gemini first (Kevin, 2026-10-31: "lets just do the 3 free gemini jobs"): one stateless call to the free
+# gemini-3.1-flash-lite (2-9 s) with the same rules and place context; the warm Claude session above only answers
+# when Gemini can't (quota, outage, bad model, no key) or takes longer than GEMINI_BUDGET seconds.
+# ALT_GEMINI=0 turns it off; ALT_GEMINI_MODEL (or GEMINI_MODEL) picks another model.
+GEMINI_BUDGET = 15
 
 
 def _load_cache():
@@ -86,6 +96,7 @@ class AltWriter:
     def __init__(self):
         self.p = None; self.n = 0; self.last = 0; self.lock = threading.Lock()
         self.swapping = False
+        self.last_backend = None                        # "gemini" or "claude": who wrote the last uncached alt
         self.events = collections.deque(maxlen=40)     # what the session last said, for /api/alt_status
         self.cache = _load_cache()
 
@@ -154,7 +165,8 @@ class AltWriter:
 
     def status(self):
         return {"alive": self.alive(), "busy": self.lock.locked(), "pid": self.p.pid if self.p else None,
-                "answered": self.n, "swapping": self.swapping, "recent": list(self.events)[-12:]}
+                "answered": self.n, "swapping": self.swapping, "last_backend": self.last_backend,
+                "recent": list(self.events)[-12:]}
 
     def warm(self):
         with self.lock:
@@ -190,6 +202,50 @@ class AltWriter:
         ctx = "\n".join(f"{k}: {v}" for k, v in (("PLACE", place), ("CITY", city), ("COUNTRY", country),
                                                   ("ARTICLE SECTION", section)) if v)
         text = "Alt text for this photo." + ("\n" + ctx if ctx else "\nNo place is known: describe it without naming any place.")
+        alt = self._gemini(img, text)
+        if alt is None:
+            alt = self._claude(img, text)
+        alt = clean(alt)
+        self.cache[key] = alt
+        try:
+            CACHE.parent.mkdir(parents=True, exist_ok=True)
+            CACHE.write_text(json.dumps(self.cache, indent=1, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+        return alt
+
+    def _gemini(self, img, text):
+        """the alt text from Gemini, or None (the caller then asks the Claude session). Stateless, so no lock."""
+        if os.environ.get("ALT_GEMINI", "1") == "0":
+            return None
+        t0 = time.time()
+        try:
+            sys.path.insert(0, str(ROOT / "tools"))
+            import ask_gemini
+            model = os.environ.get("ALT_GEMINI_MODEL") or os.environ.get("GEMINI_MODEL") or ask_gemini.DEFAULT_MODEL
+            deadline = t0 + GEMINI_BUDGET
+            turn = [{"text": RULES}, {"inline_data": {"mime_type": "image/jpeg", "data": img}}, {"text": text}]
+            alt, _ = ask_gemini.generate(turn, model=model, timeout=GEMINI_BUDGET, deadline=deadline)
+            alt = alt.strip()
+            if alt and len(clean(alt)) > 125 and deadline - time.time() > 3:     # one retry for length, as for Claude
+                more = [{"role": "user", "parts": turn}, {"role": "model", "parts": [{"text": alt}]},
+                        {"role": "user", "parts": [{"text": "That is %d characters. Shorten it to under 125, keeping "
+                                                            "the place and country. Reply with only the alt text." % len(clean(alt))}]}]
+                try:
+                    alt = ask_gemini.generate(more, model=model, timeout=GEMINI_BUDGET, deadline=deadline)[0].strip() or alt
+                except ask_gemini.Unavailable:
+                    pass                                       # keep the long one; clean() caps it
+            if not alt or "\n" in alt.strip():
+                raise RuntimeError("no usable answer")
+            self.last_backend = "gemini"
+            self.events.append((round(time.time(), 1), 0, "gemini", "%s %.1fs" % (model, time.time() - t0)))
+            return alt
+        except Exception as e:                                 # Unavailable (the tool's exit 75), timeout, bad answer
+            self.events.append((round(time.time(), 1), 0, "gemini-fallback", str(e)[:120]))
+            return None
+
+    def _claude(self, img, text):
+        """the warm Claude Code session, as before Gemini"""
         msg = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": img}},
                {"type": "text", "text": text}]
         with self.lock:
@@ -208,13 +264,7 @@ class AltWriter:
             self.n += 1; self.last = time.time()
             if self.n >= self.MAX:
                 self._replace_later()
-        alt = clean(alt)
-        self.cache[key] = alt
-        try:
-            CACHE.parent.mkdir(parents=True, exist_ok=True)
-            CACHE.write_text(json.dumps(self.cache, indent=1, ensure_ascii=False), encoding="utf-8")
-        except OSError:
-            pass
+        self.last_backend = "claude"
         return alt
 
 
@@ -281,6 +331,8 @@ if __name__ == "__main__":
     if a.page:
         _fill_page(a.page, a.dry_run)
     elif a.photo:
-        w = AltWriter(); print(w.describe(a.photo, a.place, a.city, a.country, a.section)); w.stop()
+        w = AltWriter(); t0 = time.time()
+        print(w.describe(a.photo, a.place, a.city, a.country, a.section)); w.stop()
+        print("(%s, %.1f s)" % (w.last_backend or "cache", time.time() - t0), file=sys.stderr)
     else:
         ap.print_help()

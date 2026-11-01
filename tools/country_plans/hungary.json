@@ -1,0 +1,48 @@
+{
+  "country": "hungary",
+  "label": "Hungary",
+  "cc": "hu",
+  "folder": "Drafts/Full Articles/hungary",
+  "field_notes": "hungary/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Central Europe",
+  "trip": "Thu Aug 24 (afternoon) to Sun Aug 27, 2023 with a friend from home: 5-hour bus from Ljubljana, the Monastery Boutique Hotel in Pest, Aug 25 and 26 in the city (Castle Hill, the Chain Bridge, the House of Terror, the Central Market, the ruin bars, Café Kör, Horgásztanya), Aug 27 morning flight to Split",
+  "album": "Hungary (2023)",
+  "albums": {
+    "Hungary (2023)": "Aug 24 to 27, 2023, Budapest only. Never use Ljubljana (Slovenia) or Split/Hvar (Croatia) photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "budapest.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "budapest",
+      "writer": "B",
+      "note": "Aug 24-27, 2023 with a friend; Buda (Castle Hill: Buda Castle, Matthias Church, Fisherman's Bastion), the Chain Bridge, Pest (Parliament, the House of Terror, St. Stephen's, the Central Market, the Jewish Quarter), the thermal baths as field-notes advice unless the journal has him there; Where to Eat (Café Kör his favorite, Horgásztanya several times, Nor/ma), Where to Drink (Szimpla Kert, Instant-Fogas, Mazel Tov), Where to Stay (the Monastery Boutique Hotel); `## Day Trips from Budapest {#day-trips}` for Szentendre, the Danube Bend, Eger, Lake Balaton, Pécs as advice"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Hungary Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "budapest.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Budapest",
+      "place": "Budapest"
+    }
+  ],
+  "single_city": true
+}

@@ -1,0 +1,115 @@
+{
+  "country": "mexico",
+  "label": "Mexico",
+  "cc": "mx",
+  "folder": "Drafts/Full Articles/mexico",
+  "field_notes": "mexico/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "americas",
+    "Americas"
+  ],
+  "region": "North America",
+  "trip": "Nov 25 to Dec 8, 2024, solo: Mexico City Nov 26-29 (Teotihuacán, Roma Norte, lucha libre, the markets), bus to Puebla, Puebla Nov 29-Dec 2 with a Cholula day trip, Oaxaca Dec 2-6 (food tour, Hierve el Agua and mezcal, Monte Albán), Puerto Escondido Dec 6-8 (surf beach, turtle release)",
+  "album": "Mexico (2024)",
+  "albums": {
+    "Mexico (2024)": "Nov 25 to Dec 8, 2024 by capture date: Mexico City Nov 26-29, Puebla and Cholula Nov 29-Dec 2, Oaxaca Dec 2-6, Puerto Escondido Dec 6-8; check GPS"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "mexico-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; 2 weeks in the route-map order: Mexico City 4-5 > Puebla 2-3 (Cholula) > Oaxaca 4 > Puerto Escondido 2-3; he did it in 13 days; Guanajuato/San Miguel, Chiapas, the Yucatán as 'if you have more time' (he has not been)"
+    },
+    {
+      "file": "top-10-mexico.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "mexico-city.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "mexico-city",
+      "writer": "B",
+      "note": "Nov 26-29: neighborhoods (Roma Norte, Condesa, Polanco, Coyoacán), Teotihuacán, Chapultepec, Bellas Artes, Xochimilco, lucha libre, the markets, where to eat/drink/stay (Wanderlust District); places the journal doesn't have him at are advice"
+    },
+    {
+      "file": "puebla.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "writer": "C",
+      "note": "Nov 29-Dec 2: the Zócalo, the walking tour, Biblioteca Palafoxiana, the tunnels, Loreto Fort, the Serdán house, the churches, `## Day Trip to Cholula {#cholula}` (Dec 1 tour), cemitas, tacos árabes, mole, chalupas, Casa Pepe hostel; no city map in the field notes"
+    },
+    {
+      "file": "oaxaca.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "oaxaca",
+      "writer": "C",
+      "note": "Dec 2-6: the food tour (the top thing), Santo Domingo, Hierve el Agua and the mezcal distillery, Monte Albán, the mirador at sunset, the markets and restaurants, Casa Angel hostel; the bus/van to Puerto Escondido told in puerto-escondido.md"
+    },
+    {
+      "file": "puerto-escondido.html",
+      "type": "guide",
+      "kicker": "Beach Town Guide",
+      "map": "puerto-escondido",
+      "writer": "D",
+      "note": "Dec 6-8: the ride from Oaxaca, Zicatela and La Punta, the baby turtle release, Fish Shack, Ola Taquería, Malagua Café, nightlife, Viajero hostel; flying home from there"
+    }
+  ],
+  "cards": [
+    {
+      "file": "mexico-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Mexico Travel Guide with Perfect 2-Week Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Mexico Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-mexico.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in Mexico",
+      "place": "Top 10"
+    },
+    {
+      "file": "mexico-city.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Mexico City",
+      "place": "Mexico City"
+    },
+    {
+      "file": "puebla.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Puebla (and Cholula)",
+      "place": "Puebla"
+    },
+    {
+      "file": "oaxaca.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Oaxaca",
+      "place": "Oaxaca"
+    },
+    {
+      "file": "puerto-escondido.html",
+      "tag": "Beach Town Guide",
+      "title": "Puerto Escondido Guide: Surf, Sunsets & Sea Turtles",
+      "place": "Puerto Escondido"
+    }
+  ]
+}

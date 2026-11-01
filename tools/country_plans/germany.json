@@ -1,0 +1,61 @@
+{
+  "country": "germany",
+  "label": "Germany",
+  "cc": "de",
+  "folder": "Drafts/Full Articles/germany",
+  "field_notes": "germany/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Central Europe",
+  "trip": "2023: Fri Sep 15 to Tue Sep 19, solo, Oktoberfest's opening weekend in Munich, Wombats hostel, a backpacker group chat; flew Athens > Munich, left Munich > Cairo on Sep 20. 2025: a 5-hour layover at Munich airport (Jun 29)",
+  "album": "Munich (2023)",
+  "albums": {
+    "Munich (2023)": "Sep 15 to 20, 2023: Munich and Oktoberfest (the Theresienwiese tents, rides, beer, food, lederhosen), the beer gardens, the old town. Never use Athens or Cairo photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "munich.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "munich",
+      "writer": "B",
+      "note": "the city outside the festival: Marienplatz and the old town, the English Garden and the surfers, the beer halls and beer gardens (Augustiner Keller etc.), Bavarian food, where to stay (Wombats, and book months ahead at Oktoberfest); the field notes' 'The City' section; Neuschwanstein and the other Germany places as advice; link oktoberfest.html for the festival, do not retell it"
+    },
+    {
+      "file": "oktoberfest.html",
+      "type": "guide",
+      "kicker": "Experience Guide",
+      "writer": "B",
+      "note": "Oktoberfest itself (Sep 16-19, 2023): when it runs, booking and getting a table, the tents he went to, the Maß, renting or buying lederhosen (he paid 120 euros), the opening day, the rides, what to eat, the group-chat crowd in general terms, how to survive it; experience guide like the model mostar-day-trip.md / Belgium's tomorrowland; no map"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Germany Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "munich.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Munich",
+      "place": "Munich"
+    },
+    {
+      "file": "oktoberfest.html",
+      "tag": "Experience Guide",
+      "title": "Oktoberfest Guide: How to Do the Wiesn Right",
+      "place": "Oktoberfest"
+    }
+  ],
+  "single_city": true
+}

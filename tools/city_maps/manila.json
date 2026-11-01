@@ -17,8 +17,8 @@
   },
   "mobile": {
     "pad": 1.2,
-    "init_w": 0.82,
-    "init_x": 0.5,
+    "init_w": 0.95,
+    "init_x": 0.55,
     "init_y": 0.5
   },
   "pois": [
@@ -79,6 +79,20 @@
       "lon": 120.980416
     },
     {
+      "name": "Bonifacio Global City (BGC)",
+      "cat": "see",
+      "match": "bonifacio global city",
+      "lat": 14.5509,
+      "lon": 121.0494
+    },
+    {
+      "name": "Binondo",
+      "cat": "see",
+      "match": "binondo",
+      "lat": 14.601192,
+      "lon": 120.975007
+    },
+    {
       "name": "Mang Inasal",
       "cat": "eat",
       "match": "mang inasal",
@@ -99,6 +113,13 @@
       "match": "ola hostel",
       "lat": 14.5640557,
       "lon": 120.9986433
+    },
+    {
+      "name": "Grand Hyatt Manila",
+      "cat": "stay",
+      "match": "grand hyatt manila",
+      "lat": 14.5564879,
+      "lon": 121.0522929
     }
   ],
   "sea_bg": true,
@@ -110,8 +131,18 @@
   "district_labels": [
     {
       "text": "INTRAMUROS",
-      "lat": 14.5905,
+      "lat": 14.5858,
       "lon": 120.9735
+    },
+    {
+      "text": "BINONDO",
+      "lat": 14.6072,
+      "lon": 120.9745
+    },
+    {
+      "text": "BGC",
+      "lat": 14.5475,
+      "lon": 121.047
     }
   ]
 }

@@ -484,12 +484,16 @@ def build(cfg):
     if lg and lg.get("items"):
         # a box of line samples + labels in a corner of the window, at the annotation size (a stamp)
         items = lg["items"]
-        fs, row, sw = 13, 19, 24                  # bigger than the day labels: a legend is read, not glanced at
+        k = lg.get("scale", 1)                    # "scale": 0.75 shrinks the box to fit a corner (Krushevo, 2026-10-30)
+        fs, row, sw = 13 * k, 19 * k, 24 * k      # bigger than the day labels: a legend is read, not glanced at
         tw = max(len(it.get("label", "")) for it in items) * fs * 0.58
         bw, bh = sw + 10 + tw + 20, row * len(items) + 14
         pos = lg.get("pos", "tl")
         lx = (vx + 12) if "l" in pos else (vx + vw - 12 - bw * AFS)
         ly = (vy + 12) if "t" in pos else (vy + vh - 12 - bh * AFS)
+        ly += lg.get("dy", 0)                     # "dy": -40 lifts the box; the window grows upward to keep it in frame
+        if ly < vy + 8:
+            vh += (vy + 8) - ly; vy = ly - 8
         L = [f'<g transform="translate({lx:.1f} {ly:.1f}) scale({AFS:.3f})">',
              f'<rect x="0" y="0" width="{bw:.1f}" height="{bh:.1f}" rx="5" fill="{P["bg"]}" fill-opacity=".93" stroke="{P["chip"]}" stroke-width="1"/>']
         for i, it in enumerate(items):

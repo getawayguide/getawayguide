@@ -504,6 +504,7 @@
       // a Claude edit you accepted is saved at once: no "did that land?", no stale copy on reload
       if (accept && window.saveFile) setTimeout(() => { try { if (typeof fileHandle !== 'undefined' && fileHandle) window.saveFile({ auto: true }); } catch (e) {} }, 400);
     }
+    if (accept) resolveAnsweredThreads();
     if (H() && H().label) H().label((accept ? 'Accepted' : 'Rejected') + (c.task ? ' Claude: ' : ': ') + plain(c.replace || c.sentence || '').replace(/\s+/g, ' ').slice(0, 48));
     const posted = { [id]: accept };
     if (c.inner && c.inner.length) {
@@ -531,6 +532,27 @@
     previewDecision(null);
     focusActiveCard();
     if (!silent) { renderAll(); advanceFrom(id, holder && holder.isConnected ? holder : ref); }
+  }
+  // A round's Claude reply on a comment names the changes that answer it: "Round krushevo-r10 (g34): ..." or
+  // "(g07, g03)". Accepting those changes used to leave the comment open, so every answered comment had to be
+  // resolved by hand afterwards (Kevin, 2026-10-31: "when I accept a claude comment in the editor, the comment still
+  // lingers and i have to click it again to make it go away"). Once every change a reply names is decided and at least
+  // one was accepted, the thread resolves itself. All rejected leaves it open, so it can be answered again.
+  function resolveAnsweredThreads() {
+    if (!state.slug || !state.comments || !state.comments.threads) return;
+    const esc = state.slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('round\\s+' + esc + '\\s*\\(([^)]*)\\)', 'i');
+    let changed = false;
+    for (const t of state.comments.threads) {
+      if (t.resolved) continue;
+      const rep = (t.replies || []).filter(r => r.author === 'Claude' && re.test(r.text || '')).pop();
+      if (!rep) continue;
+      const ids = (rep.text.match(re)[1].match(/\b[a-z]\d{1,3}\b/gi) || []).filter(x => byId(x));
+      if (!ids.length || ids.some(x => state.st[x] === undefined)) continue;
+      if (!ids.some(x => state.st[x] === true)) continue;
+      t.resolved = true; stamp(t); unwrapMark(t.id); changed = true;
+    }
+    if (changed) { saveComments(); renderAll(); }
   }
   function reinject(ids) {                   // a rejected cut keeps its sentence, so its grammar fixes are offered again
     const e = ed(); let html = e.innerHTML;
@@ -578,6 +600,10 @@
     if (Object.keys(changed).length) post(changed);
     anchorComments(); renderAll();
   }
+  // a click that ends a text selection is a copy, not a jump: jump/focusThread re-render the margin, which wiped the
+  // selection and, inside a change card's nested thread, took the focus out of the reply box (Kevin, 2026-10-30:
+  // "I can't reply to that comment" / "make the text in the comments copiable")
+  const selecting = () => { const s = window.getSelection(); return !!(s && !s.isCollapsed && String(s).trim()); };
   function jump(id, fromDoc) {
     state.active = id;
     ed().querySelectorAll('.rl-hit').forEach(x => x.classList.remove('rl-hit'));
@@ -1139,6 +1165,15 @@
   const stamp = t => { t.at = new Date().toISOString(); };
   function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
+  // the microphone on a comment box (Kevin, 2026-10-25: "add dictate button into comment"): the editor's own dictation
+  // (local Whisper) with the text handed to this box instead of the article; a second click stops the recording
+  function dictateInto(ta, btn) {
+    const D = window.__dictation;
+    if (!D || !D.record) return toast('Dictation lives in the article editor: open an article first.');
+    if (D.recording()) { D.record(); return; }
+    D.record(text => { const v = ta.value, sep = v && !/\s$/.test(v) ? ' ' : ''; ta.value = v + sep + text; ta.dispatchEvent(new Event('input')); ta.focus(); },
+             (st, txt) => { btn.dataset.state = st; btn.title = st === 'rec' ? 'Recording, click to stop (' + txt.replace('Stop ', '') + ')' : st === 'busy' ? 'Transcribing…' : 'Dictate (click again to stop)'; });
+  }
   function reply(id, text) { const t = thread(id); if (!t || !text.trim()) return; stamp(t); t.replies.push({ id: 'r' + Date.now().toString(36), author: AUTHOR, text: text.trim(), created: new Date().toISOString() }); if (state.replyDrafts) delete state.replyDrafts[id]; saveComments(); renderAll(); }
   function editText(id, rid, text) { const t = thread(id); if (!t) return; stamp(t); if (rid) { const r = t.replies.find(x => x.id === rid); if (r && r.author === AUTHOR) { r.text = text.trim(); r.edited = new Date().toISOString(); } } else if (t.author === AUTHOR) { t.text = text.trim(); t.edited = new Date().toISOString(); } saveComments(); renderAll(); }
   function editInPlace(tx, text, save) {    // swap the comment text for a box, in the card, no dialog
@@ -1339,7 +1374,7 @@
         <span class="acts"><button class="yes" data-v="1" title="Accept this change (hover to preview)">&#10003;</button><button class="no" data-v="0" title="Reject this change (hover to preview)">&#10005;</button></span></div>
       <div class="lbl"><span class="num">${c.n}</span>${label}${c.section ? ' · ' + esc(c.section) : ''}${c.words ? ' · ' + c.words + ' words' : ''}${dim ? ' · <em>not found in the open text</em>' : ''}</div>
       <div class="t">${body}</div>${meta}`;
-    d.onclick = e => { if (!e.target.closest('button')) jump(c.id); };
+    d.onclick = e => { if (!e.target.closest('button,textarea,.rv-sub') && !selecting()) jump(c.id); };   // .rv-sub: the thread under this change has its own handler
     d.querySelectorAll('.acts button').forEach(b => {
       // the second click of a double-click is not a decision: the next card had slid under the pointer, and a
       // double-click accepted two changes (QA 2026-10-08). Only that click is ignored; quick separate clicks count.
@@ -1369,7 +1404,7 @@
       <div class="t"><del>${esc(plain(x.find))}</del> <ins>${esc(plain(x.replace))}</ins></div>
       <div class="act"><button type="button" data-a="flip">${x.accepted ? 'Reject instead' : 'Accept instead'}</button></div>`;
     d.querySelector('[data-a="flip"]').onclick = ev => { ev.stopPropagation(); redecide(x, !x.accepted); };
-    d.title = 'Click to show the whole change'; d.onclick = () => { d.classList.toggle('open'); queueLayout(); };
+    d.title = 'Click to show the whole change'; d.onclick = () => { if (selecting()) return; d.classList.toggle('open'); queueLayout(); };
     return d;
   }
   function redecide(x, accept) {
@@ -1411,9 +1446,10 @@
     const genLbl = !gen ? '' : `<div class="lbl gen">General comment · ${t.anchor.sectionText ? 'on <b>' + esc(t.anchor.sectionText) + '</b>' : 'the whole article'}</div>`;
     if (t.draft) {
       d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div>${genLbl}<textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
-        <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
+        <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="mic" class="mic" title="Dictate into this comment (click again to stop)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
       d.querySelector('[data-a="post"]').onclick = () => { const v = d.querySelector('textarea').value; if (!v.trim()) return toast('Write the comment first.'); postDraft(v); };
       d.querySelector('[data-a="send"]').onclick = () => postDraft(d.querySelector('textarea').value, true);
+      d.querySelector('[data-a="mic"]').onclick = () => dictateInto(d.querySelector('textarea'), d.querySelector('[data-a="mic"]'));
       d.querySelector('[data-a="cancel"]').onclick = cancelDraft;
       d.querySelector('textarea').onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') postDraft(e.target.value, e.shiftKey); if (e.key === 'Escape') cancelDraft(); };
       // typed text lives in state too: a re-render (the task poll, a decision) rebuilds the card
@@ -1435,8 +1471,8 @@
       ${genLbl}${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}${waitNote}
       <div class="tx">${esc(t.text)}</div>${replies}
       ${t.status === 'offered' && t.edit ? `<div class="alt"><button class="use" data-a="use" title="Put Claude's version in the text">Use</button><span>${esc(plain(t.edit.replace)).slice(0, 700)}</span></div>` : ''}
-      ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
-    d.onclick = e => { if (!e.target.closest('button,textarea,.dd')) focusThread(t.id, false); };
+      ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="mic" class="mic" title="Dictate the reply (click again to stop)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
+    d.onclick = e => { if (!e.target.closest('button,textarea,.dd') && !selecting()) focusThread(t.id, false); };
     d.querySelector('[data-a="more"]').onclick = e => { e.stopPropagation(); d.querySelector('.dd').classList.toggle('open'); };
     const on = (a, f) => { const b = d.querySelector(`[data-a="${a}"]`); if (b) b.onclick = e => { e.stopPropagation(); f(); }; };
     on('resolve', () => resolve(t.id, true)); on('resolve2', () => resolve(t.id, true)); on('reopen', () => resolve(t.id, false)); on('del', () => delThread(t.id));
@@ -1444,7 +1480,7 @@
     on('edit', () => editInPlace(d.querySelector(':scope > .tx'), t.text, nt => editText(t.id, null, nt)));
     d.querySelectorAll('[data-a="edit-r"]').forEach(b => b.onclick = e => { e.stopPropagation(); const rp = b.closest('.rp'); const r = t.replies.find(x => x.id === rp.dataset.rid); editInPlace(rp.querySelector('.tx'), r.text, nt => editText(t.id, r.id, nt)); });
     const ta = d.querySelector('.reply textarea');
-    if (ta) { on('reply', () => reply(t.id, ta.value)); ta.onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') reply(t.id, ta.value); }; ta.oninput = () => { (state.replyDrafts = state.replyDrafts || {})[t.id] = ta.value; queueLayout(); }; }
+    if (ta) { on('reply', () => reply(t.id, ta.value)); { const mb = d.querySelector('.reply [data-a="mic"]'); if (mb) mb.onclick = () => dictateInto(ta, mb); } ta.onkeydown = e => { if (e.ctrlKey && e.key === 'Enter') reply(t.id, ta.value); }; ta.oninput = () => { (state.replyDrafts = state.replyDrafts || {})[t.id] = ta.value; queueLayout(); }; }
     d.onmouseenter = () => { state.hover = t.id; const m = cmQ(`mark.cm[data-cm="${t.id}"]`); if (m) m.classList.add('cm-hover'); drawLines(); };
     d.onmouseleave = () => { state.hover = null; cmQA('mark.cm.cm-hover').forEach(m => m.classList.remove('cm-hover')); drawLines(); };
     return d;
@@ -1852,6 +1888,9 @@ body.review-open #review-pane{display:flex}
 .rv-cm textarea{width:100%;min-height:54px;font:13px/1.45 'Hanken Grotesk',sans-serif;padding:.4rem;border:1px solid #e0ded8;border-radius:3px;margin-top:.4rem;resize:vertical}
 .rv-cm .reply{display:flex;gap:.3rem;align-items:flex-end;margin-top:.4rem}.rv-cm .reply textarea{min-height:32px;margin:0;flex:1}
 .rv-cm .reply button{padding:.4rem .5rem;font-size:.8rem;color:#2D6B50}
+.rv-cm .mic{padding:.3rem .45rem;color:#1C2821;display:inline-flex;align-items:center}.rv-cm .reply .mic{padding:.4rem .45rem}.rv-cm .mic svg{width:12px;height:12px}
+.rv-cm .mic[data-state="rec"]{color:#C0533A;border-color:#C0533A;background:rgba(192,83,58,.08)}.rv-cm .mic[data-state="rec"] svg{animation:rv-pulse 1.1s ease-in-out infinite}.rv-cm .mic[data-state="busy"]{opacity:.7;cursor:progress}
+@keyframes rv-pulse{50%{opacity:.35}}
 .rv-cm .res{font:400 .74rem/1.2 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:#2D6B50;margin-top:.45rem}
 #review-pane .rv-open{margin-top:.5rem}
 #rv-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10001;background:#1C2821;color:#fff;padding:.6rem 1rem;border-radius:4px;font:13px/1.4 'Hanken Grotesk',sans-serif;max-width:640px;display:none}

@@ -39,7 +39,9 @@ MOB = (104, 208, 312)           # the phone thumbnail is 104 px wide: 1x / 2x / 
 WPM = 230
 # "xm" alone (articles, field notes) or "xm measure" (the itinerary template). It matched only the first, so every run
 # stacked another block on the two live itineraries (four each by 2026-10-24).
-BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section><!-- /explore-more -->', re.S)
+# The editor saves the end marker on its own line ("</section>\n  <!-- /explore-more -->"); the strict pattern missed that
+# block and a re-run added a second one under it (the North Macedonia drafts, 2026-10-25).
+BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section>\s*<!-- /explore-more -->', re.S)
 # the itinerary template's standing footnote; it belongs to the article, so it goes above the block, not under it
 UPDATED_RE = re.compile(r'[ \t]*<div class="measure gg-updated">.*?</div>', re.S)
 
@@ -189,6 +191,14 @@ def entry(p, country, cards, draft):
         img = re.sub(r"^(\.\./)+", "", img) if img else "Images/web/og/%s-%s.jpg" % (country, p.stem)
         if not (ROOT / img).is_file():
             img = "Images/web/og/%s-%s.jpg" % (country, p.stem)
+        if draft and not (ROOT / img).is_file():
+            # a draft (no cards on a live country page, no og file yet) still has its own hero: use that, so the
+            # Explore More cards on drafts carry thumbnails (Kevin, 2026-10-30: "explore more isn't picking up the
+            # article thumbnails")
+            h = (re.search(r'class="article-hero[^"]*" style="background:url\(\'([^\']+)\'\)', s)
+                 or re.search(r'<div class="ah ah-banner">.*?<img[^>]*?\ssrc="([^"]+)"', s, re.S))   # the itinerary's banner
+            if h:
+                img = (p.parent / html.unescape(h.group(1)).replace("%20", " ")).resolve().relative_to(ROOT.resolve()).as_posix() if (p.parent / html.unescape(h.group(1)).replace("%20", " ")).exists() else img
     desc = _meta(s, "og:description") or _meta(s, "description")
     desc = re.sub(r"^Field notes from (the )?[^:]{2,40}:\s*", "", desc)
     words = len(re.sub(r"<script\b.*?</script>|<style\b.*?</style>|<[^>]+>", " ", s, flags=re.S).split())
@@ -217,6 +227,18 @@ def rule_order(rel, cat):
     """every candidate in rule order for this page"""
     me = country_of(rel)
     live = [e for e in cat.values() if not e["draft"] and e["rel"] != rel]
+    # A draft points to the drafts in its own folder first: they launch together (Kevin, 2026-10-25, on the North
+    # Macedonia set: "replace with links to the other North Macedonia articles since they will be published at the
+    # same time"). At launch every page is picked again, by then from the live copies, so nothing goes stale.
+    if rel.startswith("Drafts/"):
+        folder = rel.rsplit("/", 1)[0]
+        sibs = [e for e in cat.values() if e["draft"] and e["rel"] != rel and e["rel"].rsplit("/", 1)[0] == folder
+                and e["kind"] in ("itinerary", "top10", "guide")]
+        idx = ROOT / folder / "index.html"           # the guides in the order the country page lists them (Kevin's rule 2)
+        order = re.findall(r"country-article-card\"[^>]*location\.href='([\w.-]+\.html)'", idx.read_text(encoding="utf-8", errors="replace")) if idx.is_file() else []
+        pos = {n: i for i, n in reversed(list(enumerate(order)))}
+        sibs.sort(key=lambda e: pos.get(e["rel"].rsplit("/", 1)[1], 999))
+        live = sibs + live
     by_c = {}
     for e in live:
         by_c.setdefault(e["country"], []).append(e)
@@ -329,8 +351,8 @@ def block_html(page_rel, chosen, dry=False):
                    '<source type="image/webp" srcset="%s" sizes="104px">'
                    '<img src="%s" srcset="%s" sizes="104px" alt="%s" loading="lazy" width="%d" height="%d"></picture>'
                    % (ds("webp"), ds("jpg"), ms("webp"), r("-mob-2x.jpg"), ms("jpg"), html.escape(e["title"]), MOB[1], round(MOB[1] / 1.5)))
-        cards.append('<a class="xm-c" href="%s" data-xm="%s" data-rel="%s">%s%s<span class="xm-t">%s</span><span class="xm-d">%s</span><span class="xm-m">%d min read</span></a>'
-                     % (href, how, html.escape(e["rel"]), pic, k, html.escape(e["title"]), html.escape(e["desc"]), e["mins"]))
+        cards.append('<a class="xm-c" href="%s" data-xm="%s" data-rel="%s">%s%s<span class="xm-t">%s</span><span class="xm-d">%s</span></a>'
+                     % (href, how, html.escape(e["rel"]), pic, k, html.escape(e["title"]), html.escape(e["desc"])))   # no read time (Kevin, 2026-10-27)
     return ('<section class="xm" id="explore-more"><h2 class="xm-h">Explore More</h2><div class="xm-g">'
             + "".join(cards) + '</div></section><!-- /explore-more -->')
 

@@ -1,0 +1,62 @@
+{
+  "country": "kosovo",
+  "label": "Kosovo",
+  "cc": "xk",
+  "folder": "Drafts/Full Articles/kosovo",
+  "field_notes": "kosovo/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Balkans",
+  "trip": "Mon Jun 23 to Wed Jun 25, 2025, solo: flew Tbilisi > Prishtina, a few hours in Prishtina (the Clinton statue, the National Library, Mother Teresa Cathedral), then Prizren (the fortress, a free walking tour, the League of Prizren, the old town, Steakhouse Sarajeva, Te Syla); left early Jun 25 by bus for Tirana",
+  "album": "Kosovo (2025)",
+  "albums": {
+    "Kosovo (2025)": "Jun 23 to 25, 2025: Prishtina (Jun 23 daytime) and Prizren (Jun 23 evening to Jun 25 morning). Never use Tbilisi or Tirana photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "prishtina.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "prishtina",
+      "writer": "B",
+      "note": "his few hours in Prishtina on Jun 23, 2025 after flying in from Tbilisi: the airport, the Clinton statue and Bill Klinton boulevard, the Bob Dole bust, the American flags and UÇK symbols, KFOR, the National Library, Mother Teresa Cathedral and its bell tower, the Newborn monument if the journal has it, the trekëndsh pastry; field notes: a half day is enough. A short honest guide (1,600 to 2,400 words); the onward ride to Prizren links prizren.html#getting-there"
+    },
+    {
+      "file": "prizren.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "prizren",
+      "writer": "B",
+      "note": "a Prizren city guide (Jun 23 evening to Jun 25 morning); Prishtina has its OWN article (Kevin, 2026-10-31: \"make Prishtina it's own article\"): link prishtina.html for it, do not retell it; Peja and Gjakova as advice in a short `## More of Kosovo {#more-kosovo}`"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Kosovo Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "prishtina.html",
+      "tag": "City Guide",
+      "title": "Prishtina in Half a Day: The Clinton Statue & the Library",
+      "place": "Prishtina"
+    },
+    {
+      "file": "prizren.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Prizren",
+      "place": "Prizren"
+    }
+  ],
+  "single_city": true
+}

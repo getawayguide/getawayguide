@@ -1,0 +1,36 @@
+{
+  "country": "chile",
+  "label": "Chile",
+  "cc": "cl",
+  "folder": "Drafts/Full Articles/chile",
+  "field_notes": "chile/field-notes.html",
+  "date": "2026-10-30",
+  "date_line": "Oct 30, 2026",
+  "continent": ["americas", "Americas"],
+  "region": "South America",
+  "trip": "March 14 to 22, 2024 (Patagonia): fly in 14th, Punta Arenas 15-17 (Tierra del Fuego tour 16th), Puerto Natales 17, Torres del Paine W Trek 18-20, Puerto Natales 21, bus to El Calafate (Argentina) 22; then Santiago March 28-30, 2024 after Argentina, flying on to Medellin on the 30th",
+  "album": "Patagonia (2024)",
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {"file": "index.html", "type": "index", "writer": "A"},
+    {"file": "chile-itinerary.html", "type": "itinerary", "writer": "A", "note": "HTML from the Guatemala pre-photo template; Santiago > Punta Arenas > Puerto Natales > Torres del Paine W Trek > Puerto Natales, with the El Calafate/El Chalten continuation into Argentina as an option (link the live Argentina field notes only)"},
+    {"file": "top-10-chile.html", "type": "top10", "writer": "A"},
+    {"file": "punta-arenas.html", "type": "guide", "kicker": "City Guide", "map": "punta-arenas", "writer": "C", "note": "Tierra del Fuego king penguin tour as the centerpiece; Magdalena Island as the alternative"},
+    {"file": "puerto-natales.html", "type": "guide", "kicker": "Town Guide", "writer": "B", "note": "base town before and after the W Trek; gear, El Brisket, Garden Domes, Last Hope; the W Trek itself belongs to torres-del-paine-w-trek.html, link it rather than retell it"},
+    {"file": "torres-del-paine-w-trek.html", "type": "guide", "kicker": "Hiking Guide", "writer": "B", "note": "Experience-guide shape (Overview with the numbers, booking, the days in order, what to bring, where to stay); the expedited 3-day tour with ChileTour Patagonia; overlaps the Argentina draft's El Calafate/El Chalten pages, which must not be linked"},
+    {"file": "santiago.html", "type": "guide", "kicker": "City Guide", "map": "santiago", "writer": "C", "note": "thin source (about 1.5 days, March 28-30): an honest shorter guide"}
+  ],
+  "cards": [
+    {"file": "chile-itinerary.html", "tag": "Travel Guide", "title": "Chile Travel Guide with Perfect 10-Day Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Chile Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-chile.html", "tag": "Top 10", "title": "Top 10 Things to Do in Chile", "place": "Top 10"},
+    {"file": "punta-arenas.html", "tag": "City Guide", "title": "Punta Arenas: Penguins at the End of the World", "place": "Punta Arenas"},
+    {"file": "puerto-natales.html", "tag": "Town Guide", "title": "Puerto Natales: Gateway to Torres del Paine", "place": "Puerto Natales"},
+    {"file": "torres-del-paine-w-trek.html", "tag": "Hiking Guide", "title": "Hiking the W Trek in Torres del Paine", "place": "Torres del Paine"},
+    {"file": "santiago.html", "tag": "City Guide", "title": "The Ultimate Guide to Santiago", "place": "Santiago"}
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "country": "egypt",
+  "label": "Egypt",
+  "cc": "eg",
+  "folder": "Drafts/Full Articles/egypt",
+  "field_notes": "egypt/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": ["africa", "Africa"],
+  "region": "North Africa",
+  "trip": "One solo trip, Sep 20 to 27, 2023 (from Munich, onward to Tel Aviv). Wed 20: fly Munich > Cairo, late overpriced taxi to the Nine Pyramids View Hotel in Giza. Thu 21: private tour (Great Pyramid and its inside, the panoramic viewpoint and a camel, the Sphinx, shop stops, Saqqara, Memphis). Fri 22: Egyptian Museum, Tahrir Square, koshary, evening flight to Luxor (Pyramisa Hotel). Sat 23: guided Karnak and Luxor Temple, boarded the Nile cruise. Sun 24: dawn balloon, Colossi of Memnon, Hatshepsut, Valley of the Kings, sail toward Edfu. Mon 25: Edfu, Kom Ombo at sunset. Tue 26: 3 am van to Abu Simbel and back, left the boat, Obelisk Nile Hotel in Aswan, sunset at its Nile-side pool. Wed 27: fly Aswan > Cairo > Tel Aviv",
+  "album": "Egypt (2023)",
+  "albums": {
+    "Egypt (2023)": "the whole trip, Sep 20 to 27, 2023 (396 files; many are WhatsApp/Instagram copies with UUID names and no EXIF). By capture date: Cairo/Giza/Saqqara/Memphis Sep 21, the Egyptian Museum and Tahrir Sep 22, Karnak and Luxor Temple Sep 23, the balloon/Colossi/Hatshepsut/Valley of the Kings and the first sail Sep 24, Edfu and Kom Ombo Sep 25, Abu Simbel and the Aswan sunset Sep 26. For files with no date, go by what is in the frame (the pyramids, the Nile from a deck, a balloon, temple columns)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {"file": "index.html", "type": "index", "writer": "A"},
+    {"file": "egypt-itinerary.html", "type": "itinerary", "writer": "A", "note": "HTML from the Guatemala pre-photo template; 10 days down the Nile in the field notes' route-map order: Cairo & Giza 3 (a Cairo day, a Giza plateau + Grand Egyptian Museum day, Saqqara & Memphis) > fly to Luxor > Luxor 2 (East Bank, then the balloon and West Bank) > the 3-night Nile cruise (Edfu, Kom Ombo, Abu Simbel) > Aswan 1-2 (Philae, a felucca) > fly back to Cairo; Kevin did the core of it in 7 days and says so; the Red Sea, Alexandria, the White Desert and Sinai as 'if you have more time' (he has not been to any of them)"},
+    {"file": "top-10-egypt.html", "type": "top10", "writer": "A"},
+    {"file": "cairo-giza.html", "type": "guide", "kicker": "City Guide", "map": "cairo", "writer": "B", "note": "Sep 20-22, 2023: the arrival taxi, the private tour day (Great Pyramid inside, the viewpoint and camel, the Sphinx, the shop stops, Saqqara, Memphis), the Egyptian Museum and Tahrir day; Islamic Cairo, Coptic Cairo and the Grand Egyptian Museum are field-notes advice only (no journal visit); Saqqara & Memphis as its own ## section"},
+    {"file": "luxor.html", "type": "guide", "kicker": "City Guide", "map": "luxor", "writer": "C", "note": "Sep 22-24, 2023: arrival by air, the guided East Bank (Karnak, Luxor Temple, the Avenue of Sphinxes), the dawn balloon, the West Bank (Colossi, Hatshepsut, Valley of the Kings); the cruise boards here, but the boat is told in nile-cruise.html: link it"},
+    {"file": "nile-cruise.html", "type": "guide", "kicker": "Experience Guide", "writer": "C", "note": "the 4-day, 3-night Luxor > Aswan cruise, Sep 23-26, 2023: how to book and what it cost, the boat honestly (cheap tier, tiny cabin, leaking ceiling, strange crew, food better than expected), the day-by-day rhythm, life on deck and the Esna lock, the people you meet; the sights get a short paragraph each and link luxor.html / aswan.html for the full telling"},
+    {"file": "aswan.html", "type": "guide", "kicker": "City Guide", "writer": "D", "note": "the south, Edfu to Abu Simbel, following the field notes' Aswan section: the Temple of Horus at Edfu (Sep 25), Kom Ombo at sunset and the crocodile museum (Sep 25), Abu Simbel (Sep 26), Aswan itself (the Obelisk Nile Hotel, the sunset by the river, the street taxi to the airport); Philae and a felucca sail are field-notes advice (no journal visit)"}
+  ],
+  "cards": [
+    {"file": "egypt-itinerary.html", "tag": "Travel Guide", "title": "Egypt Travel Guide with Perfect 10-Day Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Egypt Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-egypt.html", "tag": "Top 10", "title": "Top 10 Things to Do in Egypt", "place": "Top 10"},
+    {"file": "cairo-giza.html", "tag": "City Guide", "title": "The Ultimate Guide to Cairo & the Pyramids of Giza", "place": "Cairo & Giza"},
+    {"file": "luxor.html", "tag": "City Guide", "title": "The Ultimate Guide to Luxor", "place": "Luxor"},
+    {"file": "nile-cruise.html", "tag": "Experience Guide", "title": "Nile Cruise from Luxor to Aswan: What It's Really Like", "place": "Nile Cruise"},
+    {"file": "aswan.html", "tag": "City Guide", "title": "Aswan, Abu Simbel & the Temples of the South", "place": "Aswan"}
+  ]
+}

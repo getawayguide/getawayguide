@@ -7,13 +7,13 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $root
 if (-not $Bbox) { $Bbox = (& python tools/city_map.py "tools/city_maps/$Slug.json" --bbox).Trim() }
-$q = "[out:json][timeout:240];`n(`n  way[`"highway`"]($Bbox);`n  way[`"natural`"=`"water`"]($Bbox);`n  way[`"waterway`"]($Bbox);`n  way[`"natural`"=`"coastline`"]($Bbox);`n  way[`"leisure`"~`"park|garden`"]($Bbox);`n  way[`"landuse`"=`"recreation_ground`"]($Bbox);`n  relation[`"natural`"=`"water`"]($Bbox);`n);`nout geom;"
+$q = "[out:json][timeout:240];`n(`n  way[`"highway`"]($Bbox);`n  way[`"natural`"=`"water`"]($Bbox);`n  way[`"waterway`"]($Bbox);`n  way[`"natural`"=`"coastline`"]($Bbox);`n  way[`"leisure`"~`"park|garden`"]($Bbox);`n  way[`"landuse`"=`"recreation_ground`"]($Bbox);`nway[`"natural`"=`"wood`"]($Bbox);`n  relation[`"natural`"=`"wood`"]($Bbox);`n  way[`"landuse`"=`"forest`"]($Bbox);`n  relation[`"landuse`"=`"forest`"]($Bbox);`n    relation[`"natural`"=`"water`"]($Bbox);`n);`nout geom;"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 $mirrors = @("https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://lz4.overpass-api.de/api/interpreter")
 $r = $null
 foreach ($m in $mirrors) {
   try {
-    $r = Invoke-WebRequest -Uri $m -Method Post -Body @{ data = $q } -UserAgent "getawayguide-citymap/1.0 (kevindphan@gmail.com)" -TimeoutSec 300 -UseBasicParsing
+    $r = Invoke-WebRequest -Uri $m -Method Post -Body @{ data = $q } -UserAgent "getawayguide-citymap/1.0 (+https://getawayguide.io)" -TimeoutSec 300 -UseBasicParsing
     if ($r.StatusCode -eq 200 -and $r.Content.Length -gt 1000) { "mirror: $m"; break } else { $r = $null }
   } catch { "$m failed: $($_.Exception.Message)"; $r = $null }
 }

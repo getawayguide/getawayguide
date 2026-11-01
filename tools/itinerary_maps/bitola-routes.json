@@ -1,0 +1,149 @@
+{
+  "country_width": 460,
+  "iso3": "MKD",
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "pin_scale": 1.15,
+  "simplify": 60,
+  "smooth": true,
+  "slug": "bitola-routes",
+  "page": "Drafts/Upcoming/north-macedonia/bitola.html",
+  "legend": {
+    "items": [
+      {
+        "dash": true,
+        "label": "Direct minibus"
+      },
+      {
+        "label": "Bus or taxi"
+      }
+    ],
+    "pos": "tl",
+    "scale": 0.9,
+    "dy": -46
+  },
+  "stops": [
+    {
+      "n": 1,
+      "name": "Bitola",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "marker": "star",
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 8
+    },
+    {
+      "n": 2,
+      "name": "Prilep",
+      "lat": 41.3461,
+      "lon": 21.5536,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "#prilep"
+    },
+    {
+      "n": 3,
+      "name": "Skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "skopje.html"
+    },
+    {
+      "n": 4,
+      "name": "Ohrid",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -13,
+      "dy": 4,
+      "href": "ohrid.html"
+    },
+    {
+      "n": 5,
+      "name": "Krushevo",
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "krushevo.html"
+    },
+    {
+      "n": 6,
+      "name": "Florina (Greece)",
+      "lat": 40.7806,
+      "lon": 21.4098,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 1,
+      "label": "Bus · 2.5 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 0,
+      "chip_dy": 0
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "Bus · 1 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 40,
+      "chip_dy": 0
+    },
+    {
+      "a": 4,
+      "b": 1,
+      "label": "Bus · 40 min",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 0,
+      "chip_dy": -42
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "Bus · 1.5 hr",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": 0,
+      "chip_dy": 12
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "dash": true,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 5,
+      "label": "Taxi · 45 min",
+      "chip_off": 0,
+      "chip_side": 0,
+      "chip_dx": -55,
+      "chip_dy": 0
+    }
+  ]
+}

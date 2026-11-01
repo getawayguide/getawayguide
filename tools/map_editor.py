@@ -46,6 +46,10 @@ $q = @"
   way["natural"="coastline"]($bbox);
   way["leisure"~"park|garden"]($bbox);
   way["landuse"="recreation_ground"]($bbox);
+  way["natural"="wood"]($bbox);
+  relation["natural"="wood"]($bbox);
+  way["landuse"="forest"]($bbox);
+  relation["landuse"="forest"]($bbox);
   relation["natural"="water"]($bbox);
 );
 out geom;
@@ -54,7 +58,7 @@ $delay = 5
 for ($i = 0; $i -lt 4; $i++) {
   try {
     $r = Invoke-WebRequest -Uri "https://overpass-api.de/api/interpreter" -Method Post -Body @{data=$q} `
-           -UserAgent "getawayguide-citymap/1.0 (kevindphan@gmail.com)" -TimeoutSec 300 -UseBasicParsing
+           -UserAgent "getawayguide-citymap/1.0 (+https://getawayguide.io)" -TimeoutSec 300 -UseBasicParsing
     [IO.File]::WriteAllText('__OUT__', $r.Content, (New-Object Text.UTF8Encoding $false))
     Write-Output ("ok " + $r.Content.Length)
     exit 0

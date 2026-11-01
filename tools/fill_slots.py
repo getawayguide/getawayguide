@@ -164,7 +164,8 @@ def photos(album):
         r["note"] = (pk or {}).get("note", "") if isinstance(pk, dict) else ""
         r["orient"] = "portrait" if r["h"] > r["w"] * 1.05 else "landscape" if r["w"] > r["h"] * 1.05 else "square"
         # his edits: "IMG_1(1).jpg", or a .jpg/.JPEG twin of a .HEIC original (Guatemala has ten: IMG_8255.JPEG is the arch)
-        r["edited"] = bool(re.search(r"\(\d\)\.(jpe?g)$", p.name, re.I)) or (p.suffix.lower() in (".jpg", ".jpeg") and p.stem.lower() in heics)
+        r["edited"] = (bool(re.search(r"\(\d\)\.(jpe?g)$", p.name, re.I)) or bool(re.search(r"\scopy$", p.stem, re.I))   # "IMG_4093 Copy.JPG" = his edit
+                       or (p.suffix.lower() in (".jpg", ".jpeg") and p.stem.lower() in heics))
         out.append(r)
     if changed:
         json.dump(cache, open(cf, "w", encoding="utf-8"), ensure_ascii=False)
@@ -204,12 +205,30 @@ def sheet(album, files, out, cols=4, size=300):
     return str(out)
 
 
+def _ascii(city):
+    """City folders are plain ASCII ("Sao Paulo", like "Turkiye"): a plan that says "São Paulo" made a second folder
+    beside the first one (Brazil top 10, 2026-10-30)."""
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFKD", city) if not unicodedata.combining(c))
+
+
 def _key(stem):
     """one photo's key on BOTH sides of the repeat check. His edited copy "IMG_8406(1)" and an archive's collision
     suffix "IMG_8406-1" are the same photo as IMG_8406; the capture time then tells true repeats from trips that reuse
     IMG numbers. (2026-10-25: apply stripped "(1)" but used_files kept it, so an edited copy on a guide could be
-    picked again for the itinerary.)"""
-    return re.sub(r"(?:\(\d+\)|-\d+)$", "", stem).lower()
+    picked again for the itinerary.) His other edit names are the same photo too: "IMG_4093 Copy" (Belgium: brighter,
+    retouched), "IMG_1855 Copy Copy Copy", "IMG_5060_jpg" (2026-10-25: the Copy edits on one page left the HEIC free for
+    another). Suffixes are peeled until none is left."""
+    s = stem
+    while True:
+        t = re.sub(r"(?:\(\d+\)|-\d+|\s+copy|_jpe?g)$", "", s, flags=re.I)
+        # a "-N" is a collision suffix only on a camera-numbered name; GoPro exports are GPTempDownload, -1, -2 ... and
+        # each is a DIFFERENT photo (Ilha Grande, 2026-10-30: the rocks and the starfish were refused as repeats of the turtle)
+        if t != s and s[len(t):].startswith("-") and not re.match(r"^(?:IMG|DSC|DSCF|PXL|DJI|GOPR|GX|GH|G0)[_\d]", t, re.I):
+            return s.lower()
+        if t == s:
+            return s.lower()
+        s = t
 
 
 def used_files(country):
@@ -310,7 +329,7 @@ def apply(page, plan, pipeline=True):
             src = hit.relative_to(ROOT).as_posix()
             log.append("slot %d: %s (the copy already in %s)" % (i, hit.name, hit.parent.relative_to(ROOT).as_posix()))
         else:
-            r = _post("/api/import", {"root": root, "path": it["photo"], "country": country_dir(country), "city": it.get("city", ""),
+            r = _post("/api/import", {"root": root, "path": it["photo"], "country": country_dir(country), "city": _ascii(it.get("city", "")),
                                       "rot": 0, "flip": None, "angle": 0, "dev": {}, "masks": [], "recipe": {"erases": []}})
             if not r.get("ok"):
                 raise SystemExit("import failed for %s: %s" % (it["photo"], r))

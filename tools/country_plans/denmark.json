@@ -1,0 +1,48 @@
+{
+  "country": "denmark",
+  "label": "Denmark",
+  "cc": "dk",
+  "folder": "Drafts/Full Articles/denmark",
+  "field_notes": "denmark/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Scandinavia",
+  "trip": "One trip, October 2021, four days, part of an Amsterdam > Copenhagen > London trip (the journal heads these entries '2020', but the weekday headings, the photo dates and the field notes all say 2021). Mon Oct 18: fly Amsterdam > Copenhagen (Norwegian), Airbnb in Copenhagen V (Vesterbro), dinner at Kebabistan. Tue Oct 19: Nyhavn, smørrebrød, Rosenborg Castle, the Botanical Garden, Torvehallerne, the Round Tower, Superkilen, Christiania, dinner at Restaurant Klubben. Wed Oct 20: day trip by train to Malmö (Sweden): Lilla Torg, Bullen, Form Design Center, Konditori Katarina, Slottsträdgården, Malmö Castle; back to Copenhagen for Smagsløget sandwiches. Thu Oct 21: Ny Carlsberg Glyptotek (the rainy day), Broens Gadekøkken, fly Copenhagen > London Heathrow (SAS)",
+  "album": "Copenhagen, Amsterdam & London (2021)",
+  "albums": {
+    "Copenhagen, Amsterdam & London (2021)": "shared album; Denmark is Oct 18 (evening) to Oct 21, 2021: Copenhagen Oct 19 (~50 photos) and Oct 21 morning (~6), Malmö (Sweden) Oct 20 (~14). Oct 16-18 daytime is Amsterdam, Oct 21 evening to 23 is London: never use those for Denmark. The photos carry no GPS; go by capture date and what is in the frame"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "copenhagen.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "copenhagen",
+      "writer": "B",
+      "note": "Oct 18-21, 2021, Airbnb in Copenhagen V (Vesterbro); October, so cool and partly rainy (the Glyptotek on the rainy day); getting there by plane from Amsterdam and the metro/train from CPH; bikes as the way around; the city sights as ### under {#the-city}; `## Day Trip to Malmö {#malmo}` as its own section (Oct 20, train over the Øresund Bridge, Lilla Torg, Bullen meatballs, Form Design Center, Konditori Katarina, Slottsträdgården, Malmö Castle) linking the LIVE Sweden field notes `../../../sweden/field-notes.html#malmo`; `## More Day Trips from Copenhagen {#day-trips}` for Louisiana, Kronborg and Roskilde as field-notes advice he has not done; Tivoli, the Little Mermaid, Kastellet, Amalienborg and Noma are field-notes knowledge (no journal visit): write them as recommendations, not as his experience. Eat: Torvehallerne, Broens Gadekøkken, Restaurant Klubben, Smagsløget, Kebabistan (journal only: find a Maps place link), Noma (never visited, say so). No Where to Drink section unless the sources give one (they do not). Stay: his Airbnb in Vesterbro and the field notes' neighborhood advice"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Denmark Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "copenhagen.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Copenhagen",
+      "place": "Copenhagen"
+    }
+  ],
+  "single_city": true
+}

@@ -1,0 +1,136 @@
+{
+  "country_width": 460,
+  "iso3": "MKD",
+  "legend": {
+    "items": [
+      {
+        "dash": true,
+        "label": "Direct minibus"
+      },
+      {
+        "label": "Connection through Prilep"
+      }
+    ],
+    "pos": "tl",
+    "scale": 0.9,
+    "dy": -46
+  },
+  "legs": [
+    {
+      "a": 2,
+      "b": 1,
+      "chip_dx": 49.7,
+      "chip_dy": -19.1,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 2.5 hr"
+    },
+    {
+      "a": 3,
+      "b": 1,
+      "chip_dx": -20.1,
+      "chip_dy": 29.4,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 2 hr"
+    },
+    {
+      "a": 4,
+      "b": 1,
+      "chip_dx": 72.6,
+      "chip_dy": -37.1,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 45 min"
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "chip_dx": -80.2,
+      "chip_dy": -3.6,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 40 min"
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "dash": true,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "dash": true,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "page": "Drafts/Upcoming/north-macedonia/krushevo.html",
+  "pin_scale": 1.15,
+  "simplify": 60,
+  "slug": "krushevo-routes",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "dx": -9.2,
+      "dy": -19.9,
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "marker": "star",
+      "n": 1,
+      "name": "Krushevo",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 17.1,
+      "dy": -17.6,
+      "href": "#prilep",
+      "lat": 41.3461,
+      "lon": 21.5536,
+      "n": 2,
+      "name": "Prilep",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "skopje.html",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "n": 3,
+      "name": "Skopje",
+      "no_number": true
+    },
+    {
+      "anchor": "end",
+      "dx": -13.7,
+      "dy": -18.2,
+      "href": "ohrid.html",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "n": 4,
+      "name": "Ohrid",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": -27.5,
+      "dy": 17.6,
+      "href": "bitola.html",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "n": 5,
+      "name": "Bitola",
+      "no_number": true
+    }
+  ]
+}

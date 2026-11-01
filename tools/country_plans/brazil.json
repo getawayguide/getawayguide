@@ -1,0 +1,38 @@
+{
+  "country": "brazil",
+  "label": "Brazil",
+  "cc": "br",
+  "folder": "Drafts/Full Articles/brazil",
+  "field_notes": "brazil/field-notes.html",
+  "date": "2026-10-30",
+  "date_line": "Oct 30, 2026",
+  "continent": ["americas", "Americas"],
+  "region": "South America",
+  "trip": "April 12 to 23, 2024: Rio 12-15, Ilha Grande 16-18, Paraty 18-20, Sao Paulo 21-22, Iguazu 23",
+  "album": "Brazil (2024)",
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {"file": "index.html", "type": "index", "writer": "A"},
+    {"file": "brazil-itinerary.html", "type": "itinerary", "writer": "A", "note": "HTML from the Guatemala pre-photo template; Costa Verde route Rio > Ilha Grande > Paraty > Sao Paulo, then Iguazu"},
+    {"file": "top-10-brazil.html", "type": "top10", "writer": "A"},
+    {"file": "rio-de-janeiro.html", "type": "guide", "kicker": "City Guide", "map": "rio-de-janeiro", "writer": "B"},
+    {"file": "ilha-grande.html", "type": "guide", "kicker": "Island Guide", "writer": "B"},
+    {"file": "paraty.html", "type": "guide", "kicker": "Town Guide", "writer": "C"},
+    {"file": "sao-paulo.html", "type": "guide", "kicker": "City Guide", "map": "sao-paulo", "writer": "C"},
+    {"file": "iguazu-falls.html", "type": "guide", "kicker": "Experience Guide", "writer": "C", "note": "Brazilian side first; the Argentine side as day 2; Ciudad del Este; overlaps the Argentina draft, which must not be linked"}
+  ],
+  "cards": [
+    {"file": "brazil-itinerary.html", "tag": "Travel Guide", "title": "Brazil Travel Guide with Perfect 2-Week Itinerary"},
+    {"file": "field-notes.html", "tag": "Field Notes", "title": "Brazil Field Notes: What I Learned on the Ground"},
+    {"file": "top-10-brazil.html", "tag": "Top 10", "title": "Top 10 Things to Do in Brazil", "place": "Top 10"},
+    {"file": "rio-de-janeiro.html", "tag": "City Guide", "title": "The Ultimate Guide to Rio de Janeiro", "place": "Rio de Janeiro"},
+    {"file": "ilha-grande.html", "tag": "Island Guide", "title": "Ilha Grande: Snorkeling and Jungle Trails", "place": "Ilha Grande"},
+    {"file": "paraty.html", "tag": "Town Guide", "title": "Paraty: Brazil's Colonial Coast", "place": "Paraty"},
+    {"file": "sao-paulo.html", "tag": "City Guide", "title": "The Ultimate Guide to São Paulo", "place": "São Paulo"},
+    {"file": "iguazu-falls.html", "tag": "Experience Guide", "title": "Iguazu Falls from the Brazilian Side", "place": "Iguazu Falls"}
+  ]
+}

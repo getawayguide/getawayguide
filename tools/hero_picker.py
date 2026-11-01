@@ -577,7 +577,29 @@ def article_photos():
     page = (SITE / rel).resolve()
     if SITE.resolve() not in page.parents or page.suffix != ".html" or not page.is_file():
         abort(404)
-    return jsonify(_article_rows(page))
+    rows = _article_rows(page)
+    # the article's saved hero when it came from the site itself (Krushevo's is the old North Macedonia card,
+    # site:Images/dest-cards/macedonia_1.jpeg): a hero is a CSS background, so the page scan above never finds it,
+    # and without it here Covers had nothing to restore for that article (Kevin, 2026-10-25: "why doesn't the
+    # krushevo cover show up in the cover editor")
+    try:
+        saved = (json.loads(PICKS.read_text(encoding="utf-8")) if PICKS.exists() else {}).get(rel.replace("\\", "/")) or {}
+    except (OSError, ValueError):
+        saved = {}
+    sp = str(saved.get("path") or "")
+    if sp.startswith("site:") and not any(r["path"] == sp for r in rows):
+        f = SITE / sp[5:]
+        if f.is_file() and SITE.resolve() in f.resolve().parents:
+            try:
+                with Image.open(f) as im:
+                    w, h = im.size
+                    if im.getexif().get(274, 1) in (5, 6, 7, 8):
+                        w, h = h, w
+                tier = "good" if w >= HERO_MIN else "fair" if w >= HERO_FAIR else "low"
+                rows.insert(0, {"path": sp, "name": f.name, "w": w, "h": h, "heroW": w, "tier": tier, "sharp": w >= HERO_MIN})
+            except Exception:
+                pass
+    return jsonify(rows)
 
 
 def _article_rows(page):
@@ -1417,7 +1439,11 @@ PAGE = r"""<!doctype html>
     background:linear-gradient(180deg, rgba(18,26,21,.46) 0%, rgba(18,26,21,.16) 38%, rgba(18,26,21,.86) 100%); }
   .thumb-mode .tri .tri-box .tv { background:linear-gradient(transparent 35%, rgba(6,10,8,.88)); }
   .tri .tri-box .tn { position:absolute; left:0; right:0; top:0; background:rgba(255,255,255,.96);
-    border-bottom:1px solid rgba(28,40,33,.1); pointer-events:none; }
+    border-bottom:1px solid rgba(28,40,33,.1); pointer-events:none; display:flex; align-items:center; overflow:hidden; box-sizing:border-box; }
+  .tri .tri-box .tn .tn-logo { font-family:Newsreader,Georgia,serif; font-style:italic; color:var(--terra,#2D6B50); white-space:nowrap; }
+  .tri .tri-box .tn .tn-links { margin-left:auto; letter-spacing:.14em; text-transform:uppercase; color:rgba(28,40,33,.8); white-space:nowrap; font-family:'Hanken Grotesk',sans-serif; }
+  .tri .tri-box .tn .tn-burger { margin-left:auto; }
+  .tri .tri-box .tn .tn-burger i { display:block; background:rgba(28,40,33,.8); }
   .tri .tri-box .tc { position:absolute; pointer-events:none; color:#F4F1EA; }
   .tri .tri-box .tc .te { font-family:'Hanken Grotesk',sans-serif; font-weight:600; letter-spacing:.16em; text-transform:uppercase; opacity:.9; }
   .tri .tri-box .tc .th { font-family:Newsreader,Georgia,serif; font-weight:400; letter-spacing:-.01em; }
@@ -1839,8 +1865,14 @@ function articleAlbum() {
   const newest = xs => xs.reduce((a, o) => (!a || year(o) > year(a) ? o : a), null);
   let opt = d.country && (newest(opts.filter(o => fold(o.dataset.country) === fold(d.country))) || newest(opts.filter(o => fold(o.value).startsWith(fold(d.country)))));
   // the album the saved hero actually came from wins over the newest trip (Fethiye's is "Turkey IG")
-  { const saved = PICKS[d.rel], alb = saved && saved.path ? String(saved.path).split('/')[0] : '';
-    const so = alb && opts.find(o => o.value === alb); if (so) opt = so; }
+  { const saved = PICKS[d.rel], sp = saved && saved.path ? String(saved.path) : '';
+    if (sp.startsWith('site:')) {
+      // a hero taken from the site itself (Krushevo: the old North Macedonia card) lives in "This article's photos";
+      // its "album" used to read as "site:Images", which matched nothing, so the cover never came back (2026-10-25)
+      articleOption(); const ao = $('album').querySelector('option[value="__article__"]'); if (ao) opt = ao;
+    } else {
+      const alb = sp.split('/')[0], so = alb && opts.find(o => o.value === alb); if (so) opt = so;
+    } }
   if (opt && $('album').value !== opt.value) { $('album').value = opt.value; loadStrip(); }
   // a different article in the SAME album: the photo, tilt and crops were still the last article's,
   // under a chip naming the new one (QA 2026-10-08). loadStrip is where they reset.
@@ -2652,7 +2684,8 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
     const b = boxOf(i);
     return '<div class="tri-f" data-i="' + i + '" style="width:' + fw.toFixed(1) + 'px"><div class="tri-cap"><b>' + BP[i].label +
       '</b>' + b.w + '&times;' + Math.round(b.h) + '<span class="tri-crop"></span></div>' +
-      '<div class="tri-box" style="aspect-ratio:' + b.w + ' / ' + b.h + '"><div class="tv"></div><div class="tn"></div>' +
+      '<div class="tri-box" style="aspect-ratio:' + b.w + ' / ' + b.h + '"><div class="tv"></div>' +
+      '<div class="tn"><span class="tn-logo">getawayguide</span><span class="tn-links"><span>Home</span><span>Destinations</span><span>Resources</span><span>About Me</span></span><span class="tn-burger"><i></i><i></i><i></i></span></div>' +
       '<div class="tc"><div class="te"></div><div class="th"></div><div class="tt"></div></div></div></div>';
   }
   window.renderTri = function (rebuild) {
@@ -2684,6 +2717,12 @@ if (document.documentElement.classList.contains('embed') && window.parent !== wi
       const tn = box.querySelector('.tn');
       tn.style.display = navOn ? '' : 'none';
       tn.style.height = px(phone ? NAV_H_PHONE : NAV_H);
+      // the site's nav at this frame's scale: logo left, the links (phone: the hamburger) right (Kevin, 2026-10-25)
+      tn.style.padding = '0 ' + px(phone ? 24 : 38); tn.style.gap = px(30);
+      tn.querySelector('.tn-logo').style.fontSize = px(19);
+      const tl = tn.querySelector('.tn-links'); tl.style.display = phone ? 'none' : 'flex'; tl.style.gap = px(34); tl.style.fontSize = px(11);
+      const tb = tn.querySelector('.tn-burger'); tb.style.display = phone ? 'grid' : 'none'; tb.style.gap = px(4);
+      tb.querySelectorAll('i').forEach(l => { l.style.width = px(20); l.style.height = px(1.5); });
       const tc = box.querySelector('.tc'), te = tc.querySelector('.te'), th = tc.querySelector('.th'), tt = tc.querySelector('.tt');
       if (thumb) {
         tc.style.cssText = 'left:' + px(20) + ';right:' + px(20) + ';bottom:' + px(24);
