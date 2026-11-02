@@ -1,0 +1,143 @@
+{
+  "country": "philippines",
+  "label": "Philippines",
+  "cc": "ph",
+  "folder": "Drafts/Full Articles/philippines",
+  "field_notes": "philippines/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "asia",
+    "Asia"
+  ],
+  "region": "Southeast Asia",
+  "trip": "Feb 6 to Feb 22, 2024, solo, part of the Asia & Australia leg of his round-the-world year: flew Bali > Manila (the terminal-transfer taxi scam) > Coron Feb 6; Coron Feb 6-7 (town, Mount Tapyas, the island-hopping tour: Skeleton Wreck, Coral Garden, CYC Beach, Twin Lagoon, Kayangan Lake); Keelooma boat expedition Coron to El Nido Feb 8-10 (Patoyo Island camp, Pinamayalan huts, Linapacan cliff dive, Little Maosanon sandbar, Darocotan); El Nido Feb 10-13 (zipline and Nacpan/Twin Beach Feb 11, Tour A with Frendz Feb 12); van to Port Barton Feb 13; Port Barton Feb 13-15 (White Beach and the walk to Coconut Beach Feb 14); bus to Puerto Princesa and a flight to Manila Feb 15, the night in the airport; Siargao Feb 16-21 (Cloud 9, Sunset Bridge, Sohoton Cove tour Feb 17, wakeboarding Feb 19, flight cancelled Feb 20); Manila Feb 21-22 (Intramuros, Fort Santiago, the National Museum of Anthropology, Rizal Park, drinks by the Mall of Asia); night flight to Saigon Feb 22",
+  "album": "Philippines (2024)",
+  "albums": {
+    "Philippines (2024)": "Feb 6 to Feb 22, 2024 by capture date (383 stills, 5 undated; 155 clips in videos/): Coron Feb 6-7, boat expedition Feb 8-10, El Nido Feb 10 evening-12, Port Barton Feb 13-14, Siargao Feb 16-17 (only 9 stills Feb 18-20), Manila Feb 21-22 (84 stills Feb 22); GPS on almost all; check GPS. No Images/Philippines originals folder and Images/web/Philippines is empty, so every photo comes from the album"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "philippines-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; a 2-week core in the route-map order: Manila 1 (arrival; or save it for the end, as he did) > Coron 2 > the Coron to El Nido boat expedition 3 > El Nido 3 > Port Barton 2 > bus to Puerto Princesa and fly via Manila > Siargao 4; 'with 3 weeks' slows every stop and adds one of Cebu (Oslob, Moalboal), Bohol or Siquijor (he has not been); he did it in 17 days, Feb 6 to 22, 2024, ending in Manila; island hops always connect through Manila or Cebu, so a switch is a full travel day; Palawan dry season Nov-May, Siargao Mar-Oct (he hit rain and a cancelled flight in Siargao in late February)"
+    },
+    {
+      "file": "top-10-philippines.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "coron.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "coron",
+      "writer": "B",
+      "note": "Feb 6-7: the flight in from Manila (the terminal-transfer scam is told in manila.md #airport-transfers; link it), the prop plane, the environmental fee, the ~$5 shared van into town; Coron town on foot (main road, the church, the low-ceilinged market, the basketball court, the rough port area), Mount Tapyas at sunset (721 steps); the island-hopping day (field notes call it the Super Ultimate Tour; $20-30 booked in person; the chaotic dock): Skeleton Wreck, Coral Garden (his best snorkeling anywhere), CYC Beach, lunch over Twin Lagoon, the Twin Lagoon swim, Barracuda Lake (skipped: not in the package), Kayangan Lake, the boat stalling at sunset; Island Brasserie, Umamikusina, Island Boy Grill; MyGuide Traveller Hostel"
+    },
+    {
+      "file": "coron-to-el-nido-boat-tour.html",
+      "type": "guide",
+      "kicker": "Experience Guide",
+      "writer": "B",
+      "note": "Experience-guide shape (like mostar-day-trip): Feb 8-10 with Keelooma (17,100 pesos, ~$275, 50% deposit online, the rest cash; Tao ~$585 as the alternative, he heard): the meeting point and van in Coron; day 1 sandbar stop, Daniel left behind in the water, the village snorkel, 2.5 h to the Patoyo Island camp (kayaks ashore, huts); day 2 the 10 m cliff dive at Linapacan, the best snorkel spot, Cobra Island, the Pinamayalan beachfront huts, cards with the crew ($8 a day); day 3 Little Maosanon's 700 m sandbar, Darocotan (Tao's island, its shipwreck), the school-bus ride into El Nido with the exhaust falling off; the food; what to bring; no city map in the field notes"
+    },
+    {
+      "file": "el-nido.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "el-nido",
+      "writer": "B",
+      "note": "Feb 10 evening to Feb 13: arriving by the boat tour's bus (told in the boat-tour page; link it), tuktuks at 100 pesos, the main strip; Tour A with Frendz on Feb 12 (Big Lagoon by kayak, a weak snorkel stop, a rocky lunch beach, Entalula cut short, Seven Commandos, the singalong ride back), the zipline at Las Cabañas (600 pesos), Nacpan Beach and the Twin Beach sunset at Phoenix Bar (tuktuk bartered to 800 pesos return); Inasal Eats Co, Big Bad Thai; Frendz rooftop, Sava Beach Bar, Amigos; Big Paul's on Corong Corong (where he stayed), Frendz and Mad Monkey Nacpan as advice; the van to Port Barton is told in port-barton.md"
+    },
+    {
+      "file": "port-barton.html",
+      "type": "guide",
+      "kicker": "Beach Town Guide",
+      "map": "port-barton",
+      "writer": "C",
+      "note": "Feb 13-15: the van from El Nido (5 h, $9, the missed bus), the small town on foot (7 blocks, dirt roads, the school-bus food truck, stray dogs), Port Barton Beach at sunset, White Beach by water taxi (300 pesos) and the unmarked forest road to Coconut Beach (50-peso fee, the dogs), Barton Bistro's Valentine's movie night; snorkeling with turtles is advice (he did not); Raquel's Canteen (banana ketchup), MGM Food House, Dam Dam; leaving by bus to the Puerto Princesa airport (school kids picked up on the way), told here; shorter guide, 2,000 to 2,800 words"
+    },
+    {
+      "file": "siargao.html",
+      "type": "guide",
+      "kicker": "Island Guide",
+      "map": "siargao",
+      "writer": "C",
+      "note": "Feb 16-21: the flight via Manila (the night in Manila airport is told in manila.md; link it), the 45-min shuttle van, rain at the tail of the wet season; General Luna, Cloud 9 and its pier at low tide, Sunset Bridge; the Sohoton Cove tour on Feb 17 (the jellyfish sanctuary, the Secret Cave breath-hold swim, the cliff-jump cave, the boodle fight lunch, the Secret Lagoon stingray); wakeboarding at Siargao Wakepark ($22) on Feb 19; surf lessons and the land tour as advice (he did neither); the flight cancelled on Feb 20; Sana Bowl, Kurvada, Backyard Steakhouse, Big Mama's, Felix Surf Club; Explorers' Bar, Siargao Beach Club; Kayan Siargao then Mad Monkey"
+    },
+    {
+      "file": "manila.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "manila",
+      "writer": "C",
+      "note": "Feb 21 afternoon to Feb 22 night, plus the airport on Feb 6 and Feb 15: airport transfers (separate terminals, the $40 taxi for a $3 ride, Grab, the overnight wait for the Siargao flight), Ola Hostel near De La Salle and why the area isn't walkable, Mang Inasal (99 pesos); Feb 22 on foot: Baluarte de San Diego, Intramuros, San Agustin Church, the Manila 1945 memorial, Manila Cathedral (a political rally outside), Fort Santiago (Rizal, the dungeons), Patio de Conchita, Casa Manila, the National Museum of Anthropology, Rizal Park; the Mall of Asia and the Jonas Brothers at the Conrad bar next door; BGC, Binondo and the Grand Hyatt are field-notes advice he never visited; shorter guide, 2,000 to 3,000 words"
+    }
+  ],
+  "cards": [
+    {
+      "file": "philippines-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Philippines Travel Guide with Perfect 2-Week Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Philippines Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-philippines.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in the Philippines",
+      "place": "Top 10"
+    },
+    {
+      "file": "coron.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to Coron",
+      "place": "Coron"
+    },
+    {
+      "file": "coron-to-el-nido-boat-tour.html",
+      "tag": "Experience Guide",
+      "title": "Coron to El Nido: A 3-Day Island-Hopping Expedition",
+      "place": "Coron to El Nido"
+    },
+    {
+      "file": "el-nido.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to El Nido",
+      "place": "El Nido"
+    },
+    {
+      "file": "port-barton.html",
+      "tag": "Beach Town Guide",
+      "title": "Port Barton Guide: Quiet Beaches & Small-Town Palawan",
+      "place": "Port Barton"
+    },
+    {
+      "file": "siargao.html",
+      "tag": "Island Guide",
+      "title": "The Ultimate Guide to Siargao",
+      "place": "Siargao"
+    },
+    {
+      "file": "manila.html",
+      "tag": "City Guide",
+      "title": "One Day in Manila: Intramuros, Fort Santiago & Rizal Park",
+      "place": "Manila"
+    }
+  ]
+}

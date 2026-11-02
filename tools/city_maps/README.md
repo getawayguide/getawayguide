@@ -107,6 +107,8 @@ $q = @"
   way["landuse"="forest"]($bbox);
   relation["landuse"="forest"]($bbox);
   relation["natural"="water"]($bbox);
+  way["man_made"="pier"]($bbox);
+  relation["man_made"="pier"]($bbox);
 );
 out geom;
 "@
@@ -116,6 +118,10 @@ $r.Content | Out-File -Encoding utf8 .tmp/<slug>_osm.json
 ```
 
 `out geom;` inlines node coordinates so the tool can project them offline.
+
+Piers (`man_made=pier`) are drawn on the water in a land tone (added 2026-11-01: Ohrid's Old Swimming Court
+pin sat in open water because the dock was never fetched). An export made before that date has no piers;
+refetch it if the city has docks or jetties that pins sit on.
 
 ### When Overpass times out, or you don't need new streets (2026-09-29)
 

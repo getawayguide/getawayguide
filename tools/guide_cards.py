@@ -27,7 +27,7 @@ DESK = (311, 470, 622)                 # 1.85x / 2.8x / 3.7x: never ~1.0x or ~2.
 MOB = (393, 786, 1179)                 # the site's phone tiers
 # a section whose guide shares no word with it (Türkiye's "Sailing" notes became the Blue Cruise guide)
 ALIASES = {"sailing": "blue-cruise.html"}
-CARD_RE = re.compile(r'\n?[ \t]*<a class="gb-card"[^>]*data-guide="([^"]+)"[^>]*>.*?</a><!-- /gb-card -->', re.S)
+CARD_RE = re.compile(r'\n?[ \t]*<a class="gb-card"[^>]*data-guide="([^"]+)"[^>]*>.*?</a>\s*<!-- /gb-card -->', re.S)
 
 
 def published(path):
@@ -118,11 +118,11 @@ def pick_guide(sec_id, body, candidates):
     #oludeniz-fethiye -> fethiye-oludeniz.html). A field-notes section often links only Google Maps until its guide
     is out, so the name is what finds Athens on launch day. Itineraries and top-10 lists cover a whole country and
     belong to no one section."""
+    if ALIASES.get(sec_id) in candidates:          # an alias is a ruling: Sailing links Antalya more than Blue Cruise
+        return ALIASES[sec_id]
     links = [l for l in re.findall(r'href="([\w-]+\.html)(?:#[^"]*)?"', body) if l in candidates]
     if links:
         return max(set(links), key=links.count)
-    if ALIASES.get(sec_id) in candidates:
-        return ALIASES[sec_id]
     parts = set(sec_id.split("-"))
     named = [g for g in candidates if "itinerary" not in g and not g.startswith("top-")
              and (parts <= set(Path(g).stem.split("-")) or set(Path(g).stem.split("-")) <= parts)]
@@ -170,7 +170,13 @@ def process(page, dry):
         s = fh.read()
     nl = "\r\n" if "\r\n" in s else "\n"
     cards = country_cards(folder)
-    s = CARD_RE.sub("", s)                         # rebuilt from scratch: a stale card never survives
+    # A card this tool did not cut (its photo is not a guide-card-* file) was placed by hand: the Armenia/El Salvador
+    # field-notes template (2026-10-31) reuses the country-page card photos and keeps the itinerary card only in General.
+    # Rebuilding those would swap their photos, add a second itinerary card, and drop El Salvador's five outright (its
+    # country page cards are not in the form country_cards reads). So a hand-placed card is kept as it is, and no
+    # second card is added for its guide (2026-11-01, Armenia + El Salvador field notes launch).
+    hand = {m.group(1) for m in CARD_RE.finditer(s) if "guide-card-" not in m.group(0)}
+    s = CARD_RE.sub(lambda m: m.group(0) if m.group(1) in hand else "", s)   # our own cards are rebuilt from scratch
     report = []
     live = guide_files(folder)
     secs = list(re.finditer(r'<div class="fn-section" id="([^"]+)">', s))
@@ -179,6 +185,9 @@ def process(page, dry):
         body = section_body(s, m.start())
         guide = pick_guide(m.group(1), body, live)
         if not guide:
+            continue
+        if guide in hand:
+            report.append((m.group(1), guide, "kept: hand-placed card for this guide"))
             continue
         if guide not in cards:
             report.append((m.group(1), guide, "SKIPPED: the country page has no card for it"))

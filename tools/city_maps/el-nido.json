@@ -30,7 +30,7 @@
       "lon": 119.378839
     },
     {
-      "name": "El Nido Zipline at Las Cabanas Beach",
+      "name": "El Nido Zipline at Las Cabañas Beach",
       "cat": "see",
       "match": "el nido zipline at las",
       "lat": 11.144803,
@@ -91,7 +91,8 @@
       "match": "mad monkey el nido",
       "lat": 11.311396,
       "lon": 119.419167,
-      "frame": false
+      "frame": false,
+      "href": "https://www.google.com/maps/place/Mad+Monkey+Nacpan+Beach/@11.311396,119.419167,17z/data=!4m9!3m8!1s0x33b7077d46d19ceb:0x220a5e7efe68bb84!5m2!4m1!1i2!8m2!3d11.311396!4d119.419167!16s%2Fg%2F11g8720vl1?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "sea_bg": true,
@@ -102,7 +103,8 @@
   "day_trips": [
     {
       "name": "Boat Tour A",
-      "time": "Full Day"
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/place/El+Nido+Paradise/@11.1694825,119.3575647,14z/data=!4m10!1m2!2m1!1sBoat+Tour+A+El+Nido!3m6!1s0x33b655158f7139e5:0x3e234ff05bf46c25!8m2!3d11.1815621!4d119.3915559!15sChNCb2F0IFRvdXIgQSBFbCBOaWRvWhUiE2JvYXQgdG91ciBhIGVsIG5pZG-SARBib2F0X3RvdXJfYWdlbmN5mgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVVJTY0V4eFJtcFJSUkFC4AEA-gEECAAQQQ!16s%2Fg%2F11bwl3xqb1?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     }
   ]
 }

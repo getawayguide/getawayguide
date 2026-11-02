@@ -1,0 +1,77 @@
+{
+  "country": "slovenia",
+  "label": "Slovenia",
+  "cc": "si",
+  "folder": "Drafts/Full Articles/slovenia",
+  "field_notes": "slovenia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Central Europe",
+  "trip": "Mon Aug 21 to Thu Aug 24, 2023, solo, between Switzerland/Zagreb and Budapest on the 2023 Europe trip: early bus Zagreb > Ljubljana (the train was canceled), bus on to Bled; Bled Aug 21 (the lake walk and the Mala Osojnica viewpoint, Pizzeria Rustika) and Aug 22 (Bled Castle, swimming by the docks, the rowboat to Bled Island, Mega Burger, sunset with the hostel crowd, Pub Bled Troha); Aug 23 bus to Ljubljana (about 1.5 hours), the Fuzzy Log pod hostel, the Triple Bridge, the pink Franciscan church, the cathedral doors, the Dragon Bridge, Ljubljana Castle with the audio guide, the puppetry museum and the viewing tower, Klobasarna, Metelkova, a pub crawl; Aug 24 a spinach burek from Loni-Pek by the river, then a 5-hour bus to Budapest",
+  "album": "Slovenia (2023)",
+  "albums": {
+    "Slovenia (2023)": "Aug 21 to 24, 2023 by capture time (about 100 photos, almost none with GPS): Bled Aug 21 about 12-15h (arrival, the lake walk, the Mala Osojnica viewpoint) and 20h; Bled Aug 22 about 11-12h (Bled Castle), 16-18h (the swim spot, the rowboat to Bled Island), 20h (sunset); Aug 23 from about 12h is Ljubljana (old town, bridges, churches), 14-16h (Ljubljana Castle), 18h (Metelkova and the evening); the single 11h shot on Aug 23 may still be Bled or the bus, check it; Aug 24 09-10h Ljubljana (the river, burek morning). No other album has Slovenia: never use Hungary (2023) (Budapest, from the evening of Aug 24), Croatia 2.0 (2023) (Aug 27 onward) or Switzerland (2023) (to Aug 19)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "slovenia-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; two-place set, so NO top 10 exists: never link top-10-slovenia.html. 5 days in the route-map order: arrive via Ljubljana (airport or the bus from Zagreb) and go straight to Lake Bled for 2-3 days (the lake loop and Mala Osojnica, the castle, the rowboat to the island, a swim), then Ljubljana for 2 days (old town and bridges, the castle, Metelkova, the river cafés), then onward (Budapest by bus, Zagreb, Italy or Austria). He did it in about three and a half days (arrived Bled midday Aug 21, left Ljubljana late morning Aug 24, with only a half day plus a morning in the capital). 'If you have more time': Lake Bohinj and Triglav National Park, the Vintgar Gorge (next to Bled), Piran and the coast, Postojna Cave and Predjama Castle, the Soča Valley (Bovec, Kobarid); he has not been to any of these"
+    },
+    {
+      "file": "lake-bled.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "bled",
+      "writer": "B",
+      "note": "Aug 21-23: the bus from Zagreb via Ljubljana (the canceled train, the green countryside, the traffic and the Dino cafe gimmicks on arrival), the 90-minute lake loop, the steep Mala Osojnica viewpoint (multiple lookouts, hard to find the top; Velika Osojnica and Ojstrica as advice), Bled Castle (15 euros in 2023, the small museum, the view), swimming by the docks and Velika Zaka (advice), `### Bled Island {#bled-island}` by rowboat (the 99 steps and the church, about 20 minutes on the island; pletna boats as the alternative), the sunset that didn't really happen, Pub Bled Troha only in general terms; kremšnita at Spica (advice), Pizzeria Rustika, Mega Burger, Gostilna Pri Planincu (advice); Ace of Spades Hostel and staying in Bled Village; a short `## Day Trips from Bled {#day-trips}` as advice only (the Vintgar Gorge, Lake Bohinj, Triglav National Park); leaving: the morning bus to Ljubljana, told in ljubljana.html#getting-there"
+    },
+    {
+      "file": "ljubljana.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "ljubljana",
+      "writer": "B",
+      "note": "Aug 23 midday to Aug 24 late morning: the bus from Bled (about 1.5 hours; the field notes say under an hour, see the brief), the old town walk (the Triple Bridge, Prešeren Square and the pink Franciscan Church, St. Nicholas Cathedral and its bronze doors, the Dragon Bridge and the dragons everywhere), a tarragon pastry and coffee, Ljubljana Castle (the audio guide, the prison rooms, the puppetry museum, the empty viewing tower, the Slovenian history exhibit), the river cafés, Metelkova (honest: cool murals, sketchy at night), Klobasarna (sausage and jota; his verdict 'interesting, but not something I'd eat a lot of'), Loni-Pek burek (3 euros, a park bench by the river), the Fuzzy Log / ibis Styles rocket-pod hostel, the pub crawl only in general terms; leaving: the 5-hour bus to Budapest; 2,000 to 3,000 words (he had a half day and a morning; never pad)"
+    }
+  ],
+  "cards": [
+    {
+      "file": "slovenia-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Slovenia Travel Guide with Perfect 5-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Slovenia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "lake-bled.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to Lake Bled",
+      "place": "Lake Bled"
+    },
+    {
+      "file": "ljubljana.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Ljubljana",
+      "place": "Ljubljana"
+    }
+  ]
+}

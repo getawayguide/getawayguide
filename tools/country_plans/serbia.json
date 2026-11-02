@@ -1,0 +1,48 @@
+{
+  "country": "serbia",
+  "label": "Serbia",
+  "cc": "rs",
+  "folder": "Drafts/Full Articles/serbia",
+  "field_notes": "serbia/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Balkans",
+  "trip": "Tue Jul 8, 2025 only, solo: an 8.5-hour layover in Belgrade on the flights Tirana > Belgrade > Sarajevo (Georgia & the Balkans trip). Early flight in on a small propeller plane, taxi to Republic Square, Kneza Mihaila, Kosančićev Venac, past Hotel Moskva and Parliament (protest tents in the park), the Church of Saint Sava, coffee at Pizzabar, Belgrade Fortress in Kalemegdan, taxi back to the airport, the evening flight to Sarajevo delayed about 5 hours. Most other field-notes tips came from a Serbian local he met earlier on the trip",
+  "album": "Serbia (2025)",
+  "albums": {
+    "Serbia (2025)": "Jul 8, 2025, Belgrade only (one morning, about 74 files). Never use Tirana (Albania) or Sarajevo (Bosnia) photos"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "belgrade.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "belgrade",
+      "writer": "B",
+      "note": "one morning on an 8.5-hour layover, Jul 8, 2025 (flew in from Tirana, on to Sarajevo that night): Republic Square and the protest graffiti, Kneza Mihaila, Kosančićev Venac and the river view, Hotel Moskva (too early for the Moskva šnit), Parliament and the protest tents, the Church of Saint Sava (the gold mosaics, the $10M dome), Belgrade Fortress in Kalemegdan (the tanks in the moat, the two rivers, Despot's Gate); the taxi drivers' talk (two alphabets, the Austro-Hungarian and Ottoman halves, the nightlife); the field notes' verdict is 2-3 days, so the rest of the field notes (Skadarlija, the Museum of Yugoslavia, the Tesla Museum, Avala, Ada Ciganlija, Gardoš and Zemun, 25. Maj, the restaurants, bars and hotels) is a Serbian local's advice, never his experience; 'Other Places' (Novi Sad, Sombor, Krupajsko vrelo, Manasija, Kopaonik) as advice in `## Beyond Belgrade {#beyond}`. Short honest guide, 1,800 to 2,600 words. The flight in links the live Albania field notes, the flight out the live Bosnia field notes"
+    }
+  ],
+  "cards": [
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Serbia Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "belgrade.html",
+      "tag": "City Guide",
+      "title": "Belgrade in One Morning: Saint Sava & the Fortress",
+      "place": "Belgrade"
+    }
+  ],
+  "single_city": true
+}

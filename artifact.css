@@ -851,7 +851,7 @@
 .artbody > .measure > .day-copy { margin:0 0 18px; }
 .h-a { margin:0; }
 /* the lead-in of a bullet carries the accent, not just weight */
-.b-a li b, .b-a li strong, .b-b .t b, .b-b .t strong, .b-c .r b, .b-c .r strong, .b-a li u, .b-c .r u { color:var(--accent); font-weight:600; text-decoration:none; }
+.b-a li b, .b-a li strong, .b-b .t b, .b-b .t strong, .b-c .r b, .b-c .r strong { color:var(--accent); font-weight:600; text-decoration:none; }
 /* ============ 8: a greener contents box ============ */
 .toc-box { border-color:color-mix(in oklab, var(--accent) 30%, transparent); }
 .toc-box .bx-t { color:var(--accent); }
@@ -2084,10 +2084,14 @@ body.gg-home, body.gg-home .page { background:#fff; }
 .rrow, .rrow a, .mm-col a, .nav-dropdown-item, .more, .cta {
   text-decoration:none !important; }
 
-/* ---- <u> is used as a lead-in label ("Authenticity - ..."), not a link, so
-       it reads as emphasis in ink rather than as green underlined text ---- */
+/* ---- <u> is Ctrl+U in the editor: a plain underline in the text's own ink, thinner and closer
+       than a link's so the two never read alike. Until 2026-11-01 this rule drew a <u> as bold ink
+       with NO underline (a "lead-in label" convention from the old site that no live page uses),
+       so Ctrl+U looked like Ctrl+B (Kevin, Bitola draft: "the underline feature (CTRL + U) seems
+       to be broken in the editor"). ---- */
 .artbody u, .article-body u, .fn-section u, .measure u, .v-list u {
-  color:var(--ink) !important; font-weight:600; text-decoration:none !important; }
+  font-weight:inherit; text-decoration-line:underline !important; text-decoration-color:currentColor !important;
+  text-decoration-thickness:1px !important; text-underline-offset:2px !important; }
 /* The same place link is written two ways across the articles: <b><a>name</a></b>
    and <a><b>name</b></a>. In the second the inner <b> painted the text, so the
    ink rule beat the link colour and half the places came out black. Anything
@@ -2161,27 +2165,21 @@ body.gg-home, body.gg-home .page { background:#fff; }
 .artbody p > b:first-child,
 .artbody li > strong:first-child,
 .artbody p > strong:first-child,
-.artbody li > u:first-child,
-.artbody p > u:first-child,
 .article-body li > b:first-child,
 .article-body p > b:first-child,
 .article-body li > strong:first-child,
 .article-body p > strong:first-child,
-.article-body li > u:first-child,
-.article-body p > u:first-child,
 .fn-section li > b:first-child,
 .fn-section p > b:first-child,
 .fn-section li > strong:first-child,
 .fn-section p > strong:first-child,
-.fn-section li > u:first-child,
-.fn-section p > u:first-child,
 .measure li > b:first-child,
 .measure p > b:first-child,
 .measure li > strong:first-child,
-.measure p > strong:first-child,
-.measure li > u:first-child,
-.measure p > u:first-child {
+.measure p > strong:first-child {
   font-weight:600 !important; }
+/* <u> left that list on 2026-11-01: :first-child ignores text, so a Ctrl+U underline anywhere before the first
+   tag of a sentence came out bold, and no live page writes a name as <u> */
 /* body copy is one weight; a handful of runs had drifted to 300 and 700 */
 .artbody p, .article-body p, .fn-section p, .measure p,
 .artbody li, .article-body li, .fn-section li, .measure li {
@@ -2231,7 +2229,7 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
 @media (max-width:768px) { nav .nav-search.active { right:24px; } }
 
 /* ---- the in-depth marker is the same dot in both places it appears ---- */
-.nav-fulldot, .art-card-badge .dot, .fn-section a.gb-card .dot, .xm .dot { width:6px !important; height:6px !important;
+.nav-fulldot, .art-card-badge .dot, .fn-section a.gb-card .dot, .article-body a.gb-card .dot, .xm .dot { width:6px !important; height:6px !important;
   border-radius:50% !important; background:var(--accent) !important; }
 .art-card-badge { border-radius:0 !important;
   background:rgba(18,26,21,.55) !important; font-family:var(--body) !important;
@@ -2684,8 +2682,6 @@ body nav > ul > li > a, body .artbody p, body .article-body p,
 body .fn-section p, body .measure p, body .artbody li, body .article-body li,
 body .fn-section li, body .measure li {
   font-family:'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif !important; }
-/* a <u> used for emphasis is upright wherever it appears */
-.artbody u, .article-body u, .fn-section u, .measure u { font-style:normal !important; }
 
 /* ---- one lead-in style: a stray <em> was setting one entry in italic ---- */
 .artbody li > em:first-child, .article-body li > em:first-child,
@@ -4150,26 +4146,30 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 /* ---- Guide card: a field-notes section whose city has its own published guide (Kevin, 2026-10-23: option 2 of
    the guide-badge mock-ups). Written by tools/guide_cards.py right under .fn-city-hd; the photo column is 168 px on
    desktop (its files are cut at 1.85/2.8/3.7x that) and the card stacks with a 16:9 photo on a phone. The link
-   rules above target p a / li a only, so none of them reach this card. ---- */
-.fn-section a.gb-card { display:grid; grid-template-columns:168px minmax(0,1fr); margin:0 0 24px; background:rgba(45,107,80,.07);
+   rules above target p a / li a only, so none of them reach this card. Article pages carry it too (Kevin, 2026-11-01:
+   "those badges should not be confined to just field notes"): Bitola's Krushevo and Prilep sections point to the
+   Krushevo guide with the same card. Two plain selectors, never :is(.fn-section, .article-body): the editor
+   folds .article-body into its canvas only where it stands alone, so inside :is() the cards lost every style
+   in the editor (2026-11-02). ---- */
+.fn-section a.gb-card, .article-body a.gb-card { display:grid; grid-template-columns:168px minmax(0,1fr); margin:0 0 24px; background:rgba(45,107,80,.07);
   border:1px solid rgba(45,107,80,.18); border-radius:0; overflow:hidden; text-decoration:none; color:var(--ink);
   font-weight:400; transition:box-shadow .15s; }   /* "sage wash", square (Kevin, 2026-10-24: "2 is the best", "use the square version") */
-.fn-section a.gb-card:hover { box-shadow:0 6px 18px rgba(28,40,33,.12); text-decoration:none; }
-.fn-section a.gb-card picture { display:block; min-width:0; overflow:hidden; }
-.fn-section a.gb-card img { display:block; width:100%; height:100%; min-height:132px; max-width:none; margin:0;
+.fn-section a.gb-card:hover, .article-body a.gb-card:hover { box-shadow:0 6px 18px rgba(28,40,33,.12); text-decoration:none; }
+.fn-section a.gb-card picture, .article-body a.gb-card picture { display:block; min-width:0; overflow:hidden; }
+.fn-section a.gb-card img, .article-body a.gb-card img { display:block; width:100%; height:100%; min-height:132px; max-width:none; margin:0;
   object-fit:cover; border-radius:0; transition:transform .45s ease; }
-.fn-section a.gb-card:hover img { transform:scale(1.05); }           /* the photo pops on roll-over (Kevin, 2026-10-24) */
-.fn-section a.gb-card .t { display:flex; flex-direction:column; justify-content:center; gap:5px; padding:14px 18px; min-width:0; }
-.fn-section a.gb-card .k { display:flex; align-items:center; gap:7px; font:600 10.5px var(--body); letter-spacing:.16em;
+.fn-section a.gb-card:hover img, .article-body a.gb-card:hover img { transform:scale(1.05); }           /* the photo pops on roll-over (Kevin, 2026-10-24) */
+.fn-section a.gb-card .t, .article-body a.gb-card .t { display:flex; flex-direction:column; justify-content:center; gap:5px; padding:14px 18px; min-width:0; }
+.fn-section a.gb-card .k, .article-body a.gb-card .k { display:flex; align-items:center; gap:7px; font:600 10.5px var(--body); letter-spacing:.16em;
   text-transform:uppercase; color:var(--accent); }
-.fn-section a.gb-card .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; }
-.fn-section a.gb-card .h { font:500 21px/1.2 var(--display); letter-spacing:-.01em; color:var(--ink); }
-.fn-section a.gb-card .d { font:400 14px/1.5 var(--body); color:var(--faint); }
-.fn-section a.gb-card .b { margin-top:6px; font:600 13px var(--body); color:var(--accent); }
-.fn-section a.gb-card:hover .h { text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+.fn-section a.gb-card .dot, .article-body a.gb-card .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; }
+.fn-section a.gb-card .h, .article-body a.gb-card .h { font:500 21px/1.2 var(--display); letter-spacing:-.01em; color:var(--ink); }
+.fn-section a.gb-card .d, .article-body a.gb-card .d { font:400 14px/1.5 var(--body); color:var(--faint); }
+.fn-section a.gb-card .b, .article-body a.gb-card .b { margin-top:6px; font:600 13px var(--body); color:var(--accent); }
+.fn-section a.gb-card:hover .h, .article-body a.gb-card:hover .h { text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
 @media (max-width:768px) {
-  .fn-section a.gb-card { grid-template-columns:minmax(0,1fr); }
-  .fn-section a.gb-card img { height:auto; min-height:0; aspect-ratio:16/9; }
+  .fn-section a.gb-card, .article-body a.gb-card { grid-template-columns:minmax(0,1fr); }
+  .fn-section a.gb-card img, .article-body a.gb-card img { height:auto; min-height:0; aspect-ratio:16/9; }
 }
 
 /* ---- Explore More: three related articles at the end of every article and field-notes page (Kevin, 2026-10-23:

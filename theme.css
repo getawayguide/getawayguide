@@ -220,8 +220,7 @@ body, p, li { color: rgba(28, 40, 33, .86); }
   color: rgba(28, 40, 33, .86);
 }
 .article-body a, .about-intro a, p a { color: var(--terra); }
-.article-body b, .article-body strong, .article-body li b, .article-body li strong,
-.article-body li u {
+.article-body b, .article-body strong, .article-body li b, .article-body li strong {
   color: var(--terra);
   font-weight: 600;
   text-decoration: none;

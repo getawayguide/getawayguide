@@ -96,9 +96,9 @@
       "name": "Mang Inasal",
       "cat": "eat",
       "match": "mang inasal",
-      "lat": 14.590196,
-      "lon": 120.98294,
-      "href": "https://www.google.com/maps/place/Mang+Inasal+-+SM+City+Manila/@14.5733981,121.0039817,13z/data=!4m10!1m2!2m1!1sMang+Inasal+Manila!3m6!1s0x3397ca1f5b9d9959:0x1a6d6942069da1b0!8m2!3d14.5901961!4d120.9829396!15sChJNYW5nIEluYXNhbCBNYW5pbGEiA4gBAVoUIhJtYW5nIGluYXNhbCBtYW5pbGGSAQpyZXN0YXVyYW504AEA!16s%2Fg%2F11ckqrpgdy?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+      "lat": 14.5630138,
+      "lon": 120.9952708,
+      "href": "https://www.google.com/maps/place/Mang+Inasal/@14.5630138,120.9952708,17z/data=!3m1!4b1!4m6!3m5!1s0x3397c975a3897ff9:0xe0a33b058d657357!8m2!3d14.5630138!4d120.9952708!16s%2Fg%2F11r9lvvcb?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Patio de Conchita Restaurant",
@@ -112,7 +112,8 @@
       "cat": "stay",
       "match": "ola hostel",
       "lat": 14.5640557,
-      "lon": 120.9986433
+      "lon": 120.9986433,
+      "href": "https://www.google.com/maps/place/Ola+Hostel+Manila/@14.5640147,120.9986406,17z/data=!3m1!4b1!4m9!3m8!1s0x3397c970f5de12eb:0xe802800b3d9a9f62!5m2!4m1!1i2!8m2!3d14.5640147!4d120.9986406!16s%2Fg%2F11h1yw4vyd?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Grand Hyatt Manila",

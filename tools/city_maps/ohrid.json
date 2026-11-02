@@ -17,9 +17,9 @@
   },
   "mobile": {
     "pad": 1.2,
-    "init_w": 0.82,
-    "init_x": 0.5,
-    "init_y": 0.5
+    "init_w": 0.95,
+    "init_x": 0.52,
+    "init_y": 0.47
   },
   "pois": [
     {

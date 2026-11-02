@@ -163,7 +163,9 @@ def apply(slug, dry=False, force=False, keep=False):
         new = card.group(0).replace('<div class="art-card-info">',
                                     '<span class="art-card-badge"><span class="art-card-badge-dot"></span>In-Depth Guide</span>\n        <div class="art-card-info">')
         d2 = d2.replace(card.group(0), new)
-    btn = re.search(r"(location\.href='%s/index\.html'.*?<span class=\"art-card-btn\">)(?:Read Notes|Explore)(</span>)" % re.escape(slug), d2, re.S)
+    # within the country's own card: a card that already says Read Guide let .*? run on into the next card and turn
+    # Australia's Read Notes into Read Guide (2026-11-01, a rerun for Armenia's kept field notes)
+    btn = re.search(r"(location\.href='%s/index\.html'(?:(?!home-dest-card).)*?<span class=\"art-card-btn\">)(?:Read Notes|Explore)(</span>)" % re.escape(slug), d2, re.S)
     if btn:                                           # a guide's card says Read Guide (Kevin, 2026-10-24)
         d2 = d2[:btn.start()] + btn.group(1) + "Read Guide" + btn.group(2) + d2[btn.end():]
     if d2 != d:

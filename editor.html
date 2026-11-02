@@ -2925,12 +2925,35 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       t = t.replace(w, '#editor').replace(w2, '#editor');
       return t;
     }
+    // a selector list split at its top-level commas only: `:is(.fn-section, .article-body) a` is one
+    // selector, and split(',') cut it into two broken halves (2026-11-01)
+    function splitTop(s) {
+      const out = []; let depth = 0, cur = '';
+      for (const c of s) {
+        if (c === '(') depth++; else if (c === ')') depth--;
+        if (c === ',' && depth === 0) { out.push(cur); cur = ''; } else cur += c;
+      }
+      out.push(cur);
+      return out;
+    }
+    // an :is()/:where() that lists the wrap class becomes one selector per branch, so the wrap can
+    // fold into #editor where it stands: `:is(.fn-section, .article-body) a.gb-card` was scoped to
+    // `#editor :is(.fn-section, .article-body) a.gb-card`, which never matches on an article page,
+    // and Bitola's guide cards drew unstyled in the editor (2026-11-01). Other groups are left as is.
+    function expandIs(sel) {
+      const m = /:(?:is|where)\(([^()]*)\)/.exec(sel);
+      if (!m) return [sel];
+      const parts = splitTop(m[1]).map(x => x.trim());
+      if (!parts.some(x => new RegExp('\\.' + wrapClass + '\\b').test(x))) return [sel];
+      return parts.flatMap(x => expandIs(sel.slice(0, m.index) + x + sel.slice(m.index + m[0].length)));
+    }
+    function scopeList(selectorText) { return splitTop(selectorText).flatMap(expandIs).map(scope).filter(Boolean); }
     function rewrite(rules) {
       for (const r of rules) {
         if (r.cssRules && !(r instanceof CSSStyleRule)) { rewrite(r.cssRules); continue; }
         if (!(r instanceof CSSStyleRule)) continue;
         const wasBody = /^body$/.test(r.selectorText.trim());
-        const out = r.selectorText.split(',').map(scope).filter(Boolean);
+        const out = scopeList(r.selectorText);
         try { r.selectorText = out.length ? out.join(', ') : '#editor.never-matches'; }
         catch (e) { /* a selector the engine will not take back: leave it */ }
         if (wasBody) {                       // the page's body: only what the text inherits from it
@@ -3024,7 +3047,12 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       }
       applyPage(doc);                       // after the sheets, so the page's own rules win their ties
     }
-    return { apply, clear };
+    // test seam: the scoped form of a selector list for a given wrapper class
+    function scopeSelector(selectorText, wrap) {
+      const was = wrapClass; wrapClass = wrap || wrapClass;
+      try { return scopeList(selectorText).join(', '); } finally { wrapClass = was; }
+    }
+    return { apply, clear, scopeSelector };
   })();
   window.__siteCss = siteCss;   // test seam: the headless checks open an article without the file picker
   window.__setOriginalHTML = h => { originalHTML = h; };   // same seam: the Preview needs the page the body came from
@@ -3839,6 +3867,27 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
     if (e.key === 'Tab') {
       e.preventDefault();
+      // Shift+Tab on a TOP-LEVEL bullet: Chromium's outdent, with the list inside a <div> (every
+      // field-notes section, and the editor root itself), spilled the entry out as a bare text node
+      // + <br> beside an empty <ul></ul>. Bare text in a section has no paragraph style, so the font
+      // changed (Kevin, 2026-11-01: "when I do ctrl tab to remove the bullet, I think the font
+      // breaks"). Done by hand: the entry becomes a <p> where it stood, the list splits around it,
+      // and the caret stays where it was in the text. A NESTED bullet is done by hand too: the
+      // browser's outdent of one put the entry straight inside its parent entry (li > li, no list),
+      // so it goes up one level into the outer list, after its parent entry.
+      if (e.shiftKey) {
+        if (window.__History) window.__History.checkpoint();
+        const r0 = sel.rangeCount ? sel.getRangeAt(0) : null;
+        const keep = r0 && li.contains(r0.startContainer) ? [r0.startContainer, r0.startOffset] : null;
+        const nested = li.parentElement && li.parentElement.parentElement && li.parentElement.parentElement.closest('li');
+        const p = nested ? outdentNestedItem(li) : outdentListItem(li);
+        const caret = document.createRange();
+        if (keep && p.contains(keep[0])) caret.setStart(keep[0], keep[1]); else caret.setStart(p, 0);
+        caret.collapse(true); sel.removeAllRanges(); sel.addRange(caret);
+        setDirty(true);
+        if (window.__History) window.__History.touch();
+        return;
+      }
       document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
       // Chromium indents as <ul><ul>, a list that is a direct child of a list; the site's nested lists are
       // li > ul, and the save wrote the browser's shape as it was (stress test 2026-10-23)
@@ -3966,6 +4015,69 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   });
 
+  // A top-level list entry becomes a paragraph where it stands: the entries above it keep their
+  // list, the entries below go into a second list of the same kind after the paragraph (an <ol>
+  // carries on counting), and a sub-list the entry owned follows the paragraph as a list of its
+  // own. Nodes are MOVED, not copied, so a caret held in the entry's text survives. Returns the <p>.
+  function outdentListItem(li) {
+    const list = li.parentElement;
+    const p = document.createElement('p');
+    const sub = li.querySelector(':scope > ul, :scope > ol');
+    if (sub) sub.remove();
+    while (li.firstChild) p.appendChild(li.firstChild);
+    p.querySelectorAll(':scope > .slot-x, :scope > .slot-up').forEach(x => x.remove());
+    if (!p.textContent.replace(/​/g, '').trim() && !p.querySelector('img, picture, br, span[style*="aspect-ratio"]')) p.innerHTML = '<br>';
+    const idx = [...list.children].indexOf(li);
+    const below = [];
+    for (let s = li.nextElementSibling; s; s = s.nextElementSibling) below.push(s);
+    list.insertAdjacentElement('afterend', p);
+    let tail = p;
+    if (sub) { p.insertAdjacentElement('afterend', sub); tail = sub; }
+    if (below.length) {
+      const rest = document.createElement(list.tagName.toLowerCase());
+      if (list.className) rest.className = list.className;
+      const st = list.getAttribute('style');
+      if (st) rest.setAttribute('style', st);
+      if (list.tagName === 'OL') rest.start = parseInt(list.getAttribute('start') || '1', 10) + idx;
+      below.forEach(n => rest.appendChild(n));
+      tail.insertAdjacentElement('afterend', rest);
+    }
+    li.remove();
+    if (list.children.length === 0) list.remove();
+    return p;
+  }
+  window.outdentListItem = outdentListItem;
+  // A nested list entry goes up one level: into the outer list, right after the entry that held its
+  // sub-list. The sub-list's entries that followed it come along as ITS sub-list, and an emptied
+  // sub-list is removed. In a ruled list (entries with a border-bottom) the moved entry takes the
+  // rule of its new siblings, and a parent that was last (no rule by convention) gains one, as the
+  // Enter handler does for a new bullet. Returns the entry.
+  function outdentNestedItem(li) {
+    const sub = li.parentElement, parentLi = sub.parentElement.closest('li');
+    if (!parentLi) return li;
+    const outer = parentLi.parentElement;
+    const below = [];
+    for (let s = li.nextElementSibling; s; s = s.nextElementSibling) below.push(s);
+    const wasLast = !parentLi.nextElementSibling;
+    parentLi.after(li);
+    if (below.length) {
+      const rest = document.createElement(sub.tagName.toLowerCase());
+      if (sub.className) rest.className = sub.className;
+      const st = sub.getAttribute('style');
+      if (st) rest.setAttribute('style', st);
+      below.forEach(n => rest.appendChild(n));
+      li.appendChild(rest);
+    }
+    if (!sub.children.length && !sub.textContent.trim()) sub.remove();
+    const ruled = outer && [...outer.children].map(x => x.getAttribute('style') || '').find(s => /border-bottom/i.test(s));
+    if (ruled) {
+      if (wasLast) { parentLi.setAttribute('style', ruled); li.setAttribute('style', noRule(ruled)); if (!li.getAttribute('style')) li.removeAttribute('style'); }
+      else li.setAttribute('style', ruled);
+    }
+    return li;
+  }
+  window.outdentNestedItem = outdentNestedItem;
+
   // ================= SAVE NORMALIZER =================
   // Converts contenteditable output into the site's clean hand-written idiom.
   function unwrapEl(el) {
@@ -4082,6 +4194,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
     // 4. Bare <div> → <p> (contenteditable legacy), keep classed/styled divs
     [...el.querySelectorAll('div:not([class]):not([style]):not([id])')].forEach(div => {
+      // a field-notes legend is a grid of bare <div> boxes, drawn by the page's own `.fn-legend div`
+      // rule; rewritten to <p> they lost their borders (Armenia field notes, 2026-11-01)
+      if (div.parentElement && div.parentElement.closest('.fn-legend')) return;
       if (div.querySelector('div,ul,ol,h2,h3,picture,img')) { unwrapEl(div); return; }
       const p = document.createElement('p');
       while (div.firstChild) p.appendChild(div.firstChild);
@@ -4138,6 +4253,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       removed = false;
       el.querySelectorAll('b,i,u,s,span,a').forEach(node => {
         if (node.closest('svg')) return;              // (a)
+        if (node.closest('.gb-card')) return;         // a guide card's accent dot is an empty span by design (2026-11-01)
+        // (d) an empty inline that CARRIES A CLASS, or is hidden from readers, is a decoration drawn by
+        //     CSS: the legend's <span class="fn-dot" aria-hidden="true">, a card's <span class="dot">,
+        //     the itinerary's <span class="m"> and <span class="cv">. The editor's own leftovers never
+        //     have a class (step 3 unwrapped the bare ones), so this costs nothing (2026-11-01: the
+        //     Armenia legend lost its dot on every save).
+        if (node.tagName === 'SPAN' && node.hasAttribute('class')) return;
+        if (node.getAttribute('aria-hidden') === 'true') return;
         if (isEmpty(node)) {                           // (b)
           // an inline that holds only a space still holds a space: dropping it glued "Place</a>is" and, on the
           // second save, "in<i> </i>and" into "inand" (stress test 2026-10-23). The text stays, the tag goes.
@@ -4156,6 +4279,39 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // Remove <p><br></p> spacers
     el.querySelectorAll('p').forEach(p => {
       if (p.innerHTML.trim().toLowerCase() === '<br>') p.remove();
+    });
+    // 6b. a list with nothing in it (the browser's outdent used to leave one; so does deleting the
+    //     last bullet) is never meant
+    [...el.querySelectorAll('ul, ol')].reverse().forEach(l => {
+      if (!l.children.length && !l.textContent.replace(/[\s ​]/g, '')) l.remove();
+    });
+    // 6c. prose standing BARE in the article root or a field-notes section (text and inline tags
+    //     with no block around them) gets a <p>: nothing styles bare text, so it drew in the
+    //     browser's default font (the outdent bug above wrote it; a paste can too). A run ends at
+    //     a block, a <br> (dropped), or a framed photo. Spaces between blocks are left alone.
+    const INLINE = new Set(['B', 'I', 'U', 'S', 'EM', 'STRONG', 'SUP', 'SUB', 'SMALL', 'CODE', 'ABBR', 'MARK']);
+    const isInlineNode = n => n.nodeType === 3 ||
+      (n.nodeType === 1 && (INLINE.has(n.tagName) || n.tagName === 'BR' ||
+        (n.tagName === 'A' && (!n.hasAttribute('class') || n.className === 'gl')) ||
+        (n.tagName === 'SPAN' && !/display\s*:\s*(block|flex|grid)/.test(n.getAttribute('style') || '') && !n.querySelector('img,picture,svg'))));
+    [el, ...el.querySelectorAll('.fn-section')].forEach(host => {
+      let run = [];
+      const flush = () => {
+        const hasText = run.some(n => n.nodeType === 3 ? n.textContent.replace(/[\s ​]/g, '') : (n.nodeType === 1 && n.tagName !== 'BR'));
+        if (hasText) {
+          while (run.length && run[0].nodeType === 3 && !run[0].textContent.trim()) run.shift();
+          while (run.length && (run[run.length - 1].tagName === 'BR' || (run[run.length - 1].nodeType === 3 && !run[run.length - 1].textContent.trim()))) run.pop().remove();
+          if (run.length) { const p = document.createElement('p'); run[0].before(p); run.forEach(n => p.appendChild(n)); }
+        }
+        run = [];
+      };
+      [...host.childNodes].forEach(n => {
+        if (n.nodeType === 8) { flush(); return; }                      // a comment marks structure (<!-- /gb-card -->); it stays put
+        if (isInlineNode(n) && n.tagName !== 'BR') { run.push(n); return; }
+        if (n.tagName === 'BR') { run.push(n); flush(); return; }
+        flush();
+      });
+      flush();
     });
 
     // 7. Shared legacy cleanup (font tags, link colors, nbsp)
@@ -4222,7 +4378,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     lines.push(indent + '<' + tag + ppAttrs(node) + '>');
     let run = [];
     const flush = () => {
+      // a comment in an inline run was dropped here: <!-- /gb-card --> after a guide card is the
+      // marker tools/guide_cards.py finds the card by (lost on every field-notes save, 2026-11-01)
       const s = run.map(n => n.nodeType === 3 ? ppEscape(n.textContent.replace(/\s+/g,' ')) :
+        n.nodeType === 8 ? '<!--' + n.textContent + '-->' :
         (n.nodeType === 1 ? ppSerializeInlineEl(n) : '')).join('').trim();
       if (s) lines.push('  '.repeat(depth + 1) + s);
       run = [];
@@ -5566,6 +5725,15 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     document.addEventListener('mouseup', onUp);
   });
 
+  // A framed photo's object-position as [x%, y%], 50 for an unset axis. `parseFloat(v) || 50` read a
+  // 0% edge as "unset" and re-centered it: the Bitola soldier (34% 0%, the head at the top) reopened in
+  // the crop window, the pan and ✎ Edit at 50% ("the editor not picking up my crop", Kevin 2026-11-01).
+  window.objPosOf = function objPosOf(el) {
+    const pos = (el.style.objectPosition || '').trim().split(/\s+/);
+    const x = parseFloat(pos[0]), y = parseFloat(pos[1]);   // one value: CSS centers the other axis
+    return [Number.isFinite(x) ? x : 50, Number.isFinite(y) ? y : 50];
+  };
+
   // Drag-to-pan crop position
   let _panImg = null, _panStart = null, _panStartPos = null;
 
@@ -5589,8 +5757,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       img.style.objectPosition = `${posX}% ${posY}%`;
       _panStartPos = { x: posX, y: posY };
     } else {
-      const pos = (img.style.objectPosition || '50% 50%').split(' ');
-      _panStartPos = { x: parseFloat(pos[0]) || 50, y: parseFloat(pos[1]) || 50 };
+      const [px, py] = objPosOf(img);
+      _panStartPos = { x: px, y: py };
     }
     document.addEventListener('mousemove', onPanMove);
     document.addEventListener('mouseup', onPanUp);
@@ -5598,18 +5766,26 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
   function onPanMove(e) {
     if (!_panImg) return;
-    const rect = _panImg.getBoundingClientRect();
     const nw = _panImg.naturalWidth, nh = _panImg.naturalHeight;
     if (!nw || !nh) return;
-    const zoom = Math.max(1, parseFloat(_panImg.dataset.cropZoom || '1') || 1);
-    const scale = Math.max(rect.width / nw, rect.height / nh) * zoom;
-    const overflowX = nw * scale - rect.width;
-    const overflowY = nh * scale - rect.height;
+    // The frame's own box, not getBoundingClientRect: a zoomed framed photo carries transform:scale(), which
+    // the client rect includes, so the overflow came out as 0 and the axis snapped to 50% on the first pixel
+    // of a drag. The zoom is that same scale() when the photo has no canvas-crop dataset (every framed photo
+    // on a saved page), and transform-origin moves with object-position, as positionInFrame writes them, or
+    // the two drift apart and the published framing is not the one dragged to (Bitola soldier, 2026-11-01).
+    const fw = _panImg.offsetWidth, fh = _panImg.offsetHeight;
+    const sc = /scale\(([\d.]+)\)/.exec(_panImg.style.transform || '');
+    const zoom = Math.max(1, parseFloat(_panImg.dataset.cropZoom || (sc ? sc[1] : '1')) || 1);
+    const scale = Math.max(fw / nw, fh / nh) * zoom;
+    const overflowX = nw * scale - fw;
+    const overflowY = nh * scale - fh;
     const dx = e.clientX - _panStart.x;
     const dy = e.clientY - _panStart.y;
-    const nx = overflowX > 0 ? Math.max(0, Math.min(100, _panStartPos.x - dx / overflowX * 100)) : 50;
-    const ny = overflowY > 0 ? Math.max(0, Math.min(100, _panStartPos.y - dy / overflowY * 100)) : 50;
-    _panImg.style.objectPosition = `${nx.toFixed(1)}% ${ny.toFixed(1)}%`;
+    const nx = overflowX > 1 ? Math.max(0, Math.min(100, _panStartPos.x - dx / overflowX * 100)) : _panStartPos.x;
+    const ny = overflowY > 1 ? Math.max(0, Math.min(100, _panStartPos.y - dy / overflowY * 100)) : _panStartPos.y;
+    const pos = `${nx.toFixed(1)}% ${ny.toFixed(1)}%`;
+    _panImg.style.objectPosition = pos;
+    if (sc && zoom > 1.001 && !_panImg.dataset.crop) _panImg.style.transformOrigin = pos;
   }
 
   function onPanUp() {
@@ -9831,9 +10007,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         // template's own frames are set by its layout (2026-10-17)
         reshape = (window.frameShapeTargets && window.frameShapeTargets(img)) || [];
         locked = !reshape.length;
-        const pos = (img.style.objectPosition || '50% 50%').split(' ');
-        posX = (parseFloat(pos[0]) || 50) / 100;
-        posY = (parseFloat(pos[1]) || 50) / 100;
+        const [px, py] = objPosOf(img);          // 0% is an edge, not "unset" (Bitola soldier, 2026-11-01)
+        posX = px / 100;
+        posY = py / 100;
         const sc = /scale\(([\d.]+)\)/.exec(img.style.transform || '');
         zoom = sc ? Math.max(1, parseFloat(sc[1])) : 1;
       } else {
@@ -12326,9 +12502,9 @@ void main(){
       // rectangle keeps it exactly (it opened centered at 1x and every caption fix re-centered the crop; Kevin, 2026-10-19)
       CM.editStart = null;
       if (!keep && drop && drop.edit && drop.el && locked && frameOf(drop.el)) {
-        const pos = (drop.el.style.objectPosition || '50% 50%').split(/\s+/);
+        const [px, py] = objPosOf(drop.el);     // 0% is an edge, not "unset" (Bitola soldier, 2026-11-01)
         const sc = /scale\(([\d.]+)\)/.exec(drop.el.style.transform || '');
-        const ex = (parseFloat(pos[0]) || 50) / 100, ey = (parseFloat(pos[1] || pos[0]) || 50) / 100, ez = sc ? Math.max(1, parseFloat(sc[1])) : 1;
+        const ex = px / 100, ey = py / 100, ez = sc ? Math.max(1, parseFloat(sc[1])) : 1;
         setRectFrom(ex, ey, ez);
         CM.editStart = { posX: ex, posY: ey, zoom: ez };
       }
@@ -14290,6 +14466,12 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
   const clean = s => (s || '').replace(/\s+/g, ' ').trim();
   const meta = (doc, sel) => { const m = doc.querySelector(sel); return m ? m.getAttribute('content') || '' : ''; };
   function ld(doc) { const out = []; doc.querySelectorAll('script[type="application/ld+json"]').forEach(s => { try { out.push([s, JSON.parse(s.textContent)]); } catch (e) {} }); return out; }
+  // written back inside the same newlines the script had, so a save does not glue "{" to the opening
+  // tag and "}" to the closing one and turn one changed date into a six-line diff (2026-11-01)
+  function writeLd(s, o) {
+    const t = s.textContent, lead = (/^\s*/.exec(t) || [''])[0], trail = (/\s*$/.exec(t) || [''])[0];
+    s.textContent = lead + JSON.stringify(o, null, 2) + trail;
+  }
   function paint() {
     const t = clean(T.value), d = clean(D.value);
     const tn = $('seo-title-n'), dn = $('seo-desc-n');
@@ -14326,21 +14508,23 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     if (t && t !== orig.title) {
       let el = doc.querySelector('title'); if (!el) { el = doc.createElement('title'); doc.head.appendChild(el); } el.textContent = t;
       setMeta('meta[property="og:title"]', 'property', 'og:title', t);
-      ld(doc).forEach(([s, o]) => { if (o && o.headline !== undefined) { o.headline = t; s.textContent = JSON.stringify(o, null, 2); } });
+      ld(doc).forEach(([s, o]) => { if (o && o.headline !== undefined) { o.headline = t; writeLd(s, o); } });
     }
     if (d && d !== orig.desc) {          // emptied: keep the old one, as the title does (the tab says so)
       setMeta('meta[name="description"]', 'name', 'description', d);
       setMeta('meta[property="og:description"]', 'property', 'og:description', d);
     }
-    // the dates: an edit is saved today. A page still in Drafts has not been published, so its
-    // published date moves with it too (Kevin, 2026-09-28: "use the latest date")
-    const rel = window.review && review.state && review.state.rel;
+    // the dates: an edit is saved today, so dateModified moves. datePublished NEVER moves on a save
+    // (2026-11-01: the Armenia field notes went from 2026-06-20 to "published today" on an ordinary
+    // edit). A draft's dates are set by the launch tools (tools/seo_meta.py --dates from the prose
+    // commits; tools/article_dates.py), which is where they belong; the editor used to bump a
+    // draft's published date to today on every save (Kevin, 2026-09-28: "use the latest date").
     const n = new Date(), today = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
     ld(doc).forEach(([s, o]) => {
       if (!o || !('datePublished' in o || 'dateModified' in o)) return;
-      if (rel && rel.startsWith('Drafts/')) o.datePublished = today;
+      if (o.dateModified === today) return;      // nothing to write: the script keeps its bytes
       o.dateModified = today;
-      s.textContent = JSON.stringify(o, null, 2);
+      writeLd(s, o);
     });
     // the date under the subtitle says the same thing (Kevin, 2026-09-30: "the date underneath the
     // subtitles for the articles doesn't seem to update"): it was written once, when the page was made

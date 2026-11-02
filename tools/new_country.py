@@ -212,6 +212,12 @@ def heading(txt, default_id):
     return html_inline(txt[:m.start()] if m else txt), hid
 
 
+def fix_img_paths(html):
+    """A live field-notes page says ../Images/; a Drafts copy already says ../../../Images/ (New Zealand, 2026-10-31).
+    Rewrite only the one-level form, so a Drafts source isn't pushed out to ../../../../../Images/."""
+    return re.sub(r"(?<!\.\./)\.\./Images/", "../../../Images/", html)
+
+
 def field_notes_map(plan, kind, key, have=None):
     have = have or {"style": False, "script": False}
     fn = open(os.path.join(ROOT, plan["field_notes"]), encoding="utf-8").read()
@@ -224,12 +230,12 @@ def field_notes_map(plan, kind, key, have=None):
                 st = re.search(r"(<style>(?:(?!</style>).)*\.citymap-fig\{(?:(?!</style>).)*</style>)\s*$", before, re.S)
                 sc = re.match(r"\s*(<script>(?:(?!</script>).)*forEach\(setup\)(?:(?!</script>).)*</script>)", after, re.S)
                 parts = [st.group(1) if st and not have["style"] else "", m.group(0), sc.group(1) if sc and not have["script"] else ""]
-                return "\n    ".join(p for p in parts if p).replace("../Images/", "../../../Images/")
+                return fix_img_paths("\n    ".join(p for p in parts if p))
         raise SystemExit("no city map '%s' in %s" % (key, plan["field_notes"]))
     m = re.search(r'<div class="route-map">.*?<figure class="itinerary-map".*?</figure>\s*</div>', fn, re.S)
     if not m:
         raise SystemExit("no route map in " + plan["field_notes"])
-    return m.group(0).replace("../Images/", "../../../Images/")
+    return fix_img_paths(m.group(0))
 
 
 def render_body(plan, fm, blocks):

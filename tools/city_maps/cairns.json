@@ -85,12 +85,14 @@
     {
       "name": "Reef Scenic Flight",
       "time": "Half Day",
-      "match": "scenic flight"
+      "match": "scenic flight",
+      "href": "https://www.google.com/maps/place/Great+Barrier+Reef+Scenic+Flights/@-16.8841792,145.7486129,18z/data=!4m10!1m2!2m1!1sReef+Scenic+Flight+Cairns!3m6!1s0x697865389a001481:0x5c151119579db1dc!8m2!3d-16.882216!4d145.746573!15sChlSZWVmIFNjZW5pYyBGbGlnaHQgQ2Fpcm5zkgESdG91cmlzdF9hdHRyYWN0aW9u4AEA!16s%2Fg%2F11ywg1xs0g?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Great Barrier Reef Snorkeling",
       "time": "Full Day",
-      "match": "great barrier reef"
+      "match": "great barrier reef",
+      "href": "https://www.google.com/maps/place/Great+Barrier+Reef,+Australia/@-16.6568477,148.0949442,6z/data=!4m7!1m2!2m1!1sGreat+Barrier+Reef,+Queensland,+Australia!3m3!1s0x6bdf1446822c713b:0x192a574136833cda!15sCilHcmVhdCBCYXJyaWVyIFJlZWYsIFF1ZWVuc2xhbmQsIEF1c3RyYWxpYVopIidncmVhdCBiYXJyaWVyIHJlZWYgcXVlZW5zbGFuZCBhdXN0cmFsaWGSAQ9jb2xsb3F1aWFsX2FyZWHgAQA!16zL20vMGpieGw?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
     }
   ],
   "district_labels": [

@@ -381,7 +381,8 @@ def run(rels, dry=False):
                     iv[tier][k] = (lo, hi)
                     ivals.setdefault(img, []).append((lo, hi))
             items.append((n, img, bool(first.get("img")), iv))
-        pages[rel] = (raw, tagged, items)
+        pages[rel] = (raw, tagged, items, stamp)   # each page keeps its own stamp (one shared variable made every
+                                                   # page but the last look "changed" on a multi-page run, 2026-11-01)
 
     cap = {img: min(srcs[img][0].width, MAX_W) for img in ivals}
     chosen = {img: cover_points(v, cap[img]) for img, v in ivals.items()}
@@ -397,7 +398,7 @@ def run(rels, dry=False):
         return f
 
     sig = lambda t: re.findall(r"<[^>]*\sdata-bgfit=\"\d+\"[^>]*>", t)
-    for rel, (raw, tagged, items) in pages.items():
+    for rel, (raw, tagged, items, stamp) in pages.items():
         # a page saved while this ran (the editor is open while it measures): fit the saved page, if its
         # photos are the ones measured; otherwise leave it for the next run rather than write over it
         now = (ROOT / rel).read_text(encoding="utf-8", newline="")

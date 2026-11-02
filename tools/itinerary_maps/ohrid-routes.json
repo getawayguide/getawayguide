@@ -1,0 +1,138 @@
+{
+  "country_width": 370,
+  "iso3": "MKD",
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "pin_scale": 1.15,
+  "simplify": 60,
+  "smooth": true,
+  "slug": "ohrid-routes",
+  "page": "Drafts/Upcoming/north-macedonia/ohrid.html",
+  "legend": {
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Change in Prilep",
+        "color": "#9DB5A8"
+      }
+    ],
+    "pos": "tl",
+    "scale": 0.9,
+    "dy": -46
+  },
+  "stops": [
+    {
+      "n": 1,
+      "name": "Ohrid",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "marker": "star",
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 30
+    },
+    {
+      "n": 2,
+      "name": "Skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "skopje.html"
+    },
+    {
+      "n": 3,
+      "name": "Bitola",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "bitola.html"
+    },
+    {
+      "n": 4,
+      "name": "Prilep",
+      "lat": 41.3461,
+      "lon": 21.5536,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    },
+    {
+      "n": 5,
+      "name": "Krushevo",
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "no_number": true,
+      "anchor": "start",
+      "dx": -6,
+      "dy": -33,
+      "href": "krushevo.html"
+    },
+    {
+      "n": 6,
+      "name": "Struga",
+      "lat": 41.1778,
+      "lon": 20.6783,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -24
+    },
+    {
+      "n": 7,
+      "name": "Tirana (Albania)",
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "no_number": true,
+      "anchor": "start",
+      "dx": -12,
+      "dy": -33
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 3,
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": 6,
+      "b": 5,
+      "label": ""
+    },
+    {
+      "a": 5,
+      "b": 0,
+      "label": ""
+    }
+  ]
+}

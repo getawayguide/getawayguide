@@ -27,6 +27,8 @@ for ($i = 0; $i -lt $N; $i++) { for ($j = 0; $j -lt $N; $j++) {
   way["landuse"="forest"]($bbox);
   relation["landuse"="forest"]($bbox);
   relation["natural"="water"]($bbox);
+  way["man_made"="pier"]($bbox);
+  relation["man_made"="pier"]($bbox);
 );
 out geom;
 "@

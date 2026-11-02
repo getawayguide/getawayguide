@@ -1,0 +1,76 @@
+{
+  "country": "tanzania",
+  "label": "Tanzania",
+  "cc": "tz",
+  "folder": "Drafts/Full Articles/tanzania",
+  "field_notes": "tanzania/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "africa",
+    "Africa"
+  ],
+  "region": "East Africa",
+  "trip": "Tue Oct 3 to Tue Oct 10, 2023, solo, one week on the 2023 round-the-world year (Israel and Jordan before, Italy after): flew in from Tel Aviv to Zanzibar Oct 3 (Stone Town House); Stone Town Oct 4 (Travelers Cafe breakfast, taxi to a spice farm, Lukmaan, the afternoon walking tour from Darajani Market: the tuna auction, the carved doors, the former slave market, the Old Fort, the dock jumpers at sunset); evening flight to Kilimanjaro/Arusha Oct 4 (landed at midnight, 2 hours by road, a basic hotel); 3-day, 2-night budget camping safari Oct 5 to 7 with Wise Safari Tanzania and guide Sylus (Arusha > Ngorongoro rim viewpoint > lunch at the Serengeti gate > first game drive > bush camp near Seronera; Oct 6 full Serengeti game drive, the buffalo chasing the lions, the leopard far off, Simba Campsite on the crater rim in the rain; Oct 7 down into the Ngorongoro Crater in fog, flamingos and hippos, the rhinos far off for the Big Five, lunch in Arusha, sunset on the way to the airport); evening flight back to Zanzibar Oct 7; Stone Town morning Oct 8 (Old Fort, Old Dispensary), taxi to Paje Oct 8 to 9 (Your Zanzibar Place, the beach walk, a swim, a sea urchin, Africana for pilau); back to Stone Town Oct 9 (sunset at the port, Forodhani night market, urojo, Mr. Mango's Zanzibar pizza); flew out early Oct 10 via Dubai to Milan",
+  "album": "Tanzania (2023)",
+  "albums": {
+    "Tanzania (2023)": "Oct 4 to 10, 2023 by capture time (local time, about 395 photos plus 77 videos in videos/; NO GPS on any photo, so go by time and content): Oct 4 09-11h Stone Town morning (Travelers Cafe, the waterfront), about 11-14h the spice farm, 15-17h the walking tour (Darajani Market and the tuna auction, the doors, the slave market, the Old Fort), 17h the dock jumpers and the sunset; Oct 5 09-12h the drive and the souvenir shop, the elephant at the Ngorongoro gate and the rim viewpoint, 14-18h the first Serengeti game drive (the three lions, the cheetahs), 17-18h the Serengeti sunset, 20h camp; Oct 6 07-12h the Serengeti game drive (giraffes by camp, cheetahs, hyenas, the buffalo herd, the elephant at the gas station, the hippo pool), 14-16h the drive back to the crater rim / Simba Campsite; Oct 7 07-11h the Ngorongoro Crater floor (fog, plains game, flamingos and hippos at the lake, the marsh, the picnic stop), 18h the sunset on the drive to Kilimanjaro airport; Oct 8 07-09h Stone Town early morning (empty alleys, the port, the Old Fort, the Old Dispensary), 12-15h Paje (the beach, the sailboats, the walk); Oct 9 12h Paje, 18-19h Stone Town (the port at sunset, the kids jumping in, the Forodhani night market); Oct 10 is the flight out (08h, 16h): never use it. About 10 photos have no date: check them by content. No Images/Tanzania folder exists yet. No other album has Tanzania: never use Israel (2023) or Jordan (2023) (to Oct 3) or Italy (2023) (Milan, from Oct 10)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "tanzania-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; two-place set, so NO top 10 exists: never link top-10-tanzania.html. 10 days in the route-map order: fly into Kilimanjaro (JRO), a night in Arusha, the 3-day northern-circuit safari (Serengeti, then the Ngorongoro Crater on the way back), an evening flight to Zanzibar, 2 to 3 days in Stone Town (the walking tour, the spice farm, the night market, Prison Island or Jozani as advice), then 3 days on a beach (Paje, where he stayed; Nungwi and Kendwa as advice). The field notes' section days are safari 3-4 and Zanzibar 5-6 (the route map says 3 + 1 + 5-6); the General section says two weeks for a safari plus Zanzibar. He did it in one week (Oct 3 to 10), in a different order: Stone Town first, flew to Arusha for the safari, then back to Zanzibar for Paje and a last Stone Town night. Say so honestly. 'If you have more time': Mount Kilimanjaro (he wants to come back and climb it), Tarangire, Nyerere National Park, Mafia Island; he has not been to any of these"
+    },
+    {
+      "file": "serengeti-ngorongoro-safari.html",
+      "type": "guide",
+      "kicker": "Safari Guide",
+      "writer": "B",
+      "note": "Oct 4 night to Oct 7 evening, experience-guide shape (mostar-day-trip model): the overview (why a safari, the Great Migration timing, his 3 days as the sweet spot), booking and prices (the three tiers from the field notes, Wise Safari Tanzania, how the shared vehicle mixes companies, paying up to half in cash, his cash payment in shillings plus euros and dollars after three ATM runs, tipping), getting there (fly into Kilimanjaro, the midnight pickup and the 2-hour drive, a basic hotel in Arusha; leaving: the evening flight to Zanzibar, told here, linked from zanzibar.html), the 3 days as h3s (day 1 Arusha to the Serengeti via the rim viewpoint, day 2 the full Serengeti game drive and Simba Campsite, day 3 the Ngorongoro Crater), the Big Five, the Maasai (villages along the road; he skipped the village visit), what to bring, where to eat (the camp food: no restaurants, so a short honest section on the meals), where to stay (the bush camp near Seronera, Simba Campsite, the Arusha hotel unnamed; mid-range and luxury lodges as advice); no city map in the field notes; 2,800 to 3,800 words"
+    },
+    {
+      "file": "zanzibar.html",
+      "type": "guide",
+      "kicker": "Island Guide",
+      "map": "zanzibar",
+      "writer": "C",
+      "note": "Oct 3 to 4 and Oct 7 night to Oct 10: arriving at Abeid Amani Karume airport (the easy customs, the ATM limit, the taxi; the safari flights in and out are told in serengeti-ngorongoro-safari.html#getting-there), Stone Town (the walking tour from Darajani Market: the tuna auction, the carved doors, the former slave market, the old British consulate, the restoration problem, the Old Fort and the shortest war, the dock jumpers at sunset; the Old Dispensary and the House of Wonders; the empty early-morning alleys), the spice farm by taxi (Siso Spice Farm per the field notes; $5 entry, tip the guide, Mr. Climb), day trips he did not take as advice (Prison Island, Jozani Forest), the beaches (Paje where he stayed: the flour-white sand, the 45-minute walk without reaching the end, kitesurfers, the warm shallow water, the sea urchin; Nungwi and Kendwa as advice), the road to Paje, where to eat (Forodhani night market with urojo, the chicken tikka skewers and Mr. Mango's Zanzibar pizza, Lukmaan, Travelers Cafe, Africana in Paje, the hostel's Zanzibar chicken curry; the unnamed Mexican place stays unnamed), where to stay (Stone Town House, Your Zanzibar Place at $18 a night); 3,000 to 4,000 words"
+    }
+  ],
+  "cards": [
+    {
+      "file": "tanzania-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Tanzania Travel Guide with Perfect 10-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Tanzania Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "serengeti-ngorongoro-safari.html",
+      "tag": "Safari Guide",
+      "title": "Serengeti & Ngorongoro: A 3-Day Budget Camping Safari",
+      "place": "Safari"
+    },
+    {
+      "file": "zanzibar.html",
+      "tag": "Island Guide",
+      "title": "The Ultimate Guide to Zanzibar: Stone Town & Paje",
+      "place": "Zanzibar"
+    }
+  ]
+}

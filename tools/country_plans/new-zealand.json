@@ -1,0 +1,183 @@
+{
+  "country": "new-zealand",
+  "label": "New Zealand",
+  "cc": "nz",
+  "folder": "Drafts/Full Articles/new-zealand",
+  "field_notes": "Drafts/Field Notes/new-zealand/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "oceania",
+    "Oceania"
+  ],
+  "region": "New Zealand",
+  "trip": "Jan 8 to Jan 31, 2024, solo, on the Kiwi Experience bus (the Asia & Australia leg of the round-the-world year): flew in from Melbourne (landed ~3am Jan 8); Auckland Jan 8-10 (Waiheke Jan 9); Hot Water Beach, Coromandel, Jan 10 (Cathedral Cove kayak); Karangahake Gorge and Waitomo Jan 11; Hobbiton en route to Rotorua Jan 12; Rotorua Jan 12-15 (Kaituna rafting Jan 13, Kuirau Park, kiwi hatchery, Government Gardens; Te Puia, Wai-O-Tapu and Huka Falls on the way out); Taupo Jan 15-18 (Tongariro Alpine Crossing and sunset cruise Jan 16, Hole in One Jan 17); Wellington Jan 18-21 (Te Papa Jan 19); Interislander ferry and Kaiteriteri Jan 21; Abel Tasman walk Jan 22; West Coast Jan 23-24 (Lake Rotoiti, Westport, Cape Foulwind, Pancake Rocks, Lake Mahinapua); Franz Josef Jan 25-27 (heli-hike Jan 25); rockslide day to Queenstown Jan 27; Queenstown Jan 27-31 (Queenstown Hill Jan 28, Milford Sound Jan 29, Routeburn to Harris Saddle Jan 30); flew Queenstown > Sydney > Bali Jan 31",
+  "album": "New Zealand (2024)",
+  "albums": {
+    "New Zealand (2024)": "Jan 8 to Jan 31, 2024 by capture date (Auckland Jan 8-9, Coromandel Jan 10, Waitomo Jan 11, Hobbiton Jan 12, Rotorua Jan 12-15, Taupo/Tongariro Jan 15-18, Wellington Jan 18-20, ferry/Abel Tasman Jan 21-23, West Coast Jan 23-24, Franz Josef Jan 25-27, Queenstown/Milford/Routeburn Jan 27-31); check GPS. Archived picks already in Images/New Zealand/<place>/: Abel Tasman, Auckland, Coromandel, Franz Josef, Hobbiton, Karangahake Gorge, Milford Sound, Queenstown, Rotorua, Routeburn Track, Taupo, Tongariro, Wellington, West Coast"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "new-zealand-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template, written to .tmp/nc_new-zealand/A/ (the old draft of the same name is still in the folder); 21 days in field-notes order: Auckland 1-2 > Coromandel > Waitomo > Rotorua (at least 4 days) > Taupo and the Tongariro Crossing > Wellington > Interislander ferry > Abel Tasman > West Coast (skip the Westport and Lake Mahinapua nights) > Franz Josef > Queenstown (5-7 days); he did it in 24 days on the Kiwi bus, Jan 8-31, 2024; Roy's Peak, Aoraki/Mount Cook, Kaikoura, Bay of Islands, Glenorchy as 'more time' (he has not been, except Glenorchy as the Routeburn shuttle stop); no route map exists"
+    },
+    {
+      "file": "top-10-new-zealand.html",
+      "type": "top10",
+      "writer": "A",
+      "note": "Kevin-accepted list and order (2026-10-24 round), 'ordered by how much I'd want to do them again': Tongariro Crossing, Franz Josef heli-hike, Hobbiton, Kaituna rafting, Milford Sound, Routeburn Track, Abel Tasman, Cathedral Cove, Te Papa, the Kiwi bus"
+    },
+    {
+      "file": "auckland.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "auckland",
+      "writer": "B",
+      "note": "Jan 8-10: arrival at 3am and the Grand Millennium on points, the harbor walk west past Viaduct Harbour and Silo Park to Ponsonby, Mount Eden at sunset, `## Waiheke Island {#waiheke-island}` (Jan 9: ferry, hop-on bus, Stonyridge, Mudbrick, Oneroa Beach), Remedy Coffee, Mexican Cafe, the Attic Backpackers; the Kiwi bus pick-up on Jan 10 is told in coromandel.md"
+    },
+    {
+      "file": "coromandel.html",
+      "type": "guide",
+      "kicker": "Coast Guide",
+      "writer": "B",
+      "note": "Jan 10-11: Kiwi bus from Auckland, the 3-hour Cathedral Cove sea kayak (the main event), Hot Water Beach as advice (he skipped it: low tide at midnight), Karangahake Gorge (walked Jan 11 on the way to Waitomo), Hot Water Beach TOP 10 Holiday Park and its restaurant; no city map in the field notes"
+    },
+    {
+      "file": "waitomo.html",
+      "type": "guide",
+      "kicker": "Experience Guide",
+      "writer": "B",
+      "note": "Jan 11-12: the ride from the Coromandel (Karangahake Gorge links coromandel.html#karangahake-gorge), the glowworm cave walk (spiral staircase down, 1.5 hours, tubers seen below; Kevin's own itinerary named it Ruakuri Cave, the field notes link Waitomo Glowworm Caves: see the brief), black-water rafting as the alternative, the Ruakuri Bush Walk, the hostel with the big apple; short page (1,500 to 2,200 words); no city map"
+    },
+    {
+      "file": "rotorua.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "rotorua",
+      "writer": "C",
+      "note": "Jan 12-15: Hobbiton on the way in (Jan 12), Kaituna rafting (Jan 13, the punctured raft), Kuirau Park at sunset, the Agrodome kiwi hatchery and Government Gardens (Jan 14), Te Puia and Wai-O-Tapu (Jan 15, on the way out), Gold Star pies, VNam, Capers, Lady Janes, Sobar and the Fainting Goat"
+    },
+    {
+      "file": "taupo.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "taupo",
+      "writer": "C",
+      "note": "Jan 15-18: the ride from Rotorua (the hot creek, Huka Falls), `## The Tongariro Alpine Crossing {#tongariro-crossing}` as the centerpiece (Jan 16, 5:15am shuttle, 5 hours, the Emerald Lakes out of the fog; the old standalone tongariro-crossing page folds in here), the sunset cruise to the rock carving, the airplane McDonald's, Hole in One, Mulligans, Pak'nSave; the Tongariro National Park waterfall walk of Jan 18 is told in wellington.md"
+    },
+    {
+      "file": "wellington.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "wellington",
+      "writer": "D",
+      "note": "Jan 18-21: the bus from Taupo (the waterfall walk in Tongariro National Park, speed dating on the bus), Te Papa (Jan 19, the best museum), the cable car and Botanic Garden walk, Cuba Street, the sunset walk, Swimsuit and Shelly Bay Baker coffee, Rosie's Tacos, Crab Shack mussels, Duck Island, Blend and Dirty Little Secret; the ferry is told in abel-tasman.md"
+    },
+    {
+      "file": "abel-tasman.html",
+      "type": "guide",
+      "kicker": "National Park Guide",
+      "writer": "D",
+      "note": "Jan 21-23: the Interislander ferry and Picton in getting-there, Kaiteriteri, the water taxi past Split Apple Rock to Torrent Bay, the Coast Track walk back via Cleopatra's Pool to Marahau (15 miles) and the road on to Kaiteriteri (21 in all), the Kaiteriteri lookout; no city map"
+    },
+    {
+      "file": "franz-josef.html",
+      "type": "guide",
+      "kicker": "Glacier Guide",
+      "writer": "E",
+      "note": "Jan 23-27: the West Coast on the way down (Lake Rotoiti, Westport, Cape Foulwind, Pancake Rocks, Greymouth, Lake Mahinapua, and his verdict to skip the two West Coast nights), the heli-hike moved up a day (Jan 25), the rainforest walk (Jan 26), Rainforest Retreat, Snakebite Brewery, Monsoon; the rockslide day is told in queenstown.md; no city map"
+    },
+    {
+      "file": "queenstown.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "queenstown",
+      "writer": "E",
+      "note": "Jan 27-31: the rockslide day from Franz Josef, the lakefront and Queenstown Hill (Jan 28), Milford Sound (Jan 29, cloudless), the Routeburn to Harris Saddle (Jan 30, 7 hours, 20 miles), adventure sports and the Skyline as advice (he did not do them), Ferg Bakery/Fergburger, Odd Saint, Souvla, London, the last night (World Bar teapot, 1876, Cowboys), his hostel, flying out Jan 31"
+    }
+  ],
+  "cards": [
+    {
+      "file": "new-zealand-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "New Zealand Travel Guide with Perfect 21 Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "New Zealand Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-new-zealand.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in New Zealand",
+      "place": "Top 10"
+    },
+    {
+      "file": "auckland.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Auckland (and Waiheke Island)",
+      "place": "Auckland"
+    },
+    {
+      "file": "coromandel.html",
+      "tag": "Coast Guide",
+      "title": "Coromandel: Cathedral Cove by Kayak & Karangahake Gorge",
+      "place": "Coromandel"
+    },
+    {
+      "file": "waitomo.html",
+      "tag": "Experience Guide",
+      "title": "Waitomo: The Glowworm Caves",
+      "place": "Waitomo"
+    },
+    {
+      "file": "rotorua.html",
+      "tag": "Town Guide",
+      "title": "Rotorua — Geothermal Wonders and Māori Culture",
+      "place": "Rotorua"
+    },
+    {
+      "file": "taupo.html",
+      "tag": "Town Guide",
+      "title": "Taupo — The Lake, the Hike, and the World's Best McDonald's",
+      "place": "Taupo"
+    },
+    {
+      "file": "wellington.html",
+      "tag": "City Guide",
+      "title": "Wellington — The Coolest Little Capital",
+      "place": "Wellington"
+    },
+    {
+      "file": "abel-tasman.html",
+      "tag": "National Park Guide",
+      "title": "Abel Tasman — Water Taxi In, Walk Back",
+      "place": "Abel Tasman"
+    },
+    {
+      "file": "franz-josef.html",
+      "tag": "Glacier Guide",
+      "title": "Franz Josef & the Glacier Heli-Hike",
+      "place": "Franz Josef"
+    },
+    {
+      "file": "queenstown.html",
+      "tag": "Town Guide",
+      "title": "Queenstown — The Adventure Capital of the World",
+      "place": "Queenstown"
+    }
+  ]
+}

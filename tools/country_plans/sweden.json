@@ -1,0 +1,78 @@
+{
+  "country": "sweden",
+  "label": "Sweden",
+  "cc": "se",
+  "folder": "Drafts/Full Articles/sweden",
+  "field_notes": "sweden/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "Scandinavia",
+  "trip": "Two short solo visits. Trip 1, Wed Oct 20, 2021: a day trip by train from Copenhagen over the Øresund Bridge to Malmö (part of an Amsterdam > Copenhagen > London trip; the journal heads it '2020' but it is 2021): Lilla Torg, Bullen (Swedish meatballs), Form/Design Center, Konditori Katarina, Slottsträdgården, Malmö Castle and its museum, the train back to Copenhagen; the journal is a bare list. Trip 2, Tue Aug 8 to Thu Aug 10, 2023 (Round-the-World year, Days 79-81): flew Riga > Stockholm Aug 8 afternoon, the fast (expensive) airport train into the city, a hostel, Gamla Stan in the evening (the changing of the guard by chance, the buildings 'reminded me of Paris'), Hirschenkeller and Carmen Bar; Aug 9 an early wander through Gamla Stan (House of Nobility, the Royal Palace outside, Helgeandsholmen), a cinnamon roll at Skeppsbro Bageri, the Royal Palace inside ('reminded me of Versailles'), beers at the Grand Hotel and other fancy hotels, Östermalm and Strandvägen, meatballs at Östermalms Saluhall, the Djurgårdsbron floating bar, the Nordic Museum ('a bit underwhelming', no Viking exhibits), bars by the water, Tak rooftop bar with a Hostelworld-chat group, a bar with an American country band; Aug 10 by scooter to ABBA The Museum (sold out until 2pm), a Viking museum on Djurgården (packed, rushed), the train to Arlanda, meatballs at an airport buffet, the flight to Ibiza",
+  "album": "Sweden (2023)",
+  "albums": {
+    "Sweden (2023)": "Stockholm only, Aug 8 to 10, 2023 by capture time (91 photos, almost none with GPS): Aug 8 about 18-20h (arrival, Gamla Stan in the evening, the guards); Aug 9 about 08-11h (the early walk: Gamla Stan, House of Nobility, Helgeandsholmen, Skeppsbro Bageri, the Royal Palace inside), 13h (Östermalm, Strandvägen, Östermalms Saluhall), 15-16h (Djurgården: the floating bar, the Nordic Museum); Aug 10 only 2 photos, 11-12h (Djurgården: ABBA The Museum's line or the Viking museum). Nothing from Tak or the evenings beyond Aug 8.",
+    "Copenhagen, Amsterdam & London (2021)": "Malmö only: Oct 20, 2021 (about 14 photos, no GPS): Lilla Torg, Form/Design Center, Konditori Katarina, Slottsträdgården, Malmö Castle; go by capture date and what is in the frame. Oct 16-18 is Amsterdam, Oct 18 evening to 21 is Copenhagen, Oct 21 evening onward is London: never use those. The Denmark guide (Drafts/Full Articles/denmark/copenhagen.html) has a Malmö day-trip section; run `python tools/fill_slots.py used denmark` and do not repeat its photos in malmo.html. Four Malmö originals are already archived in Images/Denmark/Malmo"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "sweden-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; two-place set, so NO top 10 exists: never link top-10-sweden.html. About 5 days in the route-map order: Stockholm 3 days (Gamla Stan and the palace; Östermalm, Strandvägen and Djurgården's museums; Södermalm and a sunset at Monteliusvägen, or a day in the archipelago in summer), then the fast train south to Malmö for 1 to 2 days (or Malmö as a day trip from Copenhagen, which is how he did it), continuing to Copenhagen. He never did the two together: Malmö was an Oct 2021 day trip from Copenhagen and Stockholm was two nights in Aug 2023 between Riga and Ibiza; say so plainly. Ferries to Helsinki and the Baltics and the Copenhagen link as the ways in and out (field notes). 'If you have more time': Gothenburg, Swedish Lapland (Abisko, Kiruna, the ICEHOTEL at Jukkasjärvi, the Kungsleden), Gotland and Visby; he has not been to any of them"
+    },
+    {
+      "file": "stockholm.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "stockholm",
+      "writer": "B",
+      "note": "Aug 8-10, 2023: the flight from Riga and the airport train; the city by neighborhood as the field notes order it (Östermalm & Norrmalm with Östermalms Saluhall, Strandvägen, City Hall and Helgeandsholmen; Gamla Stan with Stortorget, the Royal Palace and Mårten Trotzigs Gränd; Djurgården with the Nordic Museum, the Vasa Museum, ABBA The Museum and Skansen; Södermalm with Fotografiska and Mariaberget/Monteliusvägen), the archipelago as a summer day trip (advice), where to eat and drink (Östermalms Saluhall, Skeppsbro Bageri, Akkurat, Tak, Omnipollos Hatt, the Djurgårdsbron floating bar), City Backpackers as the stay (field notes; the journal never names his hostel); the field notes' places the journal doesn't have him at (City Hall, Stortorget by name, Mårten Trotzigs Gränd, Vasa, Skansen, Fotografiska, Mariaberget, Akkurat, Omnipollos Hatt, the archipelago) are advice; 2,800 to 4,000 words"
+    },
+    {
+      "file": "malmo.html",
+      "type": "guide",
+      "kicker": "Day Trip Guide",
+      "map": "malmo",
+      "writer": "B",
+      "note": "Oct 20, 2021, a day trip from Copenhagen by train over the Øresund Bridge (about 40 minutes per the field notes): Lilla Torg and Stortorget, Malmö Castle (Malmöhus) and its museums, Slottsträdgården and the windmill, Form/Design Center, Bullen Två Krögare (meatballs), Konditori Katarina (fika); the field notes' honest verdict (an interesting first taste of Sweden, 'not a must-visit destination by any means'; 1 to 2 days or a day trip); the journal is a bare list, so no invented scenes, times, weather or feelings; no Where to Stay beyond the field notes' advice that most people visit from Copenhagen (he did not stay overnight: say so); `## Getting to Malmö {#getting-there}` covers the Copenhagen train and the fast train from Stockholm (sourced); 1,500 to 2,200 words, never padded"
+    }
+  ],
+  "cards": [
+    {
+      "file": "sweden-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Sweden Travel Guide with Perfect 5-Day Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Sweden Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "stockholm.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Stockholm",
+      "place": "Stockholm"
+    },
+    {
+      "file": "malmo.html",
+      "tag": "Day Trip Guide",
+      "title": "Malmö Guide: The Easy Day Trip from Copenhagen",
+      "place": "Malmö"
+    }
+  ]
+}

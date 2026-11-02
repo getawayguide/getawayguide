@@ -1,0 +1,102 @@
+{
+  "country": "switzerland",
+  "label": "Switzerland",
+  "cc": "ch",
+  "folder": "Drafts/Full Articles/switzerland",
+  "field_notes": "switzerland/field-notes.html",
+  "date": "2026-10-31",
+  "date_line": "Oct 31, 2026",
+  "continent": [
+    "europe",
+    "Europe"
+  ],
+  "region": "The Alps",
+  "trip": "Mon Aug 14 to Sun Aug 20, 2023, solo, on the 2023 Round-the-World year between Amsterdam and Zagreb: flew Amsterdam > Basel (EuroAirport) Aug 14, night at Villa K in Saint-Louis (France); Aug 15 walked across the border to Basel station, train to Interlaken, Balmer's Hostel (3 nights); Aug 16 Cafe Velo breakfast, the hostel's group hike up Harder Kulm (about 2 hours, 5.1 miles, the triangular platform over both lakes), a farm fridge (raw milk), skipped the Grindelwald street festival, pizza at Il Buongustaio, the hostel basement club; Aug 17 rain, brunch at Spatz by the river, a rainy-day train to Bern (Kramgasse fountains, the Zytglogge, which did not perform on the hour for him, the Bear Pit, people floating the Aare); Aug 18 train via Wilderswil to Lauterbrunnen (the valley road walk, waterfalls, wingsuiters, a farm fridge, a bratwurst), back to Interlaken for his bag, train to Lucerne, Backpackers Lucerne, DoReMi Thai; Aug 19 Lucerne (farmers market at Chapel Bridge, the cathedral, Spreuerbrücke, Bourbaki Panorama, Lion Monument, Museggmauer and the Zytturm, the 5pm lake cruise, Sky Take Away); Aug 20 kebab at Dogan's, train to Basel, flew to Zagreb",
+  "album": "Switzerland (2023)",
+  "albums": {
+    "Switzerland (2023)": "156 files (126 HEIC), Aug 14 to 19, 2023 by capture time, NO GPS on any photo: Aug 14 20h = Saint-Louis/Basel hotel (1 photo); Aug 15 12-13h = Basel (the walk across the border, the river) and the train, 15-16h and 19h = arriving in Interlaken (bridges, Balmer's); Aug 16 10-12h = Interlaken town and the start of the Harder Kulm hike, 14-16h = the Harder Kulm summit and platform (16 photos) and the way down (farm fridge); Aug 17 10-11h = Interlaken in the rain (Spatz), 13-15h = Bern (36 photos: old town, fountains, Zytglogge, Bear Pit, the Aare); Aug 18 11-13h = Lauterbrunnen valley (25 photos), 15h = the move to Lucerne; Aug 19 10-13h = Lucerne old town, Chapel Bridge, Spreuerbrücke, Bourbaki, Lion Monument, Museggmauer (29 photos), 16-17h = the lake cruise; 10 photos have no capture time (screenshots or saved images: check before use). No Images/Switzerland folder exists yet. Never use Amsterdam _ Utrecht (2023) (before Aug 14) or Croatia 2.0 (2023)/Slovenia (2023) (from Aug 20)"
+  },
+  "shells": {
+    "guide": "Drafts/Full Articles/bosnia/sarajevo.html",
+    "top10": "Drafts/Full Articles/bosnia/top-10-bosnia.html",
+    "index": "Drafts/Full Articles/bosnia/index.html"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "type": "index",
+      "writer": "A"
+    },
+    {
+      "file": "switzerland-itinerary.html",
+      "type": "itinerary",
+      "writer": "A",
+      "note": "HTML from the Guatemala pre-photo template; 1 week in the route-map order: Interlaken 3-4 (Harder Kulm, the lakes, Lauterbrunnen, Grindelwald, Jungfraujoch as advice) > Bern 1 (a day trip from Interlaken works, as he did) > Lucerne 1-2; he did it in 6 days (Aug 15-20, 2023) and arrived/left via Basel; Zermatt and the Matterhorn, Zurich, Geneva and Lavaux, Lugano as 'if you have more time' (he has not been)"
+    },
+    {
+      "file": "top-10-switzerland.html",
+      "type": "top10",
+      "writer": "A"
+    },
+    {
+      "file": "interlaken.html",
+      "type": "guide",
+      "kicker": "Town Guide",
+      "map": "interlaken",
+      "writer": "B",
+      "note": "Aug 15-18: Balmer's Hostel (his favorite, the heart of the stay), the Harder Kulm hike (Aug 16, with the hostel group), the farm fridges (Bauernladen), Spatz brunch (Aug 17), `## Day Trip to Lauterbrunnen {#lauterbrunnen}` (Aug 18: the valley road, waterfalls, wingsuiters; Grindelwald and Gimmelwald as advice inside it), the lake bike loops, Hardergrat, extreme sports and Jungfraujoch as advice (he did none of them); the Basel > Interlaken train told in getting-there"
+    },
+    {
+      "file": "bern.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "bern",
+      "writer": "C",
+      "note": "Aug 17, a rainy-day train trip from Interlaken (one afternoon): Kramgasse and its fountains, the Zytglogge (it did not perform on the hour for him; the field notes describe the show), the Bear Pit and the Aare floaters, Nydegg Bridge; Einstein House, Rosengarten and the Münster as advice; no eat/stay of his own in Bern (he slept in Interlaken): Where to Stay says so and points to interlaken.html#where-to-stay, Where to Eat is advice or omitted per the brief"
+    },
+    {
+      "file": "lucerne.html",
+      "type": "guide",
+      "kicker": "City Guide",
+      "map": "lucerne",
+      "writer": "C",
+      "note": "Aug 18-20: Chapel Bridge and the farmers market, Spreuerbrücke, Bourbaki Panorama (the surprise), Lion Monument, Museggmauer and the Zytturm, the 5pm lake cruise (about $35), Swiss Museum of Transport as advice; eating: Rathaus Brauerei and Fritschi are field-notes picks he did not eat at (advice), he actually ate Thai (DoReMi, Sky Take Away) and a kebab at Dogan's to save money; Backpackers Lucerne; the train to Basel and the flight out on Aug 20"
+    }
+  ],
+  "cards": [
+    {
+      "file": "switzerland-itinerary.html",
+      "tag": "Travel Guide",
+      "title": "Switzerland Travel Guide with Perfect 1-Week Itinerary"
+    },
+    {
+      "file": "field-notes.html",
+      "tag": "Field Notes",
+      "title": "Switzerland Field Notes: What I Learned on the Ground"
+    },
+    {
+      "file": "top-10-switzerland.html",
+      "tag": "Top 10",
+      "title": "Top 10 Things to Do in Switzerland",
+      "place": "Top 10"
+    },
+    {
+      "file": "interlaken.html",
+      "tag": "Town Guide",
+      "title": "The Ultimate Guide to Interlaken (and Lauterbrunnen)",
+      "place": "Interlaken"
+    },
+    {
+      "file": "bern.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Bern",
+      "place": "Bern"
+    },
+    {
+      "file": "lucerne.html",
+      "tag": "City Guide",
+      "title": "The Ultimate Guide to Lucerne",
+      "place": "Lucerne"
+    }
+  ]
+}
