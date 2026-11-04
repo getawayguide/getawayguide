@@ -21,7 +21,7 @@ Typical use:
   # any later tweak (rebuild, then just re-run; it replaces in place):
   python tools/embed_itinerary_map.py argentina argentina/field-notes.html
 """
-import argparse, pathlib, re, sys
+import argparse, json, pathlib, re, sys
 
 K = 720 / 946           # Font-size standard: px per SVG unit (El Salvador 720/946 =
                         # Egypt 451/592). Base embed width = K*vw.
@@ -76,13 +76,32 @@ def main():
     # height-capped width; the builder already scaled a tall map's annotations so
     # the text still lands at Egypt's px size after this cap
     w = args.width or round(K * vw * min(1.0, MAX_VH / vh))
+    # a config with a "mobile" build (tools/itinerary_map.py) embeds both SVGs in the one figure: the desktop
+    # one above 700 px, the phone one at and below it (the city maps' breakpoint, so a page's maps switch
+    # together); "embed_width" fixes the figure's width (the boat-tour map takes the city maps' 760 px)
+    cpath = pathlib.Path("tools/itinerary_maps") / f"{args.slug}.json"
+    cfg = json.load(open(cpath, encoding="utf-8")) if cpath.exists() else {}
+    if cfg.get("embed_width") and not args.width:
+        w = cfg["embed_width"]
+    if cfg.get("mobile"):
+        msvg, _, _ = load_svg(args.slug + "-mob")
+        sel = f'figure[data-map="{args.slug}"]'
+        svg = (f'<style>{sel} .imap-mob{{display:none !important}}@media (max-width:700px){{{sel} .imap-desk'
+               f'{{display:none !important}}{sel} .imap-mob{{display:block !important}}}}</style>'
+               + svg.replace("<svg ", '<svg class="imap-desk" ', 1)
+               + msvg.replace("<svg ", '<svg class="imap-mob" ', 1))
     p = pathlib.Path(args.target)
     # newline="" both ways: the default turned an LF article into CRLF on Windows at every re-embed
     with open(p, encoding="utf-8", newline="") as fh:
         html = fh.read()
     html, mont_added = ensure_montserrat(html)
 
-    existing = re.search(r'<figure class="itinerary-map"[^>]*>', html)
+    # a page can carry several route maps (Ohrid: bus routes + the boat tour, 2026-11-02), so each figure
+    # names its config in data-map. Re-embed THIS map's figure; a figure with no data-map (embedded before
+    # the tag existed) is taken only when there is no --after, i.e. the old one-map-per-page re-embed.
+    existing = re.search(r'<figure class="itinerary-map" data-map="%s"[^>]*>' % re.escape(args.slug), html)
+    if not existing and not args.after:
+        existing = re.search(r'<figure class="itinerary-map"(?![^>]*data-map=)[^>]*>', html)
     if existing:
         start = existing.start()
         end = html.index("</figure>", existing.end()) + len("</figure>")
@@ -93,7 +112,12 @@ def main():
         region = html[region_start:end]
         new_fig = re.sub(r'(<figure class="itinerary-map"[^>]*>).*?(</figure>)',
                          lambda mo: mo.group(1) + svg + mo.group(2), region, count=1, flags=re.S)
-        new_fig = re.sub(r"max-width:\d+px", f"max-width:{w}px", new_fig)
+        # only the figure's own style: a two-build figure carries a max-width media query inside it
+        new_fig = re.sub(r'(<figure class="itinerary-map"[^>]*?)max-width:\d+px',
+                         lambda mo: mo.group(1) + f"max-width:{w}px", new_fig, count=1)
+        if "data-map=" not in new_fig[:new_fig.index(">", new_fig.index('<figure class="itinerary-map"'))]:
+            new_fig = new_fig.replace('<figure class="itinerary-map"',
+                                      f'<figure class="itinerary-map" data-map="{args.slug}"', 1)
         html = html[:region_start] + new_fig + html[end:]
         action = "replaced"
     elif args.after:
@@ -103,7 +127,7 @@ def main():
         # draws the accent bar down its left edge (Kevin, 2026-10-20: "the title shouldn't have the green bar")
         title = "" if args.no_title else f'\n    <div class="serif rm-h">{args.title}</div>'
         fig = ('\n  <div class="route-map">' + title +
-               f'\n    <figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n  </div>')
+               f'\n    <figure class="itinerary-map" data-map="{args.slug}" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n  </div>')
         html = html.replace(args.after, args.after + fig, 1)
         action = "inserted"
     else:
@@ -124,7 +148,7 @@ def main():
         indent = html[ls:ins]
         title = "" if args.no_title else f'{indent}  <div class="serif rm-h">{args.title}</div>\n'
         block = (f'{indent}<div class="route-map">\n' + title +
-                 f'{indent}  <figure class="itinerary-map" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n'
+                 f'{indent}  <figure class="itinerary-map" data-map="{args.slug}" style="{FIG_STYLE.format(w=w)}">{svg}</figure>\n'
                  f'{indent}</div>\n')
         html = html[:ls] + block + html[ls:]
         action = "auto-inserted"

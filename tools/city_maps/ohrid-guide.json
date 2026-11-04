@@ -1,0 +1,189 @@
+{
+  "slug": "ohrid-guide",
+  "kicker": "North Macedonia",
+  "city": "Ohrid",
+  "osm": ".tmp/ohrid-guide_osm.json",
+  "article": "Drafts/Upcoming/north-macedonia/ohrid.html",
+  "embed": {
+    "pre": "<!-- city map: ohrid-guide -->",
+    "post": "<!-- /city map: ohrid-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.3
+  },
+  "mobile": {
+    "pad": 1.25,
+    "init_w": 0.95,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 41.1117,
+      "lon": 20.7975
+    }
+  },
+  "pois": [
+    {
+      "name": "Old Bazaar Street",
+      "cat": "see",
+      "lat": 41.1136544,
+      "lon": 20.7997197,
+      "match": "old bazaar street",
+      "href": "https://www.google.com/maps/place/Old+Bazaar+Street/@41.1136544,20.7997197,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dca4765d352d:0xb7eab015148efd44!8m2!3d41.1136544!4d20.7997197!16s%2Fg%2F11b6p5tp1j?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Clock Tower",
+      "cat": "see",
+      "lat": 41.1160134,
+      "lon": 20.7985581,
+      "match": "clock tower",
+      "href": "https://www.google.com/maps/place/Clock+Tower+-+Ohrid/@41.1160134,20.7985581,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dca3070c7263:0x34f64fd529377828!8m2!3d41.1160134!4d20.7985581!16s%2Fg%2F11g9swjzbt?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Upper Gate",
+      "cat": "see",
+      "lat": 41.1149975,
+      "lon": 20.7947332,
+      "match": "upper gate",
+      "href": "https://www.google.com/maps/place/Upper+Gate,+Ilindenska,+Ohrid,+North+Macedonia/@41.1149975,20.7947332,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcbca685bee7:0xc7ac7d576e0bf62d!8m2!3d41.1149975!4d20.7947332!16s%2Fg%2F12hlwddg7?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Ancient Theatre of Lychnidos",
+      "cat": "see",
+      "lat": 41.1146656,
+      "lon": 20.7938049,
+      "match": "theatre of lychnidos",
+      "href": "https://www.google.com/maps/place/Ancient+Macedonian+Theatre+of+Lychnidos/@41.1146656,20.7938049,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcbb6478e6a5:0xdaac2a2cc939fbfd!8m2!3d41.1146656!4d20.7938049!16s%2Fm%2F03cd_5s?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Old Town View Point",
+      "cat": "see",
+      "lat": 41.114091,
+      "lon": 20.795249,
+      "match": "view point",
+      "href": "https://www.google.com/maps/place/Old+Town+View+Point/@41.1137937,20.7942728,16.18z/data=!4m15!1m8!3m7!1s0x1350db6587ea6657:0xc46cfc65390bc9d3!2sOhrid,+North+Macedonia!3b1!8m2!3d41.1230977!4d20.8016481!16zL20vMDJ6ajR2!3m5!1s0x1350dd3e21eaaddd:0x41fa3db0e28a1545!8m2!3d41.114091!4d20.795249!16s%2Fg%2F11l5t86mlt?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Church of St. Sophia",
+      "cat": "see",
+      "lat": 41.1120722,
+      "lon": 20.7940373,
+      "match": "sophia",
+      "href": "https://www.google.com/maps/place/Church+of+Saint+Sophia/@41.1120722,20.7940373,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcbae7584491:0xf973c9aa671fb02d!8m2!3d41.1120722!4d20.7940373!16zL20vMDR6cWQy?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Samuel's Fortress",
+      "cat": "see",
+      "lat": 41.1151825,
+      "lon": 20.7908451,
+      "match": "samuel's fortress",
+      "href": "https://www.google.com/maps/place/Samoil's+Fortress,+Ohrid+6000,+North+Macedonia/@41.1151825,20.7908451,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcbc7507c553:0x6a2bb1a98723ec5d!8m2!3d41.1151825!4d20.7908451!16s%2Fm%2F02qd1hk?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Plaošnik",
+      "cat": "see",
+      "lat": 41.1127678,
+      "lon": 20.7908025,
+      "match": "plao",
+      "href": "https://www.google.com/maps/place/Plaoshnik+Archaeological+park/@41.1127678,20.7908025,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcba31d97223:0x73ac40c249a429e1!8m2!3d41.1127678!4d20.7908025!16s%2Fm%2F076ywsn?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "St. John Kaneo Church",
+      "cat": "see",
+      "lat": 41.1110753,
+      "lon": 20.7887506,
+      "match": "kaneo",
+      "href": "https://www.google.com/maps/place/Church+of+St.+John+at+Kaneo/@41.1110753,20.7887506,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dcb9e2457c71:0xbea74f2f5ddcc056!8m2!3d41.1110753!4d20.7887506!16s%2Fm%2F02r390y?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Labino Vista Point",
+      "cat": "see",
+      "lat": 41.1140814,
+      "lon": 20.7879326,
+      "match": "labino vista point"
+    },
+    {
+      "name": "Old Swimming Court",
+      "cat": "see",
+      "lat": 41.110359,
+      "lon": 20.8017003,
+      "match": "old swimming court",
+      "href": "https://www.google.com/maps/place/Old+Swimming+Court/@41.110359,20.8017003,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dca6762de8ff:0x7211a175c9a90fa!8m2!3d41.110359!4d20.8017003!16s%2Fg%2F11bwz00m1w?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Cuba Libre Beach & Bar",
+      "cat": "see",
+      "lat": 41.1009742,
+      "lon": 20.8058654,
+      "match": "cuba libre",
+      "href": "https://www.google.com/maps/place/Cuba+Libre+Beach+%26+Bar/@41.1153863,20.7910569,16z/data=!4m6!3m5!1s0x1350dcaa42cfea41:0x3769611e40472486!8m2!3d41.1009742!4d20.8058654!16s%2Fg%2F1tfdhjqd?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Voena Plazha",
+      "cat": "see",
+      "lat": 41.1030303,
+      "lon": 20.8069565,
+      "match": "voena",
+      "href": "https://www.google.com/maps/place/Voena+plazha/@41.1068862,20.8020941,16.12z/data=!4m15!1m8!3m7!1s0x1350db6587ea6657:0xc46cfc65390bc9d3!2sOhrid,+North+Macedonia!3b1!8m2!3d41.1230977!4d20.8016481!16zL20vMDJ6ajR2!3m5!1s0x1350dca9f9db054d:0x71c13f3efa95e411!8m2!3d41.1030303!4d20.8069565!16s%2Fg%2F1tjyqx41?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Viva Ksantika kaj Tanja",
+      "cat": "eat",
+      "lat": 41.1124181,
+      "lon": 20.7980346,
+      "match": "viva ksantika",
+      "href": "https://www.google.com/maps/place/Viva+Ksantika+kaj+Tanja/@41.1124181,20.7980346,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dca4f1d1bed3:0xedbb906cfc6fd201!8m2!3d41.1124181!4d20.7980346!16s%2Fg%2F11bccjq1k1?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Pekara Bulevar",
+      "cat": "eat",
+      "lat": 41.114526,
+      "lon": 20.8005751,
+      "match": "pekara bulevar"
+    },
+    {
+      "name": "Mr Papo",
+      "cat": "eat",
+      "lat": 41.1139612,
+      "lon": 20.7997167,
+      "match": "mr papo"
+    },
+    {
+      "name": "Plate Bistro",
+      "cat": "eat",
+      "lat": 41.1138935,
+      "lon": 20.8026743,
+      "match": "plate bistro"
+    },
+    {
+      "name": "Old Town Hostel Ohrid",
+      "cat": "stay",
+      "lat": 41.1148218,
+      "lon": 20.7996612,
+      "match": "old town hostel oh",
+      "href": "https://www.google.com/maps/place/Hostel+Old+Town/@41.1147942,20.7996983,17z/data=!4m9!3m8!1s0x1350ddb93de73279:0x9344b9f80489550c!5m2!4m1!1i2!8m2!3d41.1147942!4d20.7996983!16s%2Fg%2F11fm2lr8dn?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "day_trips": [
+    {
+      "name": "Lake Boat Tour",
+      "time": "Full Day",
+      "href": "https://www.google.com/maps/place/Lale+Tours+-+Excursies+Ohrid/@41.116521,20.799492,17z/data=!3m1!4b1!4m6!3m5!1s0x1350dca6a12f1643:0x4656291701135367!8m2!3d41.116521!4d20.799492!16s%2Fg%2F11rvt0gwl?hl=en&entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 41.1135,
+      "lon": 20.7955
+    },
+    {
+      "text": "NEW TOWN",
+      "lat": 41.1102,
+      "lon": 20.8078
+    }
+  ]
+}

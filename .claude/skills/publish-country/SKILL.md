@@ -20,7 +20,13 @@ Every published page must have:
 | `og:type` | `article` (About/Privacy/index stay `website`) |
 | JSON-LD | `datePublished` + `dateModified`, and `headline` matching the `<title>` |
 
-Never target "Field Notes" in a title. It's brand, and nobody searches it. Lead with the
+**Exception: upgraded (Armenia-template) field-notes pages** (Kevin, 2026-11-02). Their title is
+`<Country> Field Notes - Quick Reference Guides While Traveling`, or `<Country> Field Notes - Quick
+Guides While Traveling` when the first runs over 60 (El Salvador), and their `<h1>` is `<Country> Field
+Notes`. The checkers read the page's own `<title>` to tell which kind it is (tools/audit.py
+check_seo, tools/prelaunch.py), so never "fix" these to Travel Guide, and don't run seo_apply on them.
+
+Otherwise, never target "Field Notes" in a title. It's brand, and nobody searches it. Lead with the
 keyword, then spend the rest of the 60 characters on real place names from the page.
 The 60 is the whole `<title>`, as the browser tab and Google show it (the editor's Search tab
 counts to 60), so a ` - getawayguide` ending counts against it: drop the ending when it would

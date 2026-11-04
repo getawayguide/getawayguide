@@ -135,11 +135,12 @@
       "match": "whisper"
     },
     {
-      "name": "Lai 22",
+      "name": "The Monk's Bunk",
       "lat": 59.4398,
       "lon": 24.7452,
       "cat": "stay",
-      "match": "lai 22"
+      "match": "lai 22",
+      "href": "https://www.google.com/maps/place/The+Monk%C2%B4s+Bunk/@59.4390924,24.7451093,17z/data=!4m9!3m8!1s0x46929363ad67e6bf:0x3b62b77e489f464f!5m2!4m1!1i2!8m2!3d59.4390924!4d24.7451093!16s%2Fg%2F11j0clv1cr?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMi4wIKXMDSoASAFQAw%3D%3D"
     }
   ]
 }

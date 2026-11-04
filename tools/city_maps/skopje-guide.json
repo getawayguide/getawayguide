@@ -1,0 +1,143 @@
+{
+  "slug": "skopje-guide",
+  "kicker": "North Macedonia",
+  "city": "Skopje",
+  "osm": ".tmp/skopje_osm.json",
+  "article": "Drafts/Upcoming/north-macedonia/skopje.html",
+  "embed": {
+    "pre": "<!-- city map: skopje-guide -->",
+    "post": "<!-- /city map: skopje-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "The Bridge of Civilizations in Macedonia",
+      "cat": "see",
+      "match": "the bridge of civili",
+      "lat": 41.996978,
+      "lon": 21.433947,
+      "href": "https://www.google.com/maps/place/The+Bridge+of+Civilizations+in+Macedonia,+1000+Skopje,+North+Macedonia/@41.9963433,21.4339362,17z/data=!3m1!4b1!4m6!3m5!1s0x135415b150d387a7:0xe6b4b4fad6e37b9!8m2!3d41.9963433!4d21.4339362!16s%2Fg%2F12vr6gtfg?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Stone Bridge",
+      "cat": "see",
+      "match": "stone bridge",
+      "lat": 41.9971,
+      "lon": 21.43318,
+      "href": "https://www.google.com/maps/place/Stone+Bridge,+1000+Skopje,+North+Macedonia/@41.9972148,21.4333684,17z/data=!3m1!4b1!4m6!3m5!1s0x135415b3e0e0ad4d:0x37132db999c9379b!8m2!3d41.9972148!4d21.4333684!16s%2Fg%2F1tf20rrv?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Alexander the Great Statue",
+      "cat": "see",
+      "match": "alexander the great ",
+      "lat": 41.99617,
+      "lon": 21.43172,
+      "href": "https://www.google.com/maps/place/Alexander+the+Great+Statue/@41.9979354,21.424529,16z/data=!4m15!1m8!3m7!1s0x135415a58c9aa2a5:0xb2ed88c260872020!2sSkopje,+North+Macedonia!3b1!8m2!3d41.9981294!4d21.4254355!16zL20vMDdiYmM!3m5!1s0x135415b198820fbf:0x67dd8bb78356b990!8m2!3d41.9959108!4d21.4314632!16s%2Fg%2F11c5rq1084?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Macedonia Gate",
+      "cat": "see",
+      "match": "macedonia gate",
+      "lat": 41.994451,
+      "lon": 21.43244,
+      "href": "https://www.google.com/maps/place/Macedonia+Gate,+11th+October+St.,+Skopje+1000,+North+Macedonia/@41.9944884,21.4323213,17z/data=!3m1!4b1!4m6!3m5!1s0x135415b439c47bb3:0x835c8a34dce1814b!8m2!3d41.9944884!4d21.4323213!16s%2Fm%2F0hznx9v?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Woman-Warrior Park",
+      "cat": "see",
+      "match": "woman-warrior park",
+      "lat": 41.993722,
+      "lon": 21.434033,
+      "href": "https://www.google.com/maps/place/Woman-Warrior+Park/@41.9937125,21.4337344,17z/data=!3m1!4b1!4m6!3m5!1s0x135415b6872854c3:0xdca42cf7f4efe87e!8m2!3d41.9937125!4d21.4337344!16s%2Fg%2F11g8wh0w63?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Old Bazaar",
+      "cat": "see",
+      "match": "old bazaar",
+      "lat": 42.001736,
+      "lon": 21.436747,
+      "href": "https://www.google.com/maps/place/Old+Bazaar+-+Skopje+Old+Town/@41.9980949,21.4336486,16z/data=!4m15!1m8!3m7!1s0x135415a58c9aa2a5:0xb2ed88c260872020!2sSkopje,+North+Macedonia!3b1!8m2!3d41.9981294!4d21.4254355!16zL20vMDdiYmM!3m5!1s0x135415afad379837:0xd19f732f5ede1e48!8m2!3d42.0007751!4d21.4367395!16s%2Fm%2F09ghwt2?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Archbishop Cathedral of St. Clement of Ohrid",
+      "cat": "see",
+      "match": "archbishop cathedral",
+      "lat": 41.99878,
+      "lon": 21.4226,
+      "href": "https://www.google.com/maps/place/Archbishop+Cathedral+%E2%80%9ESt.+Clement+of+Ohrid%E2%80%9D/@41.9961812,21.4283056,16z/data=!4m15!1m8!3m7!1s0x135415a58c9aa2a5:0xb2ed88c260872020!2sSkopje,+North+Macedonia!3b1!8m2!3d41.9981294!4d21.4254355!16zL20vMDdiYmM!3m5!1s0x1354144cbf0cbfb1:0x9fe8e8ab0acd87f!8m2!3d41.9985237!4d21.4264284!16s%2Fm%2F0czb6hd?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "The Post Office",
+      "cat": "see",
+      "match": "the post office",
+      "lat": 41.99735,
+      "lon": 21.4306,
+      "href": "https://www.google.com/maps/place/%D0%9F%D0%BE%D1%88%D1%82%D0%B0+%D0%BD%D0%B0+%D0%A1%D0%B5%D0%B2%D0%B5%D1%80%D0%BD%D0%B0+%D0%9C%D0%B0%D0%BA%D0%B5%D0%B4%D0%BE%D0%BD%D0%B8%D1%98%D0%B0+-+%D0%94%D0%B8%D1%80%D0%B5%D0%BA%D1%86%D0%B8%D1%98%D0%B0+%D0%9F%D0%BE%D1%88%D1%82%D0%B0+%D0%BD%D0%B0+%D0%A1%D0%B5%D0%B2%D0%B5%D1%80%D0%BD%D0%B0%E2%80%A6/@41.99835,21.4292712,16z/data=!4m14!1m8!3m7!1s0x135415a58c9aa2a5:0xb2ed88c260872020!2sSkopje,+North+Macedonia!3b1!8m2!3d41.9981294!4d21.4254355!16zL20vMDdiYmM!3m4!1s0x135415b30fc1c1ed:0xba323470e16084cf!8m2!3d41.9983797!4d21.4298844?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Kale Fortress (aka Skopje Fortress)",
+      "cat": "see",
+      "match": "kale fortress (aka s",
+      "lat": 42.000802,
+      "lon": 21.433048,
+      "href": "https://www.google.com/maps/place/Skopje+Fortress/@42.001093,21.4334606,17z/data=!4m10!1m2!2m1!1sKale+Fortress+(aka+Skopje+Fortress)+Skopje!3m6!1s0x135415ac30000001:0xfc4d0b3f68ae3f03!8m2!3d42.0018826!4d21.4324382!15sCipLYWxlIEZvcnRyZXNzIChha2EgU2tvcGplIEZvcnRyZXNzKSBTa29wamVaKiIoa2FsZSBmb3J0cmVzcyBha2Egc2tvcGplIGZvcnRyZXNzIHNrb3BqZZIBCGZvcnRyZXNzmgFEQ2k5RFFVbFJRVU52WkVOb2RIbGpSamx2VDJ4c2IxTkZOVWhYYkZwb1dXNW9XRkV4U205WFdIQnJVMVp2TkdSclJSQULgAQD6AQQIABBD!16s%2Fm%2F02vx62f?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Mother Teresa Memorial House",
+      "cat": "see",
+      "match": "mother teresa memori",
+      "lat": 41.993845,
+      "lon": 21.430864,
+      "href": "https://www.google.com/maps/place/Mother+Teresa+Memorial+House/@41.99382,21.4308717,17z/data=!3m1!4b1!4m6!3m5!1s0x135415b5a95eb8f5:0xc4fa5050af12edfd!8m2!3d41.99382!4d21.4308717!16s%2Fm%2F05f9tx6?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Restaurant Skopski Merak",
+      "cat": "eat",
+      "match": "restaurant skopski m",
+      "lat": 42.001031,
+      "lon": 21.419801,
+      "href": "https://www.google.com/maps/place/Restaurant+Skopski+Merak/@41.9983299,21.4200678,16z/data=!4m15!1m8!3m7!1s0x135415a58c9aa2a5:0xb2ed88c260872020!2sSkopje,+North+Macedonia!3b1!8m2!3d41.9981294!4d21.4254355!16zL20vMDdiYmM!3m5!1s0x1354144e523418ef:0xd97e6a60f538edf0!8m2!3d42.0010096!4d21.4199187!16s%2Fg%2F11b6snznm7?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Kaj Гоце",
+      "cat": "eat",
+      "match": "kaj гоце",
+      "lat": 41.999664,
+      "lon": 21.436209,
+      "href": "https://www.google.com/maps/place/Kaj+%D0%93%D0%BE%D1%86%D0%B5/@41.9996612,21.4362314,17z/data=!3m1!4b1!4m6!3m5!1s0x135415afce535b0b:0x153bbc846311acb0!8m2!3d41.9996612!4d21.4362314!16s%2Fg%2F11dfpgb3sn?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 41.9977,
+    "lon": 21.4305
+  },
+  "district_labels": [
+    {
+      "text": "OLD BAZAAR",
+      "lat": 42.0012,
+      "lon": 21.4352
+    },
+    {
+      "text": "CENTAR",
+      "lat": 41.9956,
+      "lon": 21.43
+    },
+    {
+      "text": "DEBAR MAALO",
+      "lat": 42.0,
+      "lon": 21.4234
+    }
+  ]
+}

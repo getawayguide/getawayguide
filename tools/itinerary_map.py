@@ -25,12 +25,23 @@ CONFIG SCHEMA (see tools/itinerary_maps/el-salvador.json for a full example):
     stops[]         {n,name,lat,lon,days,anchor,dx,dy}  (anchor label offsets)
     dots[]          {name,lat,lon,anchor,dx,dy}  small un-numbered markers
     airport         {name,lat,lon,anchor,dx,dy}  optional ✈ marker
+    airports[]      several ✈ markers (same fields); "air" legs use the first one
     legs[]          {a,b,label,dash,chip_off,chip_side}  a/b index stops or "air"
                     sailing legs: "via":[[lat,lon],...] sea waypoints and/or "bow":0.3
                     a trail map (2026-10-19): "outline_file": rings [[lon,lat],...] from tools/osm_coast_land.py
                     instead of the country (a 20 km box is a few vertices in Natural Earth); per-leg "color";
                     "legend": {"pos": "tl|tr|bl|br", "items": [{"label", "color", "dash"}]}
                     draw a smooth curve that stays on the water (blue-cruise.json)
+    a lake map (2026-11-02, Lake Ohrid boat tour): "frame_fill" paints the whole window (the
+                    neighbor country) under the outline; "layers": [{"file", "fill", "stroke", "width",
+                    "dash"}] draws more ring files ([[lon,lat],...]) on top in order (lakes, islands,
+                    the border as a dashed stroke of the outline_file); "country_labels": [{"name",
+                    "lat", "lon", "size", "dx", "dy"}] sets country names in spaced muted caps
+                    (+ "weight", "ls", "color"; "North|Macedonia" sets two lines)
+    a fixed-shape map (2026-11-02): "aspect" grows the window to exactly that w/h (no height cap);
+                    "mobile": {...} keys laid over the config for a phone build (<slug>-mob-map.svg),
+                    with "stops": {"<i>": {anchor, dx, dy}} patching single entries; "embed_width"
+                    fixes the figure width; a layer with "under": true draws beneath the country
 
 Label dx/dy are hand-tuned per map (good placement depends on geography); use
 --shot to iterate quickly.
@@ -58,6 +69,13 @@ DEFAULT_PALETTE = {
 
 
 _GEOJSON_CACHE = None
+
+
+def airport_list(cfg):
+    """The map's ✈ markers: `airports` (a list) if given, else the single `airport`."""
+    if cfg.get("airports"):
+        return list(cfg["airports"])
+    return [cfg["airport"]] if cfg.get("airport") else []
 
 
 def load_geojson():
@@ -164,8 +182,8 @@ def build(cfg):
     if fs:
         pll = [(s["lat"], s["lon"]) for s in cfg["stops"]]
         pll += [(d["lat"], d["lon"]) for d in cfg.get("dots", [])]
-        if cfg.get("airport"):
-            pll.append((cfg["airport"]["lat"], cfg["airport"]["lon"]))
+        for ap in airport_list(cfg):
+            pll.append((ap["lat"], ap["lon"]))
         sx = [lon * K for _, lon in pll]; sy = [-lat for lat, _ in pll]
         ext = max(max(sx) - min(sx), max(sy) - min(sy)) or 1e-6
         country_w = fs / ext * (maxx - minx) + 2 * PAD
@@ -268,7 +286,21 @@ def build(cfg):
         else:                   x0, x1 = x, x + w
         exa(x0, y - fs * 0.85); exa(x1, y + fs * 0.25)
 
-    B = [f'<path d="{path_d(pr)}" fill="{P["land"]}"/>']
+    B = []
+    land = f'<path d="{path_d(pr)}" fill="{P["land"]}"/>'
+    # layers draw on top of the country in order; "under": true puts one beneath it instead (a neighbor
+    # country: the smoothed outline then covers their shared border, so the two never leave a gap)
+    lys = cfg.get("layers", [])
+    for ly in [l for l in lys if l.get("under")] + [None] + [l for l in lys if not l.get("under")]:
+        if ly is None:
+            B.append(land)
+            continue
+        lk, lrings = _outline_file(os.path.join(ROOT, ly["file"]))
+        lrings = [[(x / lk * K, y) for x, y in r] for r in lrings]     # into THIS map's projection (its K)
+        dsh = f' stroke-dasharray="{ly["dash"]}"' if ly.get("dash") else ""
+        stroke = (f' stroke="{ly["stroke"]}" stroke-width="{ly.get("width", 1.2) * AFS:.2f}"{dsh} '
+                  f'stroke-linejoin="round"') if ly.get("stroke") else ""
+        B.append(f'<path d="{path_d(lrings)}" fill="{ly.get("fill", "none")}"{stroke}/>')
     # lakes: named Natural Earth 10m lakes drawn on the land ("lakes": ["Lake Sevan"]).
     # The outline is a country, so a big inland lake was simply absent (Kevin, 2026-09-27).
     LAKES = os.path.join(ROOT, ".tmp", "ne_10m_lakes.geojson")
@@ -306,6 +338,16 @@ def build(cfg):
                  f'{html.escape(wl["name"].upper())}</text></g>')
         if wl.get("href") and not EDIT:
             B[-1] = f'<a class="imap-link" href="{wl["href"]}">{B[-1]}</a>'
+    for cl in cfg.get("country_labels", []):
+        cx_, cy_ = T(cl["lat"], cl["lon"])
+        cx_ += cl.get("dx", 0) * AFS; cy_ += cl.get("dy", 0) * AFS
+        # "North|Macedonia" sets two lines; "weight" / "ls" (letter-spacing) make a label more prominent
+        cfs = cl.get("size", 11)
+        txt = "".join(f'<text x="0" y="{k * cfs * 1.2:.1f}" text-anchor="{cl.get("anchor", "middle")}" '
+                      f'font-size="{cfs}" font-weight="{cl.get("weight", 600)}" letter-spacing="{cl.get("ls", 3)}" '
+                      f'fill="{cl.get("color", P["muted"])}">{html.escape(ln.upper())}</text>'
+                      for k, ln in enumerate(cl["name"].split("|")))
+        B.append(f'<g transform="{stamp_tf(cx_, cy_)}">{txt}</g>')
     # In "focus" mode the viewBox crops to the stops/labels only (the country
     # outline extends beyond, giving a zoomed regional view) — for trips that
     # cluster in one part of a big country. Otherwise crop includes the whole country.
@@ -315,7 +357,8 @@ def build(cfg):
                 ex(x, y)
 
     stops = cfg["stops"]
-    airport = cfg.get("airport")
+    airports = airport_list(cfg)
+    airport = airports[0] if airports else None
 
     def leg_pt(key):
         if key == "air":
@@ -392,7 +435,7 @@ def build(cfg):
                  f'{wrap(inner_pill, kind="leg", idx=li, ox=round(px, 1), oy=round(py, 1))}</g>')
         exa(mx+(px-w/2)*AFS, my+(py-9)*AFS); exa(mx+(px+w/2)*AFS, my+(py+9)*AFS)
 
-    if airport:
+    for ai, airport in enumerate(airports):
         ax, ay = T(airport["lat"], airport["lon"])
         adx, ady, aanc = airport.get("dx", 14), airport.get("dy", 20), airport.get("anchor", "start")
         alabel = (f'<text x="{adx}" y="{ady}" text-anchor="{aanc}" font-size="9" '
@@ -401,7 +444,7 @@ def build(cfg):
         B.append(f'<g transform="{stamp_tf(ax, ay)}">'
                  f'<circle r="3" fill="{P["muted"]}"/>'
                  f'<text x="0" y="-7" text-anchor="middle" font-size="13" fill="{P["muted"]}">✈</text>'
-                 f'{wrap(alabel, kind="airport", idx=0, dx=adx, dy=ady)}</g>')
+                 f'{wrap(alabel, kind="airport", idx=ai, dx=adx, dy=ady)}</g>')
         exa(ax, ay - 20 * AFS)
         ex_text(ax + adx * AFS, ay + ady * AFS, airport["name"].upper(), 9 * AFS, aanc, 1 * AFS)
 
@@ -480,6 +523,14 @@ def build(cfg):
     pad = cfg.get("crop_pad", 44 if (cfg.get("focus") or cfg.get("focus_span")) else 26)
     vx, vy = BB[0] - pad, BB[1] - pad
     vw, vh = (BB[2] - BB[0]) + 2 * pad, (BB[3] - BB[1]) + 2 * pad
+    # "aspect": w/h of the window, grown about its center to exactly that shape (the boat-tour map takes the
+    # city maps' 760x470 on desktop and their 0.72 portrait on phones, Kevin 2026-11-02: "same size / shape")
+    asp = cfg.get("aspect")
+    if asp:
+        if vw / vh < asp:
+            nw = vh * asp; vx -= (nw - vw) / 2; vw = nw
+        else:
+            nh = vw / asp; vy -= (nh - vh) / 2; vh = nh
     lg = cfg.get("legend")
     if lg and lg.get("items"):
         # a box of line samples + labels in a corner of the window, at the annotation size (a stamp)
@@ -507,7 +558,7 @@ def build(cfg):
     proj = f' data-proj="{minx} {miny} {scale} {PAD + ML} {PAD + MT} {K}"' if EDIT else ""
     head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}"{proj} '
             f'xmlns="http://www.w3.org/2000/svg" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif">')
-    bg = f'<rect x="{vx:.0f}" y="{vy:.0f}" width="{vw:.0f}" height="{vh:.0f}" fill="{P["bg"]}"/>'
+    bg = f'<rect x="{vx:.0f}" y="{vy:.0f}" width="{vw:.0f}" height="{vh:.0f}" fill="{cfg.get("frame_fill") or P["bg"]}"/>'
     return "\n".join([head, bg] + B + ["</svg>"]), round(vw), round(vh)
 
 
@@ -523,7 +574,7 @@ def render(cfg):
     the embed height-cap the annotations render at exactly Egypt's px size
     (only the country outline shrinks). AFS=1 for normal maps and the editor."""
     svg, vw, vh = build(cfg)
-    if cfg.get("_edit") or vh <= MAX_VH:
+    if cfg.get("_edit") or vh <= MAX_VH or cfg.get("aspect"):   # a fixed-shape map is sized by its embed, not capped
         return svg, vw, vh
     afs = vh / MAX_VH
     for _ in range(5):
@@ -543,35 +594,54 @@ def main():
     cfg = json.load(io.open(cfg_path, encoding="utf-8"))
     slug = cfg.get("slug", os.path.splitext(os.path.basename(cfg_path))[0])
 
-    svg, CW, CH = render(cfg)
     outdir = os.path.join(ROOT, ".tmp", "previews")
     os.makedirs(outdir, exist_ok=True)
-    svg_path = os.path.join(outdir, f"{slug}-map.svg")
-    html_path = os.path.join(outdir, f"{slug}-map.html")
-    io.open(svg_path, "w", encoding="utf-8").write(svg)
-    html = (f'<!doctype html><meta charset="utf-8">'
-            f'<style>body{{margin:0;background:#e9e4da;display:flex;justify-content:center;'
-            f'padding:24px;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif}}'
-            f'.wrap{{width:100%;max-width:1180px;box-shadow:0 8px 40px rgba(0,0,0,.1);'
-            f'border-radius:6px;overflow:hidden}}svg{{width:100%;height:auto;display:block}}</style>'
-            f'<div class="wrap">{svg}</div>')
-    io.open(html_path, "w", encoding="utf-8").write(html)
-    print("wrote", svg_path)
-    print("wrote", html_path, f"({CW}x{CH})")
+    # "mobile": a second build for phones (<slug>-mob-map.svg), which embed_itinerary_map.py puts in the same
+    # figure and swaps in at the city maps' 700 px breakpoint
+    variants = [(slug, cfg)] + ([(slug + "-mob", mobile_cfg(cfg))] if cfg.get("mobile") else [])
+    for name, vcfg in variants:
+        svg, CW, CH = render(vcfg)
+        svg_path = os.path.join(outdir, f"{name}-map.svg")
+        html_path = os.path.join(outdir, f"{name}-map.html")
+        io.open(svg_path, "w", encoding="utf-8").write(svg)
+        maxw = 1180 if name == slug else 480
+        html = (f'<!doctype html><meta charset="utf-8">'
+                f'<style>body{{margin:0;background:#e9e4da;display:flex;justify-content:center;'
+                f'padding:24px;font-family:Hanken Grotesk,Helvetica,Arial,sans-serif}}'
+                f'.wrap{{width:100%;max-width:{maxw}px;box-shadow:0 8px 40px rgba(0,0,0,.1);'
+                f'border-radius:6px;overflow:hidden}}svg{{width:100%;height:auto;display:block}}</style>'
+                f'<div class="wrap">{svg}</div>')
+        io.open(html_path, "w", encoding="utf-8").write(html)
+        print("wrote", svg_path)
+        print("wrote", html_path, f"({CW}x{CH})")
 
-    if shot:
-        from playwright.sync_api import sync_playwright
-        import pathlib
-        png = os.path.join(outdir, f"{slug}-map.png")
-        with sync_playwright() as p:
-            b = p.chromium.launch()
-            pg = b.new_page(viewport={"width": 1220, "height": max(400, int(1180 * CH / CW) + 60)},
-                            device_scale_factor=2)
-            pg.goto(pathlib.Path(html_path).resolve().as_uri())
-            pg.wait_for_timeout(600)
-            pg.screenshot(path=png)
-            b.close()
-        print("wrote", png)
+        if shot:
+            from playwright.sync_api import sync_playwright
+            import pathlib
+            png = os.path.join(outdir, f"{name}-map.png")
+            with sync_playwright() as p:
+                b = p.chromium.launch()
+                pg = b.new_page(viewport={"width": maxw + 40, "height": max(400, int(maxw * CH / CW) + 60)},
+                                device_scale_factor=2)
+                pg.goto(pathlib.Path(html_path).resolve().as_uri())
+                pg.wait_for_timeout(600)
+                pg.screenshot(path=png)
+                b.close()
+            print("wrote", png)
+
+
+def mobile_cfg(cfg):
+    """The phone build: the config with its "mobile" block laid over it. A top-level key replaces the
+    desktop one; "stops"/"dots"/"water_labels"/"country_labels" given as {"<index>": {...}} instead patch
+    those entries (a label's anchor/dx/dy), so the places themselves are written once."""
+    mob = cfg["mobile"]
+    out = {k: v for k, v in cfg.items() if k != "mobile"}
+    for k, v in mob.items():
+        if isinstance(v, dict) and isinstance(out.get(k), list):
+            out[k] = [dict(it, **v.get(str(i), {})) for i, it in enumerate(out[k])]
+        else:
+            out[k] = v
+    return out
 
 
 if __name__ == "__main__":

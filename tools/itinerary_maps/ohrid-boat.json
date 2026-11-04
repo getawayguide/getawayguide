@@ -1,0 +1,379 @@
+{
+  "slug": "ohrid-boat",
+  "page": "Drafts/Upcoming/north-macedonia/ohrid.html",
+  "iso3": "MKD",
+  "outline_file": "tools/itinerary_maps/geo/ohrid-boat-land.json",
+  "smooth": false,
+  "simplify": 3000,
+  "focus": true,
+  "focus_span": 499,
+  "crop_bounds": [
+    20.34,
+    40.875,
+    21.04,
+    41.197
+  ],
+  "crop_pad": 0,
+  "pin_scale": 1.15,
+  "frame_fill": "#E6EAE3",
+  "palette": {
+    "water": "#A9CBD6"
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/ohrid-boat-lakes.json",
+      "fill": "#A9CBD6"
+    },
+    {
+      "file": "tools/itinerary_maps/geo/ohrid-boat-land.json",
+      "fill": "none",
+      "stroke": "#7C9488",
+      "width": 1.3,
+      "dash": "5 4"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Lake Ohrid",
+      "lat": 41.135,
+      "lon": 20.708,
+      "size": 13
+    },
+    {
+      "name": "Lake Prespa",
+      "lat": 40.93,
+      "lon": 20.99,
+      "size": 10
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "North Macedonia",
+      "lat": 41.085,
+      "lon": 20.93,
+      "size": 17,
+      "weight": 700,
+      "ls": 4,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 41.02,
+      "lon": 20.47,
+      "size": 17,
+      "weight": 700,
+      "ls": 4,
+      "color": "#4F6358"
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Ohrid",
+      "lat": 41.115,
+      "lon": 20.8016,
+      "no_number": true,
+      "marker": "star",
+      "days": "Hotel pickup",
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "#the-city"
+    },
+    {
+      "n": 0,
+      "name": "Elshani",
+      "lat": 41.024,
+      "lon": 20.8074,
+      "no_number": true,
+      "days": "Boat departs",
+      "anchor": "start",
+      "dx": 14,
+      "dy": -2
+    },
+    {
+      "n": 1,
+      "name": "Bay of Bones",
+      "lat": 40.9944,
+      "lon": 20.7981,
+      "days": "Museum · 30 min",
+      "anchor": "start",
+      "dx": 14,
+      "dy": -2,
+      "href": "#bay-of-bones"
+    },
+    {
+      "n": 2,
+      "name": "Trpejca",
+      "lat": 40.9615,
+      "lon": 20.78,
+      "days": "Coffee stop · 45 min",
+      "anchor": "start",
+      "dx": 14,
+      "dy": -16,
+      "href": "#east-shore"
+    },
+    {
+      "n": 3,
+      "name": "St. Naum",
+      "lat": 40.9145,
+      "lon": 20.7418,
+      "days": "Monastery",
+      "anchor": "start",
+      "dx": 14,
+      "dy": -20,
+      "href": "#st-naum",
+      "days2": "80 min"
+    },
+    {
+      "n": 4,
+      "name": "St. Zaum",
+      "lat": 40.949,
+      "lon": 20.7747,
+      "days": "Lunch & swim",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 0,
+      "href": "#boat-tour"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Struga",
+      "lat": 41.1776,
+      "lon": 20.676,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 4
+    },
+    {
+      "name": "Pogradec",
+      "lat": 40.9025,
+      "lon": 20.6525,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "dash": true,
+      "color": "#7C9488",
+      "via": [
+        [
+          41.1,
+          20.812
+        ],
+        [
+          41.05,
+          20.812
+        ],
+        [
+          41.03,
+          20.8115
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          41.016,
+          20.789
+        ],
+        [
+          41.004,
+          20.777
+        ],
+        [
+          40.997,
+          20.786
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "",
+      "via": [
+        [
+          40.987,
+          20.782
+        ],
+        [
+          40.975,
+          20.764
+        ],
+        [
+          40.965,
+          20.768
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "",
+      "via": [
+        [
+          40.954,
+          20.755
+        ],
+        [
+          40.938,
+          20.728
+        ],
+        [
+          40.923,
+          20.722
+        ],
+        [
+          40.915,
+          20.732
+        ]
+      ]
+    },
+    {
+      "a": 4,
+      "b": 5,
+      "label": "",
+      "via": [
+        [
+          40.922,
+          20.741
+        ],
+        [
+          40.934,
+          20.752
+        ],
+        [
+          40.944,
+          20.766
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "items": [
+      {
+        "label": "Boat"
+      },
+      {
+        "label": "Van from Ohrid",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ],
+    "scale": 0.9
+  },
+  "aspect": 1.617,
+  "embed_width": 760,
+  "mobile": {
+    "crop_bounds": [
+      20.62,
+      40.872,
+      20.925,
+      41.197
+    ],
+    "aspect": 0.72,
+    "focus_span": 446,
+    "dots": [
+      {
+        "name": "Struga",
+        "lat": 41.1776,
+        "lon": 20.676,
+        "anchor": "end",
+        "dx": -8,
+        "dy": 4
+      },
+      {
+        "name": "Pogradec",
+        "lat": 40.9025,
+        "lon": 20.6525,
+        "anchor": "end",
+        "dx": -8,
+        "dy": 4
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "North|Macedonia",
+        "lat": 41.07,
+        "lon": 20.865,
+        "size": 15,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Albania",
+        "lat": 40.884,
+        "lon": 20.697,
+        "size": 15,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Lake Ohrid",
+        "lat": 41.135,
+        "lon": 20.708,
+        "size": 12
+      }
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -8
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -22
+      },
+      "4": {
+        "anchor": "start",
+        "dx": 10,
+        "dy": -22
+      },
+      "5": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -2
+      }
+    },
+    "legend": {
+      "pos": "br",
+      "items": [
+        {
+          "label": "Boat"
+        },
+        {
+          "label": "Van from Ohrid",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ],
+      "scale": 0.85
+    }
+  }
+}

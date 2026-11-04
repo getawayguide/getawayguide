@@ -788,7 +788,11 @@ def c_seo(ctx):
         elif len(title) > 60:
             items.append({"page": rel, "detail": "Search title is %d characters (60 or fewer)" % len(title), "value": title})
         at_publish = rel.startswith("Drafts/") and ctx["kind"][rel] == "field-notes"
-        if "field notes" in title.lower() and not at_publish:
+        # an upgraded (Armenia-template) field-notes page leads its title with "<Country> Field Notes"
+        # on purpose (Kevin, 2026-11-02; same test as audit.check_seo), so its h1 names that kind too
+        lead = re.split(r"\s*(?::|\s[-–—]\s)\s*", title, maxsplit=1)[0].strip()
+        fn_titled = ctx["kind"][rel] == "field-notes" and lead.lower().endswith("field notes")
+        if "field notes" in title.lower() and not at_publish and not fn_titled:
             items.append({"page": rel, "detail": "“Field Notes” in the title is brand, nobody searches it", "value": title})
         if not desc:
             items.append({"page": rel, "detail": "No description", "sev": "high"})
@@ -808,8 +812,10 @@ def c_seo(ctx):
                 items.append({"page": rel, "detail": "The JSON-LD headline does not match the title", "value": hm.group(1)})
         if ctx["kind"][rel] == "field-notes" and not at_publish:
             h1 = title_of(h)
-            if h1 and not h1.lower().endswith("travel guide"):
-                items.append({"page": rel, "detail": "A country guide headline reads “<Country> Travel Guide”", "value": h1})
+            want = "field notes" if fn_titled else "travel guide"
+            if h1 and not h1.lower().endswith(want):
+                items.append({"page": rel, "detail": ("A field-notes page titled as field notes has the headline “<Country> Field Notes”"
+                                                      if fn_titled else "A country guide headline reads “<Country> Travel Guide”"), "value": h1})
     note = ("The canonical link, og:url and the JSON-LD dates are written by the publish (publish_country.py step 8), and so "
             "are a field-notes draft's keyword title, headline and og:type.")
     if not items:

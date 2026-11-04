@@ -424,8 +424,11 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
         # would force a zoom-out) — it's still drawn (clipped off the static desktop frame), still in
         # the legend, and still inside the wider MOBILE base so you can pan to it.
         fmx = [m for m, p in zip(mx, cfg["pois"]) if mobile or p.get("frame", True)] or mx  # never empty
-        if cfg.get("center"):     # optional: frame around a chosen point (e.g. to clear a dense cluster off the key)
-            cx, cy = merc(cfg["center"]["lat"], cfg["center"]["lon"])
+        # optional: frame around a chosen point (e.g. to clear a dense cluster off the key). `mobile.center`
+        # frames the phone base on its own point (Ohrid 2026-11-02: the top pins sat under the title overlay)
+        ctr = (cfg.get("mobile", {}).get("center") if mobile else None) or cfg.get("center")
+        if ctr:
+            cx, cy = merc(ctr["lat"], ctr["lon"])
         else:
             cx = (min(p[0] for p in fmx) + max(p[0] for p in fmx)) / 2
             cy = (min(p[1] for p in fmx) + max(p[1] for p in fmx)) / 2

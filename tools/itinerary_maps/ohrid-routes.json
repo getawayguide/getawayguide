@@ -1,107 +1,19 @@
 {
   "country_width": 370,
   "iso3": "MKD",
-  "margins": {
-    "b": 130,
-    "l": 240,
-    "r": 240,
-    "t": 130
-  },
-  "pin_scale": 1.15,
-  "simplify": 60,
-  "smooth": true,
-  "slug": "ohrid-routes",
-  "page": "Drafts/Upcoming/north-macedonia/ohrid.html",
   "legend": {
     "items": [
       {
         "label": "Direct bus"
       },
       {
-        "label": "Change in Prilep",
-        "color": "#9DB5A8"
+        "color": "#9DB5A8",
+        "label": "Bus Transfer"
       }
     ],
-    "pos": "tl",
-    "scale": 0.9,
-    "dy": -46
+    "pos": "tr",
+    "scale": 0.9
   },
-  "stops": [
-    {
-      "n": 1,
-      "name": "Ohrid",
-      "lat": 41.1231,
-      "lon": 20.8016,
-      "marker": "star",
-      "no_number": true,
-      "anchor": "middle",
-      "dx": 0,
-      "dy": 30
-    },
-    {
-      "n": 2,
-      "name": "Skopje",
-      "lat": 41.9981,
-      "lon": 21.4254,
-      "no_number": true,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "href": "skopje.html"
-    },
-    {
-      "n": 3,
-      "name": "Bitola",
-      "lat": 41.0319,
-      "lon": 21.3347,
-      "no_number": true,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "href": "bitola.html"
-    },
-    {
-      "n": 4,
-      "name": "Prilep",
-      "lat": 41.3461,
-      "lon": 21.5536,
-      "no_number": true,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4
-    },
-    {
-      "n": 5,
-      "name": "Krushevo",
-      "lat": 41.3697,
-      "lon": 21.2494,
-      "no_number": true,
-      "anchor": "start",
-      "dx": -6,
-      "dy": -33,
-      "href": "krushevo.html"
-    },
-    {
-      "n": 6,
-      "name": "Struga",
-      "lat": 41.1778,
-      "lon": 20.6783,
-      "no_number": true,
-      "anchor": "end",
-      "dx": -10,
-      "dy": -24
-    },
-    {
-      "n": 7,
-      "name": "Tirana (Albania)",
-      "lat": 41.3275,
-      "lon": 19.8187,
-      "no_number": true,
-      "anchor": "start",
-      "dx": -12,
-      "dy": -33
-    }
-  ],
   "legs": [
     {
       "a": 1,
@@ -121,12 +33,7 @@
     {
       "a": 4,
       "b": 3,
-      "label": "",
-      "color": "#9DB5A8"
-    },
-    {
-      "a": 6,
-      "b": 5,
+      "color": "#9DB5A8",
       "label": ""
     },
     {
@@ -134,5 +41,173 @@
       "b": 0,
       "label": ""
     }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
+  },
+  "page": "Drafts/Upcoming/north-macedonia/ohrid.html",
+  "pin_scale": 1.15,
+  "simplify": 60,
+  "slug": "ohrid-routes",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "end",
+      "dx": -26,
+      "dy": 22,
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "marker": "star",
+      "n": 1,
+      "name": "Ohrid",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 15.7,
+      "dy": -13.3,
+      "href": "skopje.html",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "n": 2,
+      "name": "Skopje",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 6.8,
+      "dy": 2.4,
+      "href": "bitola.html",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "n": 3,
+      "name": "Bitola",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 7.8,
+      "dy": 5.1,
+      "lat": 41.3461,
+      "lon": 21.5536,
+      "n": 4,
+      "name": "Prilep",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": -6,
+      "dy": -33,
+      "href": "krushevo.html",
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "n": 5,
+      "name": "Krushevo",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 2,
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "n": 6,
+      "name": "Tirana",
+      "no_number": true
+    }
+  ],
+  "airports": [
+    {
+      "name": "SKP Airport",
+      "lat": 41.9616,
+      "lon": 21.6214,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    },
+    {
+      "name": "TIA Airport",
+      "lat": 41.4147,
+      "lon": 19.7206,
+      "anchor": "start",
+      "dx": -6,
+      "dy": -20
+    }
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/ohrid-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/ohrid-routes-albania.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/ohrid-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Albania",
+      "lat": 40.45,
+      "lon": 20.05,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North Macedonia",
+      "lat": 41.7566,
+      "lon": 22.0134,
+      "size": 13,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5",
+      "name": "Kosovo",
+      "lat": 42.5,
+      "lon": 20.95
+    },
+    {
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5",
+      "name": "Serbia",
+      "lat": 42.375,
+      "lon": 22.065
+    },
+    {
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5",
+      "name": "Greece",
+      "lat": 40.45,
+      "lon": 21.75
+    }
+  ],
+  "crop_bounds": [
+    19.12,
+    39.58,
+    23.1,
+    42.72
   ]
 }

@@ -451,11 +451,21 @@ def check_seo():
         # country LANDING page is a different thing: a .country-hero with a breadcrumb above
         # the name, where the bare country reads correctly. Kevin's call, 2026-09-24, on
         # el-salvador/index.html, the only page of that shape.
+        # An UPGRADED (Armenia-template) field-notes page is titled "<Country> Field Notes -
+        # Quick Reference Guides While Traveling" and its h1 is "<Country> Field Notes" (Kevin,
+        # 2026-11-02, memory feedback_field_notes_title_format). Demanding "Travel Guide" there
+        # flagged Armenia and El Salvador in every hygiene email for following his ruling. So
+        # the page's own <title> says which kind it is, and the h1 must name that same kind:
+        # "<Country> Field Notes" under a Field Notes title, "<Country> Travel Guide" otherwise.
         if r.endswith("/field-notes.html"):
             h1 = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S | re.I)
-            txt = re.sub(r"<[^>]+>", "", h1.group(1)).strip() if h1 else ""
-            if txt and not txt.lower().endswith("travel guide"):
-                probs.append(finding("low", "h1", "A country guide <h1> should read \"<Country> Travel Guide\".", txt[:70]))
+            txt = htmlmod.unescape(re.sub(r"<[^>]+>", "", h1.group(1))).strip() if h1 else ""
+            lead = re.split(r"\s*(?::|\s[-–—]\s)\s*", title or "", maxsplit=1)[0].strip()
+            kind = "Field Notes" if lead.lower().endswith("field notes") else "Travel Guide"
+            if txt and not txt.lower().endswith(kind.lower()):
+                why = ("This page is titled as field notes, so its <h1> should read \"<Country> Field Notes\"."
+                       if kind == "Field Notes" else "A country guide <h1> should read \"<Country> Travel Guide\".")
+                probs.append(finding("low", "h1", why, txt[:70]))
         if probs:
             groups.append({"name": r, "findings": probs})
     return groups

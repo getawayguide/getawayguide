@@ -33,12 +33,13 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 EDITOR = (ROOT / "editor.html").as_uri() + "#editor"
 TODAY = datetime.date.today().isoformat()
 
-FN_REL = "Field Notes/el-salvador/field-notes.html"
+# the El Salvador field notes went live on 2026-11-01 (the draft left Drafts/), so the fixture is the live page
+FN_REL = "el-salvador/field-notes.html"
 try:
-    FN_HTML = subprocess.run(["git", "-C", str(ROOT / "Drafts"), "show", "HEAD:" + FN_REL],
+    FN_HTML = subprocess.run(["git", "-C", str(ROOT), "show", "HEAD:" + FN_REL],
                              capture_output=True, check=True).stdout.decode("utf-8")
 except Exception:
-    FN_HTML = (ROOT / "Drafts" / FN_REL).read_text(encoding="utf-8")
+    FN_HTML = (ROOT / FN_REL).read_text(encoding="utf-8")
 GUIDE_HTML = (ROOT / "armenia" / "yerevan.html").read_text(encoding="utf-8")
 
 LEGEND = ('<div class="fn-legend">\n'

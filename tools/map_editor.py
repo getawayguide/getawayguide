@@ -413,6 +413,9 @@ def api_save(slug):
     svg, cw, ch = im.render(cfg)
     (ROOT / ".tmp" / "previews").mkdir(parents=True, exist_ok=True)
     (ROOT / ".tmp" / "previews" / f"{slug}-map.svg").write_text(svg, encoding="utf-8")
+    if cfg.get("mobile"):                      # the phone build the embed puts beside it (ohrid-boat, 2026-11-02)
+        msvg, _, _ = im.render(im.mobile_cfg(cfg))
+        (ROOT / ".tmp" / "previews" / f"{slug}-mob-map.svg").write_text(msvg, encoding="utf-8")
     # re-embed into every page that carries this map (the page the editor opened from is first, so the figure
     # handed back is that page's)
     asked = (request.args.get("page") or "").replace("\\", "/").lstrip("./")
@@ -439,7 +442,8 @@ def api_save(slug):
     if ok:
         try:
             ph = (ROOT / page).read_text(encoding="utf-8")
-            m = re.search(r'<figure class="itinerary-map"[^>]*>.*?</figure>', ph, re.S)
+            m = (re.search(r'<figure class="itinerary-map" data-map="%s"[^>]*>.*?</figure>' % re.escape(slug), ph, re.S)
+                 or re.search(r'<figure class="itinerary-map"[^>]*>.*?</figure>', ph, re.S))   # several route maps per page
             figure = m.group(0) if m else None
         except (OSError, TypeError):
             figure = None
@@ -844,7 +848,7 @@ function addVia(e){
   if(!ll) return;
   // insert after the nearest point of the leg's polyline that precedes the click
   const T=(la,lo)=>{ const [minx,miny,scale,ox,oy,K]=svg.getAttribute('data-proj').split(' ').map(Number); return [(lo*K-minx)*scale+ox, (-la-miny)*scale+oy]; };
-  const stops=cfg.stops, legPt=key=>{ if(key==='air') return [cfg.airport.lat,cfg.airport.lon]; if(typeof key==='string'&&key.startsWith('dot:')){ const d=cfg.dots.find(d=>d.name===key.slice(4)); return [d.lat,d.lon]; } return [stops[key].lat,stops[key].lon]; };
+  const stops=cfg.stops, legPt=key=>{ if(key==='air'){ const a=(cfg.airports&&cfg.airports[0])||cfg.airport; return [a.lat,a.lon]; } if(typeof key==='string'&&key.startsWith('dot:')){ const d=cfg.dots.find(d=>d.name===key.slice(4)); return [d.lat,d.lon]; } return [stops[key].lat,stops[key].lon]; };
   const via=Array.isArray(leg.via)?leg.via.slice():[];
   const pts=[legPt(leg.a)].concat(via).concat([legPt(leg.b)]).map(q=>T(q[0],q[1]));
   let best=0, bd=Infinity;
@@ -902,7 +906,7 @@ function commit(g,d){
   const k=g.dataset.kind, i=+g.dataset.idx;
   if(k==='stop'){const o=cfg.stops[i]; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
   else if(k==='dot'){const o=cfg.dots[i]; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
-  else if(k==='airport'){const o=cfg.airport; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
+  else if(k==='airport'){const o=cfg.airports?cfg.airports[i]:cfg.airport; o.dx=round1(+g.dataset.dx+d.dx); o.dy=round1(+g.dataset.dy+d.dy);}
   else if(k==='leg'){const o=cfg.legs[i]; o.chip_off=0; o.chip_side=0; o.chip_dx=round1(+g.dataset.ox+d.dx); o.chip_dy=round1(+g.dataset.oy+d.dy);}
   else if(k==='via'){
     const leg=cfg.legs[i], kk=+g.dataset.k, [vx,vy]=clampToView(g.ownerSVGElement, +g.dataset.x+d.dx, +g.dataset.y+d.dy), ll=unproject(g.ownerSVGElement, vx, vy);
@@ -913,7 +917,7 @@ function commit(g,d){
 
 function flipAnchor(e){
   const g=e.currentTarget, k=g.dataset.kind, i=+g.dataset.idx;
-  let o = k==='stop'?cfg.stops[i] : k==='dot'?cfg.dots[i] : k==='airport'?cfg.airport : null;
+  let o = k==='stop'?cfg.stops[i] : k==='dot'?cfg.dots[i] : k==='airport'?(cfg.airports?cfg.airports[i]:cfg.airport) : null;
   if(!o) return;                       // pills are centered; nothing to flip
   const cur=o.anchor||'start';
   o.anchor = cur==='start'?'end':(cur==='end'?'middle':'start');
