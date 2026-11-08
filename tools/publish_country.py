@@ -18,6 +18,8 @@ Does, in order:
      the old "X - Field Notes" title and no canonical because it used to be a separate
      manual step. The run ends by asserting canonical + og:type + dates are present and
      says so in the log.
+  9. Affiliate links (optional, OFF): tools/affiliate_links.py on the new page. It only writes when .env
+     has the program IDs AND AFFILIATE_LINKS=on; until then the log shows its dry-run line.
 
 Usage:
   python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe \
@@ -498,6 +500,31 @@ def main():
             else:
                 tail = (r.stderr or r.stdout or "").strip().splitlines()
                 log.append("WARN: %s failed - run manually. %s" % (script, tail[-1] if tail else ""))
+
+        # Cloudflare Web Analytics beacon in the head of every live page, the new one included.
+        # Idempotent, and a no-op when CF_ANALYTICS_TOKEN is missing from .env.
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "analytics_snippet.py"), "--apply"],
+                           cwd=ROOT, capture_output=True, text=True)
+        head = (r.stdout or "").strip().splitlines()
+        log.append(("ran analytics_snippet.py --apply (%s)" % (head[0] if head else "-")) if r.returncode == 0
+                   else "WARN: analytics_snippet.py failed - run it manually")
+
+        # Affiliate links (roadmap R2, 2026-11-07): OFF until Kevin puts his program IDs in .env AND sets
+        # AFFILIATE_LINKS=on there. On, it cleans the new page's booking links, tags them, adds
+        # rel="sponsored" and the one disclosure line. Off, it only reports, so a launch never writes it.
+        aff = [sys.executable, os.path.join(ROOT, "tools", "affiliate_links.py"), "--pages", rel(dst)]
+        try:
+            sys.path.insert(0, os.path.join(ROOT, "tools"))
+            import affiliate_links as _al
+            aff_on = _al.enabled()
+        except Exception:
+            aff_on = False
+        r = subprocess.run(aff + (["--apply"] if aff_on else []), cwd=ROOT, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        head = (r.stdout or "").strip().splitlines()
+        log.append(("affiliate links %s: %s" % ("applied" if aff_on else "OFF (AFFILIATE_LINKS not on in .env), dry run",
+                                                 head[1] if len(head) > 1 else "-")) if r.returncode == 0
+                   else "WARN: affiliate_links.py failed - run it manually")
 
         # SEO METADATA. Belgium and Germany both shipped with the old "X - Field Notes"
         # title, no rel=canonical, og:type website and no Article dates, because this step

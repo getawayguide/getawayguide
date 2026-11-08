@@ -23,7 +23,9 @@ ROOT = Path(__file__).resolve().parent.parent
 IMAGES = ROOT / "Images"
 TEXT = {".html", ".css", ".js", ".json", ".md", ".py", ".txt", ".xml", ".svg", ".ps1", ".cmd", ".yml", ".yaml"}
 SKIP_DIRS = {".git", "node_modules", "__pycache__"}
-PATH_RE = re.compile(r"Images/[^\"'<>\n;]+?\.(?:jpe?g|png|webp|avif|gif|svg|heic|ico)\b", re.I)
+# the extension must END the path (a quote, space, comma, ?, #, ) or line end follows): "\b" also matched mid-name, so
+# "...copy.jpg-4-1x.jpg" was read as "...copy.jpg" and its tiers were reported unused and deleted (2026-11-07, Skopje)
+PATH_RE = re.compile(r"Images/[^\"'<>\n;]+?\.(?:jpe?g|png|webp|avif|gif|svg|heic|ico)(?=[\"'<>\s,;)?#&]|$)", re.I | re.M)
 TIER_RE = re.compile(r"-(?:mob-)?[123]x$|-mob$|-\d{3,4}w$|-2x$", re.I)
 
 

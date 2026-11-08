@@ -1,0 +1,186 @@
+{
+  "iso3": "MKD",
+  "simplify": 60,
+  "smooth": true,
+  "pin_scale": 1.15,
+  "slug": "skopje-daytrips",
+  "page": "Drafts/Upcoming/north-macedonia/skopje.html",
+  "country_width": 420,
+  "margins": {
+    "l": 200,
+    "r": 200,
+    "t": 110,
+    "b": 110
+  },
+  "airports": [],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/skopje-daytrips-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/skopje-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Day trip"
+      },
+      {
+        "label": "Possible as a Day Trip",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "North|Macedonia",
+      "lat": 41.608,
+      "lon": 22.054,
+      "size": 12,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Kosovo",
+      "lat": 42.557,
+      "lon": 20.63,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Albania",
+      "lat": 40.773,
+      "lon": 20.188,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Serbia",
+      "lat": 42.5,
+      "lon": 22.092,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Greece",
+      "lat": 40.817,
+      "lon": 22.304,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 42.284,
+      "lon": 22.804,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "crop_bounds": [
+    19.95,
+    40.75,
+    22.95,
+    42.95
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "marker": "star",
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6
+    },
+    {
+      "n": 2,
+      "name": "Matka Canyon",
+      "lat": 41.9529,
+      "lon": 21.297,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -6,
+      "dy": 34,
+      "href": "#matka"
+    },
+    {
+      "n": 3,
+      "name": "Tetovo",
+      "lat": 42.0106,
+      "lon": 20.9715,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "#tetovo"
+    },
+    {
+      "n": 4,
+      "name": "Pristina",
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "#kosovo"
+    },
+    {
+      "n": 5,
+      "name": "Ohrid",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "#ohrid"
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "dash": true
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "dash": true
+    }
+  ],
+  "outline_file": "tools/itinerary_maps/geo/skopje-daytrips-mkd.json"
+}

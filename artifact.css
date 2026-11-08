@@ -2231,6 +2231,7 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
 /* ---- the in-depth marker is the same dot in both places it appears ---- */
 .nav-fulldot, .art-card-badge .dot, .fn-section a.gb-card .dot, .article-body a.gb-card .dot, .xm .dot { width:6px !important; height:6px !important;
   border-radius:50% !important; background:var(--accent) !important; }
+.xm .dot { flex:0 0 auto; }   /* a flex item: a long kicker squeezed it to a sliver (stress test 2026-11-06) */
 .art-card-badge { border-radius:0 !important;
   background:rgba(18,26,21,.55) !important; font-family:var(--body) !important;
   font-size:9px !important; letter-spacing:.13em !important; text-transform:uppercase;
@@ -3417,6 +3418,11 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
 .artbody .pair, .artbody .img-pair { margin-top:1.5rem; margin-bottom:1.5rem; }
 .artbody .ls, .artbody .img-landscape, .artbody .one-shot, .artbody .day-shot {
   margin-top:.15rem; margin-bottom:1.5rem; }
+/* a list followed by a paragraph gets the paragraph gap (18px), not the list's 1.5rem tail (Kevin, Skopje 2026-11-07:
+   "fix spacing before" under the Matka Canyon list; no live guide had a list followed by a paragraph before) */
+.article-body ul:has(+ p), .article-body ol:has(+ p) { margin-bottom:18px; }
+/* ... and on a phone the paragraph gap is the p + p rule's 1.35em (25px), so the paragraph after a list takes that too */
+@media (max-width:768px) { .article-body ul + p, .article-body ol + p { margin-top:1.35em !important; } }
 .fn-section { margin-bottom:40px !important; }
 .fn-section + .fn-section { margin-top:0 !important; }
 @media (max-width:768px) {
@@ -4220,3 +4226,15 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
 }
 .ab-stats .ab-s { flex:1 1 90px; min-width:0; }
 .ab-stats.plain { gap:24px; }
+
+/* ---- contrast (accessibility pass 2026-11-07): axe-core measured these under the 4.5:1 that small text needs.
+   The nav still sits back from the ink and steps forward on hover (.55 measured 3.5:1, .66 is 4.9:1); the footer's
+   fine print goes to the tagline's .55 (3.9:1 -> 5.6:1); the older pages' captions carry an inline .55 that beat
+   the --faint the caption rule already asks for (4.7:1). ---- */
+nav > ul > li > a:not(:hover):not(.active):not([aria-current]) { color:rgba(28,40,33,.66) !important; }
+body.gg-home nav:not(.pinned) > ul > li > a:not(:hover):not(.active) { color:rgba(255,255,255,.7) !important; }
+footer .footer-copy, footer .footer-affiliate { color:rgba(255,255,255,.55) !important; }
+.article-body .img-caption[style*="color"], .artbody .img-caption[style*="color"],
+.fn-section .img-caption[style*="color"] { color:var(--faint) !important; }
+.filter-label { color:rgba(28,40,33,.66) !important; }
+.dest-subhead { opacity:1 !important; color:rgba(28,40,33,.66) !important; }

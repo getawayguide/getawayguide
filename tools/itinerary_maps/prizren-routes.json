@@ -1,0 +1,230 @@
+{
+  "iso3": "KOS",
+  "country_width": 185,
+  "simplify": 120,
+  "smooth": true,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "airports": [
+    {
+      "name": "PRN Airport",
+      "lat": 42.5728,
+      "lon": 21.0358,
+      "anchor": "end",
+      "dx": -17,
+      "dy": 4,
+      "icon_dx": -4,
+      "icon_dy": 11
+    }
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/kosovo-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/kosovo-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/kosovo-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Kosovo",
+      "lat": 42.83,
+      "lon": 20.66,
+      "size": 10,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Serbia",
+      "lat": 43.6,
+      "lon": 21.6,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 41.1,
+      "lon": 20.05,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.8,
+      "lon": 19.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North|Macedonia",
+      "lat": 41.6,
+      "lon": 21.75,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia",
+      "lat": 44.0,
+      "lon": 18.4,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 42.5,
+      "lon": 22.9,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Romania",
+      "lat": 44.95,
+      "lon": 22.3,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Greece",
+      "lat": 41.0,
+      "lon": 22.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "crop_bounds": [
+    17.6,
+    40.85,
+    23.3,
+    45.25
+  ],
+  "slug": "prizren-routes",
+  "page": "Drafts/Upcoming/kosovo/prizren.html",
+  "stops": [
+    {
+      "n": 1,
+      "name": "Prizren",
+      "lat": 42.2139,
+      "lon": 20.7397,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "no_number": true,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Prishtina",
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -6,
+      "no_number": true,
+      "href": "prishtina.html"
+    },
+    {
+      "n": 3,
+      "name": "Skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../north-macedonia/field-notes.html#skopje"
+    },
+    {
+      "n": 4,
+      "name": "Tirana",
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../albania/field-notes.html#tirana"
+    },
+    {
+      "n": 5,
+      "name": "Belgrade",
+      "lat": 44.8125,
+      "lon": 20.4612,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../serbia/field-notes.html#belgrade"
+    }
+  ],
+  "dots": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 1,
+      "label": "",
+      "color": "#9DB5A8"
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Bus Transfer",
+        "color": "#9DB5A8"
+      }
+    ]
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "slug": "princes-ferry",
+  "page": "Drafts/Full Articles/turkiye/istanbul.html",
+  "iso3": "TUR",
+  "outline_file": "tools/itinerary_maps/geo/princes-ferry-land.json",
+  "smooth": false,
+  "simplify": 3000,
+  "focus": true,
+  "focus_span": 400,
+  "crop_bounds": [
+    28.9,
+    40.84,
+    29.2,
+    41.06
+  ],
+  "crop_pad": 10,
+  "pin_scale": 1.15,
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Public ferry, about 1.5 hours",
+        "dash": true
+      }
+    ]
+  },
+  "stops": [
+    {
+      "n": 1,
+      "name": "Kabataş",
+      "lat": 41.0332,
+      "lon": 28.9936,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    },
+    {
+      "n": 2,
+      "name": "Kınalıada",
+      "lat": 40.9117,
+      "lon": 29.0505,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4
+    },
+    {
+      "n": 3,
+      "name": "Burgazada",
+      "lat": 40.8838,
+      "lon": 29.0666,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    },
+    {
+      "n": 4,
+      "name": "Heybeliada",
+      "lat": 40.8796,
+      "lon": 29.0958,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 44
+    },
+    {
+      "n": 5,
+      "name": "Büyükada",
+      "lat": 40.8767,
+      "lon": 29.1273,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "#day-trips"
+    },
+    {
+      "n": 6,
+      "name": "Eminönü",
+      "lat": 41.0179,
+      "lon": 28.9727,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "dash": true,
+      "via": [
+        [
+          41.02,
+          29.0
+        ],
+        [
+          40.96,
+          29.02
+        ]
+      ]
+    },
+    {
+      "a": 5,
+      "b": 1,
+      "label": "",
+      "dash": true,
+      "via": [
+        [
+          41.0,
+          28.985
+        ],
+        [
+          40.95,
+          29.02
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "",
+      "dash": true
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Old City",
+      "lat": 41.005,
+      "lon": 28.94,
+      "size": 10,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Asian Side",
+      "lat": 40.98,
+      "lon": 29.13,
+      "size": 10,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Sea of Marmara",
+      "lat": 40.93,
+      "lon": 28.95,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#5E93A3"
+    }
+  ]
+}

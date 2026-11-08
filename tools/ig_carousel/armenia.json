@@ -1,0 +1,204 @@
+{
+ "_about": "First draft of the Armenia itinerary carousel (tools/ig_carousel.py seed). Days and stops follow armenia/armenia-itinerary.html; photo ids are .tmp/ig/armenia/manifest.json's. After seeding, the artifact db is the source of truth.",
+ "country": "Armenia",
+ "slug": "armenia",
+ "map": {
+  "config": "armenia",
+  "afs": 1.3,
+  "override": {
+   "dots": {
+    "0": {
+     "anchor": "start",
+     "dx": 11,
+     "dy": 4
+    }
+   },
+   "stops": {
+    "1": {
+     "days": "Day 6"
+    }
+   }
+  }
+ },
+ "plan": {
+  "title": "7 Days in|*Armenia*",
+  "kicker": "A complete itinerary",
+  "swipe": "Swipe for the route",
+  "cover": {
+   "id": "yerevan-01dd66ef96cf1cb41a35ebfb845beea612e10e6c31-2",
+   "crop": null
+  },
+  "map": {
+   "kicker": "Suggested 7-day route",
+   "title": "Yerevan & *Gyumri*"
+  },
+  "stops": [
+   {
+    "days": "Day 1–3",
+    "name": "Yerevan",
+    "sub": "The Cascade, Republic Square, GUM Market and the Blue Mosque",
+    "caption": "Yerevan (the Cascade, Republic Square, GUM Market and the Genocide Museum)",
+    "photos": [
+     {
+      "id": "yerevan-img_0246-5-2",
+      "crop": null
+     },
+     {
+      "id": "yerevan-img_0597-2-2",
+      "crop": null
+     },
+     {
+      "id": "yerevan-img_0697-4",
+      "crop": null
+     },
+     {
+      "id": "yerevan-img_0693-2",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 4",
+    "name": "Khor Virap, Geghard & Garni",
+    "list": "Khor Virap & Garni",
+    "sub": "Two monasteries, a pagan temple and the Symphony of Stones",
+    "caption": "Day trip to Khor Virap, Geghard, Garni & the Symphony of Stones",
+    "photos": [
+     {
+      "id": "monastery-day-trip-img_0800",
+      "crop": null
+     },
+     {
+      "id": "monastery-day-trip-img_0839",
+      "crop": null
+     },
+     {
+      "id": "garni-img_0994",
+      "crop": null
+     },
+     {
+      "id": "monastery-day-trip-img_0958",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 5",
+    "name": "Lake Sevan & Orgov",
+    "sub": "Sevanavank above the lake, then an abandoned Soviet observatory",
+    "caption": "Lake Sevan & the Orgov Observatory",
+    "photos": [
+     {
+      "id": "orgov-observatory-img_0340-4",
+      "crop": null
+     },
+     {
+      "id": "orgov-observatory-img_0438-2",
+      "crop": null
+     },
+     {
+      "id": "orgov-observatory-img_0395-2",
+      "crop": null
+     },
+     {
+      "id": "img_0300",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 6",
+    "name": "Gyumri",
+    "sub": "The Black City: dark stone streets, the market and the Black Fortress",
+    "caption": "Gyumri, the Black City",
+    "photos": [
+     {
+      "id": "gyumri-img_1125-2",
+      "crop": null
+     },
+     {
+      "id": "gyumri-img_1190-2",
+      "crop": null
+     },
+     {
+      "id": "gyumri-img_1311-2",
+      "crop": null
+     },
+     {
+      "id": "gyumri-img_1106",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 7",
+    "name": "A free day",
+    "list": "A free day",
+    "slide": false,
+    "caption": "A free day (Tatev if you can fit it in)",
+    "photos": []
+   }
+  ],
+  "cta": {
+   "on": true,
+   "kicker": "Save this for your trip",
+   "headline": "Want the full guide?",
+   "body": "Comment GUIDE and I'll send you the full 7-day itinerary, with the transport, prices and links for every stop.",
+   "keyword": "GUIDE",
+   "site": "getawayguide.io",
+   "photo": {
+    "id": "orgov-observatory-img_0470",
+    "crop": null
+   }
+  },
+  "caption": {
+   "hook": "Armenia has probably never crossed your mind as a travel destination. It hadn't crossed mine either. Then I found a capital that is 29 years older than Rome, monasteries carved into cliffs and an abandoned Soviet radio telescope I got to climb while pigs wandered around the grounds!\n\nIt's safe, cheap and not crowded (I didn't wait in a line once). I spent 5 packed days there and my one regret was not staying longer, so this is the 7-day version: Yerevan as your base, the best day trips, then the Black City of Gyumri.",
+   "cta": "Comment GUIDE and I'll send you the full itinerary, with the transport, prices and links for every stop.",
+   "days": "",
+   "keywords": "Armenia itinerary · 7 days in Armenia · Yerevan · Gyumri · Armenia travel guide · Caucasus travel",
+   "hashtags": "#armenia #yerevan #gyumri #armeniatravel #caucasus #travelitinerary"
+  }
+ },
+ "pins": [
+  {
+   "page": "armenia/armenia-itinerary.html",
+   "photo": "yerevan-01dd66ef96cf1cb41a35ebfb845beea612e10e6c31-2",
+   "title": "Armenia Travel Guide",
+   "sub": "with a perfect 7-day itinerary",
+   "kicker": "Armenia · Itinerary"
+  },
+  {
+   "page": "armenia/yerevan.html",
+   "photo": "yerevan-img_0597-2-2",
+   "title": "The Ultimate Guide to Yerevan",
+   "sub": "Armenia's capital",
+   "kicker": "Armenia · City guide"
+  },
+  {
+   "page": "armenia/gyumri.html",
+   "photo": "gyumri-img_1190",
+   "kicker": "Armenia · City guide"
+  },
+  {
+   "page": "armenia/monastery-day-trip.html",
+   "photo": "monastery-day-trip-img_0839",
+   "kicker": "Armenia · Day trip"
+  },
+  {
+   "page": "armenia/orgov-observatory.html",
+   "photo": "orgov-observatory-img_0438-2",
+   "kicker": "Armenia · Day trip"
+  },
+  {
+   "page": "armenia/top-10-armenia.html",
+   "photo": "yerevan-img_0958",
+   "kicker": "Armenia · Top 10"
+  },
+  {
+   "page": "armenia/field-notes.html",
+   "photo": "orgov-observatory-img_0340-4",
+   "sub": "Quick reference guides while traveling",
+   "kicker": "Armenia · Field notes"
+  }
+ ]
+}

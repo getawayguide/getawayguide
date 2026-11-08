@@ -1,0 +1,285 @@
+{
+  "iso3": "MKD",
+  "country_width": 230,
+  "simplify": 60,
+  "smooth": true,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "slug": "skopje-routes",
+  "page": "Drafts/Upcoming/north-macedonia/skopje.html",
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      }
+    ]
+  },
+  "airports": [
+    {
+      "name": "SKP Airport",
+      "lat": 41.9616,
+      "lon": 21.6214,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 10
+    }
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/skopje-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/skopje-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/skopje-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "North|Macedonia",
+      "lat": 41.594,
+      "lon": 22.154,
+      "size": 10,
+      "weight": 700,
+      "ls": 1.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Serbia",
+      "lat": 44.115,
+      "lon": 21.568,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Kosovo",
+      "lat": 42.443,
+      "lon": 20.725,
+      "size": 10,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 40.635,
+      "lon": 20.175,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.882,
+      "lon": 19.332,
+      "size": 10,
+      "weight": 700,
+      "ls": 2,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 42.06,
+      "lon": 24.097,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Greece",
+      "lat": 40.032,
+      "lon": 21.605,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia",
+      "lat": 43.813,
+      "lon": 18.563,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Romania",
+      "lat": 44.334,
+      "lon": 24.28,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "crop_bounds": [
+    18.3,
+    40.0,
+    24.0,
+    45.1
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "marker": "star",
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8
+    },
+    {
+      "n": 2,
+      "name": "Pristina",
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../kosovo/field-notes.html#prishtina"
+    },
+    {
+      "n": 3,
+      "name": "Belgrade",
+      "lat": 44.8125,
+      "lon": 20.4612,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../serbia/field-notes.html#belgrade"
+    },
+    {
+      "n": 4,
+      "name": "Sofia",
+      "lat": 42.6977,
+      "lon": 23.3219,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    },
+    {
+      "n": 5,
+      "name": "Tirana",
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "../../../albania/field-notes.html#tirana"
+    },
+    {
+      "n": 6,
+      "name": "Thessaloniki",
+      "lat": 40.6401,
+      "lon": 22.9444,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../greece/thessaloniki.html"
+    },
+    {
+      "n": 7,
+      "name": "Podgorica",
+      "lat": 42.4304,
+      "lon": 19.2594,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 26
+    },
+    {
+      "n": 8,
+      "name": "Ohrid",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "href": "ohrid.html"
+    },
+    {
+      "n": 9,
+      "name": "Bitola",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 10,
+      "href": "bitola.html"
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 5,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 6,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 7,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 8,
+      "b": 0,
+      "label": ""
+    }
+  ],
+  "outline_file": "tools/itinerary_maps/geo/skopje-routes-mkd.json"
+}

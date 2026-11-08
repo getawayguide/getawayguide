@@ -133,7 +133,11 @@ def srcset_files(value, page_rel):
     for cand in value.split(","):
         cand = cand.strip()
         if cand:
-            r = resolve(cand.split()[0], page_rel)
+            # "URL [descriptor]": a URL with an unencoded space (Images/web/North Macedonia/...) is the whole candidate
+            # unless its last word is a width/density descriptor (stress test 2026-11-06)
+            parts = cand.split()
+            url = " ".join(parts[:-1]) if len(parts) > 1 and re.fullmatch(r"[\d.]+[wx]", parts[-1]) else cand
+            r = resolve(url, page_rel)
             if r:
                 yield r
 

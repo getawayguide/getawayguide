@@ -51,6 +51,10 @@ def linked_names(path):
     t = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", t, flags=re.S)
     out = []
     for m in re.finditer(r'<a href="(https?://[^"]+)"[^>]*>([^<]{3,80})</a>', t):
+        # a PLACE is a Google Maps link; any other link's text ("directferries", "a detailed guide", "Hike from Fira
+        # to Oia") is not a place the articles must cover (Launch tab false warnings, stress test 2026-11-06)
+        if not re.search(r"google\.[a-z.]+/maps|maps\.app\.goo\.gl|goo\.gl/maps", m.group(1)):
+            continue
         name = re.sub(r"\s+", " ", H.unescape(m.group(2))).strip(" .,:;!")
         if name.lower() in GENERIC or len(name) < 3 or name.lower().startswith(("http", "www")):
             continue

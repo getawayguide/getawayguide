@@ -1585,6 +1585,9 @@ import redline as _redline
 # the editor's Launch tab: the prelaunch checklist (tools/prelaunch.py, 2026-09-30)
 import prelaunch as _prelaunch
 _prelaunch.register(app)
+# the editor's Queue tab: Claude's away queue (.tmp/away_queue.md) and Kevin's to-do list (tools/queue_tab.py, 2026-11-06)
+import queue_tab as _queue_tab
+_queue_tab.register(app)
 
 
 # ---- the review inside the editor (review.js) -----------------------------------
@@ -1592,6 +1595,15 @@ _prelaunch.register(app)
 def review_js():
     # editor.html is served from /browser, a route, so a relative review.js has nowhere to resolve
     return send_file(ROOT / "review.js", mimetype="application/javascript")
+
+
+@app.route("/assets/<path:rel>")
+def editor_asset(rel):
+    # the same for editor.html's assets/ folder (the comment-author avatars, 2026-11-07): from file:// the relative
+    # path works by itself; from /browser it needs this route
+    if ".." in rel.replace("\\", "/").split("/"):
+        abort(400)
+    return send_from_directory(ROOT / "assets", rel)
 
 
 @app.route("/review/for")
@@ -2135,7 +2147,7 @@ def api_suite():
     if request.method == "OPTIONS":
         return "", 204
     return jsonify({"status": _suite_status(), "tidy": _tidy_preview(),
-                    "compress": _compress_status()})
+                    "compress": _compress_status(), "launch": photo_suite.launch_state()})
 
 
 def _merge_lines(mine, base, theirs):
@@ -2259,6 +2271,12 @@ def api_merge3():
         # (QA 2026-10-08). A line-by-line pass settles those; anything truly overlapping stays a conflict.
         merged = _merge_lines(*texts)
     mine, base, theirs = texts
+    # the file on disk itself is cut short (empty, or missing its end): say so, whatever git made of the merge; a
+    # clash dialog over an empty file sent Kevin to compare two versions when one was no version at all (2026-11-06)
+    def whole(t):
+        return "</html>" in t[-4000:].lower()
+    if (whole(base) or whole(mine)) and (not whole(theirs) or len(theirs) < 0.6 * min(len(base), len(mine))):
+        return jsonify({"ok": True, "conflicts": 1, "merged": None, "why": "truncated"})
     # A file cut short on disk (a tool that died mid-write, an empty file) is a DELETION to git, and
     # with the editor's side unchanged there it merged "cleanly" into the cut-short file, which the
     # editor would then write (QA 2026-10-08: an empty disk file merged to ""). An article that loses
@@ -2797,6 +2815,129 @@ def api_alt_warm():
 def api_alt_status():
     """what the alt-text session is doing (alive, busy, its last few events), for diagnosing a stall"""
     return jsonify(_alt().status())
+
+
+def _archive_original(ref):
+    """The archive original (Images/<Country>/<City>/<stem>.jpg) behind any article img ref: a web tier
+    ("../Images/web/<C>/x-mob-2x.jpg"), a photo-server URL or the original itself. None when there is none.
+    Only ever resolves inside Images/, whatever the ref says."""
+    rel = _rel_clean(unquote(str(ref or "")))
+    rel = re.sub(r"^https?://127\.0\.0\.1:\d+/site/", "", rel)
+    rel = re.sub(r"^(\.\./)+", "", rel)
+    if rel.startswith("Images/"):
+        rel = rel[len("Images/"):]
+    if rel.startswith("web/"):
+        rel = rel[len("web/"):]
+    if not rel or ".." in rel.split("/"):
+        return None
+    rel = re.sub(r"-(?:mob-)?[123]x(?=\.[^.]+$)", "", rel)
+    cand = IMAGES / rel
+    try:
+        cand.resolve().relative_to(IMAGES.resolve())
+    except ValueError:
+        return None
+    folder, low = cand.parent, cand.stem.lower()
+    if not folder.is_dir():
+        return None
+    for f in folder.iterdir():
+        if f.is_file() and f.stem.lower() == low and f.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".heic"}:
+            return f
+    return None
+
+
+CAPTION_RULES = """You write the one-line caption that sits under a photo, or under a side-by-side pair of photos, on a personal travel blog.
+House style (the page's own captions are given as EXAMPLES): short and plain, sentence case, what the photo shows and where when that is known, no period at the end. The writer is American and writes in his own voice.
+Rules:
+- One caption, one line, about 6 to 16 words, under 110 characters.
+- For a PAIR describe both photos in one sentence as "<the left photo>, and <the right photo>", the left one first.
+- For a ROW OF THREE describe all three in one sentence, left to right: "<left>, <middle>, and <right>".
+- Name a place ONLY if it appears in the context you are given (HEADING, PARAGRAPH, ALT TEXT, EXAMPLES). Never guess a landmark's name from how it looks.
+- American English spelling (color, harbor, center, gray). No em dashes, no exclamation marks, no emoji, no hashtags, no quotation marks around the caption.
+- No cliches: never "hidden gem", "breathtaking", "stunning", "nestled", "vibrant", "bustling", "must-see", "picturesque", "charming". Do not start with "A view of", "Image of" or "Photo of".
+- Say what is in the picture; do not restate the paragraph.
+Reply with ONLY the caption."""
+
+
+def clean_caption(cap):
+    cap = (cap or "").strip().splitlines()
+    cap = cap[0].strip() if cap else ""
+    cap = cap.strip('"\u201c\u201d\'').strip()
+    cap = re.sub(r"^(?:caption:\s*)", "", cap, flags=re.I)
+    cap = re.sub(r"\s*\u2014\s*", ", ", cap).replace("\u2013", "-")
+    cap = re.sub(r"^(an? )?(image|photo|picture) of\s+", "", cap, flags=re.I)
+    cap = cap.replace("!", ".")
+    cap = re.sub(r"\s+", " ", cap).strip().rstrip(".")
+    return (cap[:1].upper() + cap[1:])[:160]
+
+
+@app.route("/api/caption", methods=["POST", "OPTIONS"])
+def api_caption():
+    """A caption for a photo block in the editor ("Write caption", Kevin 2026-11-06). The body names the block's
+    photos (article img refs: data-path or src; both halves for a pair) and the page context the editor already
+    has: the nearest heading, the paragraph before the block, each photo's alt text and the page's other captions
+    as style examples. Gemini (tools/ask_gemini.py, the alt-text backend) looks at the photos and writes one line
+    in the house style; the editor puts it in the caption div. Nothing but the photo bytes and those strings is
+    sent, and nothing is logged about the key."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+    b = request.get_json(silent=True) or {}
+    refs = [str(x) for x in (b.get("images") or []) if x][:3]
+    if not refs:
+        return jsonify(ok=False, error="no photos named"), 400
+    sys.path.insert(0, str(ROOT / "tools"))
+    import alt_writer
+    import ask_gemini
+    parts = [{"text": CAPTION_RULES}]
+    pair = bool(b.get("pair")) or len(refs) > 1
+    for i, ref in enumerate(refs):
+        p = _archive_original(ref)
+        if p is None:
+            return jsonify(ok=False, error="no archive photo for %s" % ref.split("/")[-1]), 404
+        small = None
+        try:
+            t = bthumb_path(p, 2000)
+            small = str(t) if t.exists() else None
+        except Exception:
+            small = None
+        try:
+            img = alt_writer._small_jpeg(small or str(p))
+        except Exception as e:
+            return jsonify(ok=False, error="could not read %s: %s" % (p.name, str(e)[:120])), 500
+        pos = ("left", "right")[i] if len(refs) == 2 else ("left", "middle", "right")[min(i, 2)]
+        label = ("PHOTO %d of %d (%s):" % (i + 1, len(refs), pos)) if pair else "THE PHOTO:"
+        parts.append({"text": label})
+        parts.append({"inline_data": {"mime_type": "image/jpeg", "data": img}})
+    clip = lambda v, n: re.sub(r"\s+", " ", str(v or "")).strip()[:n]
+    ctx = []
+    for k, key, n in (("COUNTRY", "country", 60), ("CITY", "city", 60), ("HEADING", "heading", 160), ("PARAGRAPH", "paragraph", 900)):
+        v = clip(b.get(key), n)
+        if v:
+            ctx.append("%s: %s" % (k, v))
+    alts = [clip(a, 160) for a in (b.get("alts") or []) if clip(a, 160)]
+    for i, a in enumerate(alts[:3]):
+        ctx.append("ALT TEXT of photo %d: %s" % (i + 1, a))
+    ex = [clip(x, 160) for x in (b.get("examples") or []) if clip(x, 160)][:8]
+    if ex:
+        ctx.append("EXAMPLES (captions already on this page, match their tone and length):\n" + "\n".join("- " + x for x in ex))
+    cur = clip(b.get("current"), 200)
+    if cur:
+        ctx.append("CURRENT CAPTION (write a different one): " + cur)
+    ask = "Write the caption for " + ("this pair of photos." if pair else "this photo.")
+    parts.append({"text": ask + ("\n" + "\n".join(ctx) if ctx else "\nNo place is known: describe without naming any place.")})
+    model = os.environ.get("ALT_GEMINI_MODEL") or os.environ.get("GEMINI_MODEL") or ask_gemini.DEFAULT_MODEL
+    try:
+        cap, _ = ask_gemini.generate(parts, model=model, timeout=25, deadline=time.time() + 30)
+    except ask_gemini.Unavailable as e:
+        why = e.msg or ("HTTP %s" % e.code)
+        if e.code == 0 and "GEMINI_API_KEY" in why:
+            why = "no Gemini key in .env"
+        return jsonify(ok=False, error="Gemini could not answer: " + why[:200]), 502
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)[:200]), 502
+    cap = clean_caption(cap)
+    if not cap:
+        return jsonify(ok=False, error="Gemini sent back an empty caption; try again"), 502
+    return jsonify(ok=True, caption=cap, model=model)
 
 
 _preview_warm_pool = ThreadPoolExecutor(max_workers=1)   # one: background work, never in your way
@@ -3807,7 +3948,9 @@ def _articles_inventory():
             th = json.loads(f.read_text(encoding="utf-8")).get("threads", [])
         except Exception:
             continue
-        comments[f.stem] = {"open": sum(1 for t in th if not t.get("resolved")),
+        shadow = lambda t: (t.get("author") or "") == "Shadow reviewer"      # predicted comments, shown apart (2026-11-06)
+        comments[f.stem] = {"open": sum(1 for t in th if not t.get("resolved") and not shadow(t)),
+                            "shadow": sum(1 for t in th if not t.get("resolved") and shadow(t)),
                             "tasks": sum(1 for t in th if t.get("kind") in ("task", "rewrite") and not t.get("resolved") and not t.get("edit"))}
     rounds = {}
     try:
@@ -3825,7 +3968,7 @@ def _articles_inventory():
     for r in rows:
         r["flag"] = flags.get(r["country"], "")
         c = comments.get(_redline.comments_key(r["rel"]), {})
-        r["comments"] = c.get("open", 0); r["tasks"] = c.get("tasks", 0)
+        r["comments"] = c.get("open", 0); r["tasks"] = c.get("tasks", 0); r["shadow"] = c.get("shadow", 0)
         r["round"] = rounds.get(r["rel"])
         r["opened"] = recent.get(r["rel"], 0)
     return rows
@@ -3868,6 +4011,20 @@ def _xm_page(rel):
     return page if ROOT.resolve() in page.parents and page.suffix == ".html" and page.is_file() else None
 
 
+def _xm_block(xm, rel, cat, pins):
+    """the Explore More block as tools/explore_more.py would write it INTO THIS PAGE: with the page's own classes
+    ("xm measure" on the itinerary template). block_html alone gave "xm", and a pin change in the editor's panel saved
+    the block full-width (stress test 2026-11-06)."""
+    blk = xm.block_html(rel, xm.picks(rel, cat, pins))
+    try:
+        s = (ROOT / rel).read_text(encoding="utf-8")
+        m = re.search(r'<section class="(xm(?: [^"]*)?)" id="explore-more"', s)
+        cls = m.group(1) if m else "xm" + (xm.anchor(s)[1] or "")
+    except Exception:
+        cls = "xm"
+    return blk.replace('<section class="xm"', '<section class="%s"' % cls, 1)
+
+
 @app.route("/api/explore")
 def api_explore():
     """the open article's Explore More slots: the three the rules (or Kevin's pins) chose, every page a slot can be
@@ -3880,7 +4037,7 @@ def api_explore():
     return jsonify({"ok": True, "rel": rel, "slots": xm.slot_info(rel, cat, pins), "pinned": (pins.get(rel) or [None, None, None])[:3],
                     "catalog": [{"rel": e["rel"], "title": e["title"], "kind": e["kind"], "label": xm.KIND_LABEL[e["kind"]], "country": e["name"], "draft": e["draft"]}
                                 for e in cat.values() if e["rel"] != rel],
-                    "block": xm.block_html(rel, xm.picks(rel, cat, pins))})
+                    "block": _xm_block(xm, rel, cat, pins)})
 
 
 @app.route("/api/explore/set", methods=["POST", "OPTIONS"])
@@ -3898,7 +4055,7 @@ def api_explore_set():
     slots = [t if isinstance(t, str) and t in cat and t != rel else None for t in (list(d.get("slots") or []) + [None] * 3)[:3]]
     pins = xm.set_pins(rel, slots)
     return jsonify({"ok": True, "rel": rel, "slots": xm.slot_info(rel, cat, pins), "pinned": (pins.get(rel) or [None, None, None])[:3],
-                    "block": xm.block_html(rel, xm.picks(rel, cat, pins))})
+                    "block": _xm_block(xm, rel, cat, pins)})
 
 
 @app.route("/api/thumbs")
@@ -4005,6 +4162,35 @@ def _compress_status():
         q = _cq_load()
         return {"queued": sorted(q), "running": _cq_state["running"], "last": _cq_state["last"],
                 "failed": {r: e.get("error", "") for r, e in q.items() if e.get("tries", 0) >= 3}}
+
+
+# ---- the code fingerprint (tools/build_id.py), so the shortcut restarts a server running old code ----
+# /api/build says which build this is and whether it may be restarted now. Busy: a background job queued or
+# running (erase, cull...), a compress run under way, an alt text being written, or (counted in build_id) any
+# POST in flight: a save merge, an import, a caption. The compress QUEUE itself is a file and survives a
+# restart, so pages waiting in it do not hold one up; a page being compressed right now does.
+import build_id as _build_id
+
+
+def _build_busy():
+    out = []
+    with _JOBS_LOCK:
+        live = [(j["kind"], j["label"]) for j in _JOBS.values() if j["status"] in ("queued", "running")]
+    out.extend("%s job: %s" % kl for kl in live)
+    if _cq_state["running"]:
+        out.append("compressing " + _cq_state["running"].split("/")[-1])
+    if _alt_writer is not None and _alt_writer.lock.locked():
+        out.append("alt text being written")
+    return out
+
+
+def _build_exit():
+    if _alt_writer is not None:                   # its claude.exe child would outlive this process otherwise
+        _alt_writer.stop()
+
+
+_build_id.install(app, __file__, busy=_build_busy, on_exit=_build_exit,
+                  exclude=("/api/build", "/__keeper", "/api/editor/open", "/api/jobs"))
 
 
 # --------------------------------------------------------------------- UI page

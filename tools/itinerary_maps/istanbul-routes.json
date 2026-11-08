@@ -1,0 +1,179 @@
+{
+  "slug": "istanbul-routes",
+  "page": "Drafts/Full Articles/turkiye/istanbul.html",
+  "iso3": "TUR",
+  "country_width": 900,
+  "simplify": 3000,
+  "smooth": false,
+  "area_keep": 0.0005,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    22.3,
+    35.9,
+    35.9,
+    42.45
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      }
+    ]
+  },
+  "airports": [
+    {
+      "name": "IST",
+      "lat": 41.2753,
+      "lon": 28.7519,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -14
+    },
+    {
+      "name": "SAW",
+      "lat": 40.8986,
+      "lon": 29.3092,
+      "anchor": "start",
+      "dx": 26,
+      "dy": 10
+    }
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Istanbul",
+      "lat": 41.0082,
+      "lon": 28.9784,
+      "marker": "star",
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -10
+    },
+    {
+      "n": 2,
+      "name": "Cappadocia",
+      "lat": 38.6431,
+      "lon": 34.8289,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "cappadocia.html"
+    },
+    {
+      "n": 3,
+      "name": "Antalya",
+      "lat": 36.8969,
+      "lon": 30.7133,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 10,
+      "href": "../../../turkiye/antalya.html"
+    },
+    {
+      "n": 4,
+      "name": "Fethiye",
+      "lat": 36.6216,
+      "lon": 29.1164,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "href": "../../../turkiye/fethiye-oludeniz.html"
+    },
+    {
+      "n": 5,
+      "name": "Thessaloniki",
+      "lat": 40.6401,
+      "lon": 22.9444,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 16,
+      "href": "../../../greece/thessaloniki.html"
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          41.0,
+          26.2
+        ]
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/istanbul-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/istanbul-routes-greece.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Türkiye",
+      "lat": 39.3,
+      "lon": 32.2,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Greece",
+      "lat": 39.6,
+      "lon": 22.4,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 42.25,
+      "lon": 25.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ]
+}

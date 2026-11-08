@@ -16,6 +16,8 @@ Scans live HTML pages (excludes Drafts/, .tmp/, .git/) and reports:
   7. <img> without alt=""
   8. missing <title> or meta description
   9. nested bold (<b> ... <b>) — usually a paste bug
+ 10. booking links still carrying ad-click junk (gclid, utm_*, another partner's id); fix with
+     tools/affiliate_links.py --apply (warning class)
 
 Usage:
   python tools/lint_site.py            # lint live pages, summary + details
@@ -36,6 +38,10 @@ except Exception:
     pass
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prose_rules          # the em-dash judgement, shared with tools/prose_check.py
+try:
+    import affiliate_links as _aff     # the booking-link junk rules (roadmap R2); the lint runs without it
+except Exception:
+    _aff = None
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INCLUDE_DRAFTS = "--drafts" in sys.argv
@@ -169,6 +175,15 @@ for path, r in pages():
         if not os.path.exists(dest):
             add("broken-link", r, lineno(html, m.start()), 'links to missing file: %s' % target)
 
+    # 3a. booking links with ad-click junk (gclid, utm_*, someone else's partner id): roadmap R1/R2,
+    #     2026-11-07. archive/ is the frozen old design and keeps whatever it had.
+    if _aff and not r.startswith("archive/"):
+        for m in re.finditer(r'href="(https?://[^"]+)"', html):
+            junk = _aff.junk_in(m.group(1))
+            if junk:
+                add("booking-junk", r, lineno(html, m.start()), "tracking junk (%s): python tools/affiliate_links.py --apply"
+                    % ", ".join(junk[:4]))
+
     # 3b. assets that exist on disk but are not in the repo (held-back draft files), and
     #     references whose case does not match — Linux serves this site, Windows does not care
     if COMMITTED and not r.startswith("Drafts/"):
@@ -292,7 +307,7 @@ if nav_lists:
 # ---- report ----
 ORDER = ["duplicate-id", "broken-link", "broken-anchor", "unpublished-asset", "missing-asset",
          "asset-case", "nav-drift", "nested-bold", "paste-artifact", "em-dash", "img-no-alt",
-         "meta"]
+         "meta", "booking-junk"]
 LABEL = {
     "duplicate-id": "Duplicate id attributes", "broken-link": "Broken internal file links",
     "broken-anchor": "Broken in-page anchors", "nav-drift": "Nav Field-Notes list drift",
@@ -300,6 +315,7 @@ LABEL = {
     "em-dash": "In-sentence em dashes", "img-no-alt": "Images missing alt", "meta": "Missing title/meta",
     "unpublished-asset": "Assets not in the repo (404 live)",
     "missing-asset": "Assets that do not exist", "asset-case": "Asset case mismatch (Linux host)",
+    "booking-junk": "Booking links with ad-click tracking",
 }
 # breaking issues that should fail CI (vs. style/quality warnings like em dashes)
 ERROR_CHECKS = {"duplicate-id", "broken-link", "broken-anchor", "nav-drift",

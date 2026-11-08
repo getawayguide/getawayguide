@@ -63,7 +63,7 @@ SRC_PAT = re.compile(r'src="(\.\./Images/[^"]+)"')
 
 total_fixed = 0
 for page in sorted(pages):
-    html = page.read_text(encoding='utf-8')
+    html = page.read_text(encoding='utf-8', newline='')     # the page's own line endings (CRLF pages, 2026-11-06)
     original = html
 
     def replace_src(m):
@@ -72,7 +72,7 @@ for page in sorted(pages):
 
     html = SRC_PAT.sub(replace_src, html)
     if html != original:
-        page.write_text(html, encoding='utf-8')
+        page.write_text(html, encoding='utf-8', newline='')
         n = sum(1 for a, b in zip(
             SRC_PAT.findall(original), SRC_PAT.findall(html)) if a != b)
         print(f'  Saved: {page.name}')

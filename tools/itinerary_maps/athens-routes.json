@@ -1,0 +1,324 @@
+{
+  "slug": "athens-routes",
+  "page": "Drafts/Full Articles/greece/athens.html",
+  "outline_file": "tools/itinerary_maps/geo/athens-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 880,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    20.9,
+    36.25,
+    26.0,
+    40.9
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Bus transfer",
+        "color": "#9DB5A8"
+      },
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "airports": [
+    {
+      "name": "ATH",
+      "lat": 37.9364,
+      "lon": 23.9445,
+      "anchor": "start",
+      "dx": 8,
+      "dy": 22
+    }
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/athens-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Athens",
+      "lat": 37.9838,
+      "lon": 23.7275,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -24,
+      "dy": -4,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Thessaloniki",
+      "lat": 40.6401,
+      "lon": 22.9444,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../greece/thessaloniki.html"
+    },
+    {
+      "n": 3,
+      "name": "Meteora",
+      "lat": 39.7061,
+      "lon": 21.6269,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -4,
+      "href": "../../../greece/meteora.html"
+    },
+    {
+      "n": 4,
+      "name": "Santorini",
+      "lat": 36.4166,
+      "lon": 25.4316,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "santorini.html"
+    },
+    {
+      "n": 5,
+      "name": "Mykonos",
+      "lat": 37.4467,
+      "lon": 25.3289,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "mykonos.html"
+    },
+    {
+      "n": 6,
+      "name": "Naxos",
+      "lat": 37.1036,
+      "lon": 25.3766,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "naxos-ios.html#naxos"
+    },
+    {
+      "n": 7,
+      "name": "Ios",
+      "lat": 36.7317,
+      "lon": 25.2823,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "naxos-ios.html#ios"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Trikala",
+      "lat": 39.5556,
+      "lon": 21.7679,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Piraeus",
+      "lat": 37.942,
+      "lon": 23.6465,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 12
+    },
+    {
+      "name": "Rafina",
+      "lat": 38.0222,
+      "lon": 24.0094,
+      "anchor": "start",
+      "dx": 8,
+      "dy": -6
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "dot:Trikala",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": "dot:Trikala",
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": "dot:Piraeus",
+      "b": 5,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.68,
+          23.713
+        ],
+        [
+          37.26,
+          24.25
+        ],
+        [
+          37.24,
+          25.248
+        ]
+      ]
+    },
+    {
+      "a": "dot:Piraeus",
+      "b": 6,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.51,
+          23.79
+        ],
+        [
+          36.97,
+          24.455
+        ],
+        [
+          36.82,
+          24.775
+        ],
+        [
+          36.82,
+          25.094
+        ]
+      ]
+    },
+    {
+      "a": "dot:Piraeus",
+      "b": 4,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.68,
+          23.713
+        ],
+        [
+          37.26,
+          24.25
+        ],
+        [
+          37.27,
+          25.018
+        ]
+      ]
+    },
+    {
+      "a": "dot:Piraeus",
+      "b": 3,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.61,
+          23.726
+        ],
+        [
+          37.35,
+          23.969
+        ],
+        [
+          36.97,
+          24.455
+        ],
+        [
+          36.82,
+          24.8
+        ],
+        [
+          36.41,
+          25.273
+        ]
+      ]
+    },
+    {
+      "a": "dot:Rafina",
+      "b": 4,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.83,
+          24.34
+        ],
+        [
+          37.73,
+          24.749
+        ],
+        [
+          37.45,
+          25.12
+        ]
+      ]
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Greece",
+      "lat": 39.15,
+      "lon": 21.35,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 40.5,
+      "lon": 20.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Aegean Sea",
+      "lat": 38.75,
+      "lon": 25.0,
+      "size": 10
+    }
+  ]
+}

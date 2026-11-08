@@ -363,6 +363,9 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
     LABELS = bool(cfg.get("labels"))
     SHOW_KEY = cfg.get("legend", True) is not False
     LABPOS = {p["name"]: p.get("lab", "s") for p in cfg["pois"]}
+    # "lab_mobile": the side on the PHONE base alone (its pins are 1.6x, so a side that clears on desktop can sit on a
+    # neighbour there); the map editor's Phone view writes it (2026-11-07). Absent, the phone takes "lab".
+    LABPOS_M = {p["name"]: p.get("lab_mobile") for p in cfg["pois"]}
     # "icon": "plane" draws an airplane in the pin instead of its number or dot (airports on a
     # regional map; Kevin, 2026-10-11: "add plane markers for airports")
     ICON = {p["name"]: p.get("icon") for p in cfg["pois"]}
@@ -498,6 +501,13 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
                             if best is None or cost < best[0]: best = (cost, ccx, ccy, s0)
                 if best is not None:
                     _, cx, cy, scale = best
+
+        # "proj_lock": {"desktop": [cx, cy, scale], "mobile": [...]} pins the projection a published base
+        # was drawn with, so pins added later (which move the framing and the key's height) land on the
+        # same streets under --keep-base (2026-11-06, the Greece/Türkiye guide maps; tools/city_proj.py)
+        lock = (cfg.get("proj_lock") or {}).get("mobile" if mobile else "desktop")
+        if lock:
+            cx, cy, scale = lock
 
         def px(lat, lon):
             x, y = merc(lat, lon); return (W / 2 + (x - cx) * scale, H / 2 - (y - cy) * scale)
@@ -655,6 +665,13 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
 
         dls_adj = []
         for d in dls:
+            # "mobile": {"lat", "lon"} places the label on its own spot on the phone base, where the pins
+            # are 1.6x larger and a label that clears them on desktop can sit under one (Istanbul, 2026-11-07).
+            # "mobile": false leaves the label off the phone base (no dry spot clear of the bigger pins there)
+            if mobile and d.get("mobile") is False:
+                continue
+            if mobile and d.get("mobile"):
+                d = {**d, **d["mobile"]}
             lx, ly = px(d["lat"], d["lon"])
             tw = len(d["text"]) * 10.0 * pin_scale; th = 11 * pin_scale
             # "fixed": true keeps a label exactly where the config puts it. An ISLAND name (RHODES on the
@@ -730,7 +747,7 @@ def build(cfg_path, embed=False, demo=None, article=None, keep_base=False):
                     # the name rides beside its own pin instead of in a key. The halo is a
                     # LAND-coloured stroke under the glyphs (paint-order:stroke on the svg),
                     # so a label stays readable where it crosses water or a road.
-                    side = LABPOS.get(name, "s")
+                    side = (LABPOS_M.get(name) if mobile else None) or LABPOS.get(name, "s")
                     dx, dy, anc = {"n": (0, -27.5 * ps, "middle"),
                                    "s": (0, 13.5 * ps, "middle"),
                                    "e": (10.5 * ps, -14 * ps, "start"),

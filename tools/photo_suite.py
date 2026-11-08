@@ -4,6 +4,7 @@
     python tools/photo_suite.py status     what is up
     python tools/photo_suite.py stop       stop everything the suite started
     python tools/photo_suite.py keep       the keeper: restart a server that died (start runs it)
+    python tools/photo_suite.py builds     which servers run the code on disk (what `start` acts on)
     python tools/photo_suite.py site       preview the live site (the photo server
                                            serves the whole repo at /site/)
 
@@ -25,6 +26,7 @@ The shared-album backup watcher (photo_backup.py) and the iCloud sync fix were
 removed on 2026-10-12: albums come from icloud.com downloads
 (tools/ingest_icloud_download.py), so nothing copies in the background.
 """
+import json
 import re
 import os
 import signal
@@ -36,6 +38,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 META = Path.home() / "Backup" / "_meta"
+sys.path.insert(0, str(ROOT / "tools"))
+import build_id            # noqa: E402  (the code fingerprint each server reports at /api/build)
 
 # The helpers run as python.exe with an INVISIBLE console (CREATE_NO_WINDOW), not as pythonw.
 # pythonw has no console at all, and Windows then gives every console program it starts (git,
@@ -124,7 +128,16 @@ def port_pids(port):
         if len(f) >= 5 and f[0] == "TCP" and f[3] == "LISTENING" and f[1].rsplit(":", 1)[-1] == str(port):
             if f[4].isdigit() and f[4] != "0":
                 pids.add(int(f[4]))
+    if not pids and port_open(port):
+        # netstat showed no owner for an open port (a sandboxed session sees LISTENING rows with pid 0, 2026-11-07):
+        # the process this launcher started on that port, if it still runs, is the one
+        pid = _known_pids.get(port)
+        if pid and _alive(pid):
+            pids.add(pid)
     return sorted(pids)
+
+
+_known_pids = {}            # port -> pid of the process start() put there (this process's own launches only)
 
 
 def is_up(name):
@@ -141,8 +154,9 @@ def start(name):
         _rotate(META / f"{s['log']}.{ext}")
     out = open(META / f"{s['log']}.log", "ab")
     err = open(META / f"{s['log']}.err", "ab")
-    subprocess.Popen([PYW] + s["args"], cwd=str(ROOT), stdout=out, stderr=err,
-                     stdin=subprocess.DEVNULL, creationflags=DETACHED, close_fds=True)
+    p = subprocess.Popen([PYW] + s["args"], cwd=str(ROOT), stdout=out, stderr=err,
+                         stdin=subprocess.DEVNULL, creationflags=DETACHED, close_fds=True)
+    _known_pids[s["port"]] = p.pid
     return True
 
 
@@ -187,6 +201,262 @@ def status():
             "keeper": port_open(5009)}
 
 
+# ---------------------------------------------------------------- current code, every launch
+# Kevin opens the editor from the shortcut and nothing else; a server left running since last week kept
+# serving last week's code, and the new Queue tab told him "the photo server needs a restart" (2026-11-07).
+# Now every server reports a fingerprint of its code at /api/build (tools/build_id.py) and the launcher
+# compares it with the files on disk. A stale server is restarted on the spot when it is idle; one with
+# work under way (a compress run, a job, a save in flight) is left alone and marked pending in launch.json,
+# and the keeper restarts it the moment it reports idle. What happened lands in launch.json (shown in the
+# editor's Live Activity through /api/suite) and in suite.log.
+LAUNCH_STATE = META / "launch.json"
+SUITE_LOG = META / "suite.log"
+RESTART_WAIT = 20            # seconds the launcher gives a restarted server to answer HTTP again before it opens the editor
+_launch_cache = {"key": None, "v": {}}
+
+
+def suite_log(line):
+    """one timestamped line in ~/Backup/_meta/suite.log (the launcher runs under pythonw, where print goes nowhere)"""
+    try:
+        META.mkdir(parents=True, exist_ok=True)
+        _rotate(SUITE_LOG, 5 * 1024 * 1024)
+        with open(SUITE_LOG, "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line + "\n")
+    except OSError:
+        pass
+
+
+def launch_state():
+    """launch.json as a dict ({} without one): at, lines, pending {service: {since, why}}. Cached by mtime: the
+    photo server hands it to the editor on every /api/suite poll."""
+    try:
+        st = LAUNCH_STATE.stat()
+        key = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        return {}
+    if _launch_cache["key"] != key:
+        try:
+            v = json.loads(LAUNCH_STATE.read_text(encoding="utf-8"))
+            _launch_cache["v"] = v if isinstance(v, dict) else {}
+        except (OSError, ValueError):
+            _launch_cache["v"] = {}
+        _launch_cache["key"] = key
+    return _launch_cache["v"]
+
+
+def _launch_write(state):
+    try:
+        META.mkdir(parents=True, exist_ok=True)
+        tmp = LAUNCH_STATE.with_name("launch.json.tmp")
+        tmp.write_text(json.dumps(state, indent=1), encoding="utf-8")
+        os.replace(tmp, LAUNCH_STATE)
+    except OSError:
+        pass
+
+
+def entry_of(name):
+    """the script a service runs (tools/photo_editor.py for the photo server, tools/photo_suite.py for the keeper)"""
+    return next((a for a in SERVICES[name]["args"] if a.endswith(".py")), None)
+
+
+def disk_build(name):
+    """the fingerprint of the service's code as it is on disk right now"""
+    e = entry_of(name)
+    return build_id.fingerprint(ROOT / e)["build"] if e else None
+
+
+def code_age(name):
+    """seconds since the newest change to any file in the service's code (None without an entry)"""
+    e = entry_of(name)
+    if not e:
+        return None
+    try:
+        newest = max(p.stat().st_mtime for p in build_id.files_of(ROOT / e))
+    except (ValueError, OSError):
+        return None
+    return time.time() - newest
+
+
+def _http_json(port, path, timeout=3.0, body=None):
+    """GET (or POST a JSON body to) a local server. Returns (status, dict|None); status 0 when it did not answer."""
+    import urllib.request
+    import urllib.error
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request("http://127.0.0.1:%d%s" % (port, path), data=data,
+                                 headers={"Content-Type": "application/json"} if data else {})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            raw = r.read()
+            try:
+                return r.status, json.loads(raw)
+            except ValueError:
+                return r.status, None
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read())
+        except Exception:
+            return e.code, None
+    except Exception:
+        return 0, None
+
+
+def build_info(port, timeout=3.0):
+    """what a running server says about itself. None when it does not answer HTTP; {"missing": True} when it
+    answers but has no /api/build (a build from before the fingerprint existed)."""
+    status, d = _http_json(port, "/api/build", timeout)
+    if status == 0:
+        return None
+    if status != 200 or not isinstance(d, dict) or not d.get("build"):
+        return {"missing": True}
+    return d
+
+
+def legacy_busy(name, port):
+    """for a server from before /api/build: is it working? The photo server has job and compress routes to ask;
+    Covers and the map editor have none, and their work is short, so they read as idle."""
+    if name != "server":
+        return []
+    out = []
+    st, jobs = _http_json(port, "/api/jobs", 4.0)
+    if st == 200 and isinstance(jobs, dict):
+        for j in jobs.get("jobs", []):
+            if j.get("status") in ("queued", "running"):
+                out.append("%s job: %s" % (j.get("kind", "?"), j.get("label", "")))
+    elif st != 404:
+        out.append("could not ask about its jobs")
+    st, suite = _http_json(port, "/api/suite", 4.0)
+    if st == 200 and isinstance(suite, dict):
+        run = (suite.get("compress") or {}).get("running")
+        if run:
+            out.append("compressing " + str(run).split("/")[-1])
+    elif st != 404:
+        out.append("could not ask about the compress queue")
+    st, alt = _http_json(port, "/api/alt_status", 4.0)
+    if st == 200 and isinstance(alt, dict) and alt.get("busy"):
+        out.append("alt text being written")
+    return out
+
+
+def check_server(name):
+    """{"up", "answers", "stale", "missing", "live", "disk", "busy": [...]} for one service"""
+    port = SERVICES[name]["port"]
+    out = {"name": name, "port": port, "up": port_open(port), "answers": False, "stale": False, "missing": False,
+           "live": None, "disk": None, "busy": []}
+    if not out["up"]:
+        return out
+    info = build_info(port)
+    if info is None:
+        return out                                    # listening, not answering: the keeper's business, not a restart
+    out["answers"] = True
+    try:
+        out["disk"] = disk_build(name)
+    except Exception:
+        return out                                    # a half-written file on disk: say nothing, restart nothing
+    if info.get("missing"):
+        out["missing"] = out["stale"] = True
+        out["busy"] = legacy_busy(name, port)
+    else:
+        out["live"] = info.get("build")
+        out["stale"] = out["live"] != out["disk"]
+        out["busy"] = list(info.get("busy") or [])
+    return out
+
+
+def restart_server(name, check, log=print, wait=RESTART_WAIT):
+    """Stop a server (asked to leave through /api/build when it has the route, else TerminateProcess like `stop`),
+    start it fresh and wait for it to answer HTTP. "back" when it answers again, "started" when it was started but
+    has not answered within `wait`, None when the old one could not be stopped (nothing was started)."""
+    port = SERVICES[name]["port"]
+    if check.get("live"):
+        st, d = _http_json(port, "/api/build", 5.0, {"action": "exit", "build": check["live"]})
+        if not (st == 200 and isinstance(d, dict) and d.get("exiting")):
+            why = (d or {}).get("busy") or (d or {}).get("error") or ("no answer" if st == 0 else "status %s" % st)
+            log("%s: did not leave when asked (%s); left running" % (SERVICES[name]["label"], why))
+            return None
+    else:
+        pids = [pid for pid in port_pids(port) if _alive(pid)]
+        if not pids:
+            log("%s: no process found behind port %d; left as it is" % (SERVICES[name]["label"], port))
+            return None
+        _kill(pids)
+    for _ in range(60):                               # the old one lets go of the port
+        if not port_open(port):
+            break
+        time.sleep(0.1)
+    else:
+        log("%s: the old process is still holding port %d; left as it is" % (SERVICES[name]["label"], port))
+        return None
+    start(name)
+    t0 = time.time()
+    while time.time() - t0 < wait:
+        if http_answers(port, 2.0):
+            return "back"
+        time.sleep(0.25)
+    log("%s: restarted but not answering yet after %d s (the keeper watches it)" % (SERVICES[name]["label"], wait))
+    return "started"
+
+
+def refresh_stale(log=print, restart=True):
+    """The launcher's pass over the servers that are already up: restart the ones running old code when they are
+    idle, mark the busy ones pending for the keeper. Returns the launch state it wrote."""
+    lines, pending = [], {}
+    prev = launch_state().get("pending") or {}
+    for n in KEPT:
+        label = SERVICES[n]["label"]
+        try:
+            c = check_server(n)
+        except Exception as e:
+            lines.append("%s: check failed (%s)" % (label, e)); continue
+        if not c["up"]:
+            continue                                  # start_all starts it, on the current code
+        if not c["answers"]:
+            lines.append("%s: listening but not answering; left to the keeper" % label); continue
+        if not c["stale"]:
+            lines.append("%s: current (%s)" % (label, c["disk"])); continue
+        what = "from before the fingerprint" if c["missing"] else "%s, disk %s" % (c["live"], c["disk"])
+        if c["busy"]:
+            since = (prev.get(n) or {}).get("since") or time.strftime("%Y-%m-%d %H:%M")
+            pending[n] = {"since": since, "why": "; ".join(c["busy"])[:200]}
+            lines.append("%s: running old code (%s) but busy: %s. It restarts by itself once that finishes."
+                         % (label, what, "; ".join(c["busy"])))
+            continue
+        if not restart:
+            lines.append("%s: running old code (%s)" % (label, what)); continue
+        res = restart_server(n, c, log=lambda s: lines.append(s))
+        if res:
+            lines.append("%s: restarted on the current code (%s)%s" % (label, what, "" if res == "back" else "; it has not answered yet"))
+        else:
+            lines.append("%s: still running old code (%s)" % (label, what))
+    # the keeper itself runs photo_suite.py; its build is in keeper.json. It holds no work, so a stale one is restarted.
+    try:
+        if port_open(SERVICES["keeper"]["port"]):
+            kb = _keeper_meta().get("build")
+            want = disk_build("keeper")
+            if kb != want:
+                _kill([pid for pid in port_pids(SERVICES["keeper"]["port"]) if _alive(pid)])
+                for _ in range(40):
+                    if not port_open(SERVICES["keeper"]["port"]):
+                        break
+                    time.sleep(0.1)
+                lines.append("keeper: restarted on the current code (%s -> %s)" % (kb or "from before the fingerprint", want))
+    except Exception as e:
+        lines.append("keeper: check failed (%s)" % e)
+    state = {"at": time.strftime("%Y-%m-%d %H:%M"), "lines": lines, "pending": pending}
+    _launch_write(state)
+    for l in lines:
+        suite_log("launch: " + l)
+        log(l)
+    return state
+
+
+def _keeper_meta():
+    try:
+        d = json.loads(KEEPER_STATE.read_text(encoding="utf-8"))
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
 # ---------------------------------------------------------------- the keeper
 # A dead photo server used to stay dead until Kevin noticed: every photo in the editor stopped
 # loading and a red banner told him to double-click a .cmd and reload. The keeper checks the
@@ -217,6 +487,8 @@ KEEP_HTTP_EVERY = 3          # rounds between HTTP probes (one 404 line in each 
 # Restarts count toward the ten-minute hold only when the server died soon after the keeper started
 # it. A server that ran for an hour and was then killed is not crashing on start.
 KEEP_QUICK = 150
+# Covers and the map editor are restarted for a code change once their files have been quiet this long
+KEEP_CODE_QUIET = 600
 KEEPER_STATE = META / "keeper.json"
 
 
@@ -264,14 +536,22 @@ def keeper_restarts():
 
 
 def _keeper_note(entry):
-    import json
     restarts = (keeper_restarts() + [entry])[-50:]
+    _keeper_state_update(restarts=restarts)
+    suite_log("keeper: %s %s" % (entry["service"], entry["what"]))
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), entry["service"], entry["what"], flush=True)
+
+
+def _keeper_state_update(**fields):
+    """keeper.json keeps the restarts AND the running keeper's own build/pid (the launcher restarts a keeper whose
+    code changed, since it holds no work)"""
+    d = _keeper_meta()
+    d.update(fields)
     try:
         META.mkdir(parents=True, exist_ok=True)
-        KEEPER_STATE.write_text(json.dumps({"restarts": restarts}, indent=1), encoding="utf-8")
+        KEEPER_STATE.write_text(json.dumps(d, indent=1), encoding="utf-8")
     except OSError:
         pass
-    print(time.strftime("%Y-%m-%d %H:%M:%S"), entry["service"], entry["what"], flush=True)
 
 
 def keep(every=KEEP_EVERY, rounds=None):
@@ -313,17 +593,58 @@ def keep(every=KEEP_EVERY, rounds=None):
     heard = {n: 0.0 for n in KEPT}                # the last REAL answer
     started_at = {n: 0.0 for n in KEPT}           # the last time the keeper started it
     noted = {n: False for n in KEPT}              # "busy, left running" is said once per spell
-    # the map editor and Covers are restarted when their code changed (stress test 2026-10-23: :5002 ran code from
-    # the 16th for a week and its Save embedded a degraded map). Their work is short, so a restart ten minutes after
-    # the last edit to their files cuts nothing off; the photo server (queue, imports) is restarted by hand.
-    CODE = {"maps": ["tools/map_editor.py", "tools/itinerary_map.py", "tools/city_map.py", "tools/embed_itinerary_map.py", "tools/country_outline.py"],
-            "heroes": ["tools/hero_picker.py", "tools/gen_hero_variants.py", "tools/fit_backgrounds.py"]}
-    def code_mtime(n):
+    # Servers running old code (their /api/build fingerprint differs from the files on disk) are restarted here
+    # when they are idle, in two cases:
+    #  * the map editor and Covers, once their code has been quiet for KEEP_CODE_QUIET (stress test 2026-10-23: :5002
+    #    ran code from the 16th for a week and its Save embedded a degraded map; a restart ten minutes after the last
+    #    edit cuts nothing off);
+    #  * ANY server the launcher found stale but busy (launch.json "pending"): the photo server with a compress run or
+    #    a job under way when Kevin clicked the shortcut (2026-11-07). The moment it reports idle it is restarted, and
+    #    the launch lines say so for the editor's Live Activity. The photo server is otherwise never restarted for a
+    #    code change alone: a session edits photo_editor.py while Kevin writes, and the shortcut is his moment.
+    try:
+        _keeper_state_update(build=disk_build("keeper"), pid=os.getpid(), started=time.strftime("%Y-%m-%d %H:%M:%S"))
+    except Exception:
+        pass
+    CODE_QUIET = ("maps", "heroes")
+    code_said = {n: 0.0 for n in KEPT}             # when "stale but busy" was last noted (once an hour, not once a round)
+
+    def code_check(n, now):
+        """restart n if it runs old code and may be restarted now; True when it was"""
         try:
-            return max(os.path.getmtime(ROOT / f) for f in CODE.get(n, []) if (ROOT / f).exists())
-        except ValueError:
-            return 0.0
-    code_seen = {n: code_mtime(n) for n in CODE}   # what the running processes are assumed to carry (they are started fresh with the keeper)
+            c = check_server(n)
+        except Exception:
+            return False
+        if not c["answers"] or not c["stale"]:
+            return False
+        pend = (launch_state().get("pending") or {})
+        due = n in pend
+        if not due and n in CODE_QUIET:
+            age = code_age(n)
+            due = age is not None and age > KEEP_CODE_QUIET
+        if not due:
+            return False
+        if c["busy"]:
+            if now - code_said[n] > 3600:
+                code_said[n] = now
+                _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                              "what": "runs old code, waiting for it to finish: " + "; ".join(c["busy"])[:200], "err": []})
+            return False
+        res = restart_server(n, c, log=lambda s: print(time.strftime("%Y-%m-%d %H:%M:%S"), s, flush=True), wait=KEEP_GRACE)
+        if not res:
+            if now - code_said[n] > 3600:
+                code_said[n] = now
+                _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                              "what": "runs old code and could not be stopped; left as it is", "err": []})
+            return False
+        what = "restarted for new code (%s -> %s)%s" % (c["live"] or "pre-fingerprint", c["disk"], "" if res == "back" else "; not answering yet")
+        _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"), "what": what, "err": [] if res == "back" else _err_tail(n)})
+        st = dict(launch_state())
+        if n in (st.get("pending") or {}):
+            st["pending"] = {k: v for k, v in st["pending"].items() if k != n}
+            st["lines"] = (st.get("lines") or []) + ["%s: %s at %s (the keeper)" % (SERVICES[n]["label"], what, time.strftime("%H:%M"))]
+            _launch_write(st)
+        return True
 
     def stuck(n, now):
         """silent over HTTP for KEEP_HUNG while another server answered lately: this server, not the box"""
@@ -351,26 +672,13 @@ def keep(every=KEEP_EVERY, rounds=None):
         for n in KEPT:
             now = time.time()
             port = SERVICES[n]["port"]
-            if n in CODE and port_open(port) and now >= hold[n]:
-                newest = code_mtime(n)
-                if newest > code_seen[n] + 1 and now - newest > 600:
-                    pids = live_pids(n)
-                    if pids:
-                        _kill(pids)
-                        time.sleep(1)
-                    code_seen[n] = newest
-                    try:
-                        started = start(n)
-                    except Exception as e:
-                        started = False
-                    started_at[n] = now
-                    answered[n] = now + KEEP_GRACE
-                    grace[n] = now + KEEP_GRACE
-                    misses[n] = 0
-                    _keeper_note({"service": n, "at": time.strftime("%Y-%m-%d %H:%M:%S"),
-                                  "what": "restarted for new code (%s changed)" % ", ".join(f.split("/")[-1] for f in CODE[n] if (ROOT / f).exists() and os.path.getmtime(ROOT / f) > now - 86400),
-                                  "err": [] if started else ["start failed"]})
-                    continue
+            if probe and now >= hold[n] and now >= grace[n] and port_open(port) and code_check(n, now):
+                now = time.time()
+                started_at[n] = now
+                answered[n] = now + KEEP_GRACE
+                grace[n] = now + KEEP_GRACE
+                misses[n] = 0
+                continue
             if port_open(port):
                 misses[n] = 0
                 grace[n] = 0.0
@@ -580,6 +888,12 @@ def refresh_link_scan(log=print):
 
 
 def start_all(open_editor_window=True, log=print):
+    # servers already up run the code they were started with; the ones behind the files on disk are restarted
+    # first (idle) or marked for the keeper (busy), so the editor that opens below talks to current code
+    try:
+        refresh_stale(log=log)
+    except Exception as e:                          # never block the launch on this
+        log(f"code check skipped: {e}")
     for name, s in SERVICES.items():
         log(f"Starting {s['label']}..." if start(name) else f"{s['label']} already running.")
     if open_editor_window:
@@ -630,6 +944,19 @@ def main(argv):
     elif cmd == "keep":
         if not keep():
             print("A keeper is already running.")
+    elif cmd == "builds":
+        for n in KEPT:
+            c = check_server(n)
+            state = ("down" if not c["up"] else "not answering" if not c["answers"] else
+                     "pre-fingerprint build, STALE" if c["missing"] else
+                     "STALE (%s, disk %s)" % (c["live"], c["disk"]) if c["stale"] else "current (%s)" % c["disk"])
+            print(f"{SERVICES[n]['label']:14} {state}" + (f"   busy: {'; '.join(c['busy'])}" if c["busy"] else ""))
+        kb = _keeper_meta().get("build")
+        print(f"{'keeper':14} " + ("down" if not port_open(SERVICES['keeper']['port']) else
+                                  "current (%s)" % kb if kb == disk_build("keeper") else "STALE (%s, disk %s)" % (kb or "pre-fingerprint", disk_build("keeper"))))
+        pend = launch_state().get("pending") or {}
+        if pend:
+            print("pending restarts:", ", ".join("%s (%s)" % (SERVICES[k]["label"], v.get("why")) for k, v in pend.items()))
     elif cmd == "stop":
         for name, pids in stop_all().items():
             print(f"{SERVICES[name]['label']}: stopped {pids or 'nothing'}")

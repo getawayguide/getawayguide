@@ -1,0 +1,221 @@
+{
+ "_about": "First draft of the El Salvador itinerary carousel (tools/ig_carousel.py seed). Days and stops follow el-salvador/el-salvador-itinerary.html (Playa Shalpa is Day 9–10 as on its route map; the article's day header says 8–10). Day 1 San Salvador has no photo on the site, so it is listed on the map slide and in the caption only. The map is re-built zoomed on the western half so its labels read on a phone.",
+ "country": "El Salvador",
+ "slug": "el-salvador",
+ "map": {
+  "config": "el-salvador",
+  "afs": 1.75,
+  "override": {
+   "country_width": 1500,
+   "crop_bounds": [
+    -90.1,
+    13.25,
+    -88.92,
+    14.33
+   ],
+   "stops": {
+    "0": {
+     "dx": 24,
+     "dy": 2
+    },
+    "1": {
+     "dy": -50
+    },
+    "3": {
+     "dx": 10,
+     "dy": -46
+    },
+    "4": {
+     "dx": -14,
+     "dy": 8
+    }
+   },
+   "legs": {
+    "4": {
+     "chip_off": 30
+    }
+   }
+  }
+ },
+ "plan": {
+  "title": "10 Days in|*El Salvador*",
+  "kicker": "A complete itinerary",
+  "swipe": "Swipe for the route",
+  "cover": {
+   "id": "santa-ana-lago-de-coatepeque",
+   "crop": null
+  },
+  "map": {
+   "kicker": "Suggested 10-day route",
+   "title": "Volcanoes to the *coast*"
+  },
+  "stops": [
+   {
+    "days": "Day 1",
+    "name": "San Salvador",
+    "slide": false,
+    "caption": "San Salvador",
+    "photos": []
+   },
+   {
+    "days": "Day 2–4",
+    "name": "Santa Ana",
+    "sub": "The volcano's crater lake, the cathedral and the hot spring falls",
+    "caption": "Santa Ana, the volcano hike & Lago de Coatepeque",
+    "photos": [
+     {
+      "id": "santa-ana-santa-ana-volcano-hike-up",
+      "crop": null
+     },
+     {
+      "id": "santa-ana-volcano-1",
+      "crop": null
+     },
+     {
+      "id": "santa-ana-santa-ana-cathedral",
+      "crop": null
+     },
+     {
+      "id": "santa-ana-el-salto-de-malacatiup-n",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 5–6",
+    "name": "Ruta de las Flores",
+    "sub": "Colonial towns, the murals of Ataco and the 7 Waterfalls hike",
+    "caption": "Ruta de las Flores & the 7 Waterfalls hike",
+    "photos": [
+     {
+      "id": "la-ruta-de-las-flores-waterfalls-main-waterfalls",
+      "crop": null
+     },
+     {
+      "id": "la-ruta-de-las-flores-ataco-ataco-mural-close",
+      "crop": null
+     },
+     {
+      "id": "la-ruta-de-las-flores-juayua-juayua-church-day",
+      "crop": null
+     },
+     {
+      "id": "la-ruta-de-las-flores-waterfalls-climbing",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 7–8",
+    "name": "El Tunco",
+    "sub": "Black sand, surf and some of the best sunsets you'll ever see",
+    "caption": "El Tunco",
+    "photos": [
+     {
+      "id": "el-tunco-and-taquillo-el-tunco-el-tunco-mural-moto",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-el-tunco-el-tunco-sunset-4",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-el-tunco-el-tunco-main-road-1",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-el-tunco-sabor-coste-o-food-1",
+      "crop": null
+     }
+    ]
+   },
+   {
+    "days": "Day 9–10",
+    "name": "Playa Shalpa",
+    "sub": "An off-the-grid beach to slow down at the end",
+    "caption": "Playa Shalpa",
+    "photos": [
+     {
+      "id": "el-tunco-and-taquillo-shalpa-shalpa-sunset-1",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-taquillo-view",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-shalpa-lagarza-hostel-pool-2",
+      "crop": null
+     },
+     {
+      "id": "el-tunco-and-taquillo-shalpa-rancho-don-moncho",
+      "crop": null
+     }
+    ]
+   }
+  ],
+  "cta": {
+   "on": true,
+   "kicker": "Save this for your trip",
+   "headline": "Want the full guide?",
+   "body": "Comment GUIDE and I'll send you the full 10-day itinerary, with the buses, prices and links for every stop.",
+   "keyword": "GUIDE",
+   "site": "getawayguide.io",
+   "photo": {
+    "id": "la-ruta-de-las-flores-waterfalls-wide-waterfall-1",
+    "crop": null
+   }
+  },
+  "caption": {
+   "hook": "I came to El Salvador with pretty low expectations after visiting Guatemala and Nicaragua a few months earlier, and it ended up being one of my favorite experiences in Latin America. Tourism only really opened up in 2022, so there are no crowds, pupusas cost $0.60 and a bus ride is $0.75.\n\nYou can drive across the whole country in under 5 hours, so 10 days covers a lot: a volcano with a turquoise crater lake, the colonial towns of the Ruta de las Flores, the 7 Waterfalls hike (by far my favorite thing I did) and the surf beaches on the coast.",
+   "cta": "Comment GUIDE and I'll send you the full itinerary, with the buses, prices and links for every stop.",
+   "days": "",
+   "keywords": "El Salvador itinerary · 10 days in El Salvador · Santa Ana volcano · Ruta de las Flores · El Tunco · Central America backpacking",
+   "hashtags": "#elsalvador #santaana #eltunco #rutadelasflores #centralamerica #travelitinerary"
+  }
+ },
+ "pins": [
+  {
+   "page": "el-salvador/el-salvador-itinerary.html",
+   "photo": "santa-ana-volcano-1",
+   "title": "El Salvador Travel Guide",
+   "sub": "with a perfect 10-day itinerary",
+   "kicker": "El Salvador · Itinerary"
+  },
+  {
+   "page": "el-salvador/santa-ana.html",
+   "photo": "santa-ana-santa-ana-cathedral",
+   "title": "The Ultimate Guide to Santa Ana",
+   "sub": "El Salvador's second city",
+   "kicker": "El Salvador · City guide"
+  },
+  {
+   "page": "el-salvador/ruta-de-las-flores.html",
+   "photo": "la-ruta-de-las-flores-ataco-ataco-mural-close",
+   "kicker": "El Salvador · Guide"
+  },
+  {
+   "page": "el-salvador/7-waterfalls-hike.html",
+   "photo": "la-ruta-de-las-flores-waterfalls-main-waterfalls",
+   "kicker": "El Salvador · Hike"
+  },
+  {
+   "page": "el-salvador/el-tunco.html",
+   "photo": "el-tunco-and-taquillo-el-tunco-el-tunco-mural-moto",
+   "title": "El Tunco & the Coast",
+   "sub": "The best beaches in El Salvador",
+   "kicker": "El Salvador · Beach guide"
+  },
+  {
+   "page": "el-salvador/top-10-el-salvador.html",
+   "photo": "el-tunco-and-taquillo-el-tunco-el-tunco-sunset-4",
+   "kicker": "El Salvador · Top 10"
+  },
+  {
+   "page": "el-salvador/field-notes.html",
+   "photo": "santa-ana-lago-de-coatepeque",
+   "sub": "Quick reference guides while traveling",
+   "kicker": "El Salvador · Field notes"
+  }
+ ]
+}

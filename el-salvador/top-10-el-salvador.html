@@ -73,13 +73,23 @@
 }
 </script>
 <link rel="stylesheet" href="../theme.css?v=6d696122">
-<link rel="stylesheet" href="../artifact.css?v=6d696122">
+<link rel="stylesheet" href="../artifact.css?v=98ddc217">
 <style id="bg-fit">
 /* tools/fit_backgrounds.py: each background photo at the width this window draws it. Do not edit by hand. */
 @media (min-width:769px){[data-bgfit="1"][style*="hero-waterfall-main"]{background-image:url('../Images/web/El%20Salvador/hero-waterfall-main-1499w.webp')!important}}
 @media (min-width:1100px){[data-bgfit="1"][style*="hero-waterfall-main"]{background-image:url('../Images/web/El%20Salvador/hero-waterfall-main-1921w.webp')!important}}
 @media (min-width:769px) and (min-resolution:1.5dppx){[data-bgfit="1"][style*="hero-waterfall-main"]{background-image:url('../Images/web/El%20Salvador/hero-waterfall-main-1921w.webp')!important}}
 </style>
+<style id="hero-tiers">
+/* The hero's phone tiers (SEO/speed pass 2026-11-07): phones used to download the desktop file.
+   The inline background:url(...) stays as the fallback; window bands >=769px are in bg-fit. */
+@supports (background-image: image-set(url("a.webp") type("image/webp"))) {
+  @media (max-width:768px) {
+    .article-hero.gg-banner { background-image: image-set(url('../Images/web/El Salvador/hero-waterfall-main-mob-1x.webp') 1x type('image/webp'), url('../Images/web/El Salvador/hero-waterfall-main-mob.webp') 2x type('image/webp'), url('../Images/web/El Salvador/hero-waterfall-main-mob-1x.jpg') 1x type('image/jpeg'), url('../Images/web/El Salvador/hero-waterfall-main-mob.jpg') 2x type('image/jpeg')) !important; }
+  }
+}
+</style>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "441f596c2ca940ebb17abf862f9f4b54"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 

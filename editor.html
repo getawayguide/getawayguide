@@ -243,7 +243,7 @@
     .ap-chip{font:600 .52rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .4rem;border-radius:999px;background:#EEEDE7;color:#5c665f}
     .ap-chip.live{background:#E3F0E8;color:#2D6B50}.ap-chip.draft{background:#FBEFC2;color:#5c4a12}
     .ap-b{font:600 .55rem/1 'Hanken Grotesk',sans-serif;padding:.25rem .4rem;border-radius:3px;background:#E8EEF7;color:#2f4b78}
-    .ap-b.task{background:#FBEDE6;color:#B4553C}.ap-b.cm{background:#F1EFE8;color:#6b6250}
+    .ap-b.task{background:#FBEDE6;color:#B4553C}.ap-b.cm{background:#F1EFE8;color:#6b6250}.ap-b.sh{background:#F6F0E2;color:#9A7B2E}
     .ap-dim{font-size:.68rem;color:#8a9790;min-width:3.2em;text-align:right}
     .ap-empty{padding:2rem;text-align:center;color:#8a9790}
     .ap-pub{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .5rem;border:1px solid #2D6B50;color:#2D6B50;background:#fff;border-radius:3px;cursor:pointer}
@@ -900,6 +900,13 @@
     body.review-open #todo-list, body.review-open .sidebar-head, body.review-open .todo-footer,
     body.review-open .sidebar-foot, body.review-open #photo-panel { display: none; }
     body.review-open .workspace { grid-template-columns: 372px 1fr; }
+    /* under 900px the review margin is a sheet under the article; review.js flows the cards as a list there (2026-11-07) */
+    @media (max-width: 900px) {
+      body.review-open .workspace { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 42vh); }
+      body.review-open .workspace > .editor-wrap { grid-column: 1; grid-row: 1; }
+      body.review-open .workspace > .sidebar { grid-column: 1; grid-row: 2; border-right: 0; border-top: 1px solid var(--b-medium); }
+      body.review-open .workspace > .side-handle { display: none; }
+    }
     #pl-countrybar { display: flex; gap: 4px; padding: 8px; align-items: center; border-bottom: 1px solid var(--b-subtle); }
     #pl-country { flex: 1; min-width: 0; }
     #pl-modebtn { font-family: 'Hanken Grotesk', sans-serif; font-size: .5rem; letter-spacing: .06em;
@@ -944,6 +951,10 @@
     .pl-drop-line { height: 3px; background: var(--terra); border-radius: 2px; margin: 4px 0; pointer-events: none; }
     #editor img.pl-pair-target { outline: 3px dashed var(--terra); outline-offset: 3px; }
     #editor .pl-swap-target, #editor img.pl-swap-target { outline: 3px dashed var(--terra); outline-offset: 3px; }
+    /* dragging a paired photo: every frame it can land in is dashed, the one under the pointer is solid */
+    #editor .half-can { outline: 2px dashed rgba(45,107,80,.55); outline-offset: 2px; }
+    #editor .half-target { outline: 3px solid var(--terra, #2D6B50); outline-offset: 3px; box-shadow: 0 0 0 7px rgba(45,107,80,.16); }
+    #editor .half-dragging { opacity: .35; }
 
     /* ---------- Full-window photo editor ---------- */
     #crop-backdrop { position: fixed; inset: 0; background: rgba(20,28,23,.95); z-index: 500;
@@ -1054,6 +1065,8 @@
       padding: .2rem .3rem;
       gap: .1rem;
       align-items: center;
+      flex-wrap: wrap;                       /* two rows below ~1110 px instead of running under the sidebar (stress test 2026-11-06) */
+      max-width: calc(100vw - 8px);
       box-shadow: 0 3px 12px rgba(0,0,0,.3);
     }
     .img-tool-btn {
@@ -1668,7 +1681,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
 <!-- Floating image toolbar -->
 <div id="img-floating-toolbar" style="display:none;position:fixed;z-index:400">
-  <button class="img-tool-btn" id="img-move-handle" title="Hold and drag to move this image block anywhere in the article" style="cursor:grab">⠿ Move</button>
+  <button class="img-tool-btn" id="img-move-handle" title="Hold and drag to move this image block anywhere in the article. A paired photo dropped on another photo swaps the two (each keeps its crop); dropped on an empty frame it moves there" style="cursor:grab">⠿ Move</button>
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgAlign('left')" title="Float left">← Left</button>
   <button class="img-tool-btn" onclick="imgAlign('center')" title="Center">⊡ Center</button>
@@ -1691,6 +1704,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <button class="img-tool-btn" data-ratio="1/1" onclick="imgCrop('1/1')" title="Square 1:1: the photo's frame takes this shape (both frames of a pair)">⬜ 1:1</button>
   <button class="img-tool-btn" data-ratio="16/9" onclick="imgCrop('16/9')" title="Wide 16:9: the photo's frame takes this shape (both frames of a pair)">⬜ 16:9</button>
   <button class="img-tool-btn" onclick="imgCrop('none')" title="Back to the frame's own shape (3:2 for a wide photo, 2:3 in a pair); on a photo without a frame, removes the crop">✂ Off</button>
+  <div class="img-tool-divider"></div>
+  <button class="img-tool-btn" id="img-cap-add" onclick="imgAddCaption()" title="Add a caption under this photo (under the whole pair for a paired photo) and start typing. If it already has one, the cursor goes to it">Add caption</button>
+  <button class="img-tool-btn" id="img-cap-write" onclick="imgWriteCaption()" title="Draft the caption from the photo and the text around it (Gemini, the same as alt text). It lands in the caption with the cursor at the end so you can change it">✦ Write caption</button>
   <div class="img-tool-divider"></div>
   <button class="img-tool-btn" onclick="imgClear()" title="Clear this photo and leave its placeholder, so the frame stays and you can fill it with another photo later">⌧ Clear</button>
   <button class="img-tool-btn" onclick="imgDelete()" title="Delete image" style="color:#ff8080">✕</button>
@@ -1879,7 +1895,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 </div>
 
 <script src="launch.js?v=9a930cec" defer></script>
-<script src="review.js?v=90ce61f6" defer></script>
+<script src="queue.js?v=c8bd1acc" defer></script>
+<script src="review.js?v=fc78ead3" defer></script>
+<!-- author avatars for the review margin (optional; review.js uses window.avatarFor when the file exists) -->
+<script src="assets/avatars/avatars.js?v=c3392044" defer onerror="this.remove()"></script>
 <div class="workspace">
 
   <aside class="sidebar">
@@ -2166,6 +2185,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <div id="launch-root"></div>
 </div>
 
+<!-- the Queue tab (2026-11-06): Claude's away queue (.tmp/away_queue.md) and Kevin's own to-do list; queue.js draws it, tools/queue_tab.py serves it -->
+<div id="app-queue" hidden>
+  <header>
+    <button class="suite-logo" data-switcher aria-haspopup="true">Queue</button>
+  </header>
+  <div id="queue-root"></div>
+</div>
+
 <div id="pv-modal" hidden>
   <div class="box">
     <div class="bar">
@@ -2194,6 +2221,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   <a href="#heroes" data-view="heroes">Hero&nbsp;<b>Picker</b><span>choose the banner for a page</span></a>
   <a href="#maps" data-view="maps">Map&nbsp;<b>Editor</b><span>move labels on route &amp; city maps</span></a>
   <a href="#launch" data-view="launch">Pre&nbsp;<b>Launch</b><span>the checklist before a country goes live</span></a>
+  <a href="#queue" data-view="queue">Work&nbsp;<b>Queue</b><span>what Claude has queued, and your own to-do list</span></a>
   <div id="build-stamp" style="padding:.3rem .8rem .2rem;font-family:Hanken Grotesk,sans-serif;
     font-size:.55rem;letter-spacing:.06em;color:#b5b5b5">build 2026-08-26.1</div>
 </div>
@@ -2333,6 +2361,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (r.round) badges.push(`<span class="ap-b round" title="${escHtml(r.round.title || '')}">${r.round.changes} to review</span>`);
     const n = (r.comments || 0);                       // Claude tasks are open comments too; one count
     if (n) badges.push(`<span class="ap-b cm">${n} comment${n === 1 ? '' : 's'}</span>`);
+    if (r.shadow) badges.push(`<span class="ap-b sh" title="Predicted by the Shadow reviewer, not Kevin's">${r.shadow} shadow</span>`);   // the Shadow reviewer's, apart (2026-11-06)
     const flag = r.flag ? `<img class="ap-flag" src="${API}/site/Images/web/flags/${r.flag}.png" alt="" width="20" height="15" loading="lazy">` : '<span class="ap-flag"></span>';
     return `<div class="ap-row${i === AP.sel ? ' sel' : ''}" data-rel="${escHtml(r.rel)}" data-i="${i}" title="${escHtml(r.rel)}">
       <div class="ap-main">${flag}<div class="ap-title">${escHtml(r.title)}</div></div>
@@ -3281,6 +3310,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  // a link inside a read-only block (a guide card, an Explore More card) is a real link to the browser, since the
+  // block is not editable: a click on the card navigated the editor tab to the guide (stress test 2026-11-06). In the
+  // editor a link is text; nothing in the article is followed.
+  document.getElementById('editor').addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (a && document.getElementById('editor').contains(a) && a.closest('[contenteditable="false"], a.gb-card, .xm')) e.preventDefault();
+  }, true);
+
   // opts.guard: a function asked after every wait before anything of the editor's is touched; false
   // means leave everything as it is (the article is reopened after a merge only while nothing is being
   // typed; a keystroke during the file read used to vanish, stress test 2026-10-09). Returns false then.
@@ -3290,6 +3327,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const guard = () => !opts.guard || opts.guard();
     const file = await fh.getFile();
     const text = await file.text();
+    // text() strips a leading BOM: remembered here, written back by saveFile (El Tunco and the other 2024 pages
+    // start with one, and every save dropped it; stress test 2026-11-06)
+    try { window.__hadBom = file.slice && (new Uint8Array(await file.slice(0, 3).arrayBuffer())).join(',') === '239,187,191'; } catch (e) { window.__hadBom = false; }
     if (!guard()) return false;
     const doc = parseDoc(text);
     // .artbody is the transplanted itinerary's wrapper; every other page
@@ -3353,6 +3393,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       const i = Math.min(cands.length - 1, (window.devicePixelRatio || 1) > 1.5 ? 1 : 0);
       return cands[i].url;
     };
+    // Tool-written blocks (map figures, the Explore More section) are kept as the FILE has them: their source text
+    // goes back verbatim when the block is unchanged at save time, because no serializer gives back a tool's exact
+    // bytes (self-closing SVG tags, &#x27; in a legend), and a re-serialized block clashed with the tool's next run
+    // on every launch (stress test 2026-11-06). Paired by document order; any mismatch and the save serializes.
+    window.__wholeSrc = new Map();
+    { const nodes = [...body.querySelectorAll(PP_WHOLE)].filter(n => !n.parentElement.closest(PP_WHOLE));
+      const re = /<figure class="(?:citymap-fig|itinerary-map)(?: [^"]*)?"[^>]*>[\s\S]*?<\/figure>|<section class="xm(?: [^"]*)?"[^>]*>[\s\S]*?<\/section>/g;   // (Meteora's figure is "citymap-fig cm-painted")
+      const srcs = []; let mm; while ((mm = re.exec(text))) srcs.push(mm[0]);
+      if (srcs.length === nodes.length) nodes.forEach((n, i) => { const outer = n.outerHTML; n.setAttribute('data-ed-src-id', String(i)); window.__wholeSrc.set(String(i), { outer, src: srcs[i] }); });
+    }
     // The page's photo paths are article-relative ("../Images/..."): set straight into the editor they were
     // fetched from the wrong folder before being swapped for blobs (QA 2026-10-08: 1-8 ERR_FILE_NOT_FOUND
     // on every open). They are parked HERE, in the inert parsed page, before anything can load: the
@@ -3374,6 +3424,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       }
       srcs.forEach(x => x.remove());
     });
+    // the order of each photo's attributes as the file has them: the parked srcset/sizes used to come back at the
+    // END of the tag, so every <picture> and city-map line of the first save differed from what the tools wrote,
+    // and the next tool run then clashed with the editor's line (stress test 2026-11-06)
+    body.querySelectorAll('img').forEach(im => { im.setAttribute('data-ed-aord', [...im.attributes].map(a => a.name).join(' ')); });
     body.querySelectorAll('img[srcset]').forEach(im => {
       im.dataset.srcset = im.getAttribute('srcset'); im.removeAttribute('srcset');
       if (im.hasAttribute('sizes')) { im.dataset.sizes = im.getAttribute('sizes'); im.removeAttribute('sizes'); }
@@ -3385,12 +3439,19 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       if (v && !/^(blob:|data:|https?:)/.test(v)) { im.setAttribute('data-ed-src', v); im.setAttribute('src', 'data:,'); }
     });
     editor.innerHTML = body.innerHTML;
+    // the headings as they read at open: a contents label follows its heading only when the heading is RENAMED in
+    // this session. Every label used to be set to its heading's text on every save, which rewrote the curated
+    // short labels of "In this guide" ("01 1. Explore …" on the top-10 pages; stress test 2026-11-06)
+    window.__headsAtLoad = new Map([...editor.querySelectorAll('h2[id], h3[id]')].map(h => [h.id, h.textContent.trim()]));
     const genAtSwap = editGen;                 // an edit made while the photos load below keeps the article unsaved
     // A draft's [PHOTO] markers become the same click-or-drop slots the Pair
     // button makes, so a photo goes straight into the frame the draft left
     // for it. They come back as markers on save until they are filled.
     window.adoptPlaceholders(editor);
     if (window.restoreMapButtons) window.restoreMapButtons(editor);
+    // a guide card is drawn by tools/guide_cards.py: no caret in it (its text typed into, its marker deleted by a
+    // Backspace from the paragraph under it; stress test 2026-11-06). The save strips the attributes.
+    editor.querySelectorAll('a.gb-card').forEach(c => { c.contentEditable = 'false'; c.dataset.edRo = '1'; });
     // review.js listens for this: if a proposal is pending for this article it marks the
     // changes in place and opens the review pane; comments are re-anchored either way
     document.dispatchEvent(new CustomEvent('article-loaded'));
@@ -3585,7 +3646,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const pre = document.createRange(); pre.selectNodeContents(blk); pre.setEnd(r.startContainer, r.startOffset);
     if (pre.toString().length) return;                                       // not at the start
     const before = blk.tagName === 'LI' && blk === blk.parentElement.firstElementChild ? blk.parentElement.previousElementSibling : blk.previousElementSibling;
-    if (before && before.matches && before.matches('.fn-city-hd, .fn-sub-hd, .img-caption, .eyebrow, h2, h3')) e.preventDefault();
+    if (before && before.matches && before.matches('.fn-city-hd, .fn-sub-hd, .img-caption, .eyebrow, h2, h3, a.gb-card')) e.preventDefault();
   });
 
   // Enter inside a sub-heading, eyebrow or heading. Chromium's default clones
@@ -3701,6 +3762,19 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const cr = document.createRange(); cr.setStart(np, 0); cr.collapse(true); sel.removeAllRanges(); sel.addRange(cr);
     setDirty(true); if (window.__History) window.__History.touch();
   }, true);
+  // Enter inside a block with an id (a <p id> an anchor points at): Chromium clones the block WITH its id, so two
+  // blocks shared it and the page's links landed on the wrong one (stress test 2026-11-06). The id stays on the
+  // block that kept the text (the first of two with text).
+  document.getElementById('editor').addEventListener('input', function (e) {
+    if (e.inputType !== 'insertParagraph') return;
+    const seen = new Map();
+    this.querySelectorAll('[id]').forEach(el => {
+      if (el.closest('svg')) return;
+      if (!seen.has(el.id)) { seen.set(el.id, el); return; }
+      const first = seen.get(el.id), txt = x => x.textContent.replace(/[\u200b\s]/g, '');
+      if (!txt(first) && txt(el)) { first.removeAttribute('id'); seen.set(el.id, el); } else el.removeAttribute('id');
+    });
+  });
   // the first line typed into an empty article was a bare text node, not a paragraph (QA 2026-10-08)
   document.getElementById('editor').addEventListener('input', function () {
     const stray = [...this.childNodes].filter(n => n.nodeType === 3 && n.nodeValue.replace(/\u200b/g, '').trim());
@@ -3723,7 +3797,24 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // the "×" does not count), a blank line is opened directly above that object, inside the
   // same entry or paragraph, and nothing is split.
   const ENTER_OBJ = '.img-landscape, .img-pair, .img-slot-empty, .photo-ph, picture, img, hr, ' +
-                    'span[style*="aspect-ratio"], .map-embed, iframe, figure.itinerary-map, figure.citymap-fig';
+                    'span[style*="aspect-ratio"], .map-embed, iframe, figure.itinerary-map, figure.citymap-fig, a.gb-card';
+  // the block the caret is in, for the edge guards: the nearest prose block, else the top-level child. Climbing
+  // straight to the top-level child reached the whole .fn-section on a field-notes page, so the "edge" was the
+  // section's start and a Backspace under a photo merged the paragraph into it (stress test 2026-11-06)
+  const EDGE_BLOCKS = 'li, p, h2, h3, h4, blockquote, .fn-sub-hd, .eyebrow, .img-caption, .fn-city-hd, figure, .img-pair, .img-landscape, .pair, .ls, a.gb-card, table';
+  function edgeBoxOf(at, edEl) {
+    let box = at.closest(EDGE_BLOCKS);
+    if (box && box !== edEl && edEl.contains(box)) return box;
+    box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement;
+    return box;
+  }
+  // the neighbour of a block on the given side, climbing out of a list when the block is its first/last entry
+  function edgeNeighbour(box, back, edEl) {
+    const sib = n => back ? n.previousElementSibling : n.nextElementSibling;
+    let nb = sib(box), up = box;
+    while (!nb && up.parentElement && up.parentElement !== edEl && /^(LI|UL|OL)$/.test(up.parentElement.tagName)) { up = up.parentElement; nb = sib(up); }
+    return nb;
+  }
   function textBetween(r, el) {
     const b = document.createRange();
     b.setStart(r.startContainer, r.startOffset);
@@ -3744,8 +3835,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const r = sel.getRangeAt(0), edEl = this;
     const at = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
     if (!at || !edEl.contains(at)) return;
-    let box = at.closest('li');
-    if (!box) { box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement; }
+    const box = edgeBoxOf(at, edEl);
     if (!box || box === edEl || box.matches(ENTER_OBJ)) return;
     const isCap = box.matches('.img-caption');
     const edge = document.createRange();
@@ -3753,7 +3843,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     else { edge.setStart(r.startContainer, r.startOffset); edge.setEnd(box, box.childNodes.length); }
     const f = edge.cloneContents(); f.querySelectorAll('[contenteditable="false"], button').forEach(x => x.remove());
     if (f.textContent.replace(/\u200b/g, '').trim() || f.querySelector(ENTER_OBJ)) return;   // not at the edge, or an object of its own in between
-    const nb = e.key === 'Backspace' ? box.previousElementSibling : box.nextElementSibling;
+    const nb = edgeNeighbour(box, e.key === 'Backspace', edEl);
     // a caption belongs to its photo or map: nothing merges into it or out of it (QA 2026-10-08: the
     // heading below a map's caption was merged into the caption by Backspace, and by Delete from it)
     const isObj = n => n && (n.matches(ENTER_OBJ) || n.matches('.img-caption') ||
@@ -3767,14 +3857,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // (QA 2026-10-08). The edge guard above runs first and keeps objects and captions out of this.
   document.getElementById('editor').addEventListener('keydown', function (e) {
     if ((e.key !== 'Backspace' && e.key !== 'Delete') || e.isComposing || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    if (e.defaultPrevented) return;            // a guard above said no (the block after a heading or a card; stress test 2026-11-06)
     const sel = window.getSelection();
     if (!sel.rangeCount || !sel.isCollapsed) return;
     const r = sel.getRangeAt(0), edEl = this;
     const at = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
     if (!at || !edEl.contains(at) || at.closest('li, figure, .img-caption, blockquote')) return;
-    let box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement;
+    // the nearest prose block (a field-notes paragraph sits inside its .fn-section, not at the top level)
+    let box = at.closest('p, h2, h3'); if (!box || !edEl.contains(box)) { box = at; while (box.parentElement && box.parentElement !== edEl) box = box.parentElement; }
     const TEXT = 'P, H2, H3';
-    if (!box || box.parentElement !== edEl || !TEXT.split(', ').includes(box.tagName) || box.querySelector(ENTER_OBJ)) return;
+    if (!box || box === edEl || !TEXT.split(', ').includes(box.tagName) || box.querySelector(ENTER_OBJ)) return;
     const edge = document.createRange();
     if (e.key === 'Backspace') { edge.setStart(box, 0); edge.setEnd(r.startContainer, r.startOffset); }
     else { edge.setStart(r.startContainer, r.startOffset); edge.setEnd(box, box.childNodes.length); }
@@ -3783,10 +3875,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const b = e.key === 'Backspace' ? box : box.nextElementSibling;
     if (!a || !b || !TEXT.split(', ').includes(a.tagName) || !TEXT.split(', ').includes(b.tagName) ||
         a.querySelector(ENTER_OBJ) || b.querySelector(ENTER_OBJ)) return;
-    e.preventDefault(); e.stopImmediatePropagation();
-    if (window.__History) window.__History.checkpoint();
     // an empty block just goes, keeping the other one as it is
     const blank = el => !el.textContent.replace(/[\u200b\s]/g, '') && !el.querySelector('img, br ~ *');
+    // a heading never swallows the paragraph under it: Delete at its end, or Backspace at the paragraph's start, does
+    // nothing (an empty paragraph still goes; stress test 2026-11-06)
+    if (/^H[23]$/.test(a.tagName) && !blank(b) && !blank(a)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (window.__History) window.__History.checkpoint();
     if (blank(b)) {
       b.remove();
       const cr = document.createRange(); cr.selectNodeContents(a); cr.collapse(false); sel.removeAllRanges(); sel.addRange(cr);
@@ -3867,6 +3962,20 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
     if (e.key === 'Tab') {
       e.preventDefault();
+      // every bullet the selection touches in this list (a three-bullet selection used to move only the one the
+      // caret was in; stress test 2026-11-06)
+      const lis = selectedLis(sel, li);
+      if (lis.length > 1) {
+        if (window.__History) window.__History.checkpoint();
+        const r0 = sel.getRangeAt(0), keepA = [r0.startContainer, r0.startOffset], keepB = [r0.endContainer, r0.endOffset];
+        if (e.shiftKey) {
+          [...lis].reverse().forEach(x => { const nested = x.parentElement && x.parentElement.parentElement && x.parentElement.parentElement.closest('li'); nested ? outdentNestedItem(x) : outdentListItem(x); });
+        } else lis.forEach(indentListItem);
+        try { const nr = document.createRange(); nr.setStart(keepA[0], keepA[1]); nr.setEnd(keepB[0], keepB[1]); sel.removeAllRanges(); sel.addRange(nr); } catch (err) {}
+        setDirty(true);
+        if (window.__History) window.__History.touch();
+        return;
+      }
       // Shift+Tab on a TOP-LEVEL bullet: Chromium's outdent, with the list inside a <div> (every
       // field-notes section, and the editor root itself), spilled the entry out as a bare text node
       // + <br> beside an empty <ul></ul>. Bare text in a section has no paragraph style, so the font
@@ -3888,16 +3997,16 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         if (window.__History) window.__History.touch();
         return;
       }
-      document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
-      // Chromium indents as <ul><ul>, a list that is a direct child of a list; the site's nested lists are
-      // li > ul, and the save wrote the browser's shape as it was (stress test 2026-10-23)
-      const edRoot = document.getElementById('editor');
-      edRoot.querySelectorAll('ul > ul, ol > ol, ul > ol, ol > ul').forEach(inner => {
-        const prev = inner.previousElementSibling;
-        if (prev && prev.tagName === 'LI') prev.appendChild(inner);
-        else { const host = document.createElement('li'); inner.before(host); host.appendChild(inner); }
-      });
+      // Tab by hand too: Chromium's indent made <ul><ul> and the fix-up that moved it under the previous entry lost the
+      // caret, so the next keystroke landed in the NEXT bullet (stress test 2026-11-06). The entry moves into the
+      // previous entry's sub-list (made if needed); nodes are moved, so the caret is put back where it was.
+      if (window.__History) window.__History.checkpoint();
+      const r1 = sel.rangeCount ? sel.getRangeAt(0) : null;
+      const keep1 = r1 ? [r1.startContainer, r1.startOffset] : null;
+      if (!indentListItem(li)) { if (window.__History) window.__History.touch(); return; }   // the first entry has nothing to go under
+      if (keep1) { try { const c1 = document.createRange(); c1.setStart(keep1[0], keep1[1]); c1.collapse(true); sel.removeAllRanges(); sel.addRange(c1); } catch (err) {} }
       setDirty(true);
+      if (window.__History) window.__History.touch();
       return;
     }
 
@@ -3977,8 +4086,12 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       const parentList = li.parentElement;
       const isNested = parentList && parentList.parentElement && parentList.parentElement.closest('li');
       if (isNested) {
-        // In a nested list — outdent back to parent level
-        document.execCommand('outdent', false, null);
+        // In a nested list: up one level, by hand (Chromium's outdent left an empty <ul> behind and nested the entry
+        // straight inside its parent entry, li > li; stress test 2026-11-06)
+        if (window.__History) window.__History.checkpoint();
+        const moved = outdentNestedItem(li);
+        const cr = document.createRange(); cr.setStart(moved, 0); cr.collapse(true); sel.removeAllRanges(); sel.addRange(cr);
+        if (window.__History) window.__History.touch();
       } else {
         // Top-level list — exit into a new paragraph, SPLITTING the list where you stood.
         // It used to drop the paragraph after the whole </ul>, so leaving a list from the
@@ -4015,6 +4128,48 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
   });
 
+  // the entries of `li`'s list that the selection touches, in document order (just `li` for a caret)
+  function selectedLis(sel, li) {
+    if (!sel.rangeCount || sel.isCollapsed) return [li];
+    const r = sel.getRangeAt(0), list = li.parentElement;
+    const out = [...list.children].filter(x => x.tagName === 'LI' && r.intersectsNode(x));
+    return out.length ? out : [li];
+  }
+  // A list entry goes one level down: into the sub-list of the entry above it (made if there is none). A sub-list of
+  // its own comes along. The styles it and the entry above had are remembered on the entry, so a Shift+Tab right
+  // after puts everything back exactly; the rule convention (the last entry has no line) is kept meanwhile.
+  function indentListItem(li) {
+    const prev = li.previousElementSibling, list = li.parentElement;
+    if (!prev || prev.tagName !== 'LI') return false;
+    const wasLast = !li.nextElementSibling;
+    li.dataset.liRestore = JSON.stringify([li.getAttribute('style') || '', prev.getAttribute('style') || '']);
+    let sub = [...prev.children].reverse().find(c => /^(UL|OL)$/.test(c.tagName));
+    if (!sub) { sub = document.createElement(list.tagName.toLowerCase()); prev.appendChild(sub); }
+    const lastOfSub = sub.lastElementChild;
+    if (lastOfSub && lastOfSub.tagName === 'LI') {
+      // the entry it joins after was the sub-list's last: it earns the rule its siblings have
+      const ruled = [...sub.children].map(x => x.getAttribute('style') || '').find(s => /border-bottom/i.test(s)) || (/border-bottom/i.test(li.getAttribute('style') || '') ? li.getAttribute('style') : '');
+      if (ruled && !/border-bottom/i.test(lastOfSub.getAttribute('style') || '')) { lastOfSub.dataset.liRestore = JSON.stringify([lastOfSub.getAttribute('style') || '', null]); lastOfSub.setAttribute('style', ruled); }
+    }
+    sub.appendChild(li);
+    const own = li.getAttribute('style') || '';
+    if (/border-bottom/i.test(own)) { const s = noRule(own); if (s) li.setAttribute('style', s); else li.removeAttribute('style'); }   // last of its new list
+    if (wasLast && /border-bottom/i.test(prev.getAttribute('style') || '')) { const s = noRule(prev.getAttribute('style')); if (s) prev.setAttribute('style', s); else prev.removeAttribute('style'); }   // now the outer list's last
+    return true;
+  }
+  window.indentListItem = indentListItem;
+  // what indentListItem remembered, put back: returns true when it did
+  function restoreIndented(li) {
+    if (!li.dataset.liRestore) return false;
+    let saved; try { saved = JSON.parse(li.dataset.liRestore); } catch (e) { saved = null; }
+    delete li.dataset.liRestore;
+    if (!saved) return false;
+    const [own, prevStyle] = saved;
+    if (own) li.setAttribute('style', own); else li.removeAttribute('style');
+    const parentLi = li.parentElement && li.parentElement.parentElement && li.parentElement.parentElement.closest('li');
+    if (parentLi && prevStyle != null) { if (prevStyle) parentLi.setAttribute('style', prevStyle); else parentLi.removeAttribute('style'); }
+    return true;
+  }
   // A top-level list entry becomes a paragraph where it stands: the entries above it keep their
   // list, the entries below go into a second list of the same kind after the paragraph (an <ol>
   // carries on counting), and a sub-list the entry owned follows the paragraph as a list of its
@@ -4059,6 +4214,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const below = [];
     for (let s = li.nextElementSibling; s; s = s.nextElementSibling) below.push(s);
     const wasLast = !parentLi.nextElementSibling;
+    // a Tab is undone exactly: the styles indentListItem remembered go back, and the sibling it joined too
+    const restored = restoreIndented(li);
+    const prevSib = li.previousElementSibling; if (prevSib && prevSib.dataset.liRestore) restoreIndented(prevSib);
     parentLi.after(li);
     if (below.length) {
       const rest = document.createElement(sub.tagName.toLowerCase());
@@ -4069,7 +4227,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       li.appendChild(rest);
     }
     if (!sub.children.length && !sub.textContent.trim()) sub.remove();
-    const ruled = outer && [...outer.children].map(x => x.getAttribute('style') || '').find(s => /border-bottom/i.test(s));
+    const ruled = !restored && outer && [...outer.children].map(x => x.getAttribute('style') || '').find(s => /border-bottom/i.test(s));
     if (ruled) {
       if (wasLast) { parentLi.setAttribute('style', ruled); li.setAttribute('style', noRule(ruled)); if (!li.getAttribute('style')) li.removeAttribute('style'); }
       else li.setAttribute('style', ruled);
@@ -4080,6 +4238,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
   // ================= SAVE NORMALIZER =================
   // Converts contenteditable output into the site's clean hand-written idiom.
+  // an <a> that is a card rather than a run of text: it holds block or media children (the El Tunco YouTube card)
+  function isLinkCard(a) { return !!(a && a.tagName === 'A' && a.querySelector('div, p, img, picture, figure, ul, ol, h2, h3')); }
+  window.__isLinkCard = isLinkCard;
   function unwrapEl(el) {
     const parent = el.parentNode;
     if (!parent) return;
@@ -4153,6 +4314,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     el.querySelectorAll('.slot-x, .slot-up').forEach(x => x.remove());
     el.querySelectorAll('a.nb').forEach(a => { a.classList.remove('nb'); if (!a.classList.length) a.removeAttribute('class'); });   // the first-link bold rule and its .nb are gone (2026-10-23)
     el.querySelectorAll('.map-edit').forEach(x => x.remove());   // the Edit button on a map figure
+    // a caption opened with the toolbar's Add caption and left empty is scaffolding, not content (2026-11-06);
+    // one with text sheds the <br> the browser keeps while it is being typed into
+    el.querySelectorAll('.img-caption').forEach(c => {
+      if (!c.textContent.replace(/[\s\u00a0\u200b]/g, '') && !c.querySelector('img,picture')) { c.remove(); return; }
+      let last = c.lastChild;
+      while (last && last.nodeType === 3 && !last.textContent.trim()) last = last.previousSibling;
+      if (last && last.tagName === 'BR') last.remove();
+    });
     el.querySelectorAll('[data-ed-ro]').forEach(x => { x.removeAttribute('contenteditable'); x.removeAttribute('data-ed-ro'); });
 
     // 1. strong→b, em→i (site convention)
@@ -4176,6 +4345,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       // (no .img-caption class exists in the site stylesheet)
       if (node.tagName === 'IMG' || node.closest('picture') ||
           (node.classList && node.classList.contains('img-caption'))) return;
+      // a link card (El Tunco's YouTube block: an <a> around an <img> and overlay <div>s) is hand-written markup,
+      // its DM Mono label included (stress test 2026-11-06)
+      if (isLinkCard(node.closest('a'))) return;
       let style = node.getAttribute('style')
         .replace(/\bfont-family\s*:[^;]+;?/gi, '')
         .replace(/\bbackground-color\s*:\s*transparent\s*;?/gi, '')
@@ -4216,10 +4388,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // data-original-src="http://127.0.0.1:5003/site/..." -- a dev-machine URL
     // published inside an article.
     el.querySelectorAll('[data-original-src],[data-crop-x],[data-crop-y],' +
-                        '[data-crop-zoom],[data-crop],[data-editor],[data-tmp]')
+                        '[data-crop-zoom],[data-crop],[data-editor],[data-tmp],[data-ed-aord],[data-li-restore]')
       .forEach(n => {
         ['data-original-src', 'data-crop-x', 'data-crop-y', 'data-crop-zoom',
-         'data-editor', 'data-tmp'].forEach(a => n.removeAttribute(a));
+         'data-editor', 'data-tmp', 'data-ed-aord', 'data-li-restore'].forEach(a => n.removeAttribute(a));
       });
     // and any src still pointing at the local photo server
     el.querySelectorAll('img[src*="127.0.0.1"],source[srcset*="127.0.0.1"]')
@@ -4276,8 +4448,10 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
             !node.querySelector('img,br,picture,svg,iframe,video')) { node.remove(); removed = true; }
       });
     }
-    // Remove <p><br></p> spacers
-    el.querySelectorAll('p').forEach(p => {
+    // Remove <p><br></p> spacers; an emptied heading or bullet is the same scaffolding (<h3 id><br></h3>,
+    // <li><br></li> reached the file, stress test 2026-11-06)
+    el.querySelectorAll('p, h2, h3, li, .fn-sub-hd, .eyebrow').forEach(p => {
+      if (p.closest('svg')) return;
       if (p.innerHTML.trim().toLowerCase() === '<br>') p.remove();
     });
     // 6b. a list with nothing in it (the browser's outdent used to leave one; so does deleting the
@@ -4290,14 +4464,17 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     //     browser's default font (the outdent bug above wrote it; a paste can too). A run ends at
     //     a block, a <br> (dropped), or a framed photo. Spaces between blocks are left alone.
     const INLINE = new Set(['B', 'I', 'U', 'S', 'EM', 'STRONG', 'SUP', 'SUB', 'SMALL', 'CODE', 'ABBR', 'MARK']);
+    // a class-less <a> that holds <div>/<img> children is a block card (El Tunco's YouTube card was wrapped
+    // in a <p> and split by the save, stress test 2026-11-06)
     const isInlineNode = n => n.nodeType === 3 ||
       (n.nodeType === 1 && (INLINE.has(n.tagName) || n.tagName === 'BR' ||
-        (n.tagName === 'A' && (!n.hasAttribute('class') || n.className === 'gl')) ||
+        (n.tagName === 'A' && (!n.hasAttribute('class') || n.className === 'gl') && !isLinkCard(n)) ||
         (n.tagName === 'SPAN' && !/display\s*:\s*(block|flex|grid)/.test(n.getAttribute('style') || '') && !n.querySelector('img,picture,svg'))));
     [el, ...el.querySelectorAll('.fn-section')].forEach(host => {
       let run = [];
       const flush = () => {
         const hasText = run.some(n => n.nodeType === 3 ? n.textContent.replace(/[\s ​]/g, '') : (n.nodeType === 1 && n.tagName !== 'BR'));
+        if (!hasText) run.forEach(n => { if (n.nodeType === 1 && n.tagName === 'BR') n.remove(); });   // a stray top-level <br> (a paste left it, stress test 2026-11-06)
         if (hasText) {
           while (run.length && run[0].nodeType === 3 && !run[0].textContent.trim()) run.shift();
           while (run.length && (run[run.length - 1].tagName === 'BR' || (run[run.length - 1].nodeType === 3 && !run[run.length - 1].textContent.trim()))) run.pop().remove();
@@ -4331,7 +4508,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   const PP_VOID = new Set(['BR','HR','IMG','SOURCE']);
 
   function ppAttrs(node) {
-    return [...node.attributes].map(a =>
+    return [...node.attributes].filter(a => a.name !== 'data-ed-src-id').map(a =>
       ' ' + a.name + '="' + a.value.replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '"').join('');
   }
   function ppEscape(text) {
@@ -4351,13 +4528,40 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     });
     return out;
   }
+  // a map figure or the Explore More block is written by a tool as ONE line; re-indented over forty lines by the
+  // save, the next tool run clashed with the editor's lines on every launch (stress test 2026-11-06)
+  const PP_WHOLE = 'figure.citymap-fig, figure.itinerary-map, section.xm';
+  const ppWhole = node => node.nodeType === 1 && (PP_ATOMIC.has(node.tagName) || node.matches(PP_WHOLE));
+  // the indent a tool-written block already has in the file (the whitespace before it), else the depth's
+  function ppIndentOf(node, depth) {
+    const prev = node.previousSibling;
+    if (prev && prev.nodeType === 3 && !prev.nodeValue.trim() && prev.nodeValue.includes('\n')) return prev.nodeValue.slice(prev.nodeValue.lastIndexOf('\n') + 1).replace(/[^ \t]/g, '');
+    return '  '.repeat(depth);
+  }
+  // a whole block's text: the file's own bytes when the block is as it was loaded (see loadFile), else the DOM's
+  // serialization with empty SVG elements self-closed, as the map tools write them
+  function ppWholeText(node) {
+    const id = node.getAttribute('data-ed-src-id');
+    if (id != null) {
+      node.removeAttribute('data-ed-src-id');
+      const w = window.__wholeSrc && window.__wholeSrc.get(id);
+      if (w && node.outerHTML === w.outer) return w.src;
+      if (w) { const a = node.outerHTML, b = w.outer; let k = 0; while (k < a.length && a[k] === b[k]) k++; console.debug('whole block re-serialized: differs at', k, JSON.stringify(a.slice(Math.max(0, k - 80), k + 120)), 'vs', JSON.stringify(b.slice(Math.max(0, k - 80), k + 120))); }
+    }
+    return node.outerHTML.replace(/<(path|rect|line|circle|ellipse|polyline|polygon|use|stop|image)\b([^<>]*)><\/\1>/g, '<$1$2/>');
+  }
   function ppIsBlock(node) {
-    return node.nodeType === 1 && (PP_BLOCK.has(node.tagName) || PP_ATOMIC.has(node.tagName) ||
+    return node.nodeType === 1 && (PP_BLOCK.has(node.tagName) || ppWhole(node) ||
       (node.tagName === 'SPAN' && /display\s*:\s*block/.test(node.getAttribute('style') || '')));
   }
   function ppNode(node, depth, lines) {
     const indent = '  '.repeat(depth);
-    if (node.nodeType === 8) { lines.push(indent + '<!--' + node.textContent + '-->'); return; }
+    if (node.nodeType === 8) {
+      // a marker right after its element (<!-- /explore-more -->, <!-- /gb-card -->) stays on that line, as the tools write it
+      const prev = node.previousSibling;
+      if (prev && prev.nodeType === 1 && lines.length) { lines[lines.length - 1] += '<!--' + node.textContent + '-->'; return; }
+      lines.push(indent + '<!--' + node.textContent + '-->'); return;
+    }
     if (node.nodeType === 3) {
       const t = node.textContent.replace(/\s+/g, ' ').trim();
       if (t) lines.push(indent + ppEscape(t));
@@ -4365,7 +4569,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     }
     if (node.nodeType !== 1) return;
     const tag = node.tagName.toLowerCase();
-    if (PP_ATOMIC.has(node.tagName)) { lines.push(indent + node.outerHTML); return; }
+    if (ppWhole(node)) { lines.push(ppIndentOf(node, depth) + ppWholeText(node)); return; }
     if (PP_VOID.has(node.tagName)) { lines.push(indent + '<' + tag + ppAttrs(node) + '>'); return; }
     if (!ppIsBlock(node)) { lines.push(indent + ppSerializeInlineEl(node)); return; }
 
@@ -4532,6 +4736,17 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       pic.removeAttribute('data-sources');
       if (img) pic.appendChild(img);          // <source> must precede <img>
     });
+    // every attribute back in the order the file had it (see loadFile); new attributes follow in their own order
+    saveEl.querySelectorAll('img[data-ed-aord]').forEach(img => {
+      const want = img.getAttribute('data-ed-aord').split(' ').filter(Boolean);
+      img.removeAttribute('data-ed-aord');
+      const have = [...img.attributes].map(a => [a.name, a.value]);
+      const order = want.filter(n => img.hasAttribute(n)).concat(have.map(h => h[0]).filter(n => !want.includes(n)));
+      if (order.join(' ') === have.map(h => h[0]).join(' ')) return;
+      const vals = new Map(have);
+      have.forEach(([n]) => img.removeAttribute(n));
+      order.forEach(n => img.setAttribute(n, vals.get(n)));
+    });
     // Placeholders are editor scaffolding: an unfilled pair slot must never be
     // published, and a pair left completely empty goes with it.
     stripEmptySlots(saveEl);
@@ -4540,7 +4755,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     saveEl.querySelectorAll('.line-sel, .line-hot').forEach(el => el.classList.remove('line-sel', 'line-hot'));
     // the review margin's highlight classes: an entry hovered in the margin at the moment of
     // saving was written out as class="rl-hit" (Yerevan, Elie's Lahmajun, 2026-09-25)
-    const CHROME = ['rl-hit', 'rl-hover', 'rl-pv-yes', 'rl-pv-no', 'cm-hit', 'cm-hover'];
+    const CHROME = ['rl-hit', 'rl-hover', 'rl-pv-yes', 'rl-pv-no', 'cm-hit', 'cm-hover', 'half-can', 'half-target', 'half-dragging'];
     saveEl.querySelectorAll(CHROME.map(c => '.' + c).join(',')).forEach(el => el.classList.remove(...CHROME));
     saveEl.querySelectorAll('[class=""]').forEach(el => el.removeAttribute('class'));
     // a ⇄ Swap that was started and never finished leaves its marker behind
@@ -4625,17 +4840,39 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // already plain text, anything still pending is written as the original
     if (window.review) window.review.prepareForSave(saveEl);
     normalizeForSave(saveEl);
-    originalBody.innerHTML = prettyPrintBody(saveEl);
+    const prettyBody = prettyPrintBody(saveEl);
+    const outsideBody = () => { const keep = originalBody.innerHTML; originalBody.innerHTML = ''; const h = doc.documentElement.outerHTML; originalBody.innerHTML = keep; return h; };
+    const head0 = outsideBody();
+    originalBody.innerHTML = prettyBody;
     if (window.__applyMasthead) window.__applyMasthead(doc);     // the hero's title and subtitle
     if (window.__applySeo && (typeof isDirty === 'undefined' || isDirty)) window.__applySeo(doc);   // the Search tab's title and description; a save that changed nothing keeps the dates (stress test 2026-10-23)
+    const head1 = outsideBody();
 
-    let newHTML = '<!DOCTYPE html>\n' + unparkSources(doc.documentElement.outerHTML);
+    // the file's own text around the body: re-serializing the whole document rewrote entities the tools had
+    // written (&#x27; in og:title, &#39; in the nav's onclick) and the BOM, so lines that nobody edited changed on
+    // every save and clashed with the next tool run (stress test 2026-11-06)
+    const src = typeof originalHTML === 'string' ? originalHTML : '';
+    const nl = (src.match(/\r\n/g) || []).length > (src.match(/[^\r]\n/g) || []).length ? '\r\n' : '\n';
+    let newHTML = null;
+    const span = bodySpanIn(src);
+    if (span) {
+      let text = src;
+      if (head0 !== head1) text = patchLines(src, head0, head1);   // the head changed (dates, a title): those lines only
+      if (text != null) {
+        const sp = text === src ? span : bodySpanIn(text);
+        if (sp) newHTML = text.slice(0, sp[0]) + unparkSources(prettyBody).replace(/\r?\n/g, nl) + text.slice(sp[1]);
+      }
+    }
+    if (newHTML == null) newHTML = ('<!DOCTYPE html>\n' + unparkSources(doc.documentElement.outerHTML)).replace(/\r?\n/g, nl);
     // a page whose table of contents is a template in its own script (not drawn from the headings):
     // its entries follow the headings' current text (QA 2026-10-02: a renamed heading left it stale)
     // (QA 2026-10-08: a toc-section-link and the plain links inside a .toc-sub block stayed stale)
     if (/class="toc-(?:link|section-link|sub)"/.test(newHTML)) {
       const escT = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const heads = [...editor.querySelectorAll('h2[id], h3[id]')].map(h => [h.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), escT(h.textContent.trim())]);
+      const atLoad = window.__headsAtLoad;
+      const heads = [...editor.querySelectorAll('h2[id], h3[id]')]
+        .filter(h => atLoad && atLoad.has(h.id) && atLoad.get(h.id) !== h.textContent.trim())   // renamed here; a curated label is left alone
+        .map(h => [h.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), escT(h.textContent.trim())]);
       heads.forEach(([id, t]) => {
         // a function, not '$1' + t + '$2': a heading with "$20" in it read as a replacement pattern (stress test 2026-10-23)
         newHTML = newHTML.replace(new RegExp('(<a (?:[^>]*\\s)?href="#' + id + '"(?:\\s[^>]*)?class="toc-(?:link|section-link)"[^>]*>)[^<]*(</a>)', 'g'), (m0, a1, a2) => a1 + t + a2)
@@ -4650,6 +4887,40 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     saveEl.querySelectorAll('source').forEach(s => s.remove());      // a dropped tree with <source>s is never freed
     return { newHTML, saveEl };
   }
+
+  // where the article's body container's CONTENT sits in the file's text: [after the opening tag, at the closing tag]
+  function bodySpanIn(text) {
+    const open = /<(div|main|section|article)\b[^>]*class="[^"]*\b(?:article-body|artbody)\b[^"]*"[^>]*>/.exec(text);
+    if (!open) return null;
+    const tag = open[1];
+    const re = new RegExp('<\\/?' + tag + '\\b[^>]*>|<script\\b[\\s\\S]*?<\\/script>|<style\\b[\\s\\S]*?<\\/style>|<!--[\\s\\S]*?-->', 'gi');
+    re.lastIndex = open.index + open[0].length;
+    let depth = 1, m;
+    while ((m = re.exec(text))) {
+      const t = m[0];
+      if (t[1] === '!' || /^<(script|style)/i.test(t)) continue;
+      if (t[1] === '/') { if (--depth === 0) return [open.index + open[0].length, m.index]; }
+      else if (!/\/>$/.test(t)) depth++;
+    }
+    return null;
+  }
+  // `from` and `to` are two serializations of the document around the body; the lines that differ between them are
+  // applied to `text`, each old line found exactly once. Anything that does not fit that: null (serialize instead).
+  function patchLines(text, from, to) {
+    const a = from.split('\n'), b = to.split('\n');
+    if (a.length !== b.length) return null;
+    let out = text;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] === b[i]) continue;
+      const old = a[i].replace(/\s+$/, ''), nu = b[i].replace(/\s+$/, '');
+      if (!old.trim()) return null;
+      const first = out.indexOf(old);
+      if (first < 0 || out.indexOf(old, first + 1) >= 0) return null;
+      out = out.slice(0, first) + nu + out.slice(first + old.length);
+    }
+    return out;
+  }
+  window.__bodySpanIn = bodySpanIn;
 
   /* ---- a save never overwrites a change made outside the editor ------------------------------
      Other things write the open article: a second tab, a review round applied by the server,
@@ -4828,6 +5099,14 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
 
   async function saveFileNow(opts) {
     const manual = !(opts && opts.auto);
+    // nothing changed since the last save (or the open): nothing is written. Ctrl+S on a clean article used to
+    // rewrite the file through the save's normalizing and change it (stress test 2026-11-06). `force` is for a
+    // caller that changed the page outside the editor's DOM.
+    if (!isDirty && !(opts && opts.force)) {
+      const st = document.getElementById('save-status');
+      if (st && manual) { st.textContent = '✓ Saved'; st.className = 'save-status saved'; setTimeout(() => { if (!isDirty && st.textContent === '✓ Saved') { st.textContent = ''; st.className = 'save-status'; } }, 2500); }
+      return;
+    }
     // a paused autosave tries again each tick: the clash may have gone (the other writer put the file
     // back, the server is answering again), and it used to stay paused until Resolve (QA 2026-10-08)
     const editor = document.getElementById('editor');
@@ -4898,7 +5177,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       }
       window.__lastWritten = toWrite;
       const writable = await fileHandle.createWritable();
-      await writable.write(toWrite);
+      await writable.write(window.__hadBom && !toWrite.startsWith('\uFEFF') ? '\uFEFF' + toWrite : toWrite);   // diskBase stays without it, as text() reads the file
       await writable.close();
       setTimeout(() => { window.__saving = false; }, 1500);
       // after a merge the editor still shows only its own side. The base stays at that side, so
@@ -5435,9 +5714,13 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const tb = document.getElementById('img-floating-toolbar');
     tb.style.display = 'flex';
     // Position above image, clamped to stay on screen
+    // kept inside the article column: the sidebar on the right and the window edge are both hard limits
+    const sc = document.querySelector('.editor-scroll'), scr = sc ? sc.getBoundingClientRect() : { left: 0, right: window.innerWidth };
+    const maxW = Math.max(240, Math.min(window.innerWidth - 8, scr.right - scr.left - 8));
+    tb.style.maxWidth = maxW + 'px';
     const tbH = tb.offsetHeight || 32;
     tb.style.top = Math.max(4, rect.top - tbH - 6) + 'px';
-    tb.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - tb.offsetWidth - 4)) + 'px';
+    tb.style.left = Math.max(4, Math.max(scr.left + 4, Math.min(rect.left, scr.right - tb.offsetWidth - 4))) + 'px';
     // Resize handle at bottom-right corner
     const rh = document.getElementById('img-resize-handle');
     rh.style.display = 'block';
@@ -5954,6 +6237,12 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       });
     })(tmp);
 
+    // Google Docs ends its clipboard with a <br> (and an empty paragraph for each blank line): they became a stray
+    // top-level <br> and <p><br></p> in the article (stress test 2026-11-06)
+    tmp.querySelectorAll('p, div, li, blockquote').forEach(b => { if (!b.textContent.replace(/[\s\u00a0\u200b]/g, '') && !b.querySelector('img, picture')) b.remove(); });
+    const blankish = n => n && (n.nodeName === 'BR' || (n.nodeType === 3 && !n.nodeValue.replace(/[\s\u00a0]/g, '')));
+    while (blankish(tmp.firstChild)) tmp.firstChild.remove();
+    while (blankish(tmp.lastChild)) tmp.lastChild.remove();
     // normalize nbsp and collapse whitespace
     tmp.innerHTML = tmp.innerHTML.replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
     return tmp.innerHTML;
@@ -5970,6 +6259,9 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // spans and fonts only: a caption's own style attribute was rewritten on every save (its faded
     // color dropped), so a save with no edit touched ten lines of the file (stress test 2026-10-09)
     root.querySelectorAll('span[style], font[style], b[style], i[style], a[style], u[style]').forEach(el => {
+      // tool-written markup: a city-map legend badge carries color:#1C2821 on purpose (stress test 2026-11-06), a
+      // guide card / Explore More card / link card its own styling
+      if (el.closest('figure, svg, .cmkey, .fn-legend, .gb-card, .xm, picture, [data-ed-ro]') || (window.__isLinkCard && __isLinkCard(el.closest('a')))) return;
       const st = el.style;
       const fs = (st.fontSize || '').replace(/ /g, '');
       if (fs === '1rem' || fs === '16px') st.removeProperty('font-size');
@@ -5980,7 +6272,8 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       // came with the caption's centering)
       if (st.textAlign && st.fontStyle === 'italic') st.removeProperty('font-style');
       ['letter-spacing', 'text-align', 'line-height'].forEach(p => st.removeProperty(p));
-      if (/^(300|400|normal)$/.test(st.fontWeight || '')) st.removeProperty('font-weight');
+      // a font-weight stays: a span de-bolding a word in a heading is a choice (stress test 2026-11-06); the carried
+      // style of a keystroke is handled by dropCarriedStyle below
       if (!st.length) el.removeAttribute('style');
     });
     root.querySelectorAll('span').forEach(sp => {
@@ -6058,6 +6351,21 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
       const first0 = html ? '' : text.replace(/\r\n?/g, '\n').split(/\n{2,}/)[0];
       const lead = /^[ \t]/.test(first0) ? ' ' : '', trail = /[ \t]$/.test(first0) ? ' ' : '';
       if (blocks.length && (lead || trail)) blocks[0] = lead + blocks[0] + trail;
+      // one phrase of HTML (a linked name copied from another article, a bold word): it goes in as it is, inline.
+      // Flattening it to text lost the link (stress test 2026-11-06); only a MULTI-block paste is text
+      if (html && blocks.length <= 1) {
+        const d = new DOMParser().parseFromString(sanitizePasted(html), 'text/html');
+        const one = d.body.querySelector('p, h1, h2, h3, h4, li, div, blockquote');
+        let inner = (one && !one.querySelector('p, h1, h2, h3, h4, li, div') ? one : d.body).innerHTML;
+        inner = inner.replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
+        if (window.__History) window.__History.checkpoint();
+        document.execCommand('insertHTML', false, inner);
+        const edp = document.getElementById('editor');
+        stripPasteArtifacts(edp);
+        edp.querySelectorAll('a u').forEach(u => { while (u.firstChild) u.before(u.firstChild); u.remove(); });
+        setDirty(true); if (window.__History) window.__History.touch();
+        return;
+      }
       if (blocks.length > 1 || html) {
         if (window.__History) window.__History.checkpoint();
         pasteAsBlocks(host, blocks);
@@ -6260,6 +6568,36 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     });
   })();
 
+  // The shortcut restarts a server running old code before it opens this page, unless that server is busy (a
+  // compress run, a job, a save in flight): then launch.json marks it pending and the keeper restarts it once it
+  // is idle. This says so here, and says when it has happened (/api/suite -> launch; tools/photo_suite.py).
+  (function launchWatch() {
+    const NAMES = { server: 'the photo server', heroes: 'Covers', maps: 'the map editor' };
+    let shown = false, tries = 0;
+    async function look() {
+      let d = null;
+      try { const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 6000);
+        d = await (await fetch(API + '/api/suite', { cache: 'no-store', signal: ac.signal })).json(); clearTimeout(t); } catch (e) {}
+      const pend = d && d.launch && d.launch.pending ? Object.keys(d.launch.pending) : null;
+      if (!d) { if (++tries < 20) setTimeout(look, 15000); return; }         // a server coming up: look again
+      if (pend && pend.length) {
+        shown = true;
+        const why = pend.map(k => (d.launch.pending[k] || {}).why).filter(Boolean).join('; ');
+        editorNotice('launch', '<span><b>Updating the editor after the current photo job finishes…</b> ' +
+          pend.map(k => NAMES[k] || k).join(' and ') + ' ' + (pend.length > 1 ? 'are' : 'is') + ' running older code' +
+          (why ? ' (' + why.replace(/[<>&]/g, '') + ')' : '') + '. Nothing to do; this goes away when it has restarted.</span>', '#5a4a14');
+        setTimeout(look, 15000);
+        return;
+      }
+      if (shown) {
+        shown = false;
+        editorNotice('launch', '<span><b>The editor was updated.</b> The servers run the current code now.</span>', '#2f5d3a');
+        setTimeout(() => { const n = document.getElementById('notice-launch'); if (n && /was updated/.test(n.textContent)) editorNotice('launch', null); }, 8000);
+      }
+    }
+    setTimeout(look, 2500);
+  })();
+
 
   // ================= KEYBOARD SHORTCUTS =================
   document.addEventListener('keydown', function(e) {
@@ -6364,7 +6702,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const ed = () => document.getElementById('editor');
     // selection/drop/swap highlights are editor chrome, not content: with them
     // in the snapshot a highlight change looked like an edit and ate the redo
-    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|line-sel|line-hot|pl-swap-target|pl-pair-target|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
+    const TRANSIENT = / ?\b(?:drag-over|img-selected|img-panning|line-sel|line-hot|pl-swap-target|pl-pair-target|half-can|half-target|half-dragging|rl-hit|rl-hover|rl-pv-yes|rl-pv-no|cm-hit|cm-hover)\b/g;
     function state() {
       const e = ed();
       // comment and lint highlights are drawn from anchors (review.js redraws them after every
@@ -7613,6 +7951,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     const resolve = v => { const parts = dir.slice(); v.split('/').forEach(x => { if (x === '..') parts.pop(); else if (x && x !== '.') parts.push(x); }); return parts.join('/'); };
     sec.querySelectorAll('picture').forEach(pic => { const srcs = [...pic.querySelectorAll('source')]; if (srcs.length) { pic.dataset.sources = srcs.map(x => x.outerHTML).join(''); srcs.forEach(x => x.remove()); } });
     sec.querySelectorAll('img').forEach(im => {
+      im.setAttribute('data-ed-aord', [...im.attributes].map(a => a.name).join(' '));
       if (im.hasAttribute('srcset')) { im.dataset.srcset = im.getAttribute('srcset'); im.removeAttribute('srcset'); }
       if (im.hasAttribute('sizes')) { im.dataset.sizes = im.getAttribute('sizes'); im.removeAttribute('sizes'); }
       const v = im.getAttribute('src');
@@ -8629,6 +8968,106 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // a file dropped anywhere else on the page must not navigate the tab to the file
   document.addEventListener('dragover', e => { if (isFileDrag(e)) e.preventDefault(); });
   document.addEventListener('drop', e => { if (isFileDrag(e) && !ed().contains(e.target)) e.preventDefault(); });
+
+  /* ---------- a paired photo into another frame (Kevin, 2026-11-06: "seamlessly switch vertical photos between two
+     different placeholders, for example switch the right half of 1 with the left half of another using the drag
+     interface") ----------
+     The drag is the ⠿ Move handle's (wireBlockDrag below): pressing the <img> itself is the crop pan, so a native drag
+     of the photo can never start. While a pair half is on the move, every other pair cell holding a photo and every
+     empty slot is marked as a place it can land, and the one under the pointer is lit. Dropped on a photo, the two
+     <picture>s trade places, each keeping its own object-position crop and its parked tiers; dropped on an empty slot
+     the photo moves there and leaves a [PHOTO] slot behind. Anywhere else the drag is the old block move of the whole
+     pair. Captions stay with their blocks. One History step, so Ctrl+Z undoes it. */
+  const halfFrameOf = img => {
+    const f = img && img.tagName === 'IMG' ? frameOf(img) : null;
+    const row = f && f.parentElement;
+    return row && (row.classList.contains('img-pair') || row.classList.contains('pair')) ? f : null;
+  };
+  // 'portrait' | 'landscape' for a frame or an empty slot (its own aspect-ratio, its class, or its pair row), so a
+  // portrait half is never offered a landscape frame (stress test 2026-11-06)
+  function frameShape(el) {
+    if (!el) return null;
+    const host = el.classList.contains('img-slot-empty') && el.parentElement && !el.parentElement.classList.contains('img-pair') && el.parentElement.id !== 'editor'
+      && (el.parentElement.style.aspectRatio || /img-landscape|\bls\b|\bfr\b/.test(el.parentElement.className) || (el.parentElement.parentElement && el.parentElement.parentElement.classList.contains('pair'))) ? el.parentElement : el;
+    const ar = (host.getAttribute('style') || '').match(/aspect-ratio\s*:\s*([\d.]+)\s*\/\s*([\d.]+)/);
+    if (ar) return parseFloat(ar[1]) / parseFloat(ar[2]) > 1 ? 'landscape' : 'portrait';
+    if (host.classList.contains('img-landscape') || host.classList.contains('ls')) return 'landscape';
+    if (host.parentElement && (host.parentElement.classList.contains('img-pair') || host.parentElement.classList.contains('pair'))) return 'portrait';
+    return null;
+  }
+  const inPendingChange = el => !!(el && el.closest && el.closest('del.rl, ins.rl'));   // a photo inside an undecided review change stays put
+  function halfTargets(srcFrame) {
+    const out = new Set(), shape = srcFrame ? frameShape(srcFrame) : null;
+    ed().querySelectorAll('.img-pair img, .pair img').forEach(i => { const f = halfFrameOf(i); if (f && !inPendingChange(f)) out.add(f); });
+    ed().querySelectorAll('.img-slot-empty').forEach(s => { if (inPendingChange(s)) return; const sh = frameShape(s); if (!shape || !sh || sh === shape) out.add(s); });
+    return [...out];
+  }
+  // the frame or slot `node` (the element under the pointer) belongs to, when a half from `srcFrame` can land there
+  function halfTargetAt(node, srcFrame) {
+    if (!node || !node.closest || !ed().contains(node)) return null;
+    if (inPendingChange(node)) return null;
+    const slot = node.closest('.img-slot-empty');
+    if (slot) { const a = frameShape(slot), b = frameShape(srcFrame); return a && b && a !== b ? null : slot; }
+    const cell = node.closest('.img-pair > span, .pair > *');
+    if (!cell || cell === srcFrame) return null;
+    const i = cell.querySelector('img');
+    return i && halfFrameOf(i) === cell ? cell : null;
+  }
+  function halfMarks(on, srcFrame) {
+    ed().querySelectorAll('.half-can, .half-target, .half-dragging').forEach(x => x.classList.remove('half-can', 'half-target', 'half-dragging'));
+    if (!on) return;
+    srcFrame.classList.add('half-dragging');
+    halfTargets(srcFrame).forEach(t => { if (t !== srcFrame) t.classList.add('half-can'); });
+  }
+  // the photo's inline style for the cell it now sits in, as slotAdopt gives a slot-filled photo: a field-notes <span>
+  // cell and .img-landscape are positioned (absolute fill); the guide's .pair cell, .ls and .fr are plain boxes the
+  // site CSS covers, where an absolute photo filled the whole window (stress test 2026-11-06). The crop stays.
+  function fitHalf(img, cell) {
+    if (!img || !cell) return;
+    const positioned = cell.tagName === 'SPAN' || cell.classList.contains('img-landscape');
+    const pos = img.style.objectPosition || '50% 50%', tr = img.style.transform, to = img.style.transformOrigin;
+    img.style.cssText = (positioned ? 'position:absolute;top:0;left:0;' : 'display:block;') + 'width:100%;height:100%;object-fit:cover;object-position:' + pos + ';' +
+      (tr && tr !== 'none' ? 'transform:' + tr + ';transform-origin:' + (to || pos) + ';' : '');
+  }
+  // the drop itself: `img` (in `frame`) onto `tgt`, a pair cell with a photo or an empty slot. One undo step.
+  function halfDrop(img, frame, tgt) {
+    if (!img.isConnected || !tgt || !tgt.isConnected) { flashNote('No frame there: the photo stays where it was'); return false; }
+    if (inPendingChange(frame) || inPendingChange(tgt)) { flashNote('That photo is inside a pending review change: decide the change first'); return false; }
+    if (tgt.classList.contains('img-slot-empty')) {
+      const a = frameShape(frame), b = frameShape(tgt);
+      if (a && b && a !== b) { flashNote('That frame is ' + b + ' and this photo is cut ' + a + ': it stays where it was'); return false; }
+    }
+    const node = img.closest('picture') || img;
+    History.checkpoint();
+    if (tgt.classList.contains('img-slot-empty')) {
+      // into an empty frame: the slot IS the pair cell in a field-notes pair (adoptPlaceholders), elsewhere it
+      // sits inside the frame. The photo keeps its own crop; the frame it leaves gets a [PHOTO] slot
+      const host = tgt.parentElement;
+      const framed = host && host.id !== 'editor' &&
+        ((host.tagName === 'SPAN' && /aspect-ratio/.test(host.getAttribute('style') || '')) ||
+         host.classList.contains('img-landscape') || host.classList.contains('ls') || host.classList.contains('fr') ||
+         (host.parentElement && host.parentElement.classList.contains('pair')));
+      if (framed) { tgt.replaceWith(node); fitHalf(img, node.parentElement); }
+      else { const span = document.createElement('span'); span.setAttribute('style', SLOT_CSS); span.appendChild(node); tgt.replaceWith(span); fitHalf(img, span); }
+      const left = emptySlot(); left.dataset.ph = '1';
+      // in a field-notes pair the slot IS the cell (as adoptPlaceholders leaves it, and as placeholderFor expects:
+      // a marker appended inside the span saved as <span><div class="photo-ph">); a guide cell keeps its box
+      if (frame.tagName === 'SPAN' && frame.parentElement && frame.parentElement.classList.contains('img-pair')) frame.replaceWith(left);
+      else frame.appendChild(left);
+      flashNote('Moved the photo into the empty frame');
+    } else {
+      const other = tgt.querySelector('picture') || tgt.querySelector('img');
+      if (!other) { flashNote('Nothing to swap with there'); return false; }
+      const mark = document.createComment('half');
+      node.replaceWith(mark); other.replaceWith(node); mark.replaceWith(other);
+      fitHalf(img, node.parentElement); fitHalf(other.tagName === 'IMG' ? other : other.querySelector('img'), other.parentElement);
+      flashNote('Swapped the two photos');
+    }
+    History.touch();
+    setDirty(true);
+    return true;
+  }
+  window.__half = { targets: halfTargets, frameOf: halfFrameOf, shape: frameShape, fit: fitHalf };   // for tests
   async function uploadDroppedFile(file, drop) {
     let up = null;
     try {
@@ -9345,12 +9784,18 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
   // one is the edge guard's (ENTER_OBJ). Making the figure contenteditable=false did the same and
   // broke undo, so it is done here instead.
   ed().addEventListener('beforeinput', e => {
-    const MAP = 'figure.itinerary-map, figure.citymap-fig';
+    const MAP = 'figure.itinerary-map, figure.citymap-fig, a.gb-card, [data-ed-ro]';   // a guide card and the Explore More block are tool-written too (stress test 2026-11-06)
     const inMap = n => { const el = n && (n.nodeType === 1 ? n : n.parentElement); return !!(el && el.closest && el.closest(MAP)); };
     const sel = getSelection();
     const rs = typeof e.getTargetRanges === 'function' ? e.getTargetRanges() : [];
     if (rs.some(r => inMap(r.startContainer) || inMap(r.endContainer)) ||
-        (sel.rangeCount && sel.isCollapsed && inMap(sel.anchorNode))) e.preventDefault();
+        (sel.rangeCount && sel.isCollapsed && inMap(sel.anchorNode))) { e.preventDefault(); return; }
+    // a read-only block selected whole (a click on a guide card selects it as one object): typing or pasting would
+    // REPLACE it with the keystroke. Insertions over such a selection are refused; a deliberate delete still works.
+    if (/^insert/.test(e.inputType || '') && rs.length) {
+      const objs = ed().querySelectorAll(MAP);
+      if (objs.length && rs.some(r => { try { const g = document.createRange(); g.setStart(r.startContainer, r.startOffset); g.setEnd(r.endContainer, r.endOffset); return !g.collapsed && [...objs].some(o => g.intersectsNode(o)); } catch (err) { return false; } })) e.preventDefault();
+    }
   }, true);
   window.restoreMapButtons = function restoreMapButtons(root) {
     (root || ed()).querySelectorAll('figure.itinerary-map, figure.citymap-fig').forEach(f => {
@@ -9393,9 +9838,20 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     if (!slug && city) {                       // a city map's files name its config; none named = nothing to edit (a guess by position opened, then overwrote, another map; stress test 2026-10-23)
       mapOffline('The files of this map name no config in tools/city_maps/, so there is nothing to edit. Rebuild it from its config first.', ''); return;
     }
-    if (!slug) {                               // otherwise the figures and the configs are matched in order
-      const figs = [...ed().querySelectorAll(city ? 'figure.citymap-fig' : 'figure.itinerary-map')];
-      slug = pool[Math.min(Math.max(figs.indexOf(fig), 0), pool.length - 1)];
+    if (!slug) {
+      // an untagged route figure: the configs the page's TAGGED figures already name are taken; one left over is it,
+      // more than one and nothing is guessed (matching by alphabet opened the boat map for the bus map and the save
+      // then wrote the boat map over it, stress test 2026-11-06)
+      const figs = [...ed().querySelectorAll('figure.itinerary-map')];
+      const taken = new Set(figs.map(f => f.dataset.map).filter(Boolean));
+      const free = pool.filter(s => !taken.has(s));
+      if (free.length === 1) slug = free[0];
+      else if (!figs.filter(f => !f.dataset.map).length) slug = null;
+      if (!slug) {
+        mapOffline('This map does not say which config it is (no data-map), and ' + (free.length ? free.length + ' configs point at this page' : 'every config here belongs to another map') +
+          ', so nothing is guessed. Rebuild it from its config (python tools/embed_itinerary_map.py <slug> ' + rel + ') and it will carry its name.', '');
+        return;
+      }
     }
     // replace, not src=: each open and close added two Back entries, and Back then reloaded the map editor
     // into the hidden frame and ran a build (stress test 2026-10-09)
@@ -9515,7 +9971,12 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
         // the embed (QA 2026-10-08)
         const t = document.createElement('template'); t.innerHTML = ev.data.figure.trim();
         const nf = t.content.firstElementChild;
-        if (nf) { mapTarget.replaceWith(nf); mapTarget = nf; }
+        if (nf) {
+          mapTarget.replaceWith(nf); mapTarget = nf;
+          // the figure's text as the embed tool wrote it is what the save writes back while the figure is unchanged
+          // (see loadFile's __wholeSrc), so a map save never re-serializes the tool's SVG (stress test 2026-11-06)
+          if (window.__wholeSrc) { const id = 'm' + Date.now().toString(36); const outer = nf.outerHTML; nf.setAttribute('data-ed-src-id', id); window.__wholeSrc.set(id, { outer, src: ev.data.figure.trim() }); }
+        }
       } else if (/class="eh"/.test(ev.data.svg)) {
         // an older map editor sends its EDITING svg (drag handles, no place links): spliced in, the next Save
         // wrote that over the embed. The file has the right map; the editor's copy waits for a reopen.
@@ -9642,6 +10103,121 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     setDirty(true);
     History.touch();
     slot.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
+  /* ---- captions from the photo toolbar (Kevin, 2026-11-06: "add ability to fill out captions on your own ...
+     add an add caption button so I don't have to open the editor interface when I'm adding a caption") ---- */
+  // the block a caption belongs to: the pair or frame around the photo, else the paragraph holding a loose one
+  function captionBlockOf(img) {
+    let b = blockRootOf(img);
+    if (b === img) b = blockOf(img) || img;
+    return b;
+  }
+  // the caret into a caption: at its end when it has text, at its start (before the <br>) when it is empty
+  function caretIntoCaption(cap) {
+    ed().focus();
+    const r = document.createRange();
+    if (cap.textContent) { r.selectNodeContents(cap); r.collapse(false); } else { r.setStart(cap, 0); r.collapse(true); }
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    if (typeof saveSelection === 'function') { try { saveSelection(); } catch (e) {} }
+  }
+  const capSay = (m, ms) => (window.toast ? toast(m, ms) : alert(m));
+  // a caption is a <div> after the photo's block: inside a list that is a div in a <ul> or an <li>, which the site
+  // never styles and the save cannot place (stress test 2026-11-06)
+  function captionRefused(block) {
+    if (!block.closest('li, ul, ol')) return false;
+    capSay('A caption goes under a photo that stands on its own. Move the photo out of the list first (⠿ Move), then add the caption.', 6000);
+    return true;
+  }
+  window.imgAddCaption = function imgAddCaption() {
+    const img = _selImg || document.querySelector('#editor img.img-selected');
+    if (!img) { alert('Click a photo first.'); return null; }
+    const block = captionBlockOf(img);
+    if (captionRefused(block)) return null;
+    let cap = captionOf(block);
+    if (!cap) {
+      History.checkpoint();
+      cap = document.createElement('div');
+      cap.className = 'img-caption';
+      cap.setAttribute('style', CAPTION_STYLE);         // the site's exact caption markup; the save keeps it as is
+      cap.innerHTML = '<br>';                           // somewhere for the caret: an empty div has no height
+      block.after(cap);                                 // after the WHOLE block: never between the halves of a pair
+      History.touch();
+      setDirty(true);
+    }
+    deselectImg();
+    caretIntoCaption(cap);
+    cap.scrollIntoView({ block: 'nearest' });
+    return cap;
+  };
+  // ✦ Write caption: Gemini looks at the block's photo(s) and the text around them (/api/caption on the photo
+  // server, the alt-text backend) and the answer lands in the caption, cursor at the end, for Kevin to change.
+  window.imgWriteCaption = async function imgWriteCaption() {
+    const img = _selImg || document.querySelector('#editor img.img-selected');
+    if (!img) { alert('Click a photo first.'); return; }
+    const block = captionBlockOf(img);
+    if (captionRefused(block)) return;
+    const imgs = block === img ? [img] : [...block.querySelectorAll('img')];
+    const refs = imgs.map(i => i.getAttribute('data-path') || i.getAttribute('src') || '').filter(r => /Images\//.test(r));
+    if (!refs.length) { capSay('This photo is not in the Images/ archive yet, so there is nothing to send. Insert it first.', 6000); return; }
+    // what the caption is written from: the heading above, the paragraph before the block, each photo's alt
+    // text, and the page's other captions as examples of the style. Nothing else leaves the page.
+    let heading = '';
+    for (let n = block; n && n.id !== 'editor' && !heading; n = n.parentElement) {
+      for (let s = n.previousElementSibling; s; s = s.previousElementSibling) {
+        if (/^H[23]$/.test(s.tagName) || s.matches('.fn-sub-hd, .fn-city-hd')) { heading = s.textContent.trim(); break; }
+      }
+    }
+    let para = '';
+    for (let s = block.previousElementSibling; s; s = s.previousElementSibling) {
+      if (s.matches('.img-caption, .pl-drop-line')) continue;
+      if (/^(P|LI|UL|OL|BLOCKQUOTE)$/.test(s.tagName)) para = s.textContent.trim();
+      break;
+    }
+    const cur = captionOf(block);
+    const textBefore = cur ? cur.textContent.trim() : '', genBefore = editGen;   // what the caption said, and whether anything was typed meanwhile
+    const examples = [...ed().querySelectorAll('.img-caption')].filter(c => c !== cur).map(c => c.textContent.trim()).filter(Boolean).slice(0, 8);
+    const btn = document.getElementById('img-cap-write');
+    const was = btn ? btn.textContent : '';
+    if (btn) { btn.textContent = '✦ Writing…'; btn.disabled = true; }
+    let ctx = {}; try { ctx = await articleContext(); } catch (e) {}
+    let d = null, why = '';
+    try {
+      const r = await fetch(API + '/api/caption', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: refs, pair: imgs.length > 1, count: imgs.length, heading, paragraph: para.slice(0, 900),
+                               alts: imgs.map(i => i.getAttribute('alt') || ''), examples, current: cur ? cur.textContent.trim() : '',
+                               country: ctx.country || '', city: ctx.city || '' }) });
+      d = await r.json().catch(() => null);
+      // the route answers 404 with a reason of its own ("no archive photo for X"): that is the message, not a restart
+      if ((r.status === 404 || r.status === 405) && !(d && d.error)) why = 'Write caption needs the photo server restarted: it is still running the code from before this button existed.';
+      else if (!d || !d.ok) why = 'Could not write the caption' + (d && d.error ? ': ' + d.error : ' (HTTP ' + r.status + ')');
+    } catch (e) { why = 'The photo server is not answering, so no caption was written.'; }
+    if (btn) { btn.textContent = was; btn.disabled = false; }
+    if (!d || !d.ok || !d.caption) { capSay(why || 'Could not write the caption.', 8000); return; }
+    if (!block.isConnected) { capSay('The photo moved while the caption was being written; nothing was changed.', 6000); return; }
+    // Kevin kept working while Gemini wrote: the caption was typed into, or the caret is somewhere else now. The
+    // result is offered, never written over his words or under his caret (stress test 2026-11-06)
+    const now = captionOf(block), textNow = now ? now.textContent.trim() : '';
+    const selNow = window.getSelection(), caretEl = selNow && selNow.rangeCount && selNow.anchorNode ? (selNow.anchorNode.nodeType === 1 ? selNow.anchorNode : selNow.anchorNode.parentElement) : null;
+    const caretAway = editGen !== genBefore && caretEl && ed().contains(caretEl) && !block.contains(caretEl) && !(now && now.contains(caretEl));
+    if (textNow !== textBefore || caretAway) {
+      const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const n = editorNotice('cap-offer', '<span>Caption ready: “' + esc(d.caption) + '”</span>' +
+        '<button data-a="use" style="background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:3px;padding:.2rem .7rem;cursor:pointer;font:inherit;font-size:.72rem">Use it</button>' +
+        '<button data-a="no" style="background:none;border:0;color:#fff;cursor:pointer;font:inherit;font-size:.72rem;opacity:.8">Dismiss</button>', '#2f5d3a');
+      if (n) {
+        n.querySelector('[data-a="use"]').onclick = () => { editorNotice('cap-offer', null); if (!block.isConnected) return; History.checkpoint(); setCaption(block, d.caption); History.touch(); setDirty(true); };
+        n.querySelector('[data-a="no"]').onclick = () => editorNotice('cap-offer', null);
+      }
+      return;
+    }
+    History.checkpoint();
+    setCaption(block, d.caption);
+    History.touch(); setDirty(true);
+    const cap = captionOf(block);
+    deselectImg();
+    if (cap) { caretIntoCaption(cap); cap.scrollIntoView({ block: 'nearest' }); }
+    capSay('Caption written. Change anything you like.', 3000);
   };
 
   /* Insert ONE placeholder at the caret. The Pair button has always been the only
@@ -9801,6 +10377,7 @@ header .btn-open:hover{background:rgba(255,255,255,.08) !important}
     // in a pair (or a row of three) Swap trades places with the photo beside it (Kevin, 2026-10-19: "change the
     // swap photo tool to swap the positions of 2 photos in a pair"); a lone photo still swaps in a library photo
     const cell = frameOf(img), row = cell && cell.parentElement;
+    if (img.closest('del.rl, ins.rl')) { if (window.toast) toast('This photo is inside a pending review change: decide the change first.', 4000); return; }
     if (row && (row.classList.contains('img-pair') || row.classList.contains('pair'))) {
       const cells = [...row.children].filter(c => c.querySelector('img, .img-slot-empty, .photo-ph'));
       const i = cells.indexOf(cell);
@@ -12976,6 +13553,7 @@ void main(){
     // to enter move mode, then click anywhere in the article to drop it.
     const handle = document.getElementById('img-move-handle');
     let dragging = null;    // block being moved (drag OR place mode)
+    let half = null;        // {img, frame} when the selected photo is a pair half: frames are targets too (2026-11-06)
     let placing = false;    // sticky click-to-place mode
     let line = null, target = null;
     let px = 0, py = 0, downX = 0, downY = 0, raf = 0;
@@ -12997,15 +13575,27 @@ void main(){
       const x = Math.max(r.left + 2, Math.min(r.right - 2, px));
       let blk = null;
       const under = document.elementFromPoint(x, y);
+      // a pair half over another pair's cell, or an empty slot: that frame is the target (swap / move into it)
+      const was = ed().querySelector('.half-target');
+      const cell = half ? halfTargetAt(under, half.frame) : null;
+      if (was && was !== cell) was.classList.remove('half-target');
+      if (cell) { cell.classList.add('half-target'); target = { half: cell }; return; }
       if (under && ed().contains(under)) blk = blockOf(under);
       if (!blk) blk = nearestBlockAt(y);            // gaps, margins, off-screen
       if (!blk || blk === dragging || dragging.contains(blk)) return;
       const br = blk.getBoundingClientRect();
       const before = y - br.top < br.height / 2;
-      target = { el: blk, where: before ? 'before' : 'after' };
+      // a photo block and its caption are one thing: "after" a captioned block is after its caption, "before" a
+      // caption is before its block (a pair dropped between the two used to split them, 2026-11-06)
+      let at = blk;
+      if (!before && captionOf(blk)) at = captionOf(blk);
+      else if (before && blk.classList.contains('img-caption') && blk.previousElementSibling && blk.previousElementSibling !== dragging) at = blk.previousElementSibling;
+      if (at === dragging || dragging.contains(at)) return;
+      if (at.closest('del.rl, ins.rl')) return;        // not into a pending review change
+      target = { el: at, where: before ? 'before' : 'after' };
       line = document.createElement('div');
       line.className = 'pl-drop-line';
-      blk.parentElement.insertBefore(line, before ? blk : blk.nextSibling);
+      at.parentElement.insertBefore(line, before ? at : at.nextSibling);
     };
 
     const tick = () => {
@@ -13025,7 +13615,10 @@ void main(){
     function startOp(sel, x, y) {
       dragging = blockRootOf(sel);
       if (dragging.tagName === 'IMG') dragging = blockOf(dragging) || dragging;
-      dragging.style.opacity = '.35';
+      if (dragging.closest('del.rl, ins.rl')) { flashNote('This photo is inside a pending review change: decide the change first'); dragging = null; return; }
+      const hf = halfFrameOf(sel);
+      half = hf ? { img: sel, frame: hf } : null;
+      if (half) halfMarks(true, hf); else dragging.style.opacity = '.35';
       px = downX = x; py = downY = y;
       document.addEventListener('mousemove', onMove);
       raf = requestAnimationFrame(tick);
@@ -13040,7 +13633,11 @@ void main(){
       handle.textContent = '⠿ Move';
       if (dragging) dragging.style.opacity = '';
       if (line) line.remove();
-      if (commit && target && dragging) {
+      if (half) halfMarks(false);
+      if (commit && target && target.half && half) {
+        halfDrop(half.img, half.frame, target.half);
+        deselectImg();
+      } else if (commit && target && dragging) {
         History.checkpoint();
         const cap = captionOf(dragging);        // caption travels with its photo
         insertAtDrop(target, dragging);
@@ -13052,6 +13649,7 @@ void main(){
         flashNote('No drop target — image not moved');
       }
       dragging = null;
+      half = null;
       placing = false;
       line = null;
       target = null;
@@ -13071,7 +13669,8 @@ void main(){
       handle.classList.add('on');
       handle.textContent = '⠿ Click a spot';
       document.body.style.cursor = 'copy';
-      flashNote('Move mode: click where the photo should go (Esc to cancel)');
+      flashNote(half ? 'Move mode: click another photo to swap with it, an empty frame to move into, or a spot for the pair (Esc to cancel)'
+                     : 'Move mode: click where the photo should go (Esc to cancel)');
       document.addEventListener('mousedown', placeClick, true);
     }
 
@@ -13082,6 +13681,7 @@ void main(){
       if (!sel) return;
       document.body.style.cursor = 'grabbing';
       startOp(sel, e.clientX, e.clientY);
+      if (!dragging) { document.body.style.cursor = ''; return; }
       const up = ev => {
         document.removeEventListener('mouseup', up);
         const moved = Math.hypot(ev.clientX - downX, ev.clientY - downY) > 5;
@@ -14025,11 +14625,26 @@ async function renderSuite() {
     <pre class="act-sub" style="white-space:pre-wrap;margin:.5rem 0 0;max-height:220px;overflow:auto;letter-spacing:0">${esc(d.tidy.lines.join('\n'))}</pre>
     <div class="act-sub" style="margin-top:.3rem">From tools/autofix.py when the editor opened (${esc(d.tidy.at)}); nothing was changed.</div></details>
   </div>` : ''}
+  ${launchCard(d.launch)}
   ${compressCard(d.compress)}`;
   // the compression queue moves while an article is being closed: keep the panel current
   if (suiteTimer) clearTimeout(suiteTimer);
-  if ($('#activity').classList.contains('open') && d.compress && (d.compress.running || (d.compress.queued || []).length))
-    suiteTimer = setTimeout(renderSuite, 2000);
+  const launchPending = d.launch && d.launch.pending && Object.keys(d.launch.pending).length;
+  if ($('#activity').classList.contains('open') && ((d.compress && (d.compress.running || (d.compress.queued || []).length)) || launchPending))
+    suiteTimer = setTimeout(renderSuite, launchPending ? 5000 : 2000);
+}
+// What the shortcut did about servers running old code (tools/photo_suite.py refresh_stale, launch.json): each one
+// restarted on the current code, or left running because it was busy, which the keeper then restarts once it is idle.
+function launchCard(l) {
+  if (!l || !l.lines || !l.lines.length) return '';
+  const pend = Object.keys(l.pending || {});
+  const head = pend.length ? 'an update is waiting on ' + pend.map(k => ({ server: 'the photo server', heroes: 'Covers', maps: 'the map editor' }[k] || k)).join(', ')
+    : (l.lines.some(s => /restarted/.test(s)) ? 'servers updated' : 'servers checked');
+  return `<div class="act-card" style="margin-bottom:.6rem">
+    <details class="act-more" ${pend.length ? 'open' : ''}><summary><b>Launch</b> · ${esc(head)}</summary>
+    <pre class="act-sub" style="white-space:pre-wrap;margin:.5rem 0 0;max-height:220px;overflow:auto;letter-spacing:0">${esc(l.lines.join('\n'))}</pre>
+    <div class="act-sub" style="margin-top:.3rem">From the editor shortcut (${esc(l.at || '')}); a server running old code is restarted when it is idle${pend.length ? ', and the busy one as soon as its work finishes' : ''}.</div></details>
+  </div>`;
 }
 // Photo compression now waits until an article is closed (see queuePipeline); this says
 // what is waiting, what is running, and anything that failed three times and stopped.
@@ -14102,7 +14717,7 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
    pick the app. #library / #editor in the URL selects the view; the last
    choice is remembered. */
 (function suiteRouter() {
-  const VIEWS = ['editor', 'library', 'heroes', 'maps', 'launch'];
+  const VIEWS = ['editor', 'library', 'heroes', 'maps', 'launch', 'queue'];
   const HEROES = 'http://127.0.0.1:5004';
 
   // The picker loads on first visit, not with the editor: it starts decoding an
@@ -14366,11 +14981,13 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     heroes.hidden = v !== 'heroes';
     document.getElementById('app-maps').hidden = v !== 'maps';
     { const la = document.getElementById('app-launch'); if (la) la.hidden = v !== 'launch'; }   // the prelaunch checklist (launch.js)
+    { const lq = document.getElementById('app-queue'); if (lq) lq.hidden = v !== 'queue'; }     // Claude's queue + my to-do (queue.js)
     ed.style.display = v === 'editor' ? '' : 'none';
     if (!toLib && window.__libCloseLight) __libCloseLight();        // the viewer does not follow you to another view
     if (v === 'heroes') { loadHeroes(); const hf = document.getElementById('heroes-file'); if (hf) hf.textContent = document.getElementById('file-name').textContent || 'no file open'; }
     if (v === 'maps') loadMaps();
     if (v === 'launch' && window.__launchShow) __launchShow();
+    if (v === 'queue' && window.__queueShow) __queueShow();
     // this tab's view first (sessionStorage), the last one used anywhere second: two tabs shared one memory,
     // so a reload in one opened the other's view (QA 2026-10-08)
     try { sessionStorage.setItem('tb:view', v); localStorage.setItem('tb:view', v); } catch (e) {}
@@ -14405,19 +15022,20 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
         if (!document.getElementById('app-' + id).hidden) { const f = document.getElementById(id + '-frame'); if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'suite-side' }, '*'); }
       }
     });
-    window.addEventListener('message', e => {                        // Ctrl+Alt+1..4 pressed inside a framed app
+    window.addEventListener('message', e => {                        // Ctrl+Alt+1..6 pressed inside a framed app
       if (!e.data || e.data.type !== 'suite-view' || !(e.origin === 'http://127.0.0.1:5004' || e.origin === 'http://127.0.0.1:5002')) return;
-      const v = ['editor', 'library', 'heroes', 'maps', 'launch'][e.data.n - 1]; if (v && window.showView) showView(v);
+      const v = ['editor', 'library', 'heroes', 'maps', 'launch', 'queue'][e.data.n - 1]; if (v && window.showView) showView(v);
     });
   })();
   // every app's wordmark button becomes the same row of tabs
   const TABS = [['editor', 'Editor', 'Write & lay out articles'], ['library', 'Library', 'Ratings & blog picks'],
                 ['heroes', 'Covers', 'The photos that represent a page: its banner, its cards and its share image'], ['maps', 'Maps', 'Move labels on route & city maps'],
-                ['launch', 'Launch', 'The prelaunch checklist: what Claude checks and what you check before a country goes live']];
+                ['launch', 'Launch', 'The prelaunch checklist: what Claude checks and what you check before a country goes live'],
+                ['queue', 'Queue', 'What Claude has queued up, and your own to-do list']];
   document.querySelectorAll('[data-switcher]').forEach(btn => {
     const nav = document.createElement('nav');
     nav.className = 'app-tabs'; nav.setAttribute('aria-label', 'Apps');
-    const ICONS = {"editor": "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z\"/>", "library": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-5-5L5 21\"/>", "heroes": "<rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M6 15h8M6 11.5h5\"/>", "maps": "<path d=\"M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z\"/><path d=\"M9 4v14M15 6v14\"/>", "launch": "<path d=\"M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z\"/><path d=\"m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z\"/><path d=\"M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0\"/><path d=\"M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5\"/>"};
+    const ICONS = {"editor": "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z\"/>", "library": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-5-5L5 21\"/>", "heroes": "<rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M6 15h8M6 11.5h5\"/>", "maps": "<path d=\"M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z\"/><path d=\"M9 4v14M15 6v14\"/>", "launch": "<path d=\"M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z\"/><path d=\"m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z\"/><path d=\"M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0\"/><path d=\"M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5\"/>", "queue": "<path d=\"M9 6h11M9 12h11M9 18h11\"/><path d=\"m3.5 6 1 1 2-2\"/><path d=\"m3.5 12 1 1 2-2\"/><circle cx=\"4.5\" cy=\"18\" r=\"1.1\"/>"};
     nav.innerHTML = TABS.map(([v, t, d], i) => `<a href="#${v}" data-view="${v}" title="${d} (Ctrl+Alt+${i + 1})"><span class="ad"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[v]}</svg></span>${t}</a>`).join('');
     const mark = document.createElement('a');
     mark.className = 'suite-mark'; mark.href = '#editor'; mark.title = 'getawayguide'; mark.innerHTML = 'getaway<em>guide</em>';
@@ -14431,7 +15049,7 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     if (a) { ev.preventDefault(); showView(a.dataset.view); }
   });
   document.addEventListener('keydown', ev => {
-    if (ev.ctrlKey && ev.altKey && /^[1-5]$/.test(ev.key)) { ev.preventDefault(); showView(TABS[+ev.key - 1][0]); }
+    if (ev.ctrlKey && ev.altKey && /^[1-6]$/.test(ev.key)) { ev.preventDefault(); showView(TABS[+ev.key - 1][0]); }
   });
   window.__paintTabs = paintTabs;
   document.addEventListener('click', ev => {
@@ -14471,6 +15089,27 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
   // tag and "}" to the closing one and turn one changed date into a six-line diff (2026-11-01)
   function writeLd(s, o) {
     const t = s.textContent, lead = (/^\s*/.exec(t) || [''])[0], trail = (/\s*$/.exec(t) || [''])[0];
+    // a changed string value is swapped in place, so the script keeps the indentation the page had (a re-serialized
+    // block moved every line of a 6-space file to 2 spaces; stress test 2026-11-06)
+    try {
+      const was = JSON.parse(t); let out = t, exact = true;
+      const walk = (a, b, path) => {
+        if (!exact) return;
+        if (a && b && typeof a === 'object' && !Array.isArray(a) && typeof b === 'object' && !Array.isArray(b)) {
+          const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+          for (const k of keys) { if (!(k in a) || !(k in b)) { exact = false; return; } walk(a[k], b[k], path.concat(k)); }
+          return;
+        }
+        if (JSON.stringify(a) === JSON.stringify(b)) return;
+        if (typeof a !== 'string' || typeof b !== 'string') { exact = false; return; }
+        const key = path[path.length - 1], re = new RegExp('("' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"\\s*:\\s*)' + JSON.stringify(a).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        const hits = out.match(re) || [];
+        if (hits.length !== 1) { exact = false; return; }
+        out = out.replace(re, (m0, g1) => g1 + JSON.stringify(b));
+      };
+      walk(was, o, []);
+      if (exact) { s.textContent = out; return; }
+    } catch (e) {}
     s.textContent = lead + JSON.stringify(o, null, 2) + trail;
   }
   function paint() {
@@ -14838,6 +15477,11 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
   }
   function blockOf(node) {
     const root = ed();
+    // the nearest prose block: climbing to the top-level child reached the whole .fn-section (or the whole list), and
+    // the text landed a section away (stress test 2026-11-06)
+    const el = node && (node.nodeType === 1 ? node : node.parentElement);
+    const near = el && el.closest && el.closest('p, li, h2, h3, h4, blockquote, .fn-sub-hd, .eyebrow, .img-caption');
+    if (near && near !== root && root.contains(near)) return near;
     while (node && node.parentNode !== root) node = node.parentNode;
     return node && node.parentNode === root ? node : null;
   }
@@ -14906,7 +15550,8 @@ window.__libCloseLight = function () { if ($('#light').classList.contains('open'
     let p;
     if (blk && blk.tagName === 'P' && !blk.textContent.trim()) { p = blk; p.textContent = text; }
     else {
-      p = document.createElement('p'); p.textContent = text;
+      p = document.createElement(blk && blk.tagName === 'LI' ? 'li' : 'p'); p.textContent = text;   // in a list: the next bullet
+      if (blk && blk.tagName === 'LI') { const st = blk.getAttribute('style'); if (st) p.setAttribute('style', st); }
       if (blk) blk.after(p); else root.appendChild(p);
     }
     p.classList.add('dictated');

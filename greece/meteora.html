@@ -72,7 +72,7 @@
 }
 </script>
 <link rel="stylesheet" href="../theme.css?v=6d696122">
-<link rel="stylesheet" href="../artifact.css?v=6d696122">
+<link rel="stylesheet" href="../artifact.css?v=98ddc217">
 
 <style>
 
@@ -120,6 +120,13 @@
 @media (max-width:700px){ .citymap.desk{display:none} .citymap.mob{display:block} }
 </style>
 <style id="hero-tiers">
+/* The hero's phone tiers (SEO/speed pass 2026-11-07): phones used to download the desktop file.
+   The inline background:url(...) stays as the fallback; window bands >=769px are in bg-fit. */
+@supports (background-image: image-set(url("a.webp") type("image/webp"))) {
+  @media (max-width:768px) {
+    .article-hero.gg-banner { background-image: image-set(url('../Images/web/Greece/hero-meteora-mob-1x.webp') 1x type('image/webp'), url('../Images/web/Greece/hero-meteora-mob.webp') 2x type('image/webp'), url('../Images/web/Greece/hero-meteora-mob-1x.jpg') 1x type('image/jpeg'), url('../Images/web/Greece/hero-meteora-mob.jpg') 2x type('image/jpeg')) !important; }
+  }
+}
 /* crop positions from the hero picker */
 .article-hero.gg-banner { background-position:50% 39.1% !important; }
 @media (max-width:1400px) { .article-hero.gg-banner { background-position:50% 24.7% !important; } }
@@ -177,6 +184,7 @@
 @media (min-width:1024px) and (min-resolution:1.5dppx){[data-bgfit="1"][style*="hero-meteora"]{background-image:url('../Images/web/Greece/hero-meteora-2995w.webp')!important}}
 @media (min-width:1536px) and (min-resolution:1.5dppx){[data-bgfit="1"][style*="hero-meteora"]{background-image:url('../Images/web/Greece/hero-meteora-3600w.webp')!important}}
 </style>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "441f596c2ca940ebb17abf862f9f4b54"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 
@@ -339,7 +347,7 @@
   <ul>
     <li><b><a href="https://www.google.com/maps/place/Kalabaka+422+00,+Greece/@39.7044025,21.6070454,14z/data=!3m1!4b1!4m6!3m5!1s0x13590fcfb5752c79:0xc0a360035a1f5ffa!8m2!3d39.706618!4d21.6288728!16zL20vMGczMWN3?entry=ttu&amp;g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Kalambaka</a></b> — the bigger town, built around a central square and also very close to the monasteries. It has a larger selection of hostels and restaurants, plus the train station, so it's the easiest base if you arrive by rail. The trade-off is that it's completely geared around Meteora tourism and a bit more expensive than Kastraki</li>
   </ul>
-  <p>I stayed at <a href="https://www.airbnb.com/rooms/5693380?adults=1&amp;check_in=2026-06-04&amp;check_out=2026-06-06&amp;search_mode=regular_search&amp;source_impression_id=p3_1775843851_P36sqhFQ-TW2aya1&amp;previous_page_section_name=1000&amp;federated_search_id=2b0bdc52-a69b-4d2b-a882-6eec836bef45" target="_blank" rel="noopener noreferrer">Thalia Rooms</a> in Kastraki, a 3-unit guesthouse just off the main square with small, self-contained rooms. <b>The lovely host, Ritsa, is the reason I got so much out of my time in Meteora.</b> Moments after I arrived, she met me at the bus station and made sure I was settled in. She gave me a paper trail map, recommended restaurants and the e-bike shop, and even helped me plan a 2-day itinerary for the monasteries.</p>
+  <p>I stayed at <a href="https://www.airbnb.com/rooms/5693380" target="_blank" rel="noopener noreferrer">Thalia Rooms</a> in Kastraki, a 3-unit guesthouse just off the main square with small, self-contained rooms. <b>The lovely host, Ritsa, is the reason I got so much out of my time in Meteora.</b> Moments after I arrived, she met me at the bus station and made sure I was settled in. She gave me a paper trail map, recommended restaurants and the e-bike shop, and even helped me plan a 2-day itinerary for the monasteries.</p>
   <div class="img-pair">
     <span style="display:block;position:relative;overflow:hidden;width:100%;aspect-ratio:2/3;border-radius:2px">
       <picture><source type="image/webp" media="(min-width:769px)" srcset="../Images/web/Greece/Meteora/IMG_4390-1x.webp 592w, ../Images/web/Greece/Meteora/IMG_4390-2x.webp 896w, ../Images/web/Greece/Meteora/IMG_4390-3x.webp 1184w" sizes="319px"><source media="(min-width:769px)" srcset="../Images/web/Greece/Meteora/IMG_4390-1x.jpg 592w, ../Images/web/Greece/Meteora/IMG_4390-2x.jpg 896w, ../Images/web/Greece/Meteora/IMG_4390-3x.jpg 1184w" sizes="319px"><source type="image/webp" srcset="../Images/web/Greece/Meteora/IMG_4390-mob-1x.webp 250w, ../Images/web/Greece/Meteora/IMG_4390-mob-2x.webp 500w, ../Images/web/Greece/Meteora/IMG_4390-mob-3x.webp 750w" sizes="56vw"><img src="../Images/web/Greece/Meteora/IMG_4390-mob-2x.jpg" alt="Red roses in the foreground and a stone guesthouse with a tiled roof below tall rock towers, Thalia Rooms, Greece" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;" loading="lazy" width="461" height="615" srcset="../Images/web/Greece/Meteora/IMG_4390-mob-1x.jpg 250w, ../Images/web/Greece/Meteora/IMG_4390-mob-2x.jpg 500w, ../Images/web/Greece/Meteora/IMG_4390-mob-3x.jpg 750w" sizes="56vw"></picture>
@@ -400,7 +408,7 @@
   <p>Every monastery has a small parking area, but they fill up by mid-morning once the tour buses arrive, so start early or go late in the afternoon. Most visitors drive in from <a href="field-notes.html#athens">Athens</a> or <a href="thessaloniki.html">Thessaloniki</a> and pick up a rental there, since <a href="https://www.google.com/maps/place/Kalabaka+422+00,+Greece/@39.7044025,21.6070454,14z/data=!3m1!4b1!4m6!3m5!1s0x13590fcfb5752c79:0xc0a360035a1f5ffa!8m2!3d39.706618!4d21.6288728!16zL20vMGczMWN3?entry=ttu&amp;g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Kalambaka</a> only has a few small rental agencies.</p>
   <h3 class="article-h3" id="day-tour">Day Tour from Athens or Thessaloniki</h3>
   <p>Day tours run from <a href="field-notes.html#athens">Athens</a> or <a href="thessaloniki.html">Thessaloniki</a>, but you'd spend most of the day on the bus. I'm sure you'd still enjoy the tours, but I highly recommend staying at least one night to catch the sunset and do some hiking.</p>
-  <p>A typical tour leaves Athens around 7 a.m., takes about 4.5 hours each way by minibus or train, and gives you around 3 hours in Meteora, enough for 2 or 3 monasteries and a quick stop at a viewpoint before the long ride back. They usually run at least 100€ per person. If you're tight on time, a <a href="https://meteora.com/tour/2-days-meteora-tour-from-athens-by-train/?utm_source=google&amp;utm_medium=cpc&amp;utm_campaign={campaign}&amp;utm_term=&amp;utm_content={adgroup}&amp;utm_matchtype=&amp;utm_device=c&amp;utm_ad=745585542617&amp;gad_source=1&amp;gad_campaignid=17347107963&amp;gbraid=0AAAAADhc9ZaamvlJQ-oMtLg2-rGQxkEiG&amp;gclid=Cj0KCQjwuJLWBhD_ARIsAIBcRUxmVtRXSJFH5pdkfKqHOrkqDgnExRR0xVbafhd15xFpo-i2l8gI5lwaAoeaEALw_wcB">2-day tour with a night in Kalambaka</a> is a much better deal, but even then I'd skip the tour, take the bus and stay the night.</p>
+  <p>A typical tour leaves Athens around 7 a.m., takes about 4.5 hours each way by minibus or train, and gives you around 3 hours in Meteora, enough for 2 or 3 monasteries and a quick stop at a viewpoint before the long ride back. They usually run at least 100€ per person. If you're tight on time, a <a href="https://meteora.com/tour/2-days-meteora-tour-from-athens-by-train/">2-day tour with a night in Kalambaka</a> is a much better deal, but even then I'd skip the tour, take the bus and stay the night.</p>
   <h2 class="article-h2" id="where-to-get-the-best-views-of-meteora">Where to Get the Best Views of Meteora</h2>
   <p>As I said before, the best part of <a href="https://www.google.com/maps/place/Meteora/@39.7217044,21.6305896,17z/data=!3m1!4b1!4m6!3m5!1s0x13590faee8327f39:0x7127add4d8bc32ff!8m2!3d39.7217044!4d21.6305896!16zL20vMDEyZDl6" target="_blank" rel="noopener noreferrer">Meteora</a> is not visiting the monasteries; it's catching the breathtaking views (usually from the top of a massive rock with no railing). Here are the best places to do exactly that:</p>
   <h3 class="article-h3" id="sunset">Sunset Viewpoints</h3>

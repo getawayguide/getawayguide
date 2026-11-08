@@ -646,6 +646,32 @@ def c_maps_search(ctx):
                   tool={"kind": "review", "label": "Resolve in the editor"})
 
 
+def c_affiliate(ctx):
+    """roadmap R2 (2026-11-07): booking links carry no ad-click junk; once Kevin's IDs are in .env and
+    AFFILIATE_LINKS=on, every one of a joined program is tagged. Tagging stays OFF until then."""
+    import affiliate_links as al
+    on, ids = al.enabled(), al.load_ids()
+    items = []
+    for rel in ctx["set"]:
+        for m in ANCHOR.finditer(MASK.sub(" ", ctx["html"][rel])):
+            hm = HREF.search(m.group(1))
+            if not hm or not hm.group(1).startswith("http"):
+                continue
+            u = H.unescape(hm.group(1))
+            junk = al.junk_in(u)
+            if junk:
+                items.append({"page": rel, "detail": "Tracking junk (%s)" % ", ".join(junk[:3]), "value": _text(m.group(2))[:60]})
+            elif on and al.is_booking(u) and al.tag_url(u, ids, rel)[1]:
+                items.append({"page": rel, "detail": "Not tagged with your affiliate ID", "value": _text(m.group(2))[:60]})
+    state = ("tagging ON for %s" % ", ".join(k for k in al.ENV_KEYS if k in ids)) if on else \
+        "tagging OFF until your IDs are in .env and AFFILIATE_LINKS=on"
+    if not items:
+        return result("pass", "Every booking link is a clean address (%s)." % state)
+    return result("warn", "%s to clean or tag (%s)." % (count_label(len(items), "booking link"), state), items,
+                  fix={"kind": "affiliate", "label": "Clean them" + (" and tag them" if on else ""),
+                       "pages": sorted({i["page"] for i in items})})
+
+
 IMGTAG = re.compile(r"<img\b[^>]*>", re.I)
 
 
@@ -746,6 +772,10 @@ def c_city_maps(ctx):
         fig = next((m.group(0) for m in re.finditer(r'<figure class="citymap-fig".*?</figure>', h, re.S)
                     if "city-maps/%s.png" % slug in m.group(0)), None)
         if not fig:
+            # a config the page outgrew (gyumri.json still names the field notes, which now carry gyumri-guide): not a
+            # missing map but a stale config, and nothing to run (stress test 2026-11-06)
+            if re.search(r'city-maps/%s-[a-z0-9-]+\.png' % re.escape(slug), h):
+                continue
             items.append({"page": art, "detail": "The %s map is not embedded" % cf.stem, "value": "python tools/city_map.py %s" % cf.stem})
             continue
         pos = {p["name"]: (p["lat"], p["lon"]) for p in c.get("pois", [])}
@@ -753,6 +783,8 @@ def c_city_maps(ctx):
             name = H.unescape(name)
             if name not in pos:
                 continue
+            if not re.search(r"google\.[a-z.]+/maps|maps\.app\.goo\.gl", u):
+                continue                            # a Wikipedia (or any other) link is a choice, not a search (2026-11-06)
             if "/maps/place/" not in u:
                 items.append({"page": art, "detail": "%s map: %s links to a search" % (cf.stem, name), "value": u[:80]})
                 continue
@@ -1133,6 +1165,7 @@ CLAUDE = [
     ("unlaunched", "Links", "No links to drafts that aren't launching", "A link to a draft left behind is a 404 the day these go live.", c_unlaunched),
     ("internal", "Links", "Internal links, anchors and the table of contents resolve", "Missing files, #anchors with no target, duplicate ids.", c_internal),
     ("maps-search", "Links", "Map links open a place, not a search", "A search link drops the reader on a Google results page.", c_maps_search),
+    ("affiliate", "Links", "Booking links are clean (and tagged once your IDs exist)", "tools/affiliate_links.py: no gclid or ad-click junk; tagging, rel=sponsored and the disclosure line stay OFF until AFFILIATE_LINKS=on in .env.", c_affiliate),
     ("photos", "Photos", "Photos are compressed", "No full-resolution original in the body (some are 13 MB).", c_photos),
     ("tiers", "Photos", "Every photo has its phone, 2x and 3x files", "audit.py's tier and hero checks, against the files on disk.", c_tiers),
     ("alt", "Photos", "Every photo has real alt text", "Not missing, not a file name.", c_alt),
@@ -1521,6 +1554,13 @@ def api_fix():
         r = subprocess.run([sys.executable, str(TOOLS / "explore_more.py")] + pages, cwd=str(ROOT), capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=600, creationflags=_NOWIN)
         return jsonify({"ok": True, "log": (r.stdout or r.stderr).strip()[-800:], "pages": pages})
+    if kind == "affiliate":                          # tools/affiliate_links.py; tags only when switched on in .env
+        import affiliate_links as al
+        pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and not p.startswith("archive/")]
+        args = [sys.executable, str(TOOLS / "affiliate_links.py"), "--apply"] + ([] if al.enabled() else ["--clean-only"])
+        r = subprocess.run(args + ["--pages"] + pages, cwd=str(ROOT), capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=300, creationflags=_NOWIN) if pages else None
+        return jsonify({"ok": bool(r) and r.returncode == 0, "log": (r.stdout or r.stderr).strip()[-800:] if r else "no pages", "pages": pages})
     if kind == "guide-cards":
         pages = [p for p in (safe_rel(x) for x in d.get("pages") or []) if p and p.endswith("/field-notes.html")]
         logs = []

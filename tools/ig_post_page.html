@@ -1,0 +1,1100 @@
+<title>North Macedonia IG Post</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Jost:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<style>
+/* Layout: a working board. Sticky header with the counters and the Ready button, a view bar, one view at a
+   time (All / Shortlist / Final 10 / Archived / Caption), and a carousel strip of the 10 slots pinned to the
+   bottom while browsing so photos can be dragged straight into their number. Colors are the blog's own sage
+   map palette; Fraunces is its display face, Jost its UI face. */
+:root {
+  --bg: #F7F7F3; --surface: #FFFFFF; --fg: #1C2821; --muted: #6E8478; --line: #D8E5DC;
+  --accent: #2D6B50; --accent-ink: #FFFFFF; --accent-soft: #DCEBE1; --warn: #B4542A; --danger: #9E3B3B;
+  --slot: #ECF1ED; --overlay: rgba(28,40,33,.78); --shadow: 0 10px 30px rgba(28,40,33,.18);
+  --display: 'Fraunces', Georgia, serif; --ui: 'Jost', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121715; --surface: #1A211D; --fg: #E6ECE8; --muted: #93A79A; --line: #2C3831;
+  --accent: #8CC4A6; --accent-ink: #0F1A14; --accent-soft: #24382E; --warn: #E0905F; --danger: #E07A7A;
+  --slot: #1F2824; --overlay: rgba(10,14,12,.8); --shadow: 0 10px 30px rgba(0,0,0,.5); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121715; --surface: #1A211D; --fg: #E6ECE8; --muted: #93A79A; --line: #2C3831;
+  --accent: #8CC4A6; --accent-ink: #0F1A14; --accent-soft: #24382E; --warn: #E0905F; --danger: #E07A7A;
+  --slot: #1F2824; --overlay: rgba(10,14,12,.8); --shadow: 0 10px 30px rgba(0,0,0,.5); color-scheme: dark }
+
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(--ui); -webkit-tap-highlight-color: transparent }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+button, input, textarea, select { font: inherit; color: inherit }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: .4rem .75rem; line-height: 1.2 }
+button:hover { border-color: var(--accent) }
+button:focus-visible, [tabindex]:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500 }
+button.ghost { background: transparent }
+button.danger:hover { border-color: var(--danger); color: var(--danger) }
+button:disabled { opacity: .5; cursor: default }
+textarea { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .5rem .6rem; resize: vertical; min-height: 2.6rem }
+select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .4rem .6rem; max-width: 100%; min-width: 0; text-overflow: ellipsis }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--bg); border-bottom: 1px solid var(--line) }
+.top-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; padding-block: .7rem; max-width: 1280px; margin: 0 auto }
+h1 { font: 600 1.55rem/1.1 var(--display); margin: 0; letter-spacing: -.01em; text-wrap: balance }
+.counts { display: flex; gap: .35rem; flex-wrap: wrap; font-size: .8rem; color: var(--muted) }
+.counts span { border: 1px solid var(--line); border-radius: 999px; padding: .1rem .55rem; font-variant-numeric: tabular-nums }
+.counts b { color: var(--fg); font-weight: 600 }
+.spacer { flex: 1 }
+.status { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: .2rem .6rem; border: 1px solid var(--line); color: var(--muted) }
+.status.ready { background: var(--accent-soft); color: var(--accent); border-color: transparent }
+.viewbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding-block: .5rem; max-width: 1280px; margin: 0 auto }
+.tabs { display: flex; gap: .25rem; flex-wrap: wrap }
+.tabs button { border-radius: 999px; padding: .35rem .8rem }
+.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
+.tabs button small { opacity: .7; margin-left: .3rem; font-variant-numeric: tabular-nums }
+.hint { font-size: .8rem; color: var(--muted) }
+kbd { font: 500 .72rem var(--ui); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; background: var(--surface) }
+
+main { max-width: 1280px; margin: 0 auto; padding-block: 1rem 1.5rem; min-height: 50vh }
+.empty { border: 1px dashed var(--line); border-radius: 12px; padding: 2rem 1.25rem; text-align: center; color: var(--muted); max-width: 44rem; margin: 2rem auto }
+.empty h2 { font: 500 1.3rem var(--display); color: var(--fg); margin: 0 0 .5rem }
+.note { font-size: .85rem; color: var(--muted) }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .6rem }
+@media (max-width: 420px) { .grid { grid-template-columns: repeat(2, 1fr) } }
+.card { position: relative; border-radius: 10px; overflow: hidden; background: var(--slot); aspect-ratio: 4/5; cursor: pointer; border: 2px solid transparent; user-select: none; -webkit-user-select: none; touch-action: pan-y }
+.card img, .card canvas { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none }
+.card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft) }
+.card .over { position: absolute; inset: auto 0 0 0; padding: 1.6rem .55rem .5rem; color: #fff; font-size: .75rem; line-height: 1.3;
+  background: linear-gradient(transparent, rgba(0,0,0,.75)); opacity: 0; transition: opacity .15s; pointer-events: none }
+.card .over small { display: block; opacity: .8; margin-top: .15rem; text-transform: uppercase; letter-spacing: .05em; font-size: .62rem }
+.card:hover .over, .card.selected .over, .card:focus-visible .over { opacity: 1 }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+.card .acts { position: absolute; top: .35rem; right: .35rem; display: flex; gap: .25rem; opacity: 0; transition: opacity .15s }
+.card:hover .acts, .card.selected .acts, .card:focus-within .acts { opacity: 1 }
+@media (hover: none) { .card .acts { opacity: 1 } .card .over { opacity: 1; font-size: .7rem } }
+.ico { width: 30px; height: 30px; padding: 0; border-radius: 8px; display: grid; place-items: center; background: rgba(255,255,255,.92); color: #1C2821; border: none; font-size: 15px; line-height: 1 }
+.ico:hover { background: #fff }
+.ico.on { background: var(--accent); color: var(--accent-ink) }
+.badge { position: absolute; top: .35rem; left: .35rem; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: .8rem; min-width: 1.6rem; height: 1.6rem; border-radius: 999px; display: grid; place-items: center; padding: 0 .3rem; font-variant-numeric: tabular-nums }
+.badge.sl { background: rgba(255,255,255,.92); color: #1C2821 }
+.card.dragging { opacity: .35 }
+
+/* the 1-10 template */
+.rows { display: flex; flex-direction: column; gap: 1.1rem }
+.rowhead { display: flex; align-items: baseline; gap: .6rem; font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .45rem }
+.rowhead b { color: var(--fg); font: 500 1.05rem var(--display); letter-spacing: 0; text-transform: none }
+.rowhead .arrows { margin-left: auto; display: flex; gap: .25rem }
+.rowhead .arrows button { padding: .1rem .55rem; font-size: 1rem; line-height: 1.2 }
+.slots { display: flex; gap: .8rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding: 3px 3px .5rem; scrollbar-width: thin; scrollbar-color: var(--line) transparent }
+.slot { display: flex; flex-direction: column; gap: .45rem; min-width: 0; flex: 0 0 clamp(150px, 17vw, 196px); scroll-snap-align: start }
+.backlog .slot .frame.filled .n { background: var(--muted); color: var(--bg) }
+.slot .frame { position: relative; border-radius: 10px; background: var(--slot); border: 2px dashed var(--line); overflow: hidden; aspect-ratio: 4/5; cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none }
+.slot .frame.sq { aspect-ratio: 1/1 }
+.slot .frame.filled { border-style: solid; border-color: transparent }
+.slot .frame.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft) }
+.slot .frame.over, .card.over-target, .mini.over { border-color: var(--accent) !important; border-style: solid !important; box-shadow: 0 0 0 3px var(--accent-soft) }
+.slot canvas { width: 100%; height: 100%; display: block; pointer-events: none }
+.slot .n { position: absolute; top: .4rem; left: .4rem; font: 600 .9rem var(--ui); background: var(--accent); color: var(--accent-ink); border-radius: 999px; width: 1.7rem; height: 1.7rem; display: grid; place-items: center; font-variant-numeric: tabular-nums }
+.slot .frame:not(.filled) .n { background: var(--surface); color: var(--muted); border: 1px solid var(--line) }
+.slot .drop { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted); font-size: .8rem; padding: 1rem; pointer-events: none }
+.slot .acts { position: absolute; top: .4rem; right: .4rem; display: flex; gap: .25rem; opacity: 0; transition: opacity .15s }
+.slot .frame:hover .acts, .slot .frame.selected .acts { opacity: 1 }
+@media (hover: none) { .slot .acts { opacity: 1 } }
+.slot .cap { font-size: .72rem; color: var(--muted); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.slot textarea { min-height: 3.4rem; font-size: .85rem }
+.mixed { font-size: .8rem; color: var(--warn); margin: 0 0 .75rem }
+
+/* bottom strip of mini slots */
+.strip { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-top: 1px solid var(--line);
+  padding-top: .5rem; padding-bottom: calc(.5rem + env(safe-area-inset-bottom, 0px)) }
+.strip-in { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: .35rem }
+.strip-row { display: flex; align-items: center; gap: .5rem; min-width: 0 }
+.strip-row .lbl { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); flex: 0 0 4.2rem; line-height: 1.1 }
+.minis { display: flex; gap: .3rem; flex: 1; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 2px; scrollbar-width: none }
+.minis::-webkit-scrollbar { display: none }
+.mini { position: relative; flex: 0 0 auto; height: 58px; aspect-ratio: 4/5; border-radius: 6px; border: 2px dashed var(--line); background: var(--slot); overflow: hidden; display: grid; place-items: center; color: var(--muted); font-size: .72rem; cursor: pointer; font-variant-numeric: tabular-nums }
+.mini.sq { aspect-ratio: 1/1 }
+.mini.filled { border-style: solid; border-color: transparent }
+.mini canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none }
+.mini i { position: absolute; left: .2rem; top: .15rem; font-style: normal; font-size: .65rem; font-weight: 600; color: #fff; text-shadow: 0 0 3px #000 }
+main.with-strip { padding-bottom: calc(165px + env(safe-area-inset-bottom, 0px)) }
+
+/* drag ghost */
+.dragghost { position: fixed; z-index: 50; width: 90px; aspect-ratio: 4/5; border-radius: 8px; overflow: hidden; pointer-events: none; box-shadow: var(--shadow); transform: translate(-50%, -50%) rotate(-3deg); opacity: .95 }
+.dragghost img, .dragghost canvas { width: 100%; height: 100%; object-fit: cover }
+
+/* editor */
+.modal { position: fixed; inset: 0; z-index: 40; background: var(--overlay); display: flex; align-items: center; justify-content: center; padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) }
+.modal[hidden] { display: none }
+.panel { background: var(--bg); border-radius: 14px; width: min(1100px, 100%); max-height: 100%; overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1rem; padding: 1rem; box-shadow: var(--shadow) }
+@media (max-width: 760px) { .panel { grid-template-columns: 1fr } }
+.stage { display: grid; place-items: center; min-width: 0 }
+.cropbox { position: relative; width: 100%; max-width: min(100%, calc((78vh - 2rem) * var(--ar, .8))); aspect-ratio: var(--arcss, 4/5); background: #000; border-radius: 6px; overflow: hidden; touch-action: none; cursor: grab }
+.cropbox:active { cursor: grabbing }
+.cropbox canvas { width: 100%; height: 100%; display: block }
+.cropbox .gridlines { position: absolute; inset: 0; pointer-events: none; opacity: .85;
+  background-image: linear-gradient(to right, rgba(255,255,255,.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.55) 1px, transparent 1px),
+                    linear-gradient(to right, rgba(255,255,255,.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.18) 1px, transparent 1px);
+  background-size: 33.333% 100%, 100% 33.333%, 10% 100%, 100% 10%; background-position: -1px 0, 0 -1px, -1px 0, 0 -1px }
+.cropbox .gridlines[hidden] { display: none }
+.ctl { display: flex; flex-direction: column; gap: .9rem; min-width: 0 }
+.ctl h2 { font: 500 1.15rem/1.2 var(--display); margin: 0 }
+.ctl .meta { font-size: .8rem; color: var(--muted); line-height: 1.35 }
+.row { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden }
+.seg button { border: 0; border-radius: 0; padding: .35rem .7rem }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg) }
+label.sl { display: block; font-size: .8rem; color: var(--muted) }
+label.sl b { float: right; color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums }
+input[type=range] { width: 100%; accent-color: var(--accent); margin: .3rem 0 0 }
+.nav { display: flex; gap: .4rem; margin-top: auto }
+.nav button { flex: 1 }
+
+/* captions */
+.capwrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.5rem; align-items: start }
+@media (max-width: 800px) { .capwrap { grid-template-columns: 1fr } }
+.capwrap h2 { font: 500 1.2rem/1.2 var(--display); margin: 0 0 .5rem }
+.ideas { display: flex; flex-direction: column; gap: .5rem; margin-top: .75rem }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .6rem .75rem; display: grid; grid-template-columns: 1fr auto; gap: .4rem .75rem }
+.idea.final { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft) }
+.idea p { margin: 0; white-space: pre-wrap; grid-column: 1 / -1 }
+.idea .src { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.stars { display: inline-flex; gap: .05rem }
+.stars button { border: 0; background: none; padding: 0 .1rem; font-size: 1.1rem; color: var(--line); line-height: 1 }
+.stars button.on { color: var(--accent) }
+.idea .tools { display: flex; gap: .3rem; align-items: center; flex-wrap: wrap }
+.idea .tools button { padding: .25rem .55rem; font-size: .8rem }
+.sugg { background: var(--accent-soft); border-radius: 10px; padding: .7rem .8rem; display: grid; gap: .5rem; margin-top: .5rem }
+.sugg p { margin: 0; white-space: pre-wrap }
+.thinking { color: var(--muted); font-style: italic }
+.checks { list-style: none; padding: 0; margin: .5rem 0 0; display: grid; gap: .3rem; font-size: .9rem }
+.checks li::before { content: "○ "; color: var(--muted) } .checks li.ok::before { content: "● "; color: var(--accent) }
+pre.cmd { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .6rem .75rem; font-size: .78rem; overflow-x: auto; white-space: pre; margin: .5rem 0 0 }
+.toast { position: fixed; left: 50%; bottom: calc(180px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: .5rem .9rem; border-radius: 999px; font-size: .85rem; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw }
+.toast.show { opacity: 1 }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+
+/* mode switch + itinerary template mode */
+.modeseg button { padding: .35rem .8rem }
+.modeseg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+.tpl h2 { font: 500 1.2rem/1.2 var(--display); margin: 1.4rem 0 .5rem }
+.tslides { display: flex; gap: 1rem; overflow-x: auto; overscroll-behavior-x: contain; padding: 3px 3px .75rem; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--line) transparent }
+.tslide { flex: 0 0 300px; margin: 0; display: flex; flex-direction: column; gap: .5rem; scroll-snap-align: start; min-width: 0 }
+.tframe { position: relative; width: 300px; height: 375px; overflow: hidden; border-radius: 6px; box-shadow: 0 1px 0 var(--line), 0 6px 18px rgba(28,40,33,.12); background: #F7F7F3 }
+.tscale { position: absolute; left: 0; top: 0; width: 1080px; height: 1350px; transform: scale(calc(300 / 1080)); transform-origin: 0 0 }
+.tframe .cs * { pointer-events: none }
+.tframe .cs .ph { pointer-events: auto; cursor: pointer }
+.tframe .ph.tsel { outline: 10px solid #8CC4A6; outline-offset: -10px }
+.tframe .ph.over { outline: 10px solid #E0905F; outline-offset: -10px }
+.tslide figcaption { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; gap: .4rem; align-items: center }
+.tslide figcaption b { color: var(--fg); font-weight: 600 }
+.tslide figcaption .sp { flex: 1 }
+.tslide figcaption button { padding: .1rem .45rem; font-size: .8rem; text-transform: none; letter-spacing: 0 }
+.fld { display: flex; flex-direction: column; gap: .2rem; font-size: .75rem; color: var(--muted) }
+.fld input, .fld textarea { font-size: .88rem; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: .35rem .5rem; width: 100% }
+.fld textarea { min-height: 3.2rem }
+.chk { display: flex; gap: .4rem; align-items: center; font-size: .82rem }
+.tbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 7.2rem); z-index: 5; display: flex; flex-wrap: wrap; gap: .4rem .6rem; align-items: center; background: var(--accent-soft); border-radius: 10px; padding: .45rem .7rem; margin: 0 0 .75rem; font-size: .85rem }
+.tbar[hidden] { display: none }
+.tbar .sp { flex: 1 }
+.tbar button { padding: .25rem .6rem; font-size: .82rem }
+.liststops { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .75rem }
+.liststop { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem; display: flex; flex-direction: column; gap: .45rem }
+.tcap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; align-items: start }
+@media (max-width: 800px) { .tcap { grid-template-columns: minmax(0, 1fr) } }
+.tcap .fld textarea { min-height: 4.5rem }
+pre.capprev { white-space: pre-wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .75rem .85rem; font: .88rem/1.45 var(--ui); margin: 0; max-height: 34rem; overflow: auto }
+.tpick .grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) }
+
+<style id="cs-css">
+/* ITINERARY CAROUSEL SLIDES. One source for the page preview and for tools/ig_carousel.py, which reads this
+   style block and the cs-js script below out of this file and renders the same markup at 1080x1350.
+   getawayguide's own look: Newsreader for the titles, Hanken Grotesk for the labels, the site greens. */
+.cs { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: #F7F7F3; color: #1C2821;
+  font-family: 'Hanken Grotesk', -apple-system, 'Segoe UI', sans-serif; font-weight: 400; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision }
+.cs * { box-sizing: border-box }
+.cs .ph { position: absolute; overflow: hidden; background: #DCE7E0 }
+.cs .ph > img, .cs .ph > canvas { display: block; width: 100%; height: 100% }
+.cs .ph.empty::after { content: 'Drop a photo here'; position: absolute; inset: 0; display: grid; place-items: center; font: 500 30px 'Hanken Grotesk', sans-serif; color: #7C9488; letter-spacing: .04em }
+.cs .k { font-weight: 600; font-size: 25px; letter-spacing: .24em; text-transform: uppercase; line-height: 1.2 }
+.cs .t { font-family: 'Newsreader', Georgia, serif; font-weight: 400; letter-spacing: -.02em; line-height: .96 }
+.cs .t em { font-style: italic; font-weight: 300 }
+.cs .mark { position: absolute; font-family: 'Newsreader', Georgia, serif; font-style: italic; font-weight: 300; font-size: 34px; letter-spacing: -.005em; line-height: 1 }
+/* 1. cover: the best photo, full bleed, title at the foot */
+.cs-cover .ph { inset: 0 }
+.cs-cover .scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,22,18,.42) 0%, rgba(14,22,18,0) 17%, rgba(14,22,18,0) 30%, rgba(14,22,18,.55) 46%, rgba(14,22,18,.82) 62%, rgba(14,22,18,.94) 100%) }
+.cs-cover .k, .cs-cover .t, .cs-cover .mark { text-shadow: 0 1px 18px rgba(10,16,13,.35) }
+.cs-cover .mark { top: 60px; left: 72px; color: #fff }
+.cs-cover .txt { position: absolute; left: 72px; right: 72px; bottom: 84px; color: #fff }
+.cs-cover .k { color: #CFE6D8 }
+.cs-cover .t { font-size: 168px; margin-top: 24px }
+.cs-cover .rule { width: 96px; height: 4px; background: #8FC2A5; margin: 46px 0 28px }
+.cs-cover .swipe { font-weight: 500; font-size: 22px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.86) }
+/* 2. the route map with the day list under it */
+.cs-map .hd { position: absolute; left: 72px; right: 72px; top: 70px }
+.cs-map .hd .k { color: #2D6B50 }
+.cs-map .hd .t { font-size: 84px; font-weight: 300; margin-top: 14px; white-space: nowrap }
+.cs-map .mark { top: 70px; right: 72px; color: #2D6B50; font-size: 30px }
+.cs-map .mapbox { position: absolute; left: 36px; right: 36px; top: 240px; bottom: 330px; display: flex; align-items: center; justify-content: center }
+.cs-map .mapbox svg { width: 100%; height: 100%; display: block }
+.cs-map .days { position: absolute; left: 72px; right: 72px; bottom: 60px; margin: 0; padding: 30px 0 0; list-style: none; border-top: 2px solid rgba(28,40,33,.14);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px 48px }
+.cs-map .days li { display: flex; flex-direction: column; gap: 5px; min-width: 0 }
+.cs-map .days b { font-weight: 600; font-size: 19px; letter-spacing: .2em; text-transform: uppercase; color: #2D6B50 }
+.cs-map .days span { font-family: 'Newsreader', Georgia, serif; font-size: 33px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+/* 3+. one stop: a 2x2 grid of square photos over a green label bar */
+.cs-stop .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 286px; background: #2D6B50; color: #fff; padding: 46px 72px 0 }
+.cs-stop .bar .k { color: #CFE6D8 }
+.cs-stop .bar .t { font-size: 88px; margin-top: 12px; white-space: nowrap }
+.cs-stop .bar .sub { font-size: 27px; line-height: 1.38; color: rgba(255,255,255,.86); margin-top: 16px; max-width: 900px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.cs-stop .bar .mark { top: 46px; right: 72px; font-size: 28px; color: rgba(255,255,255,.62) }
+/* last: the call to action */
+.cs-cta .ph { left: 36px; top: 36px; width: 1008px; height: 672px }
+.cs-cta .txt { position: absolute; left: 72px; right: 72px; top: 796px }
+.cs-cta .k { color: #2D6B50 }
+.cs-cta .t { font-size: 96px; font-weight: 300; margin-top: 16px }
+.cs-cta p { font-size: 32px; line-height: 1.45; margin: 24px 0 0; color: rgba(28,40,33,.86); max-width: 900px }
+.cs-cta .pill { display: inline-block; margin-top: 34px; background: #2D6B50; color: #fff; font-weight: 600; font-size: 25px; letter-spacing: .2em; text-transform: uppercase; padding: 20px 34px 19px; border-radius: 999px }
+.cs-cta .mark { right: 72px; bottom: 76px; color: #2D6B50 }
+</style>
+<script id="cs-js">
+window.CS = (() => {
+  'use strict';
+  const W = 1080, H = 1350;
+  // every photo box on a slide: its key and its pixel size (the renderer cuts each photo to exactly this size)
+  const BOX = { cover: [1080, 1350], cell: [497, 497], cta: [1008, 672] };
+  const CELLS = [[36, 36], [547, 36], [36, 547], [547, 547]];
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // "*word*" -> italic, "|" -> line break (titles only)
+  const rich = (s) => esc(s).replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\s*\|\s*/g, '<br>');
+  const dayLabel = (d) => esc(String(d || '').trim());
+  const mark = (txt) => `<div class="mark">${esc(txt || 'getawayguide')}</div>`;
+  // which stops get a photo slide: on unless slide === false
+  const slideStops = (plan) => (plan.stops || []).map((s, i) => [s, i]).filter(([s]) => s.slide !== false);
+  // photo(key, w, h, ref) returns the inner HTML of one photo box (an <img> or a <canvas>); ref = {id, crop} or null
+  function box(key, x, y, w, h, ref, photo) {
+    const has = ref && ref.id;
+    return `<div class="ph${has ? '' : ' empty'}" data-key="${key}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${has ? photo(key, w, h, ref) : ''}</div>`;
+  }
+  function cover(plan, photo) {
+    return `<div class="cs cs-cover" data-slide="cover">${box('cover', 0, 0, 1080, 1350, plan.cover, photo)}<div class="scrim"></div>${mark(plan.mark)}
+      <div class="txt"><div class="k">${esc(plan.kicker)}</div><div class="t" data-fit="168" data-min="96" data-lines="2">${rich(plan.title)}</div>
+      <div class="rule"></div><div class="swipe">${esc(plan.swipe || 'Swipe for the route')} &rarr;</div></div></div>`;
+  }
+  function map(plan, svg) {
+    const m = plan.map || {};
+    const days = (plan.stops || []).map(s => `<li><b>${dayLabel(s.days)}</b><span>${esc(s.list || s.name)}</span></li>`).join('');
+    return `<div class="cs cs-map" data-slide="map"><div class="hd"><div class="k">${esc(m.kicker || 'The route')}</div><div class="t" data-fit="84" data-min="56" data-lines="1">${rich(m.title || 'The Route')}</div></div>${mark(plan.mark)}
+      <div class="mapbox">${svg || '<span class="k" style="color:#7C9488">No route map yet</span>'}</div><ul class="days">${days}</ul></div>`;
+  }
+  function stop(plan, s, i, photo) {
+    const ph = s.photos || [];
+    const cells = CELLS.map(([x, y], j) => box('s' + i + '-' + j, x, y, 497, 497, ph[j], photo)).join('');
+    return `<div class="cs cs-stop" data-slide="s${i}">${cells}<div class="bar"><div class="k">${dayLabel(s.days)}</div>
+      <div class="t" data-fit="88" data-min="54" data-lines="1">${rich(s.name)}</div>${s.sub ? `<div class="sub">${esc(s.sub)}</div>` : ''}${mark(plan.mark)}</div></div>`;
+  }
+  function cta(plan, photo) {
+    const c = plan.cta || {};
+    return `<div class="cs cs-cta" data-slide="cta">${box('cta', 36, 36, 1008, 672, c.photo, photo)}<div class="txt"><div class="k">${esc(c.kicker || 'Save this for your trip')}</div>
+      <div class="t" data-fit="96" data-min="60" data-lines="2">${rich(c.headline || 'Want the full guide?')}</div><p>${esc(c.body || '')}</p>
+      <div class="pill">Comment &ldquo;${esc(c.keyword || 'GUIDE')}&rdquo;</div></div>${mark(c.site || 'getawayguide.io')}</div>`;
+  }
+  // [{key, label, html}] in carousel order
+  function slides(plan, photo, svg) {
+    const out = [{ key: 'cover', label: 'Cover', html: cover(plan, photo) }, { key: 'map', label: 'Route map', html: map(plan, svg) }];
+    for (const [s, i] of slideStops(plan)) out.push({ key: 's' + i, label: (s.days ? s.days + ': ' : '') + (s.name || 'Stop'), html: stop(plan, s, i, photo) });
+    if (plan.cta && plan.cta.on !== false) out.push({ key: 'cta', label: 'Call to action', html: cta(plan, photo) });
+    return out;
+  }
+  // shrink [data-fit] titles until they fit their width and line count (run after the fonts load)
+  function fit(root) {
+    for (const el of root.querySelectorAll('[data-fit]')) {
+      let size = +el.dataset.fit; const min = +el.dataset.min || 40; const lines = +el.dataset.lines || 1;
+      el.style.fontSize = size + 'px';
+      const lh = () => parseFloat(getComputedStyle(el).lineHeight) || size;
+      while (size > min && (el.scrollWidth > el.clientWidth + 1 || el.offsetHeight > lh() * lines + 2)) { size -= 2; el.style.fontSize = size + 'px'; }
+    }
+  }
+  // the caption, assembled the same way in the page and in caption.txt
+  function caption(plan) {
+    const c = plan.caption || {};
+    const parts = [c.hook, c.cta, c.days, c.keywords, c.hashtags].map(x => String(x || '').trim()).filter(Boolean);
+    return parts.join('\n\n');
+  }
+  // the day-by-day list for the caption, from the stops
+  function dayList(plan) {
+    return (plan.stops || []).map(s => `${String(s.days || '').trim()}: ${String(s.caption || s.list || s.name || '').trim()}`).join('\n');
+  }
+  return { W, H, BOX, slides, fit, caption, dayList, rich, esc };
+})();
+</script>
+
+<header class="top wrap">
+  <div class="top-row">
+    <h1 id="title">North Macedonia IG Post</h1>
+    <div class="counts" id="counts" aria-live="polite"></div>
+    <span class="spacer"></span>
+    <span class="status" id="status">Draft</span>
+    <button class="primary" id="readyBtn" title="Mark the post final so Claude can render the slides">Ready to render</button>
+  </div>
+  <div class="viewbar">
+    <div class="seg modeseg" id="modeSeg" role="group" aria-label="Mode"><button data-mode="free" aria-pressed="true" title="Any 10 photos, cropped one by one">Free 10</button><button data-mode="template" aria-pressed="false" title="The branded itinerary carousel: cover, route map, a 4-photo slide per stop, call to action">Itinerary template</button></div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-view="all" aria-selected="true">All <small id="cAll"></small></button>
+      <button role="tab" data-view="shortlist" aria-selected="false">Shortlist <small id="cShort"></small></button>
+      <button role="tab" data-view="final" aria-selected="false">Slots <small id="cFinal"></small></button>
+      <button role="tab" data-view="archived" aria-selected="false">Archived <small id="cArch"></small></button>
+      <button role="tab" data-view="caption" aria-selected="false">Caption</button>
+    </div>
+    <select id="articleSel" aria-label="Filter by article"><option value="">Every article</option></select>
+    <span class="hint" id="hint"><kbd>S</kbd> shortlist · <kbd>A</kbd> archive · <kbd>1</kbd>–<kbd>0</kbd> slide 1–10 · <kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>0</kbd> backlog 11–20 · <kbd>Alt</kbd>+<kbd>1</kbd>–<kbd>0</kbd> backlog 21–30 · <kbd>Enter</kbd> crop · <kbd>[</kbd> <kbd>]</kbd> move</span>
+  </div>
+</header>
+
+<main class="wrap with-strip" id="main">
+  <div class="empty" id="loading"><h2>Loading the photos</h2><p>Every body photo from this country's guides, itinerary and top 10 appears here, with its caption and section on hover. Free 10: star what you are considering, archive what is out, drag the keepers into the 30 slots and trim the backlog down to slides 1 to 10. Itinerary template: a branded carousel built from the itinerary, one slide per stop.</p><p class="note" id="loadNote"></p></div>
+  <section id="view"></section>
+</main>
+
+<div class="strip wrap" id="strip" aria-label="Final 10 carousel" hidden>
+  <div class="strip-in"><div class="strip-row"><span class="lbl">Final 10<br>1–10</span><div class="minis" id="minis"></div></div><div class="strip-row"><span class="lbl">Backlog<br>11–30</span><div class="minis bl" id="minisBl"></div></div></div>
+</div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
+  <div class="panel">
+    <div class="stage"><div class="cropbox" id="cropbox"><canvas id="edCanvas" width="864" height="1080"></canvas><div class="gridlines" id="gridlines"></div></div></div>
+    <div class="ctl">
+      <h2 id="edTitle">Crop</h2>
+      <div class="meta" id="edMeta"></div>
+      <div class="row">
+        <div class="seg" id="aspectSeg"><button data-aspect="4:5" aria-pressed="true">4:5</button><button data-aspect="1:1" aria-pressed="false">1:1</button></div>
+        <button class="ghost" id="aspectAll" title="Instagram uses one ratio for the whole carousel">Use for all slides</button>
+      </div>
+      <div><label class="sl" for="zoom">Zoom <b id="zoomVal">1.00×</b></label><input type="range" id="zoom" min="1" max="4" step="0.01" value="1"></div>
+      <div><label class="sl" for="tilt">Tilt <b id="tiltVal">0.0°</b></label><input type="range" id="tilt" min="-10" max="10" step="0.1" value="0"><span class="hint">Double-click the slider to zero it. Drag the photo to move it, scroll or pinch to zoom.</span></div>
+      <div class="row"><label><input type="checkbox" id="gridChk" checked> Grid</label><span class="spacer"></span><button id="resetCrop">Reset</button></div>
+      <div class="nav"><button id="prevBtn" title="Previous slot">‹ Prev</button><button id="nextBtn" title="Next slot">Next ›</button><button class="primary" id="doneBtn">Done</button></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const ASPECT = { '4:5': 1.25, '1:1': 1, '3:2': 2 / 3 };
+const S = { items: [], byId: new Map(), photos: new Map(), post: {}, captions: new Map(), view: 'all', article: '',
+  sel: null, db: null, sample: null, loaded: false, sugg: null, thinking: false, country: '', slug: '',
+  mode: 'free', plan: null, mapSvg: '', tsel: null, hooks: null };
+try { if (localStorage.getItem('igpost.mode') === 'template') S.mode = 'template'; } catch (e) {}
+const imgCache = new Map();
+const toastEl = $('#toast'); let toastT;
+const toast = (m) => { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 1800); };
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const blob = (id) => '/_blob/' + id;
+
+// ---------------------------------------------------------------- state helpers
+const doc = (id) => S.photos.get(id) || { state: 'pool', slot: null, order: 0, note: '', crop: null };
+const stateOf = (id) => doc(id).state || 'pool';
+const postAspect = () => (S.post.aspect in ASPECT ? S.post.aspect : '4:5');
+const aspectOf = (id) => { const c = doc(id).crop; return c && c.aspect in ASPECT ? c.aspect : postAspect(); };
+const list = (st) => S.items.filter(it => stateOf(it.id) === st);
+const shortlist = () => list('shortlist').sort((a, b) => (doc(a.id).order || 0) - (doc(b.id).order || 0));
+const NSLOTS = 30, NFINAL = 10;
+const slotMap = () => { const m = new Array(NSLOTS + 1).fill(null); for (const it of list('final')) { const s = doc(it.id).slot | 0; if (s >= 1 && s <= NSLOTS && !m[s]) m[s] = it.id; } return m; };
+const finalIds = () => slotMap().slice(1, NFINAL + 1).filter(Boolean);
+const freeSlot = (from, to) => { const m = slotMap(); for (let k = from; k <= to; k++) if (!m[k]) return k; return 0; };
+const maxOrder = () => Math.max(0, ...list('shortlist').map(it => doc(it.id).order || 0));
+
+// one write at a time per document; the latest body wins
+const chains = new Map();
+function write(path, data) {
+  if (!S.db) { toast('Not connected: nothing is saved'); return Promise.resolve(); }
+  const prev = chains.get(path) || Promise.resolve();
+  const next = prev.catch(() => {}).then(async () => {
+    try { if (data === null) await S.db.doc(path).delete(); else await S.db.doc(path).set(data); }
+    catch (e) { toast('Save failed: ' + (e && e.code || 'unknown')); }
+  });
+  chains.set(path, next);
+  return next;
+}
+function savePhoto(id, patch) {
+  const d = Object.assign({}, doc(id), patch);
+  if (d.state === 'pool' && !d.crop && !d.note) { S.photos.delete(id); write('photos/' + id, null); }
+  else { S.photos.set(id, d); write('photos/' + id, { state: d.state, slot: d.slot ?? null, order: d.order || 0, note: d.note || '', crop: d.crop || null }); }
+}
+function savePost(patch) { S.post = Object.assign({}, S.post, patch, { updatedAt: new Date().toISOString() }); write('post/main', S.post); }
+const debounced = new Map();
+function debounce(key, fn, ms = 500) { clearTimeout(debounced.get(key)); debounced.set(key, setTimeout(fn, ms)); }
+
+// ---------------------------------------------------------------- actions
+function toggleShortlist(id) {
+  const st = stateOf(id);
+  if (st === 'final') { toast('Already in slot ' + doc(id).slot); return; }
+  if (st === 'shortlist') { savePhoto(id, { state: 'pool', order: 0 }); toast('Removed from the shortlist'); }
+  else { savePhoto(id, { state: 'shortlist', order: maxOrder() + 1, slot: null }); toast('Shortlisted'); }
+  render();
+}
+function archive(id) {
+  const d = doc(id);
+  if (d.state === 'archived') { savePhoto(id, { state: 'pool' }); toast('Restored'); }
+  else { savePhoto(id, { state: 'archived', slot: null }); toast('Archived' + (d.state === 'final' ? ' (slot ' + d.slot + ' freed)' : '')); }
+  render();
+}
+function demote(id) { savePhoto(id, { state: 'shortlist', slot: null, order: maxOrder() + 1 }); render(); }
+function place(id, n) {
+  n = n | 0; if (n < 1 || n > NSLOTS) return;
+  const m = slotMap(); const cur = doc(id);
+  const occupant = m[n];
+  if (occupant === id) return;
+  if (cur.state === 'final' && cur.slot) {
+    // moving between slots: swap
+    if (occupant) savePhoto(occupant, { slot: cur.slot });
+    savePhoto(id, { slot: n });
+  } else {
+    if (occupant) {
+      // push the occupant to the next free slot, or back to the shortlist
+      let free = 0; for (let k = n + 1; k <= NSLOTS; k++) if (!m[k]) { free = k; break; }
+      if (!free) for (let k = n - 1; k >= 1; k--) if (!m[k]) { free = k; break; }
+      if (free) savePhoto(occupant, { slot: free }); else savePhoto(occupant, { state: 'shortlist', slot: null, order: maxOrder() + 1 });
+    }
+    savePhoto(id, { state: 'final', slot: n, order: 0 });
+  }
+  toast(n <= NFINAL ? 'Slide ' + n : 'Backlog slot ' + n);
+  render();
+}
+function moveSlot(id, dir) { const d = doc(id); if (d.state !== 'final') return; const n = (d.slot | 0) + dir; if (n < 1 || n > NSLOTS) return; place(id, n); }
+function toBacklog(id) { const f = freeSlot(NFINAL + 1, NSLOTS); if (f) place(id, f); else { demote(id); toast('Backlog is full: back to the shortlist'); } }
+function promote(id) { const f = freeSlot(1, NFINAL); if (f) place(id, f); else toast('The Final 10 is full: drag it onto a slide to swap'); }
+function reorderShortlist(id, beforeId) {
+  const ids = shortlist().map(it => it.id).filter(x => x !== id);
+  const at = beforeId ? ids.indexOf(beforeId) : ids.length;
+  ids.splice(at < 0 ? ids.length : at, 0, id);
+  ids.forEach((x, i) => { if (stateOf(x) !== 'shortlist' || (doc(x).order || 0) !== i + 1) savePhoto(x, { state: 'shortlist', slot: null, order: i + 1 }); });
+  render();
+}
+
+// ---------------------------------------------------------------- crop math (mirrors tools/ig_post.py clamp_crop / render_one)
+function clampCrop(c, W, H, ratio) {
+  const rot = Math.max(-45, Math.min(45, +c.rot || 0));
+  const th = rot * Math.PI / 180, cs = Math.abs(Math.cos(th)), sn = Math.abs(Math.sin(th));
+  const fwMax = Math.min(W / (cs + ratio * sn), H / (sn + ratio * cs));
+  let fw = Math.min((+c.w || 1) * W, fwMax); fw = Math.max(fw, Math.min(fwMax, .05 * W));
+  const fh = fw * ratio, hx = fw / 2 * cs + fh / 2 * sn, hy = fw / 2 * sn + fh / 2 * cs;
+  const cx = Math.min(Math.max((c.cx ?? .5) * W, hx), W - hx), cy = Math.min(Math.max((c.cy ?? .5) * H, hy), H - hy);
+  return { aspect: c.aspect, cx: cx / W, cy: cy / H, w: fw / W, rot, fwMax: fwMax / W };
+}
+function defaultCrop(id, aspect) { const it = S.byId.get(id); return clampCrop({ aspect, cx: .5, cy: .5, w: 1, rot: 0 }, it.w, it.h, ASPECT[aspect]); }
+function cropFor(id) { const it = S.byId.get(id); const a = aspectOf(id); const c = doc(id).crop; return clampCrop(Object.assign({ cx: .5, cy: .5, w: 1, rot: 0 }, c || {}, { aspect: a }), it.w, it.h, ASPECT[a]); }
+function drawCrop(canvas, img, c) {
+  const ctx = canvas.getContext('2d'); const cw = canvas.width, ch = canvas.height;
+  ctx.save(); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
+  const iw = img.naturalWidth, ih = img.naturalHeight, s = cw / (c.w * iw);
+  ctx.translate(cw / 2, ch / 2); ctx.rotate(c.rot * Math.PI / 180); ctx.scale(s, s);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, -c.cx * iw, -c.cy * ih); ctx.restore();
+}
+function loadImg(id) {
+  if (imgCache.has(id)) return imgCache.get(id);
+  const it = S.byId.get(id); const p = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = blob(it.asset); });
+  imgCache.set(id, p); return p;
+}
+function paint(canvas, id, px) {
+  const c = cropFor(id); const ratio = ASPECT[c.aspect];
+  canvas.width = px; canvas.height = Math.round(px * ratio);
+  loadImg(id).then(img => { if (canvas.isConnected) drawCrop(canvas, img, c); }).catch(() => {});
+}
+
+// ---------------------------------------------------------------- rendering
+const viewEl = $('#view');
+function counts() {
+  const n = { pool: 0, shortlist: 0, final: 0, archived: 0, backlog: 0 }; for (const it of S.items) n[stateOf(it.id)]++;
+  const nf = finalIds().length; n.backlog = n.final - nf;
+  $('#counts').innerHTML = `<span><b>${S.items.length}</b> photos</span><span><b>${n.shortlist}</b> shortlisted</span><span><b>${nf}</b>/10 final</span><span><b>${n.backlog}</b> backlog</span><span><b>${n.archived}</b> archived</span>`;
+  $('#cAll').textContent = n.pool + n.shortlist + n.final; $('#cShort').textContent = n.shortlist; $('#cFinal').textContent = nf + '/10' + (n.backlog ? ' +' + n.backlog : ''); $('#cArch').textContent = n.archived;
+  if (S.mode === 'template') {
+    const p = S.plan || {}; const nSlides = S.plan ? CS.slides(p, () => '', '').length : 0; const boxes = tBoxes();
+    $('#counts').innerHTML = `<span><b>${nSlides}</b> slides</span><span><b>${boxes.filter(k => (tRef(k) || {}).id).length}</b>/${boxes.length} photos placed</span><span><b>${(p.stops || []).length}</b> stops</span>`;
+  }
+  const ready = S.mode === 'template' ? (S.plan || {}).status === 'ready' : S.post.status === 'ready';
+  $('#status').textContent = ready ? 'Ready to render' : 'Draft'; $('#status').classList.toggle('ready', ready);
+  $('#readyBtn').textContent = ready ? 'Back to draft' : 'Ready to render';
+  for (const b of $('#modeSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode));
+  $('#tabs').hidden = $('#hint').hidden = S.mode === 'template';
+}
+function cardHTML(it, opts = {}) {
+  const d = doc(it.id), st = d.state || 'pool';
+  const badge = st === 'final' ? `<span class="badge ${d.slot > NFINAL ? 'sl' : ''}">${d.slot}</span>` : st === 'shortlist' ? `<span class="badge sl">★</span>` : '';
+  const star = st === 'archived' ? '' : `<button class="ico ${st === 'shortlist' || st === 'final' ? 'on' : ''}" data-act="star" title="Shortlist (S)" aria-label="Shortlist">★</button>`;
+  const arch = `<button class="ico" data-act="arch" title="${st === 'archived' ? 'Restore' : 'Archive (A)'}" aria-label="${st === 'archived' ? 'Restore' : 'Archive'}">${st === 'archived' ? '↩' : '✕'}</button>`;
+  const text = it.caption || it.alt || '';
+  return `<div class="card ${S.sel === it.id ? 'selected' : ''}" data-id="${it.id}" data-drop="${opts.drop || ''}" tabindex="0" role="button" aria-label="${esc(text)}">
+    <img src="${blob(it.asset)}" alt="${esc(it.alt)}" loading="lazy" decoding="async">${badge}
+    <div class="acts">${star}${arch}</div>
+    <div class="over">${esc(text)}<small>${esc(it.article_title || it.article)}${it.section ? ' · ' + esc(it.section) : ''}</small></div></div>`;
+}
+function articleOptions() {
+  const sel = $('#articleSel'); const seen = new Map();
+  for (const it of S.items) if (!seen.has(it.article)) seen.set(it.article, it.article_title || it.article);
+  const cur = sel.value; sel.innerHTML = '<option value="">Every article</option>' + [...seen].map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
+  sel.value = cur;
+}
+function filtered(arr) { return S.article ? arr.filter(it => it.article === S.article) : arr; }
+
+function render() {
+  counts();
+  if (!S.loaded) return;
+  $('#loading').hidden = true;
+  if (S.mode === 'template') { $('#main').classList.remove('with-strip'); $('#strip').hidden = true; $('#articleSel').hidden = false; renderTemplate(); return; }
+  const v = S.view;
+  $('#main').classList.toggle('with-strip', v !== 'caption' && v !== 'final');
+  $('#strip').hidden = v === 'caption' || v === 'final';
+  for (const b of $('#tabs').children) b.setAttribute('aria-selected', String(b.dataset.view === v));
+  $('#articleSel').hidden = v === 'final' || v === 'caption';
+  if (v === 'all') {
+    const arr = filtered(S.items.filter(it => stateOf(it.id) !== 'archived'));
+    viewEl.innerHTML = arr.length ? `<div class="grid">${arr.map(it => cardHTML(it)).join('')}</div>` : `<div class="empty"><h2>Nothing left here</h2><p>Every photo is archived or in a slot.</p></div>`;
+  } else if (v === 'shortlist') {
+    const arr = filtered(shortlist());
+    viewEl.innerHTML = arr.length ? `<p class="note">Drag to reorder. Drag a photo onto a slot in the strip below, or select it and press its number (Shift / Alt for the backlog rows).</p><div class="grid" id="shortGrid" data-drop="shortlist">${arr.map(it => cardHTML(it, { drop: 'before' })).join('')}</div>`
+      : `<div class="empty"><h2>No shortlist yet</h2><p>Star a photo in All (or press <kbd>S</kbd>) to start one.</p></div>`;
+  } else if (v === 'archived') {
+    const arr = filtered(list('archived'));
+    viewEl.innerHTML = arr.length ? `<p class="note">Hidden from All. Restore any of them with ↩.</p><div class="grid">${arr.map(it => cardHTML(it)).join('')}</div>`
+      : `<div class="empty"><h2>Nothing archived</h2><p>Press <kbd>A</kbd> on a photo that does not make the cut.</p></div>`;
+  } else if (v === 'final') renderFinal();
+  else renderCaption();
+  renderStrip();
+}
+function slotHTML(n, m) {
+  const id = m[n]; const a = id ? aspectOf(id) : postAspect(); const it = id && S.byId.get(id);
+  const d = n % 10; const key = n <= 10 ? `<b>${d}</b>` : n <= 20 ? `<b>Shift+${d}</b>` : `<b>Alt+${d}</b>`;
+  const acts = !id ? '' : `<div class="acts"><button class="ico" data-act="crop" title="Crop and tilt (Enter)" aria-label="Crop">✂</button>${n > NFINAL ? `<button class="ico" data-act="promote" title="Promote to the Final 10" aria-label="Promote to the Final 10">↑</button>` : `<button class="ico" data-act="tobacklog" title="Send to the backlog" aria-label="Send to the backlog">↓</button>`}<button class="ico" data-act="demote" title="Back to the shortlist" aria-label="Back to the shortlist">☆</button><button class="ico" data-act="arch" title="Archive" aria-label="Archive">✕</button></div>`;
+  return `<div class="slot"><div class="frame ${a === '1:1' ? 'sq' : ''} ${id ? 'filled' : ''} ${id && S.sel === id ? 'selected' : ''}" data-drop="slot" data-slot="${n}" ${id ? `data-id="${id}"` : ''} tabindex="0" role="button" aria-label="${n <= NFINAL ? 'Slide' : 'Backlog slot'} ${n}${it ? ': ' + esc(it.caption || it.alt) : ' (empty)'}">
+      ${id ? `<canvas data-paint="${id}"></canvas>` : `<div class="drop"><span>Drop a photo here, or select one and press ${key}</span></div>`}
+      <span class="n">${n}</span>${acts}
+    </div>
+    ${it ? `<div class="cap" title="${esc(it.caption || it.alt)}">${esc(it.caption || it.alt || it.id)}</div><textarea data-note="${id}" placeholder="${n <= NFINAL ? 'Notes for slide ' + n : 'Notes'}: why this photo, a caption bit…" aria-label="Notes for slot ${n}">${esc(doc(id).note)}</textarea>` : `<div class="cap">&nbsp;</div>`}
+    </div>`;
+}
+function renderFinal() {
+  const m = slotMap(); const aspects = new Set(); for (const id of finalIds()) aspects.add(aspectOf(id));
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const row = (title, sub, from, to, cls) => `<section class="rowwrap ${cls}"><div class="rowhead"><b>${title}</b><span>${sub}</span><span class="arrows"><button data-scroll="-1" aria-label="Scroll left">‹</button><button data-scroll="1" aria-label="Scroll right">›</button></span></div><div class="slots">${range(from, to).map(n => slotHTML(n, m)).join('')}</div></section>`;
+  viewEl.innerHTML = `${aspects.size > 1 ? `<p class="mixed">Slides mix 4:5 and 1:1. Instagram shows a carousel at one ratio, so pick one in the crop editor (Use for all slides).</p>` : ''}
+    <p class="note">Row 1 is the carousel, slides 1 to 10, the only ones rendered. Rows 2 and 3 are your backlog of up to 20 more. Drag between any slots to swap (numbers stay put); ↑ ↓ move between the rows, ☆ sends a photo back to the shortlist. Each row scrolls sideways.</p>
+    <div class="rows">${row('Final 10', 'slides 1–10', 1, 10, 'final')}${row('Backlog', 'slots 11–20 · Shift + number', 11, 20, 'backlog')}${row('Backlog', 'slots 21–30 · Alt + number', 21, 30, 'backlog')}</div>`;
+  for (const cv of viewEl.querySelectorAll('canvas[data-paint]')) paint(cv, cv.dataset.paint, 400);
+}
+function renderStrip() {
+  const m = slotMap(); const a = postAspect();
+  const mini = (n) => { const id = m[n]; return `<div class="mini ${id ? 'filled' : ''} ${(id ? aspectOf(id) : a) === '1:1' ? 'sq' : ''}" data-drop="slot" data-slot="${n}" ${id ? `data-id="${id}"` : ''} title="${n <= NFINAL ? 'Slide' : 'Backlog slot'} ${n}">${id ? `<canvas data-paint="${id}"></canvas><i>${n}</i>` : n}</div>`; };
+  $('#minis').innerHTML = Array.from({ length: NFINAL }, (_, i) => mini(i + 1)).join('');
+  $('#minisBl').innerHTML = Array.from({ length: NSLOTS - NFINAL }, (_, i) => mini(NFINAL + 1 + i)).join('');
+  for (const cv of $('#strip').querySelectorAll('canvas[data-paint]')) paint(cv, cv.dataset.paint, 100);
+}
+
+// ---------------------------------------------------------------- caption view
+function rankedIdeas() { return [...S.captions.values()].sort((a, b) => (b.stars || 0) - (a.stars || 0) || (a.order || 0) - (b.order || 0)); }
+function renderCaption() {
+  const ideas = rankedIdeas(); const filled = finalIds().length;
+  const finalText = (S.post.finalCaption || '').trim(); const ready = S.post.status === 'ready';
+  viewEl.innerHTML = `<div class="capwrap">
+  <div>
+    <h2>Caption ideas</h2>
+    <p class="note">Type an idea, then rank it with the stars. Ask Claude turns your top-ranked ideas into three variations in your voice; add the ones you like.</p>
+    <textarea id="ideaText" rows="3" placeholder="An idea for the caption…" aria-label="New caption idea"></textarea>
+    <div class="row" style="margin-top:.4rem"><button class="primary" id="addIdea">Add idea</button><button id="askClaude" ${S.sample ? '' : 'disabled title="Claude is not available in this view"'}>${S.thinking ? 'Thinking…' : 'Ask Claude for 3 variations'}</button>${S.thinking ? '<button id="stopAsk">Stop</button>' : ''}<span class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> adds</span></div>
+    <div id="suggBox">${S.sugg ? `<div class="sugg">${S.sugg.map((t, i) => `<div><p>${esc(t)}</p><div class="row" style="margin-top:.3rem"><button data-sadd="${i}">Add to ideas</button><button data-sfinal="${i}">Use as final</button></div></div>`).join('')}</div>` : (S.thinking ? `<p class="thinking">Thinking…</p>` : '')}</div>
+    <div class="ideas">${ideas.length ? ideas.map(c => `<div class="idea ${c.final ? 'final' : ''}" data-cid="${c.id}">
+      <p>${esc(c.text)}</p>
+      <div class="tools"><span class="stars" aria-label="Rank">${[1, 2, 3, 4, 5].map(k => `<button data-star="${k}" class="${(c.stars || 0) >= k ? 'on' : ''}" aria-label="${k} star${k > 1 ? 's' : ''}">★</button>`).join('')}</span><span class="src">${c.source === 'claude' ? 'Claude' : 'Mine'}</span></div>
+      <div class="tools"><button data-cfinal="1">${c.final ? 'Final ✓' : 'Mark final'}</button><button data-cdel="1" class="danger" aria-label="Delete idea">Delete</button></div>
+    </div>`).join('') : `<div class="empty"><h2>No ideas yet</h2><p>Start with a sentence about what the trip was like.</p></div>`}</div>
+  </div>
+  <div>
+    <h2>Final caption</h2>
+    <textarea id="finalCap" rows="7" placeholder="Mark an idea final, or write the caption here.">${esc(S.post.finalCaption || '')}</textarea>
+    <p class="note"><span id="capLen">${finalText.length}</span>/2200 characters. Instagram cuts the preview after about 125.</p>
+    <h2 style="margin-top:1rem">Hashtags</h2>
+    <textarea id="hashtags" rows="3" placeholder="#northmacedonia #balkans …">${esc(S.post.hashtags || '')}</textarea>
+    <p class="note"><span id="tagN">${(S.post.hashtags || '').split(/\s+/).filter(x => x.startsWith('#')).length}</span>/30 hashtags</p>
+    <h2 style="margin-top:1rem">Ready?</h2>
+    <ul class="checks"><li class="${filled === 10 ? 'ok' : ''}">${filled}/10 slots filled</li><li class="${finalText ? 'ok' : ''}">${finalText ? 'Caption is final' : 'No final caption yet'}</li><li class="${ready ? 'ok' : ''}">${ready ? 'Marked ready to render' : 'Press Ready to render when the ten and the caption are set'}</li></ul>
+    <p class="note" style="margin-top:.75rem">Then Claude renders the slides from the originals:</p>
+    <pre class="cmd">python tools/ig_post.py "${esc(S.country || 'North Macedonia')}" render --state .tmp/ig/${esc(S.slug || 'north-macedonia')}/state</pre>
+  </div></div>`;
+}
+function addIdea(text, source) {
+  text = (text || '').trim(); if (!text) return;
+  const id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const d = { id, text, stars: 0, order: S.captions.size + 1, source: source || 'me', final: false, createdAt: new Date().toISOString() };
+  S.captions.set(id, d); write('captions/' + id, d); render();
+}
+function saveIdea(id, patch) { const d = Object.assign({}, S.captions.get(id), patch); S.captions.set(id, d); write('captions/' + id, d); }
+function markFinal(id) {
+  for (const c of S.captions.values()) if (c.final && c.id !== id) saveIdea(c.id, { final: false });
+  const c = S.captions.get(id); saveIdea(id, { final: !c.final });
+  if (!c.final) savePost({ finalCaption: c.text });
+  render();
+}
+let askCtl = null;
+async function askClaude() {
+  if (!S.sample || S.thinking) return;
+  const ideas = rankedIdeas(); if (!ideas.length) { toast('Add an idea first'); return; }
+  const top = ideas.slice(0, 4).map(c => `- (${c.stars || 0} stars) ${c.text}`).join('\n');
+  const m = slotMap(); const slides = m.slice(0, NFINAL + 1).map((id, n) => id ? `${n}. ${S.byId.get(id).caption || S.byId.get(id).alt}${doc(id).note ? ' (note: ' + doc(id).note + ')' : ''}` : null).filter(Boolean).join('\n');
+  const prompt = `You write Instagram captions for a personal travel blog, in the author's own voice. He is American, writes first person, honest and specific, says what he actually did and what it cost or took, recommends with a reason, and is warm without hype.
+Rules: American spelling. No em dashes (use commas, periods or parentheses). No cliches: never "hidden gem", "breathtaking", "stunning", "nestled", "vibrant", "bustling", "must-see", "wanderlust", "paradise". No emoji unless an idea already has one. No hashtags inside the caption. Short sentences land. 1 to 4 short paragraphs, under 600 characters each caption. Keep the facts from his ideas; invent none.
+Country: ${esc(S.post.country || 'North Macedonia')}.
+His caption ideas, best ranked first:
+${top}
+The carousel slides, in order:
+${slides || '(no slides placed yet)'}
+Write 3 caption variations that build on the top-ranked ideas (different angles: one that opens on a scene, one that opens on the verdict, one that opens on a practical fact). Reply with only a JSON array of 3 strings.`;
+  askCtl = new AbortController(); S.thinking = true; S.sugg = null; render();
+  try {
+    const out = await S.sample.json(prompt, { signal: askCtl.signal, cache: false, modelTier: 'default' });
+    S.sugg = Array.isArray(out) ? out.map(String).slice(0, 3) : [String(out)];
+  } catch (e) {
+    if (e && e.code === 'not_granted') { S.sample = null; toast('Claude was not allowed for this page'); }
+    else if (e && e.code !== 'cancelled') toast('Claude could not answer (' + (e && e.code || 'error') + ')');
+  }
+  S.thinking = false; askCtl = null; render();
+}
+
+// ---------------------------------------------------------------- itinerary template mode
+// The plan lives in carousel/main (its shape is in tools/ig_carousel.py); carousel/map holds the route map SVG.
+// The slides are drawn by the shared CS block (cs-js), the same markup tools/ig_carousel.py renders at 1080x1350.
+const BOXAR = (key) => key === 'cover' ? '4:5' : key === 'cta' ? '3:2' : '1:1';
+function tBoxes() {
+  const p = S.plan; if (!p) return [];
+  const keys = ['cover'];
+  (p.stops || []).forEach((s, i) => { if (s.slide !== false) for (let j = 0; j < 4; j++) keys.push('s' + i + '-' + j); });
+  if (p.cta && p.cta.on !== false) keys.push('cta');
+  return keys;
+}
+function tRef(key) {
+  const p = S.plan; if (!p || !key) return null;
+  if (key === 'cover') return p.cover || null;
+  if (key === 'cta') return (p.cta || {}).photo || null;
+  const m = /^s(\d+)-(\d)$/.exec(key); if (!m) return null;
+  const s = (p.stops || [])[+m[1]]; return s ? (s.photos || [])[+m[2]] || null : null;
+}
+function tSetRef(key, ref) {
+  const p = S.plan;
+  if (key === 'cover') p.cover = ref;
+  else if (key === 'cta') { p.cta = p.cta || {}; p.cta.photo = ref; }
+  else { const m = /^s(\d+)-(\d)$/.exec(key); const s = p.stops[+m[1]]; s.photos = s.photos || []; while (s.photos.length < 4) s.photos.push(null); s.photos[+m[2]] = ref; }
+}
+function tLabel(key) {
+  if (key === 'cover') return 'Cover photo'; if (key === 'cta') return 'Call-to-action photo';
+  const m = /^s(\d+)-(\d)$/.exec(key || ''); if (!m) return '';
+  const s = (S.plan.stops || [])[+m[1]] || {};
+  return `${s.days || ''} ${s.name || ''}, photo ${+m[2] + 1}`.trim();
+}
+function savePlan(rerender = true, now = false) {
+  S.plan.updatedAt = new Date().toISOString();
+  S.planPending = true;
+  const go = () => { S.planPending = false; write('carousel/main', JSON.parse(JSON.stringify(S.plan))); };
+  if (now) { clearTimeout(debounced.get('plan')); go(); } else debounce('plan', go, 500);
+  if (rerender) render(); else { counts(); tCaptionPreview(); }
+}
+function tSetBox(key, id) {
+  if (!key || !S.byId.has(id)) return;
+  // a photo that is already in another box trades places with this box's photo, so a drag between boxes is a swap
+  const cur = tRef(key);
+  const other = tBoxes().find(k => k !== key && (tRef(k) || {}).id === id);
+  if (other) tSetRef(other, cur && cur.id ? cur : null);
+  tSetRef(key, { id, crop: null });
+  toast(tLabel(key) + (other ? ' (swapped)' : ''));
+  savePlan();
+}
+function tClearBox(key) { tSetRef(key, null); savePlan(); }
+function tPhoto(key, w, h) { const k = .42; return `<canvas data-tpaint="${key}" width="${Math.round(w * k)}" height="${Math.round(h * k)}"></canvas>`; }
+function tPaint(root) {
+  for (const cv of root.querySelectorAll('canvas[data-tpaint]')) {
+    const key = cv.dataset.tpaint; const ref = tRef(key); const it = ref && S.byId.get(ref.id); if (!it) continue;
+    const ratio = cv.height / cv.width;
+    const c = clampCrop(Object.assign({ cx: .5, cy: .5, w: 1, rot: 0 }, ref.crop || {}), it.w, it.h, ratio);
+    loadImg(ref.id).then(img => { if (cv.isConnected) drawCrop(cv, img, c); }).catch(() => {});
+  }
+  for (const ph of root.querySelectorAll('.ph[data-key]')) { const r = tRef(ph.dataset.key); if (r && r.id) ph.dataset.id = r.id; ph.classList.toggle('tsel', ph.dataset.key === S.tsel); }
+}
+function tFit(root) { const go = () => { for (const cs of root.querySelectorAll('.cs')) CS.fit(cs); }; go(); if (document.fonts) document.fonts.ready.then(go); }
+function tSlideFields(s) {
+  const p = S.plan;
+  const f = (label, path, val, opts = {}) => `<label class="fld">${label}${opts.area ? `<textarea data-tf="${path}" rows="${opts.rows || 2}">${esc(val)}</textarea>` : `<input data-tf="${path}" value="${esc(val)}"${opts.ph ? ` placeholder="${esc(opts.ph)}"` : ''}>`}</label>`;
+  if (s.key === 'cover') return f('Title (| breaks the line, *word* is italic)', 'title', p.title) + f('Kicker', 'kicker', p.kicker) + f('Swipe line', 'swipe', p.swipe || '');
+  if (s.key === 'map') return f('Kicker', 'map.kicker', (p.map || {}).kicker) + f('Title', 'map.title', (p.map || {}).title);
+  if (s.key === 'cta') { const c = p.cta || {}; return f('Kicker', 'cta.kicker', c.kicker) + f('Headline', 'cta.headline', c.headline) + f('Text', 'cta.body', c.body, { area: true, rows: 3 }) + f('Keyword', 'cta.keyword', c.keyword || 'GUIDE'); }
+  const i = +s.key.slice(1); const st = p.stops[i];
+  return f('Days', `stops.${i}.days`, st.days, { ph: 'Day 1–2' }) + f('Stop', `stops.${i}.name`, st.name) + f('One line about it', `stops.${i}.sub`, st.sub || '', { area: true }) + f('On the map slide as', `stops.${i}.list`, st.list || '', { ph: st.name });
+}
+function tSlideTools(s) {
+  if (s.key === 'cta') return `<span class="sp"></span><button data-tact="cta-off" title="Drop the call-to-action slide">Remove</button>`;
+  if (!/^s\d+$/.test(s.key)) return '';
+  const i = +s.key.slice(1);
+  return `<span class="sp"></span><button data-tact="up" data-i="${i}" title="Move earlier" aria-label="Move earlier">‹</button><button data-tact="down" data-i="${i}" title="Move later" aria-label="Move later">›</button><button data-tact="hide" data-i="${i}" title="Keep it on the map and in the caption, without a photo slide">Map only</button>`;
+}
+function renderTemplate() {
+  const p = S.plan;
+  if (!p) {
+    viewEl.innerHTML = `<div class="empty"><h2>No itinerary template yet</h2><p>The template mode builds a branded carousel from the itinerary: a cover, the route map, one 4-photo slide per stop and a call to action, plus the caption.</p><p class="note">Claude seeds it with <code>python tools/ig_carousel.py ${esc(S.slug || 'slug')} seed</code>, then writes carousel/main and carousel/map into this page's store.</p></div>`;
+    return;
+  }
+  const list = CS.slides(p, tPhoto, S.mapSvg);
+  const listOnly = (p.stops || []).map((s, i) => [s, i]).filter(([s]) => s.slide === false);
+  const pool = filtered(S.items.filter(it => stateOf(it.id) !== 'archived'));
+  const used = new Set(tBoxes().map(k => (tRef(k) || {}).id).filter(Boolean));
+  const cap = p.caption || {};
+  const cf = (label, key, rows, extra = '') => `<label class="fld">${label}${extra}<textarea data-tf="caption.${key}" rows="${rows}">${esc(cap[key] || '')}</textarea></label>`;
+  viewEl.innerHTML = `<div class="tpl">
+    <div class="tbar" id="tbar" hidden></div>
+    <p class="note">Each slide is drawn at its real 1080 × 1350 layout. Drag a photo from below onto any photo box (or tap a box, then tap a photo). Drag between boxes to swap. Double-click a box to crop and tilt it. The words under each slide edit it live.</p>
+    <div class="tslides" id="tslides">${list.map((s, n) => `<figure class="tslide" data-slide="${s.key}"><figcaption><b>${n + 1}</b> ${esc(s.label)}${tSlideTools(s)}</figcaption>
+      <div class="tframe"><div class="tscale">${s.html}</div></div>${tSlideFields(s)}</figure>`).join('')}</div>
+    <h2>Stops on the map only</h2>
+    <div class="liststops">${listOnly.map(([s, i]) => `<div class="liststop"><label class="fld">Days<input data-tf="stops.${i}.days" value="${esc(s.days)}"></label><label class="fld">Stop<input data-tf="stops.${i}.name" value="${esc(s.name)}"></label>
+      <div class="row"><button data-tact="show" data-i="${i}">Give it a photo slide</button><button data-tact="del" data-i="${i}" class="danger">Delete</button></div></div>`).join('')}
+      <div class="liststop"><p class="note" style="margin:0">A stop with no photos (a travel day, a free day) is listed on the map slide and in the caption.</p><div class="row"><button data-tact="add">Add a stop</button>${p.cta && p.cta.on === false ? '<button data-tact="cta-on">Add the call to action back</button>' : ''}</div></div></div>
+    <h2>Caption</h2>
+    <div class="tcap"><div>
+      ${cf('Hook: two short paragraphs in your voice', 'hook', 7, ` <button data-tact="hooks" ${S.sample ? '' : 'disabled title="Claude is not available in this view"'} style="align-self:flex-start">${S.thinking ? 'Thinking…' : 'Ask Claude for 3 hooks'}</button>`)}
+      ${S.hooks ? `<div class="sugg">${S.hooks.map((h, k) => `<div><p>${esc(h)}</p><div class="row" style="margin-top:.3rem"><button data-hook="${k}">Use this hook</button></div></div>`).join('')}</div>` : ''}
+      ${cf('Call to action', 'cta', 2)}
+      ${cf('Day by day', 'days', 6, ` <button data-tact="days" style="align-self:flex-start">Rebuild from the stops</button>`)}
+      ${cf('Keyword line', 'keywords', 2)}
+      ${cf('Hashtags', 'hashtags', 2)}
+    </div><div>
+      <div class="row" style="justify-content:space-between"><span class="note"><span id="tcapN">0</span>/2200 characters · the first ~125 show before "more"</span><button data-tact="copy">Copy caption</button></div>
+      <pre class="capprev" id="capprev"></pre>
+      <p class="note" style="margin-top:.75rem">When it is ready, press Ready to render. Claude exports this and renders the slides at 1080 × 1350 from the originals:</p>
+      <pre class="cmd">python tools/ig_carousel.py ${esc(S.slug || 'slug')} render --state .tmp/ig/${esc(S.slug || 'slug')}/state</pre>
+    </div></div>
+    <h2>Photos</h2>
+    <div class="tpick"><p class="note">${used.size} in use (marked ●). Filter by article in the bar above.</p><div class="grid">${pool.map(it => { const h = cardHTML(it); return used.has(it.id) ? h.replace('<div class="acts">', '<span class="badge sl">●</span><div class="acts">') : h; }).join('')}</div></div>
+  </div>`;
+  tPaint(viewEl); tFit(viewEl); tCaptionPreview(); tBar();
+}
+function tRefreshPreviews(only) {
+  if (!S.plan) return;
+  const list = CS.slides(S.plan, tPhoto, S.mapSvg);
+  for (const s of list) {
+    if (only && s.key !== only) continue;
+    const fig = viewEl.querySelector(`.tslide[data-slide="${s.key}"] .tscale`); if (!fig) continue;
+    fig.innerHTML = s.html; tPaint(fig); tFit(fig);
+  }
+}
+function tCaptionPreview() { const el = $('#capprev'); if (!el || !S.plan) return; const c = CS.caption(S.plan); el.textContent = c; const n = $('#tcapN'); if (n) n.textContent = c.length; }
+function tBar() {
+  const bar = $('#tbar'); if (!bar) return;
+  if (!S.tsel) {
+    const it = S.sel && S.byId.get(S.sel);
+    if (!it) { bar.hidden = true; return; }
+    bar.hidden = false;
+    bar.innerHTML = `<b>Photo selected</b><span>${esc(it.caption || it.alt || it.id)}</span><span class="sp"></span><span class="note">Tap a photo box on a slide to put it there.</span><button data-tact="unselphoto">Cancel</button>`;
+    return;
+  }
+  const r = tRef(S.tsel); bar.hidden = false;
+  bar.innerHTML = `<b>${esc(tLabel(S.tsel))}</b><span>${r && r.id ? esc((S.byId.get(r.id) || {}).caption || r.id) : 'empty'}</span><span class="sp"></span><span class="note">Tap a photo below to put it here.</span>${r && r.id ? '<button data-tact="crop">Crop and tilt</button><button data-tact="clear">Clear</button>' : ''}<button data-tact="unsel">Done</button>`;
+}
+function tSelBox(key) { S.tsel = S.tsel === key ? null : key; for (const ph of viewEl.querySelectorAll('.ph[data-key]')) ph.classList.toggle('tsel', ph.dataset.key === S.tsel); tBar(); }
+function tSetPath(path, val) {
+  const parts = path.split('.'); let o = S.plan;
+  for (let k = 0; k < parts.length - 1; k++) { const key = /^\d+$/.test(parts[k]) ? +parts[k] : parts[k]; if (o[key] == null) o[key] = {}; o = o[key]; }
+  o[parts[parts.length - 1]] = val;
+}
+function tAct(a, i) {
+  const p = S.plan; if (!p) return; const st = p.stops || (p.stops = []);
+  if (a === 'up' || a === 'down') {
+    // move among the stops that have a slide, skipping the map-only ones in between
+    const vis = st.map((s, k) => [s, k]).filter(([s]) => s.slide !== false).map(([, k]) => k);
+    const at = vis.indexOf(i); const j = vis[a === 'up' ? at - 1 : at + 1]; if (j === undefined) return;
+    [st[i], st[j]] = [st[j], st[i]]; S.tsel = null; savePlan();
+  }
+  else if (a === 'hide') { st[i].slide = false; S.tsel = null; savePlan(); toast('On the map and in the caption only'); }
+  else if (a === 'show') { st[i].slide = true; st[i].photos = st[i].photos || []; savePlan(); }
+  else if (a === 'del') { if (confirm('Delete the stop "' + (st[i].name || '') + '"?')) { st.splice(i, 1); S.tsel = null; savePlan(); } }
+  else if (a === 'add') { st.push({ days: 'Day ' + (st.length + 1), name: 'New stop', sub: '', slide: true, photos: [null, null, null, null] }); savePlan(); }
+  else if (a === 'cta-off') { p.cta = p.cta || {}; p.cta.on = false; savePlan(); }
+  else if (a === 'cta-on') { p.cta = p.cta || {}; p.cta.on = true; savePlan(); }
+  else if (a === 'days') { p.caption = p.caption || {}; p.caption.days = CS.dayList(p); savePlan(); }
+  else if (a === 'copy') { const c = CS.caption(p); (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => toast('Caption copied'), () => toast('Copy is blocked here: select the text instead')); }
+  else if (a === 'crop') openBoxEditor(S.tsel);
+  else if (a === 'clear') tClearBox(S.tsel);
+  else if (a === 'unsel') tSelBox(S.tsel);
+  else if (a === 'unselphoto') select(null);
+  else if (a === 'hooks') askHooks();
+}
+async function askHooks() {
+  if (!S.sample || S.thinking || !S.plan) return;
+  const p = S.plan; const c = p.caption || {};
+  const prompt = `You write the opening hook of an Instagram carousel caption for a personal travel blog, in the author's own voice. He is American, writes first person, honest and specific, uses real numbers (prices, hours, days), says "a bit", "pretty", "really", "by far", talks to the reader as "you", and is warm without hype.
+Rules: American spelling. No em dashes (use commas, periods or parentheses). Never: "hidden gem", "breathtaking", "stunning", "nestled", "vibrant", "bustling", "must-see", "wanderlust", "paradise". No emoji, no hashtags. Exactly 2 short paragraphs, under 600 characters in total. Keep only facts that appear in the material below; invent nothing.
+Country: ${p.country || S.country}. The carousel: ${String(p.title || '').replace(/[|*]/g, ' ')}.
+Stops: ${(p.stops || []).map(s => s.days + ': ' + s.name + (s.sub ? ' (' + s.sub + ')' : '')).join('; ')}.
+His current hook:
+${c.hook || '(none yet)'}
+Write 3 alternative hooks (one that opens on a scene, one that opens on the verdict, one that opens on a practical fact). Reply with only a JSON array of 3 strings; separate the two paragraphs of each with a blank line.`;
+  S.thinking = true; S.hooks = null; render();
+  try { const out = await S.sample.json(prompt, { cache: false, modelTier: 'default' }); S.hooks = Array.isArray(out) ? out.map(String).slice(0, 3) : [String(out)]; }
+  catch (e) { if (e && e.code === 'not_granted') { S.sample = null; toast('Claude was not allowed for this page'); } else if (e && e.code !== 'cancelled') toast('Claude could not answer (' + (e && e.code || 'error') + ')'); }
+  S.thinking = false; render();
+}
+
+// ---------------------------------------------------------------- crop editor
+const ED = { id: null, crop: null, drag: null, pinch: null, target: null };
+const modal = $('#modal'), edCanvas = $('#edCanvas'), cropbox = $('#cropbox');
+function editorMode(box) { $('#aspectSeg').hidden = $('#aspectAll').hidden = !!box; }
+function openBoxEditor(key) {
+  const ref = key && tRef(key); if (!ref || !ref.id || !S.byId.has(ref.id)) return;
+  const it = S.byId.get(ref.id); const a = BOXAR(key);
+  ED.target = { key, aspect: a }; ED.id = ref.id; editorMode(true);
+  ED.crop = clampCrop(Object.assign({ cx: .5, cy: .5, w: 1, rot: 0 }, ref.crop || {}, { aspect: a }), it.w, it.h, ASPECT[a]);
+  modal.hidden = false;
+  $('#edTitle').textContent = tLabel(key);
+  $('#edMeta').textContent = (it.caption || it.alt || '') + ' · ' + (it.article_title || it.article) + (it.section ? ' · ' + it.section : '');
+  $('#prevBtn').disabled = $('#nextBtn').disabled = tBoxes().filter(k => (tRef(k) || {}).id).length < 2;
+  syncEditor(); edDraw(); $('#tilt').focus();
+}
+function openEditor(id) {
+  if (!id || !S.byId.has(id)) return;
+  ED.target = null; editorMode(false);
+  ED.id = id; ED.crop = cropFor(id); modal.hidden = false; S.sel = id;
+  const it = S.byId.get(id); const d = doc(id);
+  $('#edTitle').textContent = d.state === 'final' ? (d.slot <= NFINAL ? 'Slide ' + d.slot : 'Backlog slot ' + d.slot) : 'Crop';
+  $('#edMeta').textContent = (it.caption || it.alt || '') + ' · ' + (it.article_title || it.article) + (it.section ? ' · ' + it.section : '') + (it.time ? ' · ' + it.time.slice(0, 16) : '');
+  const slotted = slotMap().filter(Boolean);
+  $('#prevBtn').disabled = $('#nextBtn').disabled = !(d.state === 'final' && slotted.length > 1);
+  syncEditor(); edDraw();
+  $('#tilt').focus();
+}
+function syncEditor() {
+  const c = ED.crop; const ratio = ASPECT[c.aspect];
+  cropbox.style.setProperty('--ar', String(1 / ratio)); cropbox.style.setProperty('--arcss', String(1 / ratio));
+  for (const b of $('#aspectSeg').children) b.setAttribute('aria-pressed', String(b.dataset.aspect === c.aspect));
+  const z = c.fwMax / c.w; $('#zoom').value = Math.min(4, Math.max(1, z)).toFixed(2); $('#zoomVal').textContent = z.toFixed(2) + '×';
+  $('#tilt').value = c.rot.toFixed(1); $('#tiltVal').textContent = (c.rot >= 0 ? '+' : '') + c.rot.toFixed(1) + '°';
+}
+function edDraw() {
+  const c = ED.crop; const ratio = ASPECT[c.aspect];
+  const w = 864; edCanvas.width = w; edCanvas.height = Math.round(w * ratio);
+  loadImg(ED.id).then(img => { if (ED.id) drawCrop(edCanvas, img, c); }).catch(() => {});
+}
+function edSet(patch, commit = true) {
+  const it = S.byId.get(ED.id); const c = Object.assign({}, ED.crop, patch);
+  ED.crop = clampCrop(c, it.w, it.h, ASPECT[c.aspect]); syncEditor(); edDraw();
+  if (commit && ED.target) { const key = ED.target.key, id = ED.id, c2 = ED.crop; debounce('crop:' + key, () => { const r = tRef(key); if (!r || r.id !== id) return; r.crop = { cx: +c2.cx.toFixed(5), cy: +c2.cy.toFixed(5), w: +c2.w.toFixed(5), rot: +c2.rot.toFixed(1) }; savePlan(false); }, 300); }
+  else if (commit) debounce('crop:' + ED.id, () => savePhoto(ED.id, { crop: { aspect: ED.crop.aspect, cx: +ED.crop.cx.toFixed(5), cy: +ED.crop.cy.toFixed(5), w: +ED.crop.w.toFixed(5), rot: +ED.crop.rot.toFixed(1) } }), 300);
+}
+function closeEditor() { modal.hidden = true; ED.id = null; ED.target = null; editorMode(false); if (document.activeElement && modal.contains(document.activeElement)) document.activeElement.blur(); render(); const f = S.sel && viewEl.querySelector(`.frame[data-id="${S.sel}"], .card[data-id="${S.sel}"]`); if (f) f.focus({ preventScroll: true }); }
+$('#doneBtn').onclick = closeEditor;
+modal.addEventListener('click', e => { if (e.target === modal) closeEditor(); });
+$('#aspectSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const a = b.dataset.aspect; edSet({ aspect: a, w: 1 }); });
+$('#aspectAll').onclick = () => { const a = ED.crop.aspect; savePost({ aspect: a }); for (const id of slotMap().filter(Boolean)) if (aspectOf(id) !== a) { const it = S.byId.get(id); const c = clampCrop(Object.assign({}, cropFor(id), { aspect: a }), it.w, it.h, ASPECT[a]); savePhoto(id, { crop: { aspect: a, cx: c.cx, cy: c.cy, w: c.w, rot: c.rot } }); } toast('Every slide is ' + a); };
+$('#zoom').addEventListener('input', e => { const z = +e.target.value; edSet({ w: ED.crop.fwMax / z }); });
+$('#tilt').addEventListener('input', e => edSet({ rot: +e.target.value }));
+$('#tilt').addEventListener('dblclick', () => edSet({ rot: 0 }));
+$('#gridChk').addEventListener('change', e => { $('#gridlines').hidden = !e.target.checked; });
+$('#resetCrop').onclick = () => edSet(defaultCrop(ED.id, ED.crop.aspect));
+function stepSlot(dir) {
+  if (ED.target) { const keys = tBoxes().filter(k => (tRef(k) || {}).id); const i = keys.indexOf(ED.target.key); if (i >= 0 && keys.length > 1) openBoxEditor(keys[(i + dir + keys.length) % keys.length]); return; }
+  const f = slotMap().filter(Boolean); const i = f.indexOf(ED.id); if (i < 0) return; openEditor(f[(i + dir + f.length) % f.length]); }
+$('#prevBtn').onclick = () => stepSlot(-1); $('#nextBtn').onclick = () => stepSlot(1);
+// pan / pinch / wheel on the crop box
+const ptrs = new Map();
+cropbox.addEventListener('pointerdown', e => { cropbox.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; ED.pinch = Math.hypot(a.x - b.x, a.y - b.y); } });
+cropbox.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const prev = ptrs.get(e.pointerId); const dx = e.clientX - prev.x, dy = e.clientY - prev.y; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const it = S.byId.get(ED.id); const c = ED.crop; const rect = cropbox.getBoundingClientRect();
+  if (ptrs.size === 1) {
+    // screen px -> image px: R(-rot) * d / s, with s = rect.width / (w*W)
+    const s = rect.width / (c.w * it.w); const th = -c.rot * Math.PI / 180;
+    const ix = (Math.cos(th) * dx - Math.sin(th) * dy) / s, iy = (Math.sin(th) * dx + Math.cos(th) * dy) / s;
+    edSet({ cx: c.cx - ix / it.w, cy: c.cy - iy / it.h });
+  } else if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (ED.pinch) edSet({ w: c.w * ED.pinch / d }); ED.pinch = d;
+  }
+});
+const endPtr = e => { ptrs.delete(e.pointerId); ED.pinch = null; };
+cropbox.addEventListener('pointerup', endPtr); cropbox.addEventListener('pointercancel', endPtr);
+cropbox.addEventListener('wheel', e => { e.preventDefault(); edSet({ w: ED.crop.w * (e.deltaY > 0 ? 1.05 : 1 / 1.05) }); }, { passive: false });
+
+// ---------------------------------------------------------------- pointer drag (cards and slots -> slots / shortlist order)
+const DR = { id: null, ghost: null, from: null, target: null, timer: null, start: null, active: false };
+function dropTargetAt(x, y) {
+  const el = document.elementFromPoint(x, y); if (!el) return null;
+  return el.closest('[data-drop="slot"], [data-drop="before"], [data-drop="shortlist"], .tframe .ph[data-key]');
+}
+function startDrag(id, x, y, srcEl) {
+  DR.active = true; DR.id = id;
+  const g = document.createElement('div'); g.className = 'dragghost'; const im = new Image(); im.src = blob(S.byId.get(id).asset); g.appendChild(im);
+  document.body.appendChild(g); DR.ghost = g; g.style.left = x + 'px'; g.style.top = y + 'px';
+  srcEl.classList.add('dragging'); DR.srcEl = srcEl;
+}
+function moveDrag(x, y) {
+  if (!DR.active) return;
+  DR.ghost.style.left = x + 'px'; DR.ghost.style.top = y + 'px';
+  const under = document.elementFromPoint(x, y); const strip = under && under.closest('.slots, .minis');
+  if (strip) { const r = strip.getBoundingClientRect(); if (x < r.left + 56) strip.scrollLeft -= 14; else if (x > r.right - 56) strip.scrollLeft += 14; }
+  const t = dropTargetAt(x, y);
+  if (t !== DR.target) { if (DR.target) DR.target.classList.remove('over', 'over-target'); DR.target = t; if (t) t.classList.add(t.classList.contains('card') ? 'over-target' : 'over'); }
+}
+function endDrag(x, y) {
+  if (!DR.active) { clearTimeout(DR.timer); DR.start = null; return; }
+  const t = dropTargetAt(x, y); const id = DR.id;
+  if (t && t.matches('.ph[data-key]')) { if (S.mode === 'template') tSetBox(t.dataset.key, id); }
+  else if (S.mode === 'template') { /* dropped outside a box: nothing changes */ }
+  else if (t) {
+    if (t.dataset.drop === 'slot') place(id, +t.dataset.slot);
+    else if (t.dataset.drop === 'before') { if (t.dataset.id !== id) reorderShortlist(id, t.dataset.id); }
+    else if (t.dataset.drop === 'shortlist') { if (stateOf(id) !== 'shortlist') reorderShortlist(id, null); }
+  } else if (DR.from && DR.from.dataset.drop === 'slot' && stateOf(id) === 'final') { demote(id); toast('Back to the shortlist'); }
+  if (DR.target) DR.target.classList.remove('over', 'over-target');
+  DR.ghost.remove(); DR.srcEl && DR.srcEl.classList.remove('dragging');
+  DR.active = false; DR.id = null; DR.target = null; DR.start = null; DR.from = null;
+}
+document.addEventListener('pointerdown', e => {
+  if (!modal.hidden || e.button > 0) return;
+  if (e.target.closest('button, textarea, input, select, a')) return;
+  const src = e.target.closest('.card, .slot .frame.filled, .mini.filled, .tframe .ph[data-id]'); if (!src || !src.dataset.id) return;
+  DR.start = { x: e.clientX, y: e.clientY, id: src.dataset.id, el: src, pid: e.pointerId };
+  DR.from = src;
+  if (e.pointerType === 'touch') DR.timer = setTimeout(() => { if (DR.start) { startDrag(DR.start.id, DR.start.x, DR.start.y, src); if (navigator.vibrate) navigator.vibrate(10); } }, 280);
+});
+document.addEventListener('pointermove', e => {
+  if (DR.active) { e.preventDefault(); moveDrag(e.clientX, e.clientY); return; }
+  if (!DR.start || DR.start.pid !== e.pointerId) return;
+  const d = Math.hypot(e.clientX - DR.start.x, e.clientY - DR.start.y);
+  if (e.pointerType === 'touch') { if (d > 10) { clearTimeout(DR.timer); DR.start = null; } }
+  else if (d > 6) startDrag(DR.start.id, e.clientX, e.clientY, DR.start.el);
+}, { passive: false });
+document.addEventListener('pointerup', e => { clearTimeout(DR.timer); endDrag(e.clientX, e.clientY); });
+document.addEventListener('pointercancel', () => { clearTimeout(DR.timer); if (DR.active) endDrag(-1, -1); DR.start = null; });
+document.addEventListener('contextmenu', e => { if (DR.active || (DR.start && DR.timer)) e.preventDefault(); });
+
+// ---------------------------------------------------------------- clicks
+function select(id) { S.sel = id; if (S.mode === 'template') setTimeout(tBar, 0); for (const el of document.querySelectorAll('.card.selected, .frame.selected')) el.classList.remove('selected'); if (id) for (const el of document.querySelectorAll(`[data-id="${id}"]`)) if (el.matches('.card, .frame')) el.classList.add('selected'); }
+viewEl.addEventListener('click', e => {
+  if (S.mode === 'template') {
+    const ta = e.target.closest('button[data-tact]'); if (ta) { tAct(ta.dataset.tact, +ta.dataset.i); return; }
+    const hk = e.target.closest('button[data-hook]'); if (hk) { S.plan.caption = S.plan.caption || {}; S.plan.caption.hook = S.hooks[+hk.dataset.hook]; S.hooks = null; savePlan(); toast('Hook replaced'); return; }
+    const ph = e.target.closest('.tframe .ph[data-key]');
+    if (ph) { if (S.sel && !S.tsel) { const id = S.sel; S.sel = null; tSetBox(ph.dataset.key, id); } else tSelBox(ph.dataset.key); return; }
+    const cardT = e.target.closest('.tpick .card[data-id]');
+    if (cardT && !e.target.closest('button')) {
+      if (S.tsel) { const key = S.tsel; tSetBox(key, cardT.dataset.id); const boxes = tBoxes(); const nxt = boxes[boxes.indexOf(key) + 1]; S.tsel = nxt && nxt[0] === key[0] && !(tRef(nxt) || {}).id ? nxt : null; render(); }
+      else select(cardT.dataset.id);
+      return;
+    }
+  }
+  const act = e.target.closest('button[data-act]');
+  if (act) {
+    const id = act.closest('[data-id]').dataset.id;
+    if (act.dataset.act === 'star') toggleShortlist(id); else if (act.dataset.act === 'arch') archive(id);
+    else if (act.dataset.act === 'crop') openEditor(id); else if (act.dataset.act === 'demote') { demote(id); toast('Back to the shortlist'); }
+    else if (act.dataset.act === 'tobacklog') toBacklog(id); else if (act.dataset.act === 'promote') promote(id);
+    return;
+  }
+  const sc = e.target.closest('button[data-scroll]'); if (sc) { const strip = sc.closest('.rowwrap').querySelector('.slots'); strip.scrollBy({ left: +sc.dataset.scroll * Math.max(240, strip.clientWidth * .8), behavior: 'smooth' }); return; }
+  const star = e.target.closest('button[data-star]'); if (star) { saveIdea(star.closest('[data-cid]').dataset.cid, { stars: +star.dataset.star }); render(); return; }
+  if (e.target.closest('button[data-cfinal]')) { markFinal(e.target.closest('[data-cid]').dataset.cid); return; }
+  if (e.target.closest('button[data-cdel]')) { const id = e.target.closest('[data-cid]').dataset.cid; S.captions.delete(id); write('captions/' + id, null); render(); return; }
+  if (e.target.closest('#addIdea')) { addIdea($('#ideaText').value, 'me'); $('#ideaText').value = ''; return; }
+  if (e.target.closest('#askClaude')) { askClaude(); return; }
+  if (e.target.closest('#stopAsk')) { askCtl && askCtl.abort(); return; }
+  const sa = e.target.closest('button[data-sadd]'); if (sa) { addIdea(S.sugg[+sa.dataset.sadd], 'claude'); return; }
+  const sf = e.target.closest('button[data-sfinal]'); if (sf) { savePost({ finalCaption: S.sugg[+sf.dataset.sfinal] }); render(); toast('Set as the final caption'); return; }
+  const card = e.target.closest('.card, .frame');
+  if (card) {
+    if (card.dataset.id) { if (S.sel === card.dataset.id && card.classList.contains('frame')) openEditor(card.dataset.id); else select(card.dataset.id); }
+    else if (card.classList.contains('frame') && S.sel && card.dataset.slot) place(S.sel, +card.dataset.slot);
+  }
+});
+viewEl.addEventListener('focusin', e => { if (S.mode === 'template') return; const c = e.target.closest('.card[data-id], .frame[data-id]'); if (c && S.sel !== c.dataset.id) select(c.dataset.id); });
+viewEl.addEventListener('dblclick', e => {
+  if (S.mode === 'template') { const ph = e.target.closest('.tframe .ph[data-key]'); if (ph && ph.dataset.id) { S.tsel = ph.dataset.key; openBoxEditor(ph.dataset.key); } return; }
+  const c = e.target.closest('.card[data-id], .frame[data-id]'); if (c) openEditor(c.dataset.id); });
+viewEl.addEventListener('input', e => {
+  const t = e.target;
+  if (S.mode === 'template' && t.dataset.tf) {
+    tSetPath(t.dataset.tf, t.value);
+    const slide = t.closest('.tslide'); savePlan(false); if (slide) tRefreshPreviews(slide.dataset.slide);
+    if (/^stops\./.test(t.dataset.tf)) tRefreshPreviews('map');
+    return;
+  }
+  if (t.dataset.note !== undefined) { const id = t.dataset.note; const d = doc(id); S.photos.set(id, Object.assign({}, d, { note: t.value })); debounce('note:' + id, () => savePhoto(id, { note: t.value }), 600); }
+  else if (t.id === 'finalCap') { $('#capLen').textContent = t.value.trim().length; debounce('finalCap', () => savePost({ finalCaption: t.value }), 600); }
+  else if (t.id === 'hashtags') { $('#tagN').textContent = t.value.split(/\s+/).filter(x => x.startsWith('#')).length; debounce('hashtags', () => savePost({ hashtags: t.value }), 600); }
+});
+viewEl.addEventListener('keydown', e => { if (e.target.id === 'ideaText' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { addIdea(e.target.value, 'me'); e.target.value = ''; } });
+$('#strip').addEventListener('click', e => { const m = e.target.closest('.mini'); if (!m) return; if (m.dataset.id) { select(m.dataset.id); openEditor(m.dataset.id); } else if (S.sel) place(S.sel, +m.dataset.slot); else { S.view = 'final'; render(); } });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) { S.view = b.dataset.view; render(); } });
+$('#articleSel').addEventListener('change', e => { S.article = e.target.value; render(); });
+$('#modeSeg').addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (!b || b.dataset.mode === S.mode) return; S.mode = b.dataset.mode; S.tsel = null; try { localStorage.setItem('igpost.mode', S.mode); } catch (x) {} render(); });
+$('#readyBtn').onclick = () => {
+  if (S.mode === 'template') { if (!S.plan) return; const r = S.plan.status === 'ready'; S.plan.status = r ? 'draft' : 'ready'; savePlan(true, true); toast(r ? 'Back to draft' : 'Marked ready. Ask Claude to render the carousel.'); return; }
+  const ready = S.post.status === 'ready'; savePost({ status: ready ? 'draft' : 'ready' }); render(); toast(ready ? 'Back to draft' : 'Marked ready. Ask Claude to render.'); if (!ready) { S.view = 'caption'; render(); } };
+
+// ---------------------------------------------------------------- keyboard
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (!modal.hidden) { if (e.key === 'Escape') closeEditor(); else if (e.key === 'ArrowLeft' && !e.target.matches('input')) stepSlot(-1); else if (e.key === 'ArrowRight' && !e.target.matches('input')) stepSlot(1); return; }
+  if (tag === 'textarea' || tag === 'input' || tag === 'select') return;
+  if (S.mode === 'template') { if (e.key === 'Escape') { S.sel = null; if (S.tsel) tSelBox(S.tsel); select(null); } else if (e.key === 'Enter' && S.tsel) { openBoxEditor(S.tsel); e.preventDefault(); } return; }
+  const k = e.key;
+  if (k === 'Escape') { select(null); return; }
+  const dg = /^(?:Digit|Numpad)(\d)$/.exec(e.code || '');
+  if (!S.sel) { if (dg || k === 'Enter' || /^[saSA[\]]$/.test(k)) { const first = viewEl.querySelector('.card[data-id], .frame[data-id]'); if (first) select(first.dataset.id); } if (!S.sel) return; }
+  if (dg && !e.ctrlKey && !e.metaKey) { const d = +dg[1]; const row = e.altKey ? 2 : e.shiftKey ? 1 : 0; place(S.sel, (d === 0 ? 10 : d) + row * 10); e.preventDefault(); return; }
+  if (k === 's' || k === 'S') { toggleShortlist(S.sel); return; }
+  if (k === 'a' || k === 'A') { archive(S.sel); return; }
+  if (k === 'r' || k === 'R') { if (stateOf(S.sel) === 'archived') archive(S.sel); return; }
+  if (k === 'Enter') { openEditor(S.sel); e.preventDefault(); return; }
+  if (k === '[') { moveSlot(S.sel, -1); return; } if (k === ']') { moveSlot(S.sel, 1); return; }
+  if (k.startsWith('Arrow')) {
+    const els = [...viewEl.querySelectorAll('.card[data-id], .frame[data-id]')]; const i = els.findIndex(el => el.dataset.id === S.sel); if (i < 0 || !els.length) return;
+    let j = i; const cols = Math.max(1, Math.round(viewEl.clientWidth / (els[0].getBoundingClientRect().width + 10)));
+    if (k === 'ArrowRight') j = i + 1; else if (k === 'ArrowLeft') j = i - 1; else if (k === 'ArrowDown') j = i + cols; else if (k === 'ArrowUp') j = i - cols;
+    if (els[j]) { select(els[j].dataset.id); els[j].scrollIntoView({ block: 'nearest' }); els[j].focus({ preventScroll: true }); e.preventDefault(); }
+  }
+});
+
+// ---------------------------------------------------------------- boot: capabilities
+async function boot() {
+  const use = window.claude && window.claude.use ? (n) => window.claude.use(n).catch(() => null) : () => Promise.resolve(null);
+  const [db, sample] = await Promise.all([use('db'), use('sample')]);
+  S.db = db; S.sample = sample;
+  if (!db) { $('#loadNote').textContent = 'The photo store is not reachable from this view. Open the page on claude.ai, signed in.'; return; }
+  let timer = setTimeout(() => { if (!S.loaded) $('#loadNote').textContent = 'The store has not answered yet. If this stays, reload in a minute.'; }, 10000);
+  const got = { cat: false, photos: false, post: false, caps: false };
+  const check = () => { if (got.cat && got.photos && got.post && got.caps && !S.loaded) { S.loaded = true; clearTimeout(timer); articleOptions(); render(); } else if (S.loaded) render(); };
+  db.doc('catalog/main').onSnapshot(snap => {
+    const d = snap.exists ? snap.data() : null;
+    S.items = d && Array.isArray(d.items) ? d.items.slice() : []; S.byId = new Map(S.items.map(it => [it.id, it]));
+    if (d && d.country) { S.country = d.country; S.slug = d.slug || ''; S.post.country = S.post.country || d.country; document.title = d.country + ' IG Post'; $('#title').textContent = d.country + ' IG Post'; }
+    if (!snap.metadata.fromCache || S.items.length) got.cat = true;
+    if (snap.exists === false && !snap.metadata.fromCache) { $('#loadNote').textContent = 'No photo catalog yet. Claude writes it with: python tools/ig_post.py "<Country>" catalog, then ArtifactData set catalog/main.'; got.cat = true; }
+    check();
+  }, e => { $('#loadNote').textContent = 'Could not read the catalog (' + e.code + ').'; });
+  db.collection('photos').onSnapshot(snap => { S.photos = new Map(snap.docs.filter(x => x.exists).map(x => [x.id, x.data()])); if (!snap.metadata.fromCache || snap.size) got.photos = true; check(); }, e => toast('photos: ' + e.code));
+  db.doc('post/main').onSnapshot(snap => { if (snap.exists) S.post = Object.assign({}, S.post, snap.data()); if (!snap.metadata.fromCache || snap.exists) got.post = true; check(); }, e => toast('post: ' + e.code));
+  db.doc('carousel/main').onSnapshot(snap => {
+    const d = snap.exists ? snap.data() : null;
+    // keep local edits that have not been written yet: a snapshot replaces the plan only when no plan write is pending
+    if (!S.planPending || !S.plan) S.plan = d ? JSON.parse(JSON.stringify(d)) : null;
+    if (S.loaded && S.mode === 'template' && !viewEl.contains(document.activeElement)) render(); else counts();
+  }, e => toast('carousel: ' + e.code));
+  db.doc('carousel/map').onSnapshot(snap => { S.mapSvg = snap.exists ? String(snap.data().svg || '') : ''; if (S.loaded && S.mode === 'template') tRefreshPreviews('map'); }, () => {});
+  db.collection('captions').onSnapshot(snap => { S.captions = new Map(snap.docs.filter(x => x.exists).map(x => [x.id, Object.assign({ id: x.id }, x.data())])); if (!snap.metadata.fromCache || snap.size) got.caps = true; check(); }, e => toast('captions: ' + e.code));
+  // a store that answers only from cache for a while still has to let the page open
+  setTimeout(() => { if (!S.loaded && S.items.length) { got.cat = got.photos = got.post = got.caps = true; check(); } }, 4000);
+}
+counts();
+boot();
+})();
+</script>

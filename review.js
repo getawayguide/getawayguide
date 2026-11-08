@@ -120,11 +120,15 @@
     $('rv-resolved').onclick = () => { state.showResolved = !state.showResolved; $('rv-resolved').setAttribute('aria-pressed', state.showResolved); renderAll(); };
     // the margin follows the document: re-place the cards whenever anything moves
     const scroller = document.querySelector('.editor-scroll');
-    scroller.addEventListener('scroll', () => queueLayout(), { passive: true });
+    scroller.addEventListener('scroll', () => {
+      const cv = $('rv-canvas'); cv.classList.add('scrolling'); clearTimeout(state._st); state._st = setTimeout(() => cv.classList.remove('scrolling'), 150);
+      queueLayout();
+    }, { passive: true });
+    if (NARROW.addEventListener) NARROW.addEventListener('change', () => { state._flowScrolled = null; queueLayout(); });
     // beside the text the margin never scrolls on its own (a focus() or scrollIntoView inside an
     // overflow:hidden box still can), it follows the document; in List it is an ordinary list
     $('rv-canvas').addEventListener('transitionend', () => drawLines());
-    $('rv-body').addEventListener('scroll', () => { const b = $('rv-body'); if (!b.classList.contains('list') && b.scrollTop) { b.scrollTop = 0; layout(); } else drawLines(); }, { passive: true });
+    $('rv-body').addEventListener('scroll', () => { const b = $('rv-body'); if (!b.classList.contains('list') && !$('rv-canvas').classList.contains('flow') && b.scrollTop) { b.scrollTop = 0; layout(); } else drawLines(); }, { passive: true });
     window.addEventListener('resize', () => queueLayout());
     ed().addEventListener('input', () => { clearTimeout(state._lt); state._lt = setTimeout(layout, 120); });
     ed().addEventListener('load', () => queueLayout(), true);          // images arriving shift the text
@@ -550,7 +554,7 @@
       const ids = (rep.text.match(re)[1].match(/\b[a-z]\d{1,3}\b/gi) || []).filter(x => byId(x));
       if (!ids.length || ids.some(x => state.st[x] === undefined)) continue;
       if (!ids.some(x => state.st[x] === true)) continue;
-      t.resolved = true; stamp(t); unwrapMark(t.id); changed = true;
+      t.resolved = true; t.resolved_by = 'round'; stamp(t); unwrapMark(t.id); changed = true;   // not Kevin's click: the Shadow reviewer's scoring must not read it as his acceptance (2026-11-06)
     }
     if (changed) { saveComments(); renderAll(); }
   }
@@ -680,7 +684,31 @@
     }
   }
 
+  // the context of every anchored comment, re-read from where its mark sits NOW: an edit just before or after a
+  // comment used to leave its stored context stale, and the next open looked for words that were no longer there
+  // (stress test 2026-11-06). Called after every save.
+  function recaptureAnchors() {
+    if (!state.comments || !state.comments.threads) return;
+    const root = ed(); if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = []; let text = ''; let n;
+    while ((n = walker.nextNode())) { if (n.parentElement.closest('sup.rl-n,ins.rl')) continue; nodes.push([n, text.length]); text += n.nodeValue; }
+    const off = new Map(nodes);
+    let changed = false;
+    for (const t of state.comments.threads) {
+      if (t.resolved || !t.anchor || t.anchor.where || isGeneral(t.anchor)) continue;
+      const marks = cmQA(`mark.cm[data-cm="${t.id}"]`); if (!marks.length) continue;
+      const first = marks[0].firstChild, last = marks[marks.length - 1].lastChild;
+      if (!first || !last || !off.has(first) || !off.has(last)) continue;
+      const i = off.get(first), e = off.get(last) + last.nodeValue.length;
+      const a = { quote: text.slice(i, e), before: text.slice(Math.max(0, i - 40), i), after: text.slice(e, e + 40) };
+      if (!a.quote.trim()) continue;
+      if (a.quote !== t.anchor.quote || a.before !== t.anchor.before || a.after !== t.anchor.after) { t.anchor = a; t.unanchored = false; changed = true; }
+    }
+    if (changed) saveComments();
+  }
   async function onSaved() {
+    try { recaptureAnchors(); } catch (e) {}
     if (state.rel) await snapshotDisk(state.rel);    // our own write is not a change to warn about
     { const b = $('rv-banner'); if (b && /changed on disk/.test(b.textContent)) b.style.display = 'none'; }   // the save merged it
     if (!state.slug) return;
@@ -861,6 +889,18 @@
   });
   // the Claude app icon itself (Images/web/ui/claude-icon.png), served by the photo server
   const CLAUDE_MARK = '<img class="claude-mark" src="' + API + '/site/Images/web/ui/claude-icon.png" alt="" width="16" height="16">';
+  // Author avatars (2026-11-07): assets/avatars/avatars.js, when it is there, exposes window.avatarFor(author) ->
+  // an <img>/<svg> element or null. A card header shows it before the name (24px, round) in place of the initial;
+  // without the script, or for an author it does not know, the initial stays as it always was.
+  const avInit = (a, cls) => `<span class="av${cls ? ' ' + cls : ''}" data-au="${esc(a || '')}">${esc((a || '?')[0])}</span>`;
+  function applyAvatars(root) {
+    if (typeof window.avatarFor !== 'function') return;
+    root.querySelectorAll('.av[data-au]').forEach(s => {
+      let el = null; try { el = window.avatarFor(s.dataset.au); } catch (e) { el = null; }
+      if (!(el instanceof Element)) return;
+      s.textContent = ''; s.classList.add('pic'); s.appendChild(el.cloneNode(true));
+    });
+  }
   function sendToClaude(id) {
     const t = state.comments.threads.find(x => x.id === id); if (!t) return;
     if (t.anchor && t.anchor.where) { toast((isGeneral(t.anchor) ? 'A general' : 'A title or subtitle') + ' comment is answered in the next round, not live.', 4500); return; }
@@ -1128,10 +1168,24 @@
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const nodes = []; let text = ''; let n;
     while ((n = walker.nextNode())) { if (n.parentElement.closest('sup.rl-n,ins.rl')) continue; nodes.push([n, text.length]); text += n.nodeValue; }
+    if (!anchor.quote) return null;
+    // every place the quote occurs, scored by how much of the stored context before AND after it agrees; the best
+    // wins. It used to key on 12 characters before the quote and otherwise take the FIRST occurrence anywhere, which
+    // put a comment on "the old town" in the Struga paragraph on the first "the old town" of the page, and a comment
+    // whose context had been rewritten inside a map legend (stress test 2026-11-06). With context stored and several
+    // occurrences none of which match it, nothing is anchored (the card says the text moved) rather than a guess.
+    const before = anchor.before || '', after = anchor.after || '';
+    const hits = []; for (let k = text.indexOf(anchor.quote); k >= 0; k = text.indexOf(anchor.quote, k + 1)) hits.push(k);
+    if (!hits.length) return null;
+    const agree = (a, b, fromEnd) => { let n = 0; const L = Math.min(a.length, b.length); while (n < L && (fromEnd ? a[a.length - 1 - n] === b[b.length - 1 - n] : a[n] === b[n])) n++; return n; };
     let i = -1;
-    const withCtx = (anchor.before || '').slice(-12) + anchor.quote;
-    const j = text.indexOf(withCtx); if (j >= 0) i = j + (anchor.before || '').slice(-12).length;
-    if (i < 0) i = text.indexOf(anchor.quote);
+    if (hits.length === 1) i = hits[0];
+    else if (!before && !after) i = hits[0];                                 // nothing stored to tell them apart
+    else {
+      const scored = hits.map(k => ({ k, s: agree(text.slice(Math.max(0, k - before.length), k), before, true) + agree(text.slice(k + anchor.quote.length, k + anchor.quote.length + after.length), after, false) }));
+      scored.sort((a, b) => b.s - a.s || a.k - b.k);
+      if (scored[0].s >= 4 && (scored.length === 1 || scored[0].s > scored[1].s)) i = scored[0].k;
+    }
     if (i < 0) return null;
     const e = i + anchor.quote.length;
     const at = off => { for (let k = nodes.length - 1; k >= 0; k--) if (nodes[k][1] <= off) return [nodes[k][0], off - nodes[k][1]]; return [nodes[0][0], 0]; };
@@ -1163,7 +1217,7 @@
     return generalEl({});
   }
   const stamp = t => { t.at = new Date().toISOString(); };
-  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
+  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) t.resolved_by = 'user'; else delete t.resolved_by; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
   // the microphone on a comment box (Kevin, 2026-10-25: "add dictate button into comment"): the editor's own dictation
   // (local Whisper) with the text handed to this box instead of the article; a second click stops the recording
@@ -1370,10 +1424,11 @@
     if (c.inner && c.inner.length) meta += `<div class="m">Carries grammar fixes ${c.inner.map(i => byId(i).n).join(', ')}.</div>`;
     if (c.note) meta += `<div class="m">${esc(c.note)}</div>`;
     const tm = state.meta && state.meta.created ? when(state.meta.created) : '';
-    d.innerHTML = `<div class="who"><span class="av">${REVIEWER[0]}</span><b>${REVIEWER}</b><span class="tm">${tm}</span>
+    d.innerHTML = `<div class="who">${avInit(REVIEWER)}<b>${REVIEWER}</b><span class="tm">${tm}</span>
         <span class="acts"><button class="yes" data-v="1" title="Accept this change (hover to preview)">&#10003;</button><button class="no" data-v="0" title="Reject this change (hover to preview)">&#10005;</button></span></div>
       <div class="lbl"><span class="num">${c.n}</span>${label}${c.section ? ' · ' + esc(c.section) : ''}${c.words ? ' · ' + c.words + ' words' : ''}${dim ? ' · <em>not found in the open text</em>' : ''}</div>
       <div class="t">${body}</div>${meta}`;
+    applyAvatars(d);
     d.onclick = e => { if (!e.target.closest('button,textarea,.rv-sub') && !selecting()) jump(c.id); };   // .rv-sub: the thread under this change has its own handler
     d.querySelectorAll('.acts button').forEach(b => {
       // the second click of a double-click is not a decision: the next card had slid under the pointer, and a
@@ -1399,10 +1454,11 @@
   function decidedCard(x) {
     const d = document.createElement('div');
     d.className = 'rv-card rv-c ed rv-done'; d.dataset.dec = x.round + ':' + x.id;
-    d.innerHTML = `<div class="who"><span class="av">${REVIEWER[0]}</span><b>${x.accepted ? 'Accepted' : 'Rejected'}</b><span class="tm">${esc(x.round)}</span></div>
+    d.innerHTML = `<div class="who">${avInit(REVIEWER)}<b>${x.accepted ? 'Accepted' : 'Rejected'}</b><span class="tm">${esc(x.round)}</span></div>
       <div class="lbl"><span class="num">${x.n}</span>Replaced${x.section ? ' · ' + esc(x.section) : ''}</div>
       <div class="t"><del>${esc(plain(x.find))}</del> <ins>${esc(plain(x.replace))}</ins></div>
       <div class="act"><button type="button" data-a="flip">${x.accepted ? 'Reject instead' : 'Accept instead'}</button></div>`;
+    applyAvatars(d);
     d.querySelector('[data-a="flip"]').onclick = ev => { ev.stopPropagation(); redecide(x, !x.accepted); };
     d.title = 'Click to show the whole change'; d.onclick = () => { if (selecting()) return; d.classList.toggle('open'); queueLayout(); };
     return d;
@@ -1445,8 +1501,9 @@
     if (gen) d.dataset.gen = '1';
     const genLbl = !gen ? '' : `<div class="lbl gen">General comment · ${t.anchor.sectionText ? 'on <b>' + esc(t.anchor.sectionText) + '</b>' : 'the whole article'}</div>`;
     if (t.draft) {
-      d.innerHTML = `<div class="who"><span class="av me">${AUTHOR[0]}</span><b>${esc(AUTHOR)}</b><span class="tm">draft</span></div>${genLbl}<textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
+      d.innerHTML = `<div class="who">${avInit(AUTHOR, 'me')}<b>${esc(AUTHOR)}</b><span class="tm">draft</span></div>${genLbl}<textarea placeholder="Start the conversation (Ctrl+Enter to post)">${esc(t.text || '')}</textarea>
         <div class="act"><button class="primary" data-a="post" title="Post (Ctrl+Enter)">Post</button><button data-a="send" class="send" title="Post it as an instruction for Claude: the edit lands in this text while you keep writing (Ctrl+Shift+Enter)">${CLAUDE_MARK} Send to Claude</button><button data-a="mic" class="mic" title="Dictate into this comment (click again to stop)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button><button data-a="cancel" title="Discard (Esc)">Cancel</button></div>`;
+      applyAvatars(d);
       d.querySelector('[data-a="post"]').onclick = () => { const v = d.querySelector('textarea').value; if (!v.trim()) return toast('Write the comment first.'); postDraft(v); };
       d.querySelector('[data-a="send"]').onclick = () => postDraft(d.querySelector('textarea').value, true);
       d.querySelector('[data-a="mic"]').onclick = () => dictateInto(d.querySelector('textarea'), d.querySelector('[data-a="mic"]'));
@@ -1456,7 +1513,7 @@
       d.querySelector('textarea').oninput = e => { if (state.draft) state.draft.text = e.target.value; queueLayout(); };
       return d;
     }
-    const av = a => `<span class="av${a === AUTHOR ? ' me' : ''}">${esc((a || '?')[0])}</span>`;
+    const av = a => avInit(a, a === AUTHOR ? 'me' : '');
     const replies = (t.replies || []).map(r => `<div class="rp" data-rid="${r.id}"><div class="who">${av(r.author)}<b>${esc(r.author)}</b><span class="tm">${when(r.created)}${r.edited ? ' · edited' : ''}</span>${r.author === AUTHOR ? '<button class="ico" data-a="edit-r" title="Edit">&#9998;</button>' : ''}</div><div class="tx">${linkFiles(esc(r.text))}</div></div>`).join('');
     const chip = !isTask(t) ? '' : t.status === 'applied' ? '<span class="chip done">Claude edited</span>' : t.status === 'offered' ? '<span class="chip wait">edit ready</span>'
                : t.status === 'failed' ? '<span class="chip fail">couldn\'t do it</span>' : t.status === 'answered' ? '<span class="chip done">Claude replied</span>'
@@ -1465,13 +1522,14 @@
     const waitNote = isTask(t) && !t.resolved && (t.status === 'sent' || !t.status) && ageSec(t.sentAt || t.created) > 120
       ? '<div class="lbl wait-note">Nothing has picked this up yet. Claude answers from the Claude Code session (say <b>answer my tasks</b>, or run <b>/loop answer my editor tasks</b> to have it checked every minute), or on its own with an API key in .env.</div>' : '';
     d.innerHTML = `<div class="who">${av(t.author)}<b>${esc(t.author)}</b><span class="tm">${when(t.created)}${t.edited ? ' · edited' : ''}</span>${chip}
-        <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
+        <span class="acts">${!t.resolved && (!isTask(t) || t.status === 'failed') && t.author !== 'Shadow reviewer' ? '<button class="claude" data-a="send" title="Send to Claude: the edit lands in this text while you keep writing">' + CLAUDE_MARK + '</button>' : ''}${t.resolved ? '' : '<button class="yes" data-a="resolve" title="Resolve thread">&#10003;</button>'}
           <span class="menu"><button class="ico" data-a="more" title="More thread actions">&#8943;</button>
           <div class="dd">${t.resolved ? '<button data-a="reopen">Reopen</button>' : '<button data-a="resolve2">Resolve thread</button>'}${t.author === AUTHOR ? '<button data-a="edit">Edit</button>' : ''}<button data-a="del">Delete thread</button></div></span></span></div>
       ${genLbl}${t.unanchored && !state.awaitingFile ? '<div class="lbl"><em>anchored text no longer in the article</em></div>' : ''}${waitNote}
       <div class="tx">${esc(t.text)}</div>${replies}
       ${t.status === 'offered' && t.edit ? `<div class="alt"><button class="use" data-a="use" title="Put Claude's version in the text">Use</button><span>${esc(plain(t.edit.replace)).slice(0, 700)}</span></div>` : ''}
       ${t.resolved ? '<div class="res">Resolved</div>' : `<div class="reply"><textarea placeholder="Reply (Ctrl+Enter)">${esc((state.replyDrafts || {})[t.id] || '')}</textarea><button data-a="mic" class="mic" title="Dictate the reply (click again to stop)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button><button data-a="reply" title="Post reply (Ctrl+Enter)">&#10148;</button></div>`}`;
+    applyAvatars(d);
     d.onclick = e => { if (!e.target.closest('button,textarea,.dd') && !selecting()) focusThread(t.id, false); };
     d.querySelector('[data-a="more"]').onclick = e => { e.stopPropagation(); d.querySelector('.dd').classList.toggle('open'); };
     const on = (a, f) => { const b = d.querySelector(`[data-a="${a}"]`); if (b) b.onclick = e => { e.stopPropagation(); f(); }; };
@@ -1490,14 +1548,31 @@
   const anchorOf = card => card.dataset.gen ? genOf(card) : card.dataset.id ? ed().querySelector(`[data-id="${card.dataset.id}"]`)
                          : card.dataset.cm ? (cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`) || lostEl(thread(card.dataset.cm)))
                          : card.dataset.lint ? ed().querySelector(`mark.lint[data-lint="${card.dataset.lint}"]`) : null;
+  // Each card remembers the elements it sits beside, found once when the margin is built and again only if
+  // one of them left the DOM (a re-marked thread). Finding 80 anchors by selector on a 200 KB page on every
+  // scroll frame cost ~90 ms, so the margin ran at ~10 fps and the cards trailed the text (Kevin, 2026-11-07:
+  // "comments get stuck when I scroll past the area they are meant to refer to").
+  function anchorEls(card) {
+    let els = card._anc;
+    if (els && els.length && els.every(e => e.isConnected) && !(card._ancLost && cmQ(`mark.cm[data-cm="${card.dataset.cm}"]`))) return els;
+    card._ancLost = false;
+    if (card.dataset.gen) { const g = genOf(card); els = g ? [g] : []; }
+    else if (card.dataset.id) els = [...ed().querySelectorAll(`[data-id="${card.dataset.id}"]`)];
+    else if (card.dataset.cm) {
+      els = cmQA(`mark.cm[data-cm="${card.dataset.cm}"]`);
+      if (!els.length) { const t = thread(card.dataset.cm), l = t && !t.resolved && lostEl(t); els = l ? [l] : []; card._ancLost = !!l; }
+    }
+    else if (card.dataset.lint) els = [...ed().querySelectorAll(`mark.lint[data-lint="${card.dataset.lint}"]`)];
+    else els = [];
+    card._anc = els;
+    return els;
+  }
   function anchorRect(card) {                // first on-page box of the anchor; a hover preview may hide one of its marks
-    if (card.dataset.gen) { const g = genOf(card); return g ? g.getBoundingClientRect() : null; }
-    const sel = card.dataset.id ? `[data-id="${card.dataset.id}"]` : card.dataset.cm ? `mark.cm[data-cm="${card.dataset.cm}"]` : `mark.lint[data-lint="${card.dataset.lint}"]`;
-    for (const el of (card.dataset.cm ? cmQA(sel) : ed().querySelectorAll(sel))) { const r = el.getClientRects()[0]; if (r) return r; }
-    if (card.dataset.cm) { const t = thread(card.dataset.cm), l = t && !t.resolved && lostEl(t); if (l) return l.getBoundingClientRect(); }
+    for (const el of anchorEls(card)) { const r = el.getClientRects()[0]; if (r) return r; }
     return null;
   }
   function queueLayout() { if (state._raf) return; state._raf = requestAnimationFrame(() => { state._raf = 0; layout(); }); }
+  const NARROW = window.matchMedia ? window.matchMedia('(max-width: 900px)') : { matches: false };
   function layout() {                          // each card level with its text; the active one exactly, the rest make room
     const canvas = $('rv-canvas'); if (!canvas) return;
     // the hovered tick was destroyed by a redraw (autosave commit, Ctrl+Z, a task poll), so its
@@ -1508,30 +1583,68 @@
       ed().querySelectorAll('.rl-pv-yes,.rl-pv-no').forEach(m => m.classList.remove('rl-pv-yes', 'rl-pv-no'));
     }
     if (!document.body.classList.contains('review-open') || canvas.style.display === 'none' || state.previewing) { drawLines(); return; }
-    if ($('rv-body').scrollTop) $('rv-body').scrollTop = 0;
-    const top0 = $('rv-body').getBoundingClientRect().top;
-    // a card appears only while its text is on the page (Kevin, 2026-10-12: "the in-line comments should
-    // only appear when the text shows up on the page"); the card being written or looked at stays
-    const scR = (document.querySelector('.editor-scroll') || ed()).getBoundingClientRect();
-    const rows = [];
-    for (const c of canvas.querySelectorAll(':scope > .rv-card')) {      // a thread riding inside a change card is not placed on its own
-      const r = anchorRect(c); if (!r) { c.style.display = 'none'; continue; }
-      const id = c.dataset.cm || c.dataset.id || c.dataset.lint, keep = id === state.active || c.classList.contains('draft');
-      if (!keep && (r.bottom < scR.top || r.top > scR.bottom)) { c.style.display = 'none'; continue; }
-      c.style.display = '';
-      rows.push({ c, y: r.top - top0 - 6, h: c.offsetHeight });
+    const cards = [...canvas.querySelectorAll(':scope > .rv-card')];      // a thread riding inside a change card is not placed on its own
+    // Narrow window (under 900px): the margin is a sheet under the article and the cards flow as a list in
+    // document order; nothing is placed beside text there (the sidebar would take most of the width)
+    if (NARROW.matches) {
+      canvas.classList.add('flow'); canvas.querySelectorAll('.rv-edge').forEach(p => p.remove());
+      for (const c of cards) { if (c.style.display) c.style.display = ''; if (c.style.top) c.style.top = ''; }
+      const a = cards.find(c => (c.dataset.cm || c.dataset.id || c.dataset.lint) === state.active);
+      if (a && a !== state._flowScrolled) { state._flowScrolled = a; a.scrollIntoView({ block: 'nearest' }); }
+      drawLines(); return;
     }
+    canvas.classList.remove('flow');
+    const body = $('rv-body'); if (body.scrollTop) body.scrollTop = 0;
+    const bodyR = body.getBoundingClientRect(), top0 = bodyR.top, H = bodyR.height;
+    const scR = (document.querySelector('.editor-scroll') || ed()).getBoundingClientRect();
+    // READ everything first, then WRITE: a display write followed by an offsetHeight read per card forced a
+    // layout for each of the 80 cards on every frame.
+    // A card appears only while its text is on the page (Kevin, 2026-10-12: "the in-line comments should only
+    // appear when the text shows up on the page"). That includes the selected card: kept on and clamped into
+    // the pane, it rode along with the scroll and the clamp shifted every other card by the same thousands
+    // of pixels, which is the "stuck" margin of 2026-11-07. Only the draft being typed is kept, pinned to the
+    // edge its text left by, so Kevin never types into a box he cannot see (QA 2026-10-08).
+    const rows = [], hide = [], show = [];
+    for (const c of cards) {
+      const r = anchorRect(c);
+      const draft = c.classList.contains('draft'), onPage = !!r && r.bottom >= scR.top && r.top <= scR.bottom;
+      if (!r || (!onPage && !draft)) { hide.push(c); continue; }
+      show.push(c);
+      rows.push({ c, id: c.dataset.cm || c.dataset.id || c.dataset.lint, draft, onPage, y: r.top - top0 - 6 });
+    }
+    for (const c of hide) if (c.style.display !== 'none') c.style.display = 'none';
+    for (const c of show) if (c.style.display) c.style.display = '';
+    canvas.querySelectorAll('.rv-edge').forEach(p => { if (!rows.length) p.remove(); });
     if (!rows.length) { drawLines(); return; }
+    for (const r of rows) r.h = r.c.offsetHeight;                     // one layout flush for every height
     rows.sort((a, b) => a.y - b.y);
-    let ai = rows.findIndex(r => (r.c.dataset.id || r.c.dataset.cm || r.c.dataset.lint) === state.active); if (ai < 0) ai = 0;
-    const GAP = 8, pos = new Array(rows.length), H = $('rv-body').clientHeight;
+    const dr = rows.find(r => r.draft && !r.onPage);
+    if (dr) dr.y = Math.max(0, Math.min(dr.y, H - dr.h));             // the draft whose text scrolled off waits at that edge
+    // A thread whose text is gone sits beside the block it used to be in (lostEl), or at the top of the article
+    // when even that is gone: a dozen of those piled onto the first paragraph pushed every card for text that IS
+    // on the page below the pane. Cards with text come first; the lost ones follow underneath, unless one of them
+    // is the card Kevin selected.
+    const GAP = 8;
+    const late = rows.filter(r => r.c._ancLost && r.id !== state.active && !r.draft);
+    if (late.length && late.length < rows.length) {
+      const main = rows.filter(r => !late.includes(r)), pm = place(main), bottom = Math.max(...main.map((r, i) => pm[i] + r.h)) + GAP;
+      let fl = bottom; const pl = late.map(r => { const p = Math.max(r.y, fl); fl = p + r.h + GAP; return p; });
+      rows.length = 0; rows.push(...main, ...late);
+      finish(rows, pm.concat(pl)); return;
+    }
+    finish(rows, place(rows));
+    function place(rows) {
+    // the pivot: the selected card while its text is on the page, else the draft, else the first in view
+    let ai = rows.findIndex(r => r.id === state.active); if (ai < 0) ai = rows.findIndex(r => r.draft); if (ai < 0) ai = 0;
+    const pos = new Array(rows.length);
     pos[ai] = rows[ai].y;
     let floor = pos[ai] + rows[ai].h + GAP;
     for (let i = ai + 1; i < rows.length; i++) { pos[i] = Math.max(rows[i].y, floor); floor = pos[i] + rows[i].h + GAP; }
     let ceil = pos[ai] - GAP;
     for (let i = ai - 1; i >= 0; i--) { pos[i] = Math.min(rows[i].y, ceil - rows[i].h); ceil = pos[i] - GAP; }
     // level with its text, but never out of sight: a draft for text near the top of the view (or below a
-    // tall active card) opened outside the margin and Kevin typed into a box he could not see (QA 2026-10-08)
+    // tall active card) opened outside the margin and Kevin typed into a box he could not see (QA 2026-10-08).
+    // The pivot's text is on the page, so this shift is at most a card's height, never a scroll distance.
     { const h = rows[ai].h;
       let d = 0;
       if (pos[ai] < 0) d = -pos[ai];
@@ -1542,7 +1655,9 @@
     // showed 3 (Kevin, 2026-10-12: "some of them aren't showing up in the sidebar, but the number still
     // says they're there"). A card whose text is in view is never placed above the pane: the ones that
     // would be are laid down from the top instead, in order, and what follows makes room below.
-    { const first = rows.findIndex((r, i) => pos[i] < 0 && r.y > -r.h / 2);   // pushed above the pane, yet its text is in view
+    // Not when Kevin selected a card: that one stays level with its text (2026-11-07), and the cards above
+    // it that do not fit are counted in the "▲ N more" pill below rather than pushing it off its line.
+    { const first = rows[ai].id === state.active ? -1 : rows.findIndex((r, i) => pos[i] < 0 && r.y > -r.h / 2);   // pushed above the pane, yet its text is in view
       if (first >= 0) {
         let fl = 0;
         for (let i = first; i < rows.length; i++) { pos[i] = Math.max(rows[i].y, fl, 0); fl = pos[i] + rows[i].h + GAP; }
@@ -1550,7 +1665,10 @@
         const over = pos[ai] + rows[ai].h - H;
         if (over > 0) for (let i = 0; i < pos.length; i++) pos[i] -= over;
       } }
-    rows.forEach((r, i) => { r.c.style.top = pos[i] + 'px'; });
+    return pos;
+    }
+    function finish(rows, pos) {
+    rows.forEach((r, i) => { const t = pos[i] + 'px'; if (r.c.style.top !== t) r.c.style.top = t; });
     // When the pane cannot hold every card whose text is in view, the ones that had to leave are counted
     // at the edge they left by ("▲ 3 more"); a click brings the nearest one back, and the counter never
     // disagrees with the margin again (Kevin, 2026-10-12)
@@ -1564,12 +1682,13 @@
         pill.onclick = () => { const c = nearest.r.c; state.active = c.dataset.cm || c.dataset.id || c.dataset.lint; renderAll(); };
       } }
     drawLines(); clearTimeout(state._ld); state._ld = setTimeout(drawLines, 200);   // again once the cards have slid
+    }
   }
   function drawLines() {                       // classic Word balloons: a line from each card to the text it is about
     const svg = $('rv-lines'); if (!svg) return;
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     const canvas = $('rv-canvas');
-    if (!document.body.classList.contains('review-open') || !canvas || canvas.style.display === 'none') return;
+    if (!document.body.classList.contains('review-open') || !canvas || canvas.style.display === 'none' || canvas.classList.contains('flow')) return;
     const br = $('rv-body').getBoundingClientRect(), sc = document.querySelector('.editor-scroll').getBoundingClientRect();
     const er = ed().getBoundingClientRect();
     const top = Math.max(br.top, sc.top);
@@ -1849,12 +1968,18 @@ body.review-open #review-pane{display:flex}
 /* cards: one shape for a change and a comment, Word's margin */
 .rv-card{border:1px solid #e3e2dc;border-radius:6px;padding:.5rem .6rem .55rem;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);font-size:.82rem}
 .rv-canvas .rv-card{position:absolute;left:.5rem;right:.6rem;transition:top .16s ease-out}
+.rv-canvas.scrolling .rv-card{transition:none}
+/* under 900px the margin is a sheet below the article and the cards flow as a list */
+.rv-canvas.flow{height:auto;padding:.5rem}.rv-canvas.flow .rv-card{position:static;left:auto;right:auto;margin:0 0 .45rem;transition:none}.rv-body:has(> .rv-canvas.flow){overflow:auto}
 .rv-list .rv-card{margin:0 0 .45rem}
 .rv-card:hover{border-color:#c5c9c0}.rv-card.active{border-color:#1C2821;box-shadow:0 0 0 2px rgba(28,40,33,.1)}
 .rv-card.dim{opacity:.65}
 .rv-card .who{display:flex;align-items:center;gap:.4rem;min-height:22px;font-size:.72rem;color:#6b7a70}.rv-card .who b{color:#1C2821;font-size:.78rem}.rv-card .who .tm{white-space:nowrap}
 .rv-card .av{width:22px;height:22px;border-radius:50%;background:#9A7B2E;color:#fff;font:700 .68rem/22px 'Hanken Grotesk',sans-serif;text-align:center;flex-shrink:0}
 .rv-card .av.me{background:#2D6B50}.rv-card.wait .av{background:#B4553C}
+/* author pictures (assets/avatars, no disc since 2026-11-07): bare drawing, 28 px; Kevin's hiker and the ninja's rim are drawn in currentColor, so the slot sets the ink (the editor has no dark theme) */
+.rv-card .av.pic{width:28px;height:28px;background:none;border-radius:0;color:#1C2821;overflow:visible;display:inline-flex;align-items:center;justify-content:center;line-height:0;font-size:0}
+.rv-card .av.pic>img,.rv-card .av.pic>svg{width:100%;height:100%;display:block;object-fit:contain}.rv-cm .rp .av.pic{width:22px;height:22px}
 .rv-card .acts{margin-left:auto;display:flex;align-items:center;gap:.1rem}
 .rv-card .acts .yes,.rv-card .acts .no{width:26px;height:26px;border:1px solid transparent;border-radius:50%;background:none;cursor:pointer;font-size:.9rem;line-height:1;color:#6b7a70;padding:0}
 .rv-card .acts .yes:hover{background:#E3F0E8;color:#2D6B50;border-color:#b9d4c5}.rv-card .acts .no:hover{background:#F8E5E0;color:#B4553C;border-color:#e9c4ba}

@@ -25,12 +25,14 @@ CONFIG SCHEMA (see tools/itinerary_maps/el-salvador.json for a full example):
     stops[]         {n,name,lat,lon,days,anchor,dx,dy}  (anchor label offsets)
     dots[]          {name,lat,lon,anchor,dx,dy}  small un-numbered markers
     airport         {name,lat,lon,anchor,dx,dy}  optional ✈ marker
-    airports[]      several ✈ markers (same fields); "air" legs use the first one
+    airports[]      several ✈ markers (same fields); "air" legs use the first one; "icon_dx"/"icon_dy"
+                    move the ✈ off its dot (an airport beside a hub star, where the glyph sat on a route)
     legs[]          {a,b,label,dash,chip_off,chip_side}  a/b index stops or "air"
                     sailing legs: "via":[[lat,lon],...] sea waypoints and/or "bow":0.3
                     a trail map (2026-10-19): "outline_file": rings [[lon,lat],...] from tools/osm_coast_land.py
                     instead of the country (a 20 km box is a few vertices in Natural Earth); per-leg "color";
-                    "legend": {"pos": "tl|tr|bl|br", "items": [{"label", "color", "dash"}]}
+                    "legend": {"pos": "tl|tr|bl|br", "items": [{"label", "color", "dash"}], "dx", "dy"}
+                    (dx/dy move the box from its corner, in window units; the map editor writes them)
                     draw a smooth curve that stays on the water (blue-cruise.json)
     a lake map (2026-11-02, Lake Ohrid boat tour): "frame_fill" paints the whole window (the
                     neighbor country) under the outline; "layers": [{"file", "fill", "stroke", "width",
@@ -320,7 +322,7 @@ def build(cfg):
             B.append(f'<path d="{path_d(rings)}" fill="{P.get("water", "#A9CBD6")}"/>')
     # water labels: "water_labels": [{"name": "Lake Sevan", "lat": .., "lon": .., "size": 13}]
     # set on the water in a light blue, spaced caps like the stop labels but lighter
-    for wl in cfg.get("water_labels", []):
+    for wi, wl in enumerate(cfg.get("water_labels", [])):
         if "lat" in wl:
             wx, wy = T(wl["lat"], wl["lon"])
         else:                                   # the centroid of the lake's largest ring (shoelace)
@@ -333,12 +335,14 @@ def build(cfg):
             wx, wy = cx / (3 * A), cy / (3 * A)
         wx += wl.get("dx", 0) * AFS; wy += wl.get("dy", 0) * AFS
         fs = wl.get("size", 12)
-        B.append(f'<g transform="{stamp_tf(wx, wy)}"><text x="0" y="0" text-anchor="middle" font-size="{fs}" '
-                 f'font-weight="500" font-style="italic" letter-spacing="2" fill="{P.get("water_ink", "#5F93A8")}">'
-                 f'{html.escape(wl["name"].upper())}</text></g>')
+        # the map editor drags a water label too (Kevin, 2026-11-07): dx/dy are the override it writes
+        wtxt = (f'<text x="0" y="0" text-anchor="middle" font-size="{fs}" '
+                f'font-weight="500" font-style="italic" letter-spacing="2" fill="{P.get("water_ink", "#5F93A8")}">'
+                f'{html.escape(wl["name"].upper())}</text>')
+        B.append(f'<g transform="{stamp_tf(wx, wy)}">{wrap(wtxt, kind="water", idx=wi, dx=wl.get("dx", 0), dy=wl.get("dy", 0))}</g>')
         if wl.get("href") and not EDIT:
             B[-1] = f'<a class="imap-link" href="{wl["href"]}">{B[-1]}</a>'
-    for cl in cfg.get("country_labels", []):
+    for ci, cl in enumerate(cfg.get("country_labels", [])):
         cx_, cy_ = T(cl["lat"], cl["lon"])
         cx_ += cl.get("dx", 0) * AFS; cy_ += cl.get("dy", 0) * AFS
         # "North|Macedonia" sets two lines; "weight" / "ls" (letter-spacing) make a label more prominent
@@ -347,7 +351,9 @@ def build(cfg):
                       f'font-size="{cfs}" font-weight="{cl.get("weight", 600)}" letter-spacing="{cl.get("ls", 3)}" '
                       f'fill="{cl.get("color", P["muted"])}">{html.escape(ln.upper())}</text>'
                       for k, ln in enumerate(cl["name"].split("|")))
-        B.append(f'<g transform="{stamp_tf(cx_, cy_)}">{txt}</g>')
+        # draggable in the map editor (Kevin, 2026-11-07: "fix the map editor so I can drag these myself"): the
+        # stamp is translated by dx/dy, so a drag in its local units IS the change to dx/dy
+        B.append(f'<g transform="{stamp_tf(cx_, cy_)}">{wrap(txt, kind="country", idx=ci, dx=cl.get("dx", 0), dy=cl.get("dy", 0))}</g>')
     # In "focus" mode the viewBox crops to the stops/labels only (the country
     # outline extends beyond, giving a zoomed regional view) — for trips that
     # cluster in one part of a big country. Otherwise crop includes the whole country.
@@ -443,7 +449,8 @@ def build(cfg):
                   f'{airport["name"].upper()}</text>')
         B.append(f'<g transform="{stamp_tf(ax, ay)}">'
                  f'<circle r="3" fill="{P["muted"]}"/>'
-                 f'<text x="0" y="-7" text-anchor="middle" font-size="13" fill="{P["muted"]}">✈</text>'
+                 f'<text x="{airport.get("icon_dx", 0)}" y="{-7 + airport.get("icon_dy", 0)}" text-anchor="middle" '
+                 f'font-size="13" fill="{P["muted"]}">✈</text>'
                  f'{wrap(alabel, kind="airport", idx=ai, dx=adx, dy=ady)}</g>')
         exa(ax, ay - 20 * AFS)
         ex_text(ax + adx * AFS, ay + ady * AFS, airport["name"].upper(), 9 * AFS, aanc, 1 * AFS)
@@ -542,10 +549,13 @@ def build(cfg):
         pos = lg.get("pos", "tl")
         lx = (vx + 12) if "l" in pos else (vx + vw - 12 - bw * AFS)
         ly = (vy + 12) if "t" in pos else (vy + vh - 12 - bh * AFS)
-        ly += lg.get("dy", 0)                     # "dy": -40 lifts the box; the window grows upward to keep it in frame
+        # "dx"/"dy": the box moved from its corner, in window units (the map editor writes them when the legend is
+        # dragged, 2026-11-07); "dy": -40 lifts the box and the window grows upward to keep it in frame
+        lx += lg.get("dx", 0); ly += lg.get("dy", 0)
         if ly < vy + 8:
             vh += (vy + 8) - ly; vy = ly - 8
         L = [f'<g transform="translate({lx:.1f} {ly:.1f}) scale({AFS:.3f})">',
+             f'<g class="eh" data-kind="legend" data-idx="0" data-dx="{lg.get("dx", 0)}" data-dy="{lg.get("dy", 0)}">' if EDIT else "",
              f'<rect x="0" y="0" width="{bw:.1f}" height="{bh:.1f}" rx="5" fill="{P["bg"]}" fill-opacity=".93" stroke="{P["chip"]}" stroke-width="1"/>']
         for i, it in enumerate(items):
             yy = 7 + row * i + row / 2
@@ -553,8 +563,8 @@ def build(cfg):
             L.append(f'<line x1="10" y1="{yy:.1f}" x2="{10 + sw}" y2="{yy:.1f}" stroke="{it.get("color") or P["route"]}" '
                      f'stroke-width="{it.get("width") or 2.4}"{dsh} stroke-linecap="round"/>')
             L.append(f'<text x="{sw + 20}" y="{yy + fs * 0.36:.1f}" font-size="{fs}" fill="{P["ink"]}" font-weight="500">{it.get("label", "")}</text>')
-        L.append('</g>')
-        B += L
+        L.append('</g></g>' if EDIT else '</g>')
+        B += [x for x in L if x]
     proj = f' data-proj="{minx} {miny} {scale} {PAD + ML} {PAD + MT} {K}"' if EDIT else ""
     head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}"{proj} '
             f'xmlns="http://www.w3.org/2000/svg" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif">')

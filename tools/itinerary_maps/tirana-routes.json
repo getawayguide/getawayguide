@@ -1,0 +1,284 @@
+{
+  "slug": "tirana-routes",
+  "page": "Drafts/Full Articles/albania/tirana.html",
+  "iso3": "ALB",
+  "country_width": 260,
+  "simplify": 160,
+  "smooth": true,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "stops": [
+    {
+      "n": 1,
+      "name": "Tirana",
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 30,
+      "no_number": true,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Shkodër",
+      "lat": 42.0683,
+      "lon": 19.5126,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "no_number": true
+    },
+    {
+      "n": 3,
+      "name": "Durrës",
+      "lat": 41.3231,
+      "lon": 19.4414,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "no_number": true,
+      "href": "#durres"
+    },
+    {
+      "n": 4,
+      "name": "Himarë",
+      "lat": 40.1017,
+      "lon": 19.7447,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "no_number": true,
+      "href": "himare.html"
+    },
+    {
+      "n": 5,
+      "name": "Sarandë",
+      "lat": 39.8756,
+      "lon": 20.0053,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true
+    },
+    {
+      "n": 6,
+      "name": "Prizren",
+      "lat": 42.2139,
+      "lon": 20.7397,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../kosovo/field-notes.html#prizren"
+    },
+    {
+      "n": 7,
+      "name": "Prishtina",
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../kosovo/field-notes.html#prishtina"
+    },
+    {
+      "n": 8,
+      "name": "Ohrid",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "no_number": true,
+      "href": "../../../north-macedonia/field-notes.html#ohrid"
+    },
+    {
+      "n": 9,
+      "name": "Podgorica",
+      "lat": 42.4304,
+      "lon": 19.2594,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -48,
+      "no_number": true,
+      "href": "../../../montenegro/field-notes.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "TIA Airport",
+      "lat": 41.4147,
+      "lon": 19.7206,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -30,
+      "icon_dx": -9
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 5,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 7,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 6,
+      "b": 5,
+      "label": ""
+    },
+    {
+      "a": 8,
+      "b": 1,
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": "dot:Corfu",
+      "b": 4,
+      "label": "",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Bus Transfer",
+        "color": "#9DB5A8"
+      },
+      {
+        "label": "Ferry",
+        "dash": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/tirana-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/tirana-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/tirana-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Albania",
+      "lat": 40.55,
+      "lon": 20.4,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Kosovo",
+      "lat": 42.55,
+      "lon": 20.55,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North|Macedonia",
+      "lat": 41.7,
+      "lon": 21.45,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 43.1,
+      "lon": 19.25,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Greece",
+      "lat": 40.45,
+      "lon": 21.5,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Serbia",
+      "lat": 43.15,
+      "lon": 21.45,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "crop_bounds": [
+    18.4,
+    39.4,
+    21.9,
+    43.35
+  ],
+  "dots": [
+    {
+      "name": "Corfu",
+      "lat": 39.6243,
+      "lon": 19.9217,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 4
+    }
+  ],
+  "outline_file": "tools/itinerary_maps/geo/tirana-routes-main.json"
+}

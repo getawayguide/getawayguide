@@ -1,0 +1,111 @@
+{
+ "country_width": 460,
+ "dots": [
+  {
+   "name": "Matka Canyon",
+   "lat": 41.9506,
+   "lon": 21.2986,
+   "anchor": "end",
+   "dx": -11,
+   "dy": 4
+  },
+  {
+   "name": "Prilep",
+   "lat": 41.3451,
+   "lon": 21.555,
+   "anchor": "start",
+   "dx": 11,
+   "dy": 4
+  },
+  {
+   "name": "St. Naum",
+   "lat": 40.914,
+   "lon": 20.7407,
+   "anchor": "start",
+   "dx": 11,
+   "dy": 4
+  }
+ ],
+ "iso3": "MKD",
+ "legs": [
+  {
+   "a": 0,
+   "b": 1,
+   "label": "Bus · 3–4 hr"
+  },
+  {
+   "a": 1,
+   "b": "dot:Prilep",
+   "label": ""
+  },
+  {
+   "a": "dot:Prilep",
+   "b": 2,
+   "label": ""
+  },
+  {
+   "a": 2,
+   "b": 3,
+   "label": ""
+  }
+ ],
+ "margins": {
+  "b": 130,
+  "l": 240,
+  "r": 240,
+  "t": 130
+ },
+ "simplify": 60,
+ "slug": "north-macedonia-itinerary",
+ "smooth": true,
+ "stops": [
+  {
+   "anchor": "start",
+   "days": "Days 1–2",
+   "dx": 14,
+   "dy": -14,
+   "lat": 41.9981,
+   "lon": 21.4254,
+   "n": 1,
+   "name": "Skopje",
+   "href": "skopje.html"
+  },
+  {
+   "anchor": "end",
+   "days": "Days 3–5",
+   "dx": -13.5,
+   "dy": -13.5,
+   "lat": 41.1231,
+   "lon": 20.8016,
+   "n": 2,
+   "name": "Ohrid",
+   "href": "ohrid.html"
+  },
+  {
+   "anchor": "start",
+   "days": "Day 6",
+   "dx": 15.8,
+   "dy": -15.8,
+   "lat": 41.3697,
+   "lon": 21.2494,
+   "n": 3,
+   "name": "Krushevo",
+   "href": "krushevo.html"
+  },
+  {
+   "anchor": "start",
+   "days": "Day 7",
+   "dx": 11.7,
+   "dy": -13.6,
+   "lat": 41.0319,
+   "lon": 21.3347,
+   "n": 4,
+   "name": "Bitola",
+   "href": "bitola.html"
+  }
+ ],
+ "pages": [
+  "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html"
+ ],
+ "page": "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html"
+}

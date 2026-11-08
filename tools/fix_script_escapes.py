@@ -30,13 +30,28 @@ UNESCAPE = [("&amp;amp;", "&"), ("&amp;lt;", "<"), ("&amp;gt;", ">"),
             ("&amp;", "&")]
 
 
+# a JS string literal ('...', "...", `...`): entities INSIDE one are deliberate (an HTML-escaping helper writes
+# t.replace(/&/g, '&amp;').replace(/</g, '&lt;')), and rewriting them broke that helper. 2026-11-07: the dry run
+# flagged exactly that on gyumri/meteora/thessaloniki, which were never broken. Only code outside literals is fixed.
+LITERAL = re.compile(r"""('(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`)""")
+
+
 def fix_body(js):
-    """Return (fixed_js, n_replacements). Leaves clean scripts untouched."""
+    """Return (fixed_js, n_replacements). Leaves clean scripts and string literals untouched."""
+    parts = LITERAL.split(js)            # odd indexes are string literals
+    total = 0
+    for i in range(0, len(parts), 2):
+        parts[i], k = _fix_code(parts[i], js)
+        total += k
+    return "".join(parts), total
+
+
+def _fix_code(js, whole):
     n = 0
     for ent, ch in UNESCAPE:
         # `&amp;` alone is legitimate inside a JS *string* that builds a URL, so only
         # rewrite it when the script is clearly already broken by the operator escapes
-        if ent == "&amp;" and "&amp;lt;" not in js and "&amp;gt;" not in js:
+        if ent == "&amp;" and "&amp;lt;" not in whole and "&amp;gt;" not in whole:
             continue
         c = js.count(ent)
         if c:

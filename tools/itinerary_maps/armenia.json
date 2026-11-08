@@ -1,4 +1,5 @@
 {
+  "pages": ["armenia/armenia-itinerary.html", "armenia/field-notes.html"],
  "airport": {
   "anchor": "end",
   "dx": -10.1,

@@ -1,0 +1,191 @@
+{
+  "iso3": "SRB",
+  "simplify": 120,
+  "smooth": true,
+  "pin_scale": 1.15,
+  "slug": "belgrade-daytrips",
+  "page": "Drafts/Upcoming/serbia/belgrade.html",
+  "country_width": 330,
+  "margins": {
+    "l": 200,
+    "r": 200,
+    "t": 110,
+    "b": 110
+  },
+  "stops": [
+    {
+      "n": 1,
+      "name": "Belgrade",
+      "lat": 44.8125,
+      "lon": 20.4612,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -10,
+      "no_number": true,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Novi Sad",
+      "lat": 45.2396,
+      "lon": 19.8227,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "no_number": true
+    },
+    {
+      "n": 3,
+      "name": "Sombor",
+      "lat": 45.7733,
+      "lon": 19.1151,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "no_number": true
+    },
+    {
+      "n": 4,
+      "name": "Manasija &|Krupajsko Vrelo",
+      "lat": 44.1425,
+      "lon": 21.54,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "no_number": true
+    },
+    {
+      "n": 5,
+      "name": "Kopaonik",
+      "lat": 43.268,
+      "lon": 20.8263,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "no_number": true
+    }
+  ],
+  "airports": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 1,
+      "label": "",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "dash": true
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Day trip"
+      },
+      {
+        "label": "Better with a night",
+        "dash": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-daytrips-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-daytrips-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Serbia",
+      "lat": 44.3,
+      "lon": 20.0,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Hungary",
+      "lat": 46.35,
+      "lon": 20.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Romania",
+      "lat": 45.3,
+      "lon": 22.4,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bosnia",
+      "lat": 44.2,
+      "lon": 18.4,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Croatia",
+      "lat": 45.55,
+      "lon": 18.3,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 43.3,
+      "lon": 23.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Kosovo",
+      "lat": 42.55,
+      "lon": 20.95,
+      "size": 9,
+      "weight": 600,
+      "ls": 1.8,
+      "color": "#A2ACA5"
+    }
+  ],
+  "crop_bounds": [
+    17.8,
+    42.0,
+    23.4,
+    46.4
+  ]
+}

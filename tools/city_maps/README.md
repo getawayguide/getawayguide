@@ -60,6 +60,10 @@ DOWNTOWN (or CBD / CENTRO) label plus one label per named neighborhood/area the 
 discusses** (BONDI/CBD/MANLY, ST KILDA, SURFERS PARADISE, NOOSA NATIONAL PARK, SOUTH BANK…)
 so readers can orient and know where to base. **A broad AREA name is a label, never a pin**
 — pins are for specific places, so move area names (South Bank, Surfers Paradise) out of `pois`.
+Phone-only placement: `district_labels[].mobile` = `{lat, lon}` puts a label on its own spot on
+the phone base (or `false` leaves it off the phone), and on an orientation map `pois[].lab_mobile`
+= `n|e|s|w` is the name's side on the phone alone (the phone's pins are 1.6x). The map editor's
+Phone view writes both: drag the label or click the name while in Phone view.
 
 DAY TRIPS: `day_trips` is a list of `{name, time, match?, href?}` rendered as a final
 legend-only **DAY TRIPS** section — a dash "–" marker (no number = clearly NOT on the map)

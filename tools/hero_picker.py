@@ -217,6 +217,11 @@ TITLES = {
 
 app = Flask(__name__)
 
+# /api/build: this server's code fingerprint, so the editor shortcut restarts it when its code changed (a Save in
+# flight counts as busy through the POST counter; tools/build_id.py)
+import build_id as _build_id
+_build_id.install(app, __file__)
+
 
 def _posix(p):
     """Photo paths are compared as strings against /photos output, which is
@@ -1755,7 +1760,7 @@ with the window.">
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === '\\') { e.preventDefault(); btn.click(); } });
   // the suite's shortcuts work from inside this frame too: Ctrl+Alt+1..4 switch apps, and the
   // suite asks this frame to toggle its strip when Ctrl+\ is pressed outside it (QA 2026-09-27)
-  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-5]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
+  document.addEventListener('keydown', e => { if (e.ctrlKey && e.altKey && /^[1-6]$/.test(e.key) && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'suite-view', n: +e.key }, '*'); } });
   window.addEventListener('message', e => { if (e.data && e.data.type === 'suite-side') btn.click(); });
 })();
 

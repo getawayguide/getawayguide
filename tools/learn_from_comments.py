@@ -89,7 +89,9 @@ def load():
             continue
         for t in threads:
             for m in [t] + (t.get("replies") or []):
-                if (m.get("author") or "").strip().lower() == "claude":
+                # Kevin's own words only: not Claude's replies, not the Shadow reviewer's predicted comments
+                # (an agent writing in his style would otherwise teach the next draft its own guesses, 2026-11-06)
+                if (m.get("author") or "").strip().lower() != "kevin":
                     continue
                 text = (m.get("text") or "").strip()
                 if text:

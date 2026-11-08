@@ -59,7 +59,7 @@ def wrap(tag, web_src, orig_src):
 
 total_pages = 0
 for page in ([BASE / PAGE] if PAGE else sorted(BASE.glob('*/*.html'))):
-    html = page.read_text(encoding='utf-8')
+    html = page.read_text(encoding='utf-8', newline='')     # the page's own line endings (CRLF pages, 2026-11-06)
     body_start = html.find('class="article-body"')
     if body_start < 0:
         continue
@@ -112,7 +112,7 @@ for page in ([BASE / PAGE] if PAGE else sorted(BASE.glob('*/*.html'))):
     html = ''.join(result)
 
     if html != original:
-        page.write_text(html, encoding='utf-8')
+        page.write_text(html, encoding='utf-8', newline='')
         print(f'  {page.parent.name}/{page.name}: {wrapped} wrapped, {skipped} skipped')
         total_pages += 1
 

@@ -27,7 +27,11 @@ DESK = (311, 470, 622)                 # 1.85x / 2.8x / 3.7x: never ~1.0x or ~2.
 MOB = (393, 786, 1179)                 # the site's phone tiers
 # a section whose guide shares no word with it (Türkiye's "Sailing" notes became the Blue Cruise guide)
 ALIASES = {"sailing": "blue-cruise.html"}
-CARD_RE = re.compile(r'\n?[ \t]*<a class="gb-card"[^>]*data-guide="([^"]+)"[^>]*>.*?</a>\s*<!-- /gb-card -->', re.S)
+# ONE card: the lazy .*? used to run from a card that had lost its marker (an older editor save dropped it) across the
+# prose to the NEXT card's marker, and the sub deleted everything between (stress test 2026-11-06). Nothing inside a
+# card is a paragraph, a heading, a list or another card, so the run stops at any of those and such a card matches nothing.
+CARD_RE = re.compile(r'\n?[ \t]*<a class="gb-card"[^>]*data-guide="([^"]+)"[^>]*>'
+                     r'(?:(?!<a class="gb-card"|<p[\s>]|<h2[\s>]|<h3[\s>]|<ul[\s>]|<ol[\s>]|<div class="fn-section").)*?</a>\s*<!-- /gb-card -->', re.S)
 
 
 def published(path):

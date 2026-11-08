@@ -284,6 +284,12 @@ def _finish(dry, page=None):
         log.append("ran %s" % tool)
         if not dry:
             subprocess.run([sys.executable, str(TOOLS / tool)], cwd=ROOT, capture_output=True, text=True)
+    # 8. Cloudflare Web Analytics beacon in the head of every live page, the new guide pages included
+    #    (idempotent; a no-op while CF_ANALYTICS_TOKEN is missing from .env)
+    log.append("ran analytics_snippet.py --apply")
+    if not dry:
+        subprocess.run([sys.executable, str(TOOLS / "analytics_snippet.py"), "--apply"],
+                       cwd=ROOT, capture_output=True, text=True)
     return log
 
 

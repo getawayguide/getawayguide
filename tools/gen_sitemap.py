@@ -71,11 +71,16 @@ DISALLOW = robots_disallows()
 pages = []
 for p in glob.glob(os.path.join(ROOT, "**", "*.html"), recursive=True):
     r = rel(p)
-    if r.startswith(("Drafts/", ".tmp/", ".git/")): continue
+    # tools/ holds helper pages (ig_post_page.html, 2026-11-07), never site content
+    if r.startswith(("Drafts/", ".tmp/", ".git/", "tools/", "_content/", "workflows/", "assets/")): continue
     if os.path.basename(r) in EXCLUDE: continue
     if any(r == d or r.startswith(d) for d in DISALLOW): continue
     # a retired page's redirect stub (retire_field_notes.py) is noindex: the page it sends readers to is listed
-    if 'http-equiv="refresh"' in open(p, encoding="utf-8", errors="replace").read(): continue
+    src = open(p, encoding="utf-8", errors="replace").read()
+    if 'http-equiv="refresh"' in src: continue
+    # a page that asks not to be indexed (links.html, the Instagram bio page) must not be submitted either:
+    # Search Console reports that as "Submitted URL marked noindex"
+    if re.search(r'<meta[^>]+name=["\']robots["\'][^>]+noindex', src, re.I): continue
     pages.append(r)
 pages.sort(key=lambda r: (r != "index.html", r))   # homepage first
 

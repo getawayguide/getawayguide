@@ -46,6 +46,11 @@ VECTORS = {
         "nav .nav-logo": ["fontFamily", "fontSize", "fontWeight", "letterSpacing"],
         "nav > ul > li > a": ["fontFamily", "fontSize", "letterSpacing",
                               "textTransform", "color"],
+        # the vector above has its colour EXPECTED to differ (the home nav is
+        # white), which also silenced any drift between the other 64 pages.
+        # This one leaves the home page out so their resting ink is compared.
+        "body:not(.gg-home) nav > ul > li > a:not(.active):not([aria-current])":
+            ["color"],
         "nav > ul": ["gap"],
         ".nav-dropdown-fn": ["width", "padding", "backgroundColor", "boxShadow"],
         ".nav-dropdown-fn .mm-col a": ["fontSize", "color", "padding"],
@@ -122,10 +127,28 @@ VECTORS = {
         ".gg-updated": ["fontSize", "marginTop", "marginBottom", "color"],
         ".cmmap": ["borderRadius", "boxShadow"],
         ".cmkey": ["borderRadius", "boxShadow"],
+        # photo captions: 114 carry the whole treatment inline and Kosovo's two
+        # use the class alone, so a rule change reaches one set and not the other
+        ".article-body .img-caption, .artbody .img-caption, .fn-section .img-caption":
+            ["color", "fontSize", "fontStyle", "lineHeight", "textAlign"],
+    },
+    "a11y": {
+        # search.js injects the skip link on every page; it must stay off
+        # screen until focused, and look the same everywhere when it is
+        ".skip-link": ["position", "top", "backgroundColor", "color",
+                       "fontSize", "fontWeight", "zIndex"],
+        # the country pages' visually hidden section heading
+        ".country-articles-section > h2": ["position", "width", "height",
+                                           "overflow", "clip"],
     },
     "hero": {
+        # marginTop/padding/minHeight: on a phone the box can keep the same
+        # 420px height while sitting UNDER the fixed nav (top-10-el-salvador,
+        # found 2026-11-07), so height alone never caught it
         ".article-hero.gg-banner, .ah-banner": ["height", "paddingLeft",
-                                                "justifyContent", "alignItems"],
+                                                "justifyContent", "alignItems",
+                                                "marginTop", "paddingTop",
+                                                "paddingBottom", "minHeight"],
         # the headline over a photograph: one size, one measure, on all six
         ".article-hero.gg-banner h1, .ah-banner h1":
             ["fontSize", "fontWeight", "maxWidth", "marginTop"],
@@ -171,6 +194,10 @@ VECTORS = {
         ".article-body:has(> #toc-b:first-child),"
         " .article-body:has(> .article-toc:first-child),"
         " .article-body:has(> .fn-toc:first-child)": ["paddingTop"],
+        # a paragraph after a list takes the paragraph gap: 18px of list tail
+        # everywhere, plus the p + p rule's 1.35em on a phone
+        ".article-body ul:has(+ p), .article-body ol:has(+ p)": ["marginBottom"],
+        ".article-body ul + p, .article-body ol + p": ["marginTop"],
     },
 }
 
@@ -273,8 +300,9 @@ HOVER_OK = {
         "white on a photograph and stay white in both states.",
     "nav top-level link":
         "the home nav floats over the hero photograph, so it rests at 70% "
-        "white and steps to full white; every other page rests at 55% ink and "
-        "steps to full ink. Same gesture, opposite ground.",
+        "white and steps to full white; every other page rests at 66% ink "
+        "(4.9:1, the 2026-11-07 contrast pass) and steps to full ink. Same "
+        "gesture, opposite ground.",
 }
 
 PROBE = """([sel, props]) => {
@@ -565,6 +593,12 @@ async def main():
                    if not any(part in skip for part in f.relative_to(root).parts)
                    and f.name not in skip_files)
     groups = {g.strip() for g in a.only.split(",") if g.strip()}
+    if not pages:
+        # preview/ was promoted to the site root at the re-theme ship, so the
+        # default run found nothing and reported "0 findings" with exit 0
+        print(f"no pages under {root}; the site itself is checked with --live",
+              file=sys.stderr)
+        sys.exit(2)
     print(f"{len(pages)} pages, {a.width}px"
           + (f", groups: {', '.join(sorted(groups))}" if groups else ""))
 

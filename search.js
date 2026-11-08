@@ -291,3 +291,56 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
   else build();
 })();
+/* Keyboard and screen-reader access (accessibility pass, 2026-11-07). Lives here because search.js is
+   the one script every live page loads, so every template gets it with no markup change.
+   1. A "Skip to content" link, the first stop in the tab order, so a keyboard reader does not tab
+      through the whole nav and its country menu on every page. It jumps to the page's <h1>.
+   2. The country-page cards, the destinations cards and the breadcrumb pill are <div>/<span>s that
+      navigate with onclick, so a keyboard could not reach them and a screen reader did not call them
+      links. They become focusable links (role, tabindex, Enter). Their markup stays as it is because
+      explore_more, guide_cards, sync_guides and publish_country all parse it. */
+(function () {
+  "use strict";
+  function a11y() {
+    var st = document.createElement("style");
+    st.textContent =
+      ".skip-link{position:absolute;left:12px;top:-80px;z-index:10000;padding:10px 16px;background:#1C2821;" +
+      // the site's UI-label type (nav, "Start exploring"): 12px, uppercase, wide tracking (consistency audit 2026-11-07);
+      // its focus ring is the site-wide [tabindex]/a :focus-visible rule, so no ring of its own here
+      "color:#fff !important;font:500 12px/1 'Hanken Grotesk',-apple-system,'Segoe UI',sans-serif;" +
+      "letter-spacing:.13em;text-transform:uppercase;text-decoration:none;transition:top .15s}" +
+      ".skip-link:focus{top:12px}" +
+      // the skip target is focused by script, not by the reader: no ring round the headline (the site's
+      // [tabindex]:focus-visible rule is !important, so the inline outline:none below never won)
+      "h1[tabindex='-1']:focus{outline:none !important}" +
+      // over a hero photograph the ring is white, as artifact.css already does for the hero's own links
+      ".article-hero [data-a11y-link]:focus-visible{outline-color:#fff !important}";
+    document.head.appendChild(st);
+
+    var h1 = document.querySelector("h1");
+    if (h1 && !document.querySelector(".skip-link")) {
+      if (!h1.id) h1.id = "gg-content";
+      if (!h1.hasAttribute("tabindex")) h1.setAttribute("tabindex", "-1");
+      h1.style.outline = h1.style.outline || "none";
+      var skip = document.createElement("a");
+      skip.className = "skip-link";
+      skip.href = "#" + h1.id;
+      skip.textContent = "Skip to content";
+      document.body.insertBefore(skip, document.body.firstChild);
+    }
+
+    var els = document.querySelectorAll("[onclick*='location.href']");
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], tag = el.tagName.toLowerCase();
+      if (tag === "a" || tag === "button" || el.hasAttribute("tabindex")) continue;
+      el.setAttribute("role", "link");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("data-a11y-link", "");
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target === e.currentTarget) { e.preventDefault(); e.currentTarget.click(); }
+      });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", a11y);
+  else a11y();
+})();
