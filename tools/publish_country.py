@@ -22,6 +22,8 @@ Does, in order:
      hero description (tools/updated_line.py --apply), before step 9 and again after the SEO dates.
   9. Affiliate links (optional, OFF): tools/affiliate_links.py on the new page. It only writes when .env
      has the program IDs AND AFFILIATE_LINKS=on; until then the log shows its dry-run line.
+  10. Currency converter: tools/currency_widget.py --refresh-rates --apply --live-only (today's rates on every
+     live itinerary; keeps the saved rates when there is no network).
 
 Usage:
   python tools/publish_country.py <slug> --name "Name" --iso2 xx --continent europe \
@@ -510,6 +512,16 @@ def main():
         head = (r.stdout or "").strip().splitlines()
         log.append(("ran analytics_snippet.py --apply (%s)" % (head[0] if head else "-")) if r.returncode == 0
                    else "WARN: analytics_snippet.py failed - run it manually")
+
+        # The currency converter on the live itineraries (tools/currency_widget.py; Kevin, 2026-11-08): today's
+        # mid-market rates, then the widget refreshed / inserted. With no network the refresh keeps the rates it
+        # has and the apply still runs, so this never fails a launch.
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "currency_widget.py"),
+                            "--refresh-rates", "--apply", "--live-only"],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        lines = (r.stdout or "").strip().splitlines()
+        log.append(("currency converter: %s; %s" % (lines[0] if lines else "-", lines[-1] if lines else "-"))
+                   if r.returncode == 0 else "WARN: currency_widget.py failed - run it manually")
 
         # The "Last updated: <Month YYYY> · Based on firsthand experience · Contains affiliate links" footnote
         # (right before Explore More) and the date under the hero description (tools/updated_line.py; Kevin,

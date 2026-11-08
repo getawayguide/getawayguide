@@ -51,6 +51,7 @@ h1 { font: 600 1.55rem/1.1 var(--display); margin: 0; letter-spacing: -.01em; te
 .tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
 .tabs button small { opacity: .7; margin-left: .3rem; font-variant-numeric: tabular-nums }
 .hint { font-size: .8rem; color: var(--muted) }
+button.help { width: 30px; height: 30px; padding: 0; border-radius: 50%; color: var(--muted); font-weight: 600; display: grid; place-items: center }
 kbd { font: 500 .72rem var(--ui); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; background: var(--surface) }
 
 main { max-width: 1280px; margin: 0 auto; padding-block: 1rem 1.5rem; min-height: 50vh }
@@ -205,6 +206,49 @@ pre.cmd { background: var(--surface); border: 1px solid var(--line); border-radi
 pre.capprev { white-space: pre-wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: .75rem .85rem; font: .88rem/1.45 var(--ui); margin: 0; max-height: 34rem; overflow: auto }
 .tpick .grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) }
 
+/* EMBEDDED in the editor's Social tab (html.embed, set when tools/social_tab.py serves the page with window.SOCIAL_EMBED).
+   The tab's own toolbar carries the country, the output type, the views, the filter and the render actions, so the
+   page's header goes, and what is left takes the editor's look: Hanken Grotesk 13 px, Newsreader headings at weight 400,
+   hairlines in the suite's grey, pill buttons. The claude.ai artifacts never set this class. */
+html.embed { --bg: #fff; --surface: #FBFBF8; --line: #E7E6DF; --muted: #6b7670; --slot: #EFEFE9; --accent-soft: #E8F1EC;
+  --display: 'Newsreader', Georgia, serif; --ui: 'Hanken Grotesk', sans-serif; color-scheme: light }
+html.embed body { font-size: 13px; line-height: 1.45 }
+html.embed body::before, html.embed header.top { display: none }
+/* the long how-to sentences read as clutter inside the editor (Kevin, 2026-11-08: trim excess wording); the claude.ai page keeps them */
+html.embed p.note { display: none }
+html.embed .wrap { padding-left: 18px; padding-right: 18px }
+html.embed main { max-width: none; padding-block: 14px 1.5rem }
+html.embed main.with-strip { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) }
+html.embed button { border-radius: 999px; font: 500 12px/1 var(--ui); padding: .5rem .8rem; border-color: var(--line); background: #fff; color: var(--fg) }
+html.embed button:hover { border-color: var(--accent); color: var(--accent) }
+html.embed button.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+html.embed button.primary:hover { background: #24573F; color: #fff }
+html.embed button.danger:hover { border-color: var(--danger); color: var(--danger) }
+html.embed .ico { border-radius: 8px; padding: 0; font-size: 15px; border: 0; background: rgba(255,255,255,.92); color: #1C2821 }
+html.embed .ico.on { background: var(--accent); color: #fff }
+html.embed .stars button { border: 0; background: none; padding: 0 .1rem; font-size: 1.1rem; color: var(--line) }
+html.embed .stars button.on { color: var(--accent) }
+html.embed .seg button { border: 0; border-radius: 0; padding: .45rem .8rem }
+html.embed .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg) }
+html.embed .rowhead .arrows button { padding: .1rem .55rem; font-size: 1rem; border-radius: 999px }
+html.embed textarea, html.embed select, html.embed .fld input, html.embed .fld textarea, html.embed .idea, html.embed .liststop, html.embed pre.capprev, html.embed pre.cmd, html.embed .sugg { border-radius: 8px }
+html.embed input, html.embed textarea, html.embed select { font-size: 13px }
+html.embed .fld { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 600; color: var(--muted) }
+html.embed .fld input, html.embed .fld textarea { font: 400 13px/1.4 var(--ui); letter-spacing: 0; text-transform: none; color: var(--fg) }
+html.embed .note, html.embed .hint, html.embed .slot .cap, html.embed .tslide figcaption, html.embed .rowhead { color: var(--muted) }
+html.embed .note { font-size: 12.5px }
+html.embed .tpl h2, html.embed .capwrap h2, html.embed .empty h2, html.embed .ctl h2, html.embed .rowhead b { font-weight: 400 }
+html.embed .tpl h2, html.embed .capwrap h2 { font-size: 1.25rem; margin-top: 1.6rem }
+html.embed .rowhead, html.embed .tslide figcaption, html.embed .strip-row .lbl, html.embed .idea .src { font-size: 11px; font-weight: 600; letter-spacing: .12em }
+html.embed .rowhead b { font-size: 1.15rem; letter-spacing: 0 }
+html.embed .tbar { top: 0; border-radius: 10px; font-size: 13px }
+html.embed .empty { border-color: var(--line); border-radius: 10px }
+html.embed .card, html.embed .slot .frame { border-radius: 8px }
+html.embed .strip { background: #fff; border-top-color: var(--line) }
+html.embed .tframe { box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgba(28,40,33,.08) }
+html.embed .panel { border-radius: 12px; background: #fff }
+html.embed .toast { border-radius: 10px; font-size: .8rem }
+
 <style id="cs-css">
 /* ITINERARY CAROUSEL SLIDES. One source for the page preview and for tools/ig_carousel.py, which reads this
    style block and the cs-js script below out of this file and renders the same markup at 1080x1350.
@@ -347,7 +391,14 @@ window.CS = (() => {
       <button role="tab" data-view="caption" aria-selected="false">Caption</button>
     </div>
     <select id="articleSel" aria-label="Filter by article"><option value="">Every article</option></select>
-    <span class="hint" id="hint"><kbd>S</kbd> shortlist · <kbd>A</kbd> archive · <kbd>1</kbd>–<kbd>0</kbd> slide 1–10 · <kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>0</kbd> backlog 11–20 · <kbd>Alt</kbd>+<kbd>1</kbd>–<kbd>0</kbd> backlog 21–30 · <kbd>Enter</kbd> crop · <kbd>[</kbd> <kbd>]</kbd> move</span>
+    <button class="ghost help" id="helpBtn" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts
+S  shortlist
+A  archive
+1–0  slide 1–10
+Shift+1–0  backlog 11–20
+Alt+1–0  backlog 21–30
+Enter  crop
+[ ]  move">?</button>
   </div>
 </header>
 
@@ -387,12 +438,18 @@ const ASPECT = { '4:5': 1.25, '1:1': 1, '3:2': 2 / 3 };
 const S = { items: [], byId: new Map(), photos: new Map(), post: {}, captions: new Map(), view: 'all', article: '',
   sel: null, db: null, sample: null, loaded: false, sugg: null, thinking: false, country: '', slug: '',
   mode: 'free', plan: null, mapSvg: '', tsel: null, hooks: null };
-try { if (localStorage.getItem('igpost.mode') === 'template') S.mode = 'template'; } catch (e) {}
+// Inside the editor's Social tab (tools/social_tab.py serves the page with window.SOCIAL_EMBED; social.js hosts it in an
+// iframe): the page's own header goes (html.embed), the tab's toolbar carries the output type, the views, the article
+// filter and Ready, and the two talk over postMessage: the tab sends {so:1, mode, view, article, cmd}, the page answers
+// every counts() with {ig:1, event:'state', ...}. The claude.ai artifacts never set it and look as before.
+const EMB = !!window.SOCIAL_EMBED;
+if (EMB) { document.documentElement.classList.add('embed'); document.documentElement.dataset.theme = 'light'; }
+try { if (!EMB && localStorage.getItem('igpost.mode') === 'template') S.mode = 'template'; } catch (e) {}
 const imgCache = new Map();
 const toastEl = $('#toast'); let toastT;
 const toast = (m) => { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 1800); };
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const blob = (id) => '/_blob/' + id;
+const blob = (id) => (window.SOCIAL_BLOB || '/_blob/') + id;   // the artifact's asset store, or the editor's Social tab (tools/social_tab.py)
 
 // ---------------------------------------------------------------- state helpers
 const doc = (id) => S.photos.get(id) || { state: 'pool', slot: null, order: 0, note: '', crop: null };
@@ -521,8 +578,29 @@ function counts() {
   $('#status').textContent = ready ? 'Ready to render' : 'Draft'; $('#status').classList.toggle('ready', ready);
   $('#readyBtn').textContent = ready ? 'Back to draft' : 'Ready to render';
   for (const b of $('#modeSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode));
-  $('#tabs').hidden = $('#hint').hidden = S.mode === 'template';
+  $('#tabs').hidden = $('#helpBtn').hidden = S.mode === 'template';
+  report();
 }
+function report() {
+  if (!EMB || window.parent === window) return;
+  const n = { pool: 0, shortlist: 0, final: 0, archived: 0 }; for (const it of S.items) { const s = stateOf(it.id); n[s] = (n[s] || 0) + 1; }
+  const nf = finalIds().length; const p = S.plan; const boxes = p ? tBoxes() : [];
+  const seen = new Map(); for (const it of S.items) if (!seen.has(it.article)) seen.set(it.article, it.article_title || it.article);
+  const finalText = (S.post.finalCaption || '').trim() || ([...S.captions.values()].find(c => c.final) || {}).text || '';
+  window.parent.postMessage({ ig: 1, event: 'state', loaded: S.loaded, mode: S.mode, view: S.view, article: S.article, country: S.country,
+    counts: { photos: S.items.length, all: n.pool + n.shortlist + n.final, shortlist: n.shortlist, final: nf, backlog: n.final - nf, archived: n.archived,
+      slides: p ? CS.slides(p, () => '', '').length : 0, placed: boxes.filter(k => (tRef(k) || {}).id).length, boxes: boxes.length, stops: p ? (p.stops || []).length : 0 },
+    ready: S.mode === 'template' ? !!p && p.status === 'ready' : S.post.status === 'ready', hasPlan: !!p, hasCaption: !!String(finalText).trim(),
+    articles: [...seen].map(([k, v]) => ({ k, v })) }, '*');
+}
+if (EMB) window.addEventListener('message', e => {
+  const m = e.data; if (!m || m.so !== 1) return;
+  if (m.cmd === 'ready') { $('#readyBtn').click(); return; }
+  if ((m.mode === 'free' || m.mode === 'template') && m.mode !== S.mode) { S.mode = m.mode; S.tsel = null; }
+  if (m.view && ['all', 'shortlist', 'final', 'archived', 'caption'].includes(m.view)) S.view = m.view;
+  if ('article' in m) S.article = m.article || '';
+  render();
+});
 function cardHTML(it, opts = {}) {
   const d = doc(it.id), st = d.state || 'pool';
   const badge = st === 'final' ? `<span class="badge ${d.slot > NFINAL ? 'sl' : ''}">${d.slot}</span>` : st === 'shortlist' ? `<span class="badge sl">★</span>` : '';
@@ -1037,8 +1115,8 @@ $('#tabs').addEventListener('click', e => { const b = e.target.closest('button[d
 $('#articleSel').addEventListener('change', e => { S.article = e.target.value; render(); });
 $('#modeSeg').addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (!b || b.dataset.mode === S.mode) return; S.mode = b.dataset.mode; S.tsel = null; try { localStorage.setItem('igpost.mode', S.mode); } catch (x) {} render(); });
 $('#readyBtn').onclick = () => {
-  if (S.mode === 'template') { if (!S.plan) return; const r = S.plan.status === 'ready'; S.plan.status = r ? 'draft' : 'ready'; savePlan(true, true); toast(r ? 'Back to draft' : 'Marked ready. Ask Claude to render the carousel.'); return; }
-  const ready = S.post.status === 'ready'; savePost({ status: ready ? 'draft' : 'ready' }); render(); toast(ready ? 'Back to draft' : 'Marked ready. Ask Claude to render.'); if (!ready) { S.view = 'caption'; render(); } };
+  if (S.mode === 'template') { if (!S.plan) return; const r = S.plan.status === 'ready'; S.plan.status = r ? 'draft' : 'ready'; savePlan(true, true); toast(r ? 'Back to draft' : EMB ? 'Marked ready. Render it from the Slides view.' : 'Marked ready. Ask Claude to render the carousel.'); return; }
+  const ready = S.post.status === 'ready'; savePost({ status: ready ? 'draft' : 'ready' }); render(); toast(ready ? 'Back to draft' : EMB ? 'Marked ready. Render it from the Renders view.' : 'Marked ready. Ask Claude to render.'); if (!ready) { S.view = 'caption'; render(); } };
 
 // ---------------------------------------------------------------- keyboard
 document.addEventListener('keydown', e => {

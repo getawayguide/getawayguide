@@ -135,8 +135,9 @@ try:
     byid = {i["id"]: i for i in t["items"]}
     cat_ids = [c["id"] for c in t["categories"]]
     moved = [i for i in t["items"] if i.get("moved_from") == "shadow"]
-    ok("M1 GET: no 'shadow' category, rounds first, 7 categories", st == 200 and "shadow" not in cat_ids and cat_ids[0] == "rounds" and len(cat_ids) == 7, cat_ids)
-    ok(f"M2 every one of the {len(shadow_items)} shadow items is now in rounds (moved_from=shadow); none lost", len(moved) == len(shadow_items) and all(byid[i["id"]]["cat"] == "rounds" for i in shadow_items)
+    ok("M1 GET: no 'shadow' category, rounds first, the 7 standard categories (plus any Kevin or an agent added since)", st == 200 and "shadow" not in cat_ids and cat_ids[0] == "rounds" and len(cat_ids) >= 7
+       and all(c in cat_ids for c in ("rounds", "maps", "feedback", "social", "setup", "mine")) and "upgrades" not in cat_ids, cat_ids)
+    ok(f"M2 every one of the {len(shadow_items)} shadow items is now in rounds (moved_from=shadow; the store may already carry earlier migrations); none lost", len(moved) >= len(shadow_items) and all(byid[i["id"]]["cat"] == "rounds" for i in shadow_items)
        and len(t["items"]) == len(raw["items"]) + sum(1 for i in t["items"] if i.get("source", "").startswith("live") and i["id"] not in before_state), (len(moved), len(shadow_items), len(t["items"]), len(raw["items"])))
     live = lambda i: i.startswith(("round-", "shadow-"))          # live items legitimately go done here (the scratch redline folder is empty)
     kept = all(byid[i]["status"] == s and byid[i].get("note") == n and byid[i].get("reply") == r for i, (s, n, r) in before_state.items() if i in byid and not live(i))
@@ -145,12 +146,21 @@ try:
        [i for i, (s, n, r) in before_state.items() if i in byid and (byid[i].get("note"), byid[i].get("reply")) != (n, r)][:8])
     rounds_now = [i for i in t["items"] if i["cat"] == "rounds"]
     old_order = [i["id"] for i in rounds_items]
-    ok("M4 the rounds he already had keep their relative order", [i["id"] for i in rounds_now if i["id"] in set(old_order)] == old_order, "")
+    # since 2026-11-08 the store keeps each country's items together (queue_tab.group_runs), so the order he set is kept
+    # INSIDE each country; countries take the order they first appear in
+    def per_country(ids):
+        out = {}
+        for i in ids:
+            out.setdefault((byid.get(i, {}).get("group") or {}).get("key", "_other"), []).append(i)
+        return out
+    now_ids = [i["id"] for i in rounds_now if i["id"] in set(old_order)]
+    ok("M4 the rounds he already had keep their relative order inside each country", per_country(now_ids) == per_country(old_order), "")
 
     def art(i):
         return (i.get("links") or {}).get("editor")
     together = []
-    for i in moved:
+    fresh = {i["id"] for i in shadow_items}                      # items migrated by THIS run; ones moved in an earlier session sit where Kevin has since dragged them
+    for i in [m for m in moved if m["id"] in fresh]:
         pos = next(k for k, x in enumerate(rounds_now) if x["id"] == i["id"])
         same = [k for k, x in enumerate(rounds_now) if art(x) == art(i) and x["id"] != i["id"] and not x.get("moved_from")]
         together.append((i["id"], pos, max(same) if same else None))
@@ -205,9 +215,9 @@ try:
     st, t = api.call("/api/todo?sync=1")
     rn = [i for i in t["items"] if i["cat"] == "rounds"]
     groups = []
-    for i in rn:
+    for i in rn:                                                   # the tab draws a country row for its OPEN items; done ones live in the column's Done section (2026-11-08)
         k = (i.get("group") or {}).get("key", "_other")
-        if k not in groups:
+        if k not in groups and i["status"] != "done":
             groups.append(k)
     n_open = lambda k: sum(1 for i in rn if (i.get("group") or {}).get("key", "_other") == k and i["status"] != "done")
     n_all = lambda k: sum(1 for i in rn if (i.get("group") or {}).get("key", "_other") == k)
@@ -218,7 +228,7 @@ try:
         pg = ctx.new_page(); errors = []
         pg.on("pageerror", lambda e: errors.append(str(e)))
         pg.goto(EDITOR + "#queue"); pg.wait_for_selector("#app-queue:not([hidden]) .qt-cat", timeout=20000); pg.wait_for_timeout(300)
-        ok("U0 7 categories, rounds first, no page errors", pg.locator(".qt-cat").count() == 7 and pg.locator(".qt-cat").first.get_attribute("data-cat") == "rounds" and not errors, (pg.locator(".qt-cat").count(), errors[:2]))
+        ok("U0 every category drawn, rounds first, no page errors", pg.locator(".qt-cat").count() == len(t["categories"]) and pg.locator(".qt-cat").first.get_attribute("data-cat") == "rounds" and not errors, (pg.locator(".qt-cat").count(), errors[:2]))
         pg.screenshot(path=str(SHOTS / "queue-rounds-before-open.png"))
         pg.locator(".qt-cat[data-cat='rounds'] .qt-catb").click(); pg.wait_for_timeout(300)
         cg = pg.locator(".qt-cat[data-cat='rounds'] .qt-cg")
@@ -228,9 +238,9 @@ try:
         first = cg.first; k0 = keys[0]
         flag = first.locator("img.fl")
         pg.wait_for_function("document.querySelector('.qt-cg img.fl') && document.querySelector('.qt-cg img.fl').naturalWidth > 0", timeout=10000)
-        ok("U2 the country row shows the nav's local flag (natural size loaded), the country name and open / total",
+        ok("U2 the country row shows the nav's local flag (natural size loaded), the country name and its open count",
            flag.count() == 1 and f"/site/Images/web/flags/" in flag.get_attribute("src") and pg.evaluate("document.querySelector('.qt-cg img.fl').naturalWidth") > 0
-           and first.locator(".nm").inner_text() == next(i["group"]["name"] for i in rn if i["group"] and i["group"]["key"] == k0) and first.locator(".cnt .n").first.inner_text() == f"{n_open(k0)} / {n_all(k0)}",
+           and first.locator(".nm").inner_text() == next(i["group"]["name"] for i in rn if i["group"] and i["group"]["key"] == k0) and first.locator(".cnt .n").first.inner_text() == str(n_open(k0)),
            (flag.get_attribute("src"), first.locator(".nm").inner_text(), first.locator(".cnt").inner_text()))
         other = cg.last
         ok("U2b Other has a neutral placeholder instead of a flag", other.locator(".fl.none").count() == 1 and other.locator(".nm").inner_text() == "Other", other.inner_text())
@@ -241,8 +251,10 @@ try:
         cname = first.locator(".nm").inner_text()
         ok("U3b inside a country the item does not repeat the country chip; its round chip and link chip stay", not any(x.strip() == cname for x in pg.evaluate(f"[...document.querySelectorAll(\".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.plain\")].map(c => c.textContent)"))
            and pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.link").count() >= 1 and pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.plain[title]").count() >= 1, "")
-        done_fold = pg.locator(f".qt-cg[data-cg='{k0}'] details[data-fold]")
-        ok("U3c the country's done items are in its own Done fold", (done_fold.count() == 1) == (n_all(k0) > n_open(k0)) and (not done_fold.count() or done_fold.locator("summary .n").inner_text() == str(n_all(k0) - n_open(k0))), done_fold.count())
+        done_ids = [i["id"] for i in rn if (i.get("group") or {}).get("key") == k0 and i["status"] == "done"]
+        in_done = sum(1 for d in done_ids if pg.locator(f"details[data-fold='done:todo'] .qt-todo[data-id='{d}']").count() == 1)
+        ok("U3c the country's done items are out of its list, in the column's one Done section (2026-11-08)", pg.locator(f".qt-cg[data-cg='{k0}'] details[data-fold]").count() == 0
+           and not any(pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo[data-id='{d}']").count() for d in done_ids) and in_done == len(done_ids), (len(done_ids), in_done))
         pg.screenshot(path=str(SHOTS / "queue-rounds-desktop.png"))
         pg.reload(); pg.wait_for_selector("#app-queue:not([hidden]) .qt-cat", timeout=20000); pg.wait_for_timeout(400)
         ok("U4 the open country survives a reload (localStorage), the others stay folded", pg.locator(f".qt-cg[data-cg='{k0}'].open").count() == 1 and pg.locator(".qt-cg.open").count() == 1, pg.locator(".qt-cg.open").count())
@@ -299,7 +311,7 @@ try:
                 pg.locator(f".qt-cg[data-cg='{key_s}'] .qt-cgb").click(); pg.wait_for_timeout(250)
             pg.locator(f".qt-todo[data-id='{shot_item['id']}'] .qt-chip.view").click(); pg.wait_for_selector("#qt-viewer:not([hidden])", timeout=10000); pg.wait_for_timeout(300)
             pos = pg.inner_text("#qt-viewer .pos")
-            ok("U8 the viewer opens from inside a country and still counts through the whole category", "Review: rounds" in pos and int(pos.split("/")[1].split("·")[0]) == sum(1 for i in rn if i["shots"] and i["status"] != "done"), pos)
+            ok("U8 the viewer opens from inside a country and still counts through the whole category", "Review" in pos and int(pos.split("/")[1].split("·")[0]) == sum(1 for i in rn if i["shots"] and i["status"] != "done"), pos)
             pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
         row = pg.locator(f".qt-cg[data-cg='{kk}'] .qt-todo").first; rid = row.get_attribute("data-id")
         row.locator(".qt-stsel").select_option("needs-changes"); pg.wait_for_timeout(700)
@@ -316,7 +328,9 @@ try:
         ok("U10 Due soon's jump opens the item's country and lands on the row", pg.locator(f".qt-cg[data-cg='{kk}'].open").count() == 1 and pg.locator(f".qt-todo[data-id='{rid}']").count() == 1, "")
         # other categories are untouched: maps is a flat list with its own drag indices
         pg.locator(".qt-cat[data-cat='maps'] .qt-catb").click(); pg.wait_for_timeout(250)
-        ok("U11 Review: maps is still a flat list (no country rows)", pg.locator(".qt-cat[data-cat='maps'] .qt-cg").count() == 0 and pg.locator(".qt-cat[data-cat='maps'] [data-list='todo'] .qt-todo").count() >= 1, "")
+        n_maps_open = sum(1 for i in t["items"] if i["cat"] == "maps" and i["status"] != "done")
+        ok("U11 Review: maps is still a flat list (no country rows): its open items, or 'Nothing open.'", pg.locator(".qt-cat[data-cat='maps'] .qt-cg").count() == 0
+           and pg.locator(".qt-cat[data-cat='maps'] [data-list='todo'] .qt-todo").count() == n_maps_open and (n_maps_open or "Nothing open" in pg.locator(".qt-cat[data-cat='maps'] [data-list='todo']").inner_text()), n_maps_open)
         pg.set_viewport_size({"width": 393, "height": 852}); pg.wait_for_timeout(400)
         over = pg.evaluate("[document.scrollingElement.scrollWidth, document.getElementById('queue-root').scrollWidth, document.getElementById('queue-root').clientWidth]")
         ok("U12 393 px: no sideways scroll with countries open", over[0] <= 393 and over[1] <= over[2], over)

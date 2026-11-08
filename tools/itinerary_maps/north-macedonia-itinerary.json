@@ -1,111 +1,133 @@
 {
- "country_width": 460,
- "dots": [
-  {
-   "name": "Matka Canyon",
-   "lat": 41.9506,
-   "lon": 21.2986,
-   "anchor": "end",
-   "dx": -11,
-   "dy": 4
+  "airport": {
+    "anchor": "start",
+    "dx": 26,
+    "dy": 4,
+    "icon_dx": 14,
+    "icon_dy": 11,
+    "lat": 41.9616,
+    "lon": 21.6214,
+    "name": "SKP Airport"
   },
-  {
-   "name": "Prilep",
-   "lat": 41.3451,
-   "lon": 21.555,
-   "anchor": "start",
-   "dx": 11,
-   "dy": 4
+  "country_width": 460,
+  "dots": [
+    {
+      "anchor": "start",
+      "dx": 11,
+      "dy": 4,
+      "lat": 41.3451,
+      "lon": 21.555,
+      "name": "Prilep"
+    },
+    {
+      "anchor": "start",
+      "dx": 16.4,
+      "dy": -7.9,
+      "lat": 40.914,
+      "lon": 20.7407,
+      "name": "St. Naum"
+    }
+  ],
+  "iso3": "MKD",
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/north-macedonia-itinerary-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "chip_dx": -43.9,
+      "chip_dy": -17.9,
+      "chip_off": 0,
+      "chip_side": 0,
+      "label": "Bus · 3–4 hr"
+    },
+    {
+      "a": 1,
+      "b": "dot:Prilep",
+      "label": ""
+    },
+    {
+      "a": "dot:Prilep",
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    }
+  ],
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
   },
-  {
-   "name": "St. Naum",
-   "lat": 40.914,
-   "lon": 20.7407,
-   "anchor": "start",
-   "dx": 11,
-   "dy": 4
-  }
- ],
- "iso3": "MKD",
- "legs": [
-  {
-   "a": 0,
-   "b": 1,
-   "label": "Bus · 3–4 hr"
-  },
-  {
-   "a": 1,
-   "b": "dot:Prilep",
-   "label": ""
-  },
-  {
-   "a": "dot:Prilep",
-   "b": 2,
-   "label": ""
-  },
-  {
-   "a": 2,
-   "b": 3,
-   "label": ""
-  }
- ],
- "margins": {
-  "b": 130,
-  "l": 240,
-  "r": 240,
-  "t": 130
- },
- "simplify": 60,
- "slug": "north-macedonia-itinerary",
- "smooth": true,
- "stops": [
-  {
-   "anchor": "start",
-   "days": "Days 1–2",
-   "dx": 14,
-   "dy": -14,
-   "lat": 41.9981,
-   "lon": 21.4254,
-   "n": 1,
-   "name": "Skopje",
-   "href": "skopje.html"
-  },
-  {
-   "anchor": "end",
-   "days": "Days 3–5",
-   "dx": -13.5,
-   "dy": -13.5,
-   "lat": 41.1231,
-   "lon": 20.8016,
-   "n": 2,
-   "name": "Ohrid",
-   "href": "ohrid.html"
-  },
-  {
-   "anchor": "start",
-   "days": "Day 6",
-   "dx": 15.8,
-   "dy": -15.8,
-   "lat": 41.3697,
-   "lon": 21.2494,
-   "n": 3,
-   "name": "Krushevo",
-   "href": "krushevo.html"
-  },
-  {
-   "anchor": "start",
-   "days": "Day 7",
-   "dx": 11.7,
-   "dy": -13.6,
-   "lat": 41.0319,
-   "lon": 21.3347,
-   "n": 4,
-   "name": "Bitola",
-   "href": "bitola.html"
-  }
- ],
- "pages": [
-  "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html"
- ],
- "page": "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html"
+  "page": "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html",
+  "pages": [
+    "Drafts/Upcoming/north-macedonia/north-macedonia-itinerary.html"
+  ],
+  "simplify": 60,
+  "slug": "north-macedonia-itinerary",
+  "smooth": true,
+  "stops": [
+    {
+      "anchor": "start",
+      "days": "Days 1–2",
+      "dx": 14,
+      "dy": -14,
+      "href": "skopje.html",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "n": 1,
+      "name": "Skopje"
+    },
+    {
+      "anchor": "end",
+      "days": "Days 3–5",
+      "dx": -13.5,
+      "dy": -24,
+      "href": "ohrid.html",
+      "lat": 41.1231,
+      "lon": 20.8016,
+      "n": 2,
+      "name": "Ohrid"
+    },
+    {
+      "anchor": "start",
+      "days": "Days 6–7",
+      "dx": 15.2,
+      "dy": -24.1,
+      "href": "krushevo.html",
+      "lat": 41.3697,
+      "lon": 21.2494,
+      "n": 3,
+      "name": "Krushevo"
+    },
+    {
+      "anchor": "start",
+      "days": "Day 8",
+      "dx": 11.7,
+      "dy": -13.6,
+      "href": "bitola.html",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "n": 4,
+      "name": "Bitola"
+    }
+  ],
+  "water_labels": [
+    {
+      "lat": 40.97,
+      "lon": 20.36,
+      "name": "Lake Ohrid",
+      "size": 10,
+      "dx": 4.2,
+      "dy": 0
+    }
+  ]
 }

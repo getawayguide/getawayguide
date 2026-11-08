@@ -380,10 +380,14 @@ def _renumber(blocks):
 # the review: rounds". So there is no "shadow" category any more: its items live in "rounds" (migrate() moves the old
 # ones, sync_live() seeds new ones there), every item comes back with its country (`group`, derived below) and the tab
 # draws the rounds category as one collapsible group per country, flag first.
-CATEGORIES = [("rounds", "Review: rounds"), ("maps", "Review: maps"), ("upgrades", "Review: articles"),
+CATEGORIES = [("rounds", "Review"), ("maps", "Review: maps"),
               ("feedback", "Feedback for Claude"), ("social", "Social"),
               ("setup", "Setup before Friday"), ("mine", "My own to-dos")]
-MERGED_CATS = {"shadow": "rounds"}            # old category id -> where its items live now
+# old category id -> where its items live now. "upgrades" (Review: articles) merged 2026-11-08, Kevin: "what is the
+# difference between Review rounds, Review articles. If same then merge": a rewritten article and its rounds are one
+# review of one article, so they sit together under its country.
+MERGED_CATS = {"shadow": "rounds", "upgrades": "rounds"}
+RENAMED_CATS = {"rounds": ("Review: rounds", "Review")}   # id -> (old default name, new name): a name he set himself stays
 STATUSES = ("new", "seen", "done", "needs-changes")
 SHOTS_DIR = ".tmp/review_hub/shots"           # served by the photo server at /site/<path>
 FLAGS_DIR = "Images/web/flags"                # the nav's local flags (tools/localize_flags.py), <iso>.png
@@ -542,6 +546,10 @@ def migrate(obj):
                 it["moved_from"] = old_id
                 insert_with_article(obj["items"], it, new_id)
             changed = True
+    for c in obj["categories"]:
+        if c["id"] in RENAMED_CATS and c.get("name") == RENAMED_CATS[c["id"]][0]:
+            c["name"] = RENAMED_CATS[c["id"]][1]
+            changed = True
     known = {c["id"] for c in obj["categories"]}
     for it in obj["items"]:
         if "title" not in it:
@@ -560,7 +568,40 @@ def migrate(obj):
             it.setdefault(k, None)
         it.setdefault("kind", "review" if it.get("shots") else "todo")
         it.setdefault("id", uuid.uuid4().hex[:10])
+    if group_runs(obj):
+        changed = True
     return changed
+
+
+GROUPED_CATS = ("rounds",)
+
+
+def group_runs(obj):
+    """Keep each country's items of a grouped category next to each other in the stored order (countries in the order
+    they first appear, items keeping their own order; items with no country last), so the stored order is exactly the
+    order the tab draws. New rounds and Shadow items are seeded beside their article, but a country's later articles
+    landed at the end of the category, so Türkiye/Greece/North Macedonia items alternated in the store (2026-11-08) and
+    the per-country arrows and country drags (which move contiguous runs) misbehaved. Returns True if it reordered."""
+    moved = False
+    for cat in GROUPED_CATS:
+        idx = [i for i, it in enumerate(obj["items"]) if it.get("cat") == cat]
+        if not idx:
+            continue
+        items = [obj["items"][i] for i in idx]
+        order, buckets = [], {}
+        for it in items:
+            k = item_country(it) or "~other"
+            if k not in buckets:
+                buckets[k] = []
+                order.append(k)
+            buckets[k].append(it)
+        order.sort(key=lambda k: k == "~other")            # stable: only pushes 'Other' to the end
+        grouped = [it for k in order for it in buckets[k]]
+        if [id(x) for x in grouped] != [id(x) for x in items]:
+            for i, it in zip(idx, grouped):
+                obj["items"][i] = it
+            moved = True
+    return moved
 
 
 def todo_payload(obj, version):
@@ -876,7 +917,7 @@ def import_review_hub(obj, docs_dir=None):
     from urllib.parse import unquote
     docs_dir = Path(docs_dir or (ROOT / ".tmp" / "review_hub" / "docs"))
     have = {x["id"] for x in obj["items"]}
-    cat_of = {"map": "maps", "round": "rounds", "upgrade": "upgrades", "social": "social", "fix": "mine", "other": "mine"}
+    cat_of = {"map": "maps", "round": "rounds", "upgrade": "rounds", "social": "social", "fix": "mine", "other": "mine"}
     n = 0
     for f in sorted(docs_dir.glob("*.json"), key=lambda f: json.loads(f.read_text(encoding="utf-8-sig")).get("order", 0)):
         d = json.loads(f.read_text(encoding="utf-8-sig"))

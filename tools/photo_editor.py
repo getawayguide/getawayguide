@@ -1588,6 +1588,9 @@ _prelaunch.register(app)
 # the editor's Queue tab: Claude's away queue (.tmp/away_queue.md) and Kevin's to-do list (tools/queue_tab.py, 2026-11-06)
 import queue_tab as _queue_tab
 _queue_tab.register(app)
+# the editor's Social tab: the IG post maker per country + its renders (tools/social_tab.py, 2026-11-08)
+import social_tab as _social_tab
+_social_tab.register(app)
 
 
 # ---- the review inside the editor (review.js) -----------------------------------
@@ -4181,6 +4184,7 @@ def _build_busy():
         out.append("compressing " + _cq_state["running"].split("/")[-1])
     if _alt_writer is not None and _alt_writer.lock.locked():
         out.append("alt text being written")
+    out.extend(_social_tab.busy())                # a carousel or pins render under way (Social tab)
     return out
 
 

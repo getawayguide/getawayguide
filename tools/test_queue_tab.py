@@ -142,7 +142,8 @@ try:
     ok("Q1b item 1 = bold title, done, with details", it1 and it1["title"] == "Editor suite stress test" and it1["state"] == "done" and len(it1["details"]) == 2, it1)
     bold = [i for i in q["queue"] if i["title"] and not i["title"].startswith("DONE")]       # the md's own items change as Claude works; the shape is what is tested
     ok("Q1c titles are the bold run, never the ** marks or an '(added by' tail", bold and all("**" not in i["title"] and "(added by" not in i["title"] for i in q["queue"]), [i["title"][:60] for i in q["queue"] if "**" in i["title"] or "(added by" in i["title"]])
-    ok("Q1d the FIRST setup checklist and the sections come through", len(q["queue_pre"]["items"]) == 4 and any(s["name"].startswith("Waiting on Kevin") for s in q["sections"]) and any(s["name"] == "Log" for s in q["sections"]), [s["name"] for s in q["sections"]])
+    n_pre = sum(1 for l in md_bytes0.decode("utf-8-sig").split("## Queue", 1)[1].split("\n1. [", 1)[0].splitlines() if l.lstrip().startswith(("- [", "* [")))
+    ok("Q1d the ticks above the first numbered item (the FIRST / NEXT checklists) and the sections come through", len(q["queue_pre"]["items"]) == n_pre >= 1 and any(s["name"].startswith("Waiting on Kevin") for s in q["sections"]) and any(s["name"] == "Log" for s in q["sections"]), (len(q["queue_pre"]["items"]), n_pre, [s["name"] for s in q["sections"]]))
     n0 = len(q["queue"]); maxnum = max(i["num"] for i in q["queue"])
 
     st, r = api.call("/api/queue", {"version": q["version"], "op": "add", "title": "Zz test item", "details": "first detail\nsecond detail"})
@@ -193,7 +194,7 @@ try:
     # ----------------------------------------------------------------------------- API: the inbox
     st, t = api.call("/api/todo?sync=1")
     byid = {i["id"]: i for i in t["items"]}
-    ok("T1 GET /api/todo: 7 categories (the seed's 'shadow' one migrated away), counts, and the live round + Shadow items folded into rounds", st == 200 and [c["id"] for c in t["categories"]] == ["rounds", "maps", "upgrades", "feedback", "social", "setup", "mine"]
+    ok("T1 GET /api/todo: 6 categories (the seed's 'shadow' and 'upgrades' merged into rounds), counts, and the live round + Shadow items folded into rounds", st == 200 and [c["id"] for c in t["categories"]] == ["rounds", "maps", "feedback", "social", "setup", "mine"]
        and "round-zz-test-r1" in byid and byid["round-zz-test-r1"]["cat"] == "rounds"
        and byid["round-zz-test-r1"]["round"] == {"slug": "zz-test-r1", "changes": 3, "left": 2} and byid["round-zz-test-r1"]["links"]["editor"] == "Drafts/Upcoming/zz/test.html"
        and "shadow-test" in byid and byid["shadow-test"]["shadow_open"] == 2 and byid["shadow-test"]["cat"] == "rounds" and t["counts"]["mine"] == {"open": 2, "new": 2, "done": 1, "needs": 0}, (st, sorted(byid), t.get("counts")))
@@ -268,23 +269,26 @@ try:
         pg.wait_for_selector("#app-queue:not([hidden]) .qt-item", timeout=20000)
         ok("U0 no page errors on load", not errors, errors[:3])
         tab = pg.locator(".app-tabs a[data-view='queue']").first
-        ok("U1 the Queue tab sits in the bar after Launch, tooltip says Ctrl+Alt+6", tab.count() and "Ctrl+Alt+6" in (tab.get_attribute("title") or "") and tab.inner_text().startswith("Queue")
-           and pg.evaluate("[...document.querySelectorAll('.app-tabs a')].map(a => a.dataset.view)")[-2:] == ["launch", "queue"], tab.get_attribute("title"))
+        ok("U1 the Queue tab sits last in the bar, after Launch and Social (2026-11-08), tooltip says Ctrl+Alt+7", tab.count() and "Ctrl+Alt+7" in (tab.get_attribute("title") or "") and tab.inner_text().startswith("Queue")
+           and pg.evaluate("[...document.querySelectorAll('.app-tabs a')].map(a => a.dataset.view)")[-3:] == ["launch", "social", "queue"], tab.get_attribute("title"))
         pg.keyboard.press("Control+Alt+5"); pg.wait_for_timeout(200)
         v5 = pg.evaluate("[document.getElementById('app-launch').hidden, document.getElementById('app-queue').hidden]")
-        pg.keyboard.press("Control+Alt+6"); pg.wait_for_timeout(200)
+        pg.keyboard.press("Control+Alt+7"); pg.wait_for_timeout(200)
         v6 = pg.evaluate("[document.getElementById('app-launch').hidden, document.getElementById('app-queue').hidden, location.hash]")
-        ok("U2 Ctrl+Alt+5 shows Launch, Ctrl+Alt+6 brings Queue back (#queue)", v5 == [False, True] and v6 == [True, False, "#queue"], (v5, v6))
+        ok("U2 Ctrl+Alt+5 shows Launch, Ctrl+Alt+7 brings Queue back (#queue)", v5 == [False, True] and v6 == [True, False, "#queue"], (v5, v6))
         st, t = api.call("/api/todo?sync=0")
         nopen = sum(1 for i in t["items"] if i["status"] != "done")
         bdg = pg.locator("#app-queue .app-tabs a[data-view='queue'] .bdg").first
         ok("U3 the badge counts the open items", bdg.is_visible() and bdg.inner_text() == str(nopen), (bdg.inner_text(), nopen))
         qn = pg.locator(".qt-item").count()
-        ok("U4 Claude's queue renders one card per item, FIRST checklist above, Log folded at the bottom", qn == len(api.call("/api/queue")[1]["queue"]) and pg.locator(".qt-chk").count() == 4
-           and pg.locator("details[data-fold='Log']").count() == 1 and not pg.locator("details[data-fold='Log']").first.get_attribute("open"), qn)
+        qq = api.call("/api/queue")[1]["queue"]; n_work = sum(1 for i in qq if i["state"] != "done")
+        ok("U4 Claude's queue renders one row per item: the working ones in the list, the done ones (and the done FIRST ticks) in one collapsed Done fold, Log folded at the bottom",
+           qn == len(qq) and pg.locator("[data-list='queue'] .qt-item").count() == n_work and pg.locator("details[data-fold='done:queue'] .qt-item").count() == len(qq) - n_work
+           and not pg.locator("details[data-fold='done:queue']").first.get_attribute("open") and pg.locator(".qt-chk").count() == len(api.call("/api/queue")[1]["queue_pre"]["items"])
+           and pg.locator("details[data-fold='Log']").count() == 1 and not pg.locator("details[data-fold='Log']").first.get_attribute("open"), (qn, n_work))
         pg.locator(".qt-item .qt-trow[role=button]").first.click()
         ok("U4b a card expands to its details", pg.locator(".qt-item .qt-d").count() == 1, pg.locator(".qt-item .qt-d").count())
-        ok("U5 categories are folded by default, each header shows its counts", pg.locator(".qt-cat").count() == 7 and pg.locator(".qt-cat.open").count() == 0
+        ok("U5 categories are folded by default, each header shows its counts", pg.locator(".qt-cat").count() == 6 and pg.locator(".qt-cat.open").count() == 0
            and pg.locator(".qt-cat[data-cat='maps'] .cnt .n").first.inner_text() == "3", pg.locator(".qt-cat[data-cat='maps'] .cnt").inner_text())
         pg.locator(".qt-cat[data-cat='maps'] .qt-catb").click()
         ok("U5b a category opens to its rows", pg.locator(".qt-cat[data-cat='maps'].open .qt-todo").count() == 3, pg.locator(".qt-cat[data-cat='maps'].open .qt-todo").count())
@@ -293,9 +297,9 @@ try:
         n_after = pg.locator(".qt-cat").count(); bdg2 = bdg.inner_text()
         pg.reload(); pg.wait_for_selector("#app-queue:not([hidden]) .qt-cat", timeout=20000); pg.wait_for_timeout(300)
         ok("U6 filter chips hide categories (badge drops the hidden ones) and the choice survives a reload",
-           n_after == 5 and int(bdg2) == nopen - 1 and pg.locator(".qt-cat").count() == 5 and pg.locator(".qt-cat[data-cat='feedback']").count() == 0 and pg.locator(".qt-cat[data-cat='maps'].open").count() == 1, (n_after, bdg2, pg.locator(".qt-cat").count()))
+           n_after == 4 and int(bdg2) == nopen - 1 and pg.locator(".qt-cat").count() == 4 and pg.locator(".qt-cat[data-cat='feedback']").count() == 0 and pg.locator(".qt-cat[data-cat='maps'].open").count() == 1, (n_after, bdg2, pg.locator(".qt-cat").count()))
         pg.locator(".qt-more[data-act='cat-filter-all']").click(); pg.wait_for_timeout(150)
-        ok("U6b 'show all' brings them back", pg.locator(".qt-cat").count() == 7, pg.locator(".qt-cat").count())
+        ok("U6b 'show all' brings them back", pg.locator(".qt-cat").count() == 6, pg.locator(".qt-cat").count())
         ok("U6c the Due soon strip lists the item due tomorrow with its category", pg.locator(".qt-due a").count() >= 1 and "Mine one" in pg.locator(".qt-due").inner_text(), pg.locator(".qt-due").inner_text() if pg.locator(".qt-due").count() else "none")
 
         pg.fill("#qt-ta-text", "Zz UI to-do"); pg.select_option("#qt-ta-cat", "mine"); pg.fill("#qt-ta-link", "https://example.com/x")
@@ -307,7 +311,13 @@ try:
         row = pg.locator(f".qt-todo[data-id='{ui_item['id']}']")
         row.locator("input[type=checkbox]").check(); pg.wait_for_timeout(300)
         st, t = api.call("/api/todo?sync=0")
-        ok("U7b the checkbox marks it done (it moves to the category's Done fold)", next(i for i in t["items"] if i["id"] == ui_item["id"])["status"] == "done" and pg.locator(f".qt-cat[data-cat='mine'] details[data-fold] .qt-todo[data-id='{ui_item['id']}']").count() == 1, st)
+        ok("U7b the checkbox marks it done: it leaves the category and lands first in the column's one Done section (newest first, still undoable)", next(i for i in t["items"] if i["id"] == ui_item["id"])["status"] == "done"
+           and pg.locator(f".qt-cat[data-cat='mine'] .qt-todo[data-id='{ui_item['id']}']").count() == 0 and pg.locator(f"details[data-fold='done:todo'] .qt-todo[data-id='{ui_item['id']}']").count() == 1
+           and pg.locator("details[data-fold='done:todo'] .qt-todo").first.get_attribute("data-id") == ui_item["id"] and pg.locator("details[data-fold='done:todo'] .qt-todo input[type=checkbox]").first.is_checked(), st)
+        pg.evaluate("document.querySelector(\"details[data-fold='done:todo']\").open = true"); pg.wait_for_timeout(100)
+        pg.locator(f"details[data-fold='done:todo'] .qt-todo[data-id='{ui_item['id']}'] input[type=checkbox]").uncheck(); pg.wait_for_timeout(300)
+        ok("U7b2 unticking it in Done brings it back to its category", next(i for i in api.call("/api/todo?sync=0")[1]["items"] if i["id"] == ui_item["id"])["status"] == "seen" and pg.locator(f".qt-cat[data-cat='mine'] .qt-todo[data-id='{ui_item['id']}']").count() == 1, "")
+        pg.locator(f".qt-todo[data-id='{ui_item['id']}'] input[type=checkbox]").check(); pg.wait_for_timeout(300)
         pg.locator(".qt-todo[data-id='map-c'] .qt-stsel").select_option("needs-changes"); pg.wait_for_timeout(300)
         st, t = api.call("/api/todo?sync=0")
         ok("U7c the status select writes needs-changes", next(i for i in t["items"] if i["id"] == "map-c")["status"] == "needs-changes" and pg.locator(".qt-todo[data-id='map-c'] .qt-stsel.needs-changes").count() == 1, st)
@@ -324,12 +334,14 @@ try:
             pg.mouse.move(s["x"] + s["width"] / 2, s["y"] + s["height"] / 2); pg.mouse.down()
             pg.mouse.move(s["x"] + s["width"] / 2, s["y"] + 12, steps=3); pg.mouse.move(d["x"] + 30, y, steps=8); pg.mouse.move(d["x"] + 30, y + (1 if where == "before" else -1), steps=2)
             pg.mouse.up(); pg.wait_for_timeout(500)
-        q_before = [i["num"] for i in api.call("/api/queue")[1]["queue"]]
-        third_title = pg.locator(".qt-item").nth(2).locator(".qt-t").inner_text()
+        q0 = api.call("/api/queue")[1]["queue"]; q_before = [i["num"] for i in q0]; done_before = [(i["num"], i["title"]) for i in q0 if i["state"] == "done"]
+        third_title = pg.locator("[data-list='queue'] .qt-item").nth(2).locator(".qt-t").inner_text()
         drag(".qt-item[data-idx='2'] .qt-grip", ".qt-item[data-idx='0']", "before")
         st, q2 = api.call("/api/queue")
-        ok("U8 dragging the third card above the first reorders Claude's queue (renumbered, written to the md)", q2["queue"][0]["title"] == third_title and [i["num"] for i in q2["queue"]] == q_before
-           and pg.locator(".qt-item").first.locator(".qt-t").inner_text() == third_title, (third_title, q2["queue"][0]["title"]))
+        first_work = next(i for i in q2["queue"] if i["state"] != "done")
+        ok("U8 dragging the third working card above the first reorders Claude's queue (renumbered, written to the md); the done items keep their lines and numbers",
+           first_work["title"] == third_title and [i["num"] for i in q2["queue"]] == q_before and [(i["num"], i["title"]) for i in q2["queue"] if i["state"] == "done"] == done_before
+           and pg.locator("[data-list='queue'] .qt-item").first.locator(".qt-t").inner_text() == third_title, (third_title, first_work["title"]))
         cats0 = [c["id"] for c in api.call("/api/todo?sync=0")[1]["categories"]]
         drag(".qt-cat[data-idx='1'] .qt-cath .qt-grip", ".qt-cat[data-idx='0'] .qt-cath", "before")
         cats1 = [c["id"] for c in api.call("/api/todo?sync=0")[1]["categories"]]
@@ -412,7 +424,7 @@ srv2 = start_server(PORT2, {"QUEUE_TAB_DIR": str(ROOT / ".tmp"), "QUEUE_TAB_READ
 api2 = Api(PORT2)
 try:
     st, q = api2.call("/api/queue")
-    ok("R1 the real away_queue.md parses (items, FIRST checklist, Waiting on Kevin, Log)", st == 200 and len(q["queue"]) >= 10 and q["counts"]["pending"] >= 5 and any(s["name"].startswith("Waiting") for s in q["sections"]), (st, q.get("counts")))
+    ok("R1 the real away_queue.md parses (items, the ticks above them, Waiting on Kevin, Log)", st == 200 and len(q["queue"]) >= 10 and q["counts"]["pending"] >= 1 and any(s["name"].startswith("Waiting") for s in q["sections"]), (st, q.get("counts")))
     st, e = api2.call("/api/queue", {"version": q["version"], "op": "add", "title": "must not land"})
     st2, e2 = api2.call("/api/todo", {"op": "add", "cat": "mine", "title": "must not land"})
     ok("R2 the read-only server refuses writes (403) and the real files are untouched", st == 403 and st2 == 403 and REAL_MD.read_bytes() == real_md_before and (ROOT / ".tmp" / "kevin_todo.json").read_bytes() == real_todo_before, (st, st2))

@@ -2251,6 +2251,19 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
      their 1.5rem indent. Same indent for both. */
   .article-body > ul, .article-body > ol { padding-left:1.5rem !important; }
 }
+/* ...but every guide sits BELOW the fixed nav on a phone, not under it. That
+   offset lived only in each guide's own page block (`#page-… .article-hero`,
+   identical on all 13), and the two Top 10 pages never got one, so their heroes
+   started at 0 with the first 56px hidden behind the nav (2026-11-08). Stated
+   once here with the same values, so a page that lacks the block still matches.
+   (1,2,0) outranks both the 2-class rule above and the page blocks (1,1,0). */
+@media (max-width:768px) {
+  :is(#_, [id^="page-"]) .article-hero.gg-banner {
+    margin-top:3.5rem !important;
+    min-height:clamp(280px,78vw,480px) !important;
+    padding:clamp(1.2rem,3vw,2.5rem) 1.25rem clamp(1.2rem,3vw,2.5rem) !important;
+    gap:clamp(.2rem,.6vw,.4rem) !important; }
+}
 /* the itinerary's lists indent 1.5rem too, not 20px, so all three templates match */
 .artbody .b-a ul { padding-left:1.5rem; }
 
@@ -3451,8 +3464,9 @@ nav, footer { padding-left:96px !important; padding-right:96px !important; }
      over a photo it leaves the paragraph's space too */
   :is(.article-body, .fn-section, .artbody) :is(ul, ol):has(+ :is(.img-pair, .img-landscape, .pair, .ls)) { margin-bottom:1.1rem !important; }
 }
-/* the same span on desktop: 1rem under the box, and the caption's -1rem would touch it */
-span[style*="aspect-ratio"] + .img-caption { margin-top:-8px; }
+/* the same span on desktop: 1rem under the box, and the caption's -1rem would touch it
+   (!important so an editor-made caption's inline -1rem cannot pull it back onto the photo) */
+span[style*="aspect-ratio"] + .img-caption { margin-top:-8px !important; }
 .artbody > .measure > .comp-h { margin-top:40px !important; }   /* was 56: the one section kicker that broke the 40px standard */
 /* the season matrix ends cleanly, with no rule hanging under the wet row */
 .whm2 .wrow:last-child, .whm .whm-row:last-child { border-bottom:0 !important; }
@@ -4021,8 +4035,12 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
   font-family:"Hanken Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size:.85rem; font-style:italic; line-height:1.55; color:var(--faint); }
 @media (max-width:768px) {
+  /* !important on the width: the editor still writes the old inline style
+     (width:79%) on every new caption, which held the 114 inline-styled captions
+     at 79% on a phone while Kosovo's class-only ones ran full width (2026-11-08).
+     The inline copies on the live pages are gone; this keeps new ones in line. */
   .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
-    width:100%; margin-top:-.6rem; }
+    width:100% !important; margin-top:-.6rem; }
 }
 
 /* ---- The hero veil, all five slides together. The base .veil runs
@@ -4243,3 +4261,35 @@ footer .footer-copy, footer .footer-affiliate { color:rgba(255,255,255,.55) !imp
 .fn-section .img-caption[style*="color"] { color:var(--faint) !important; }
 .filter-label { color:rgba(28,40,33,.66) !important; }
 .dest-subhead { opacity:1 !important; color:rgba(28,40,33,.66) !important; }
+
+/* ---- currency converter (Kevin, 2026-11-08: "let's do grey outline for the box and add to the pages") ----
+   One-to-one converter as the last part of every itinerary's Currency section (Kevin: 'make the currency converter the last part of the currency section'):
+   two outlined boxes with "=" between, a currency menu + amount on the left, the local currency on the right.
+   The markup is a placeholder, <div class="cconv" data-local=... data-rates=...>, that currency.js renders; with
+   JS off it shows its one-line fallback (.cconv-fb). tools/currency_widget.py inserts it and refreshes the
+   rates. The boxes stack when the column is narrower than 480px (a phone), via the container query. */
+.cconv { container-type:inline-size; margin:18px 0 28px; }
+.cconv-grid { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:16px; align-items:stretch; }
+.cconv-side { display:flex; flex-direction:column; gap:8px; min-width:0; border:1px solid var(--line);
+  padding:14px 16px 16px; background:none; }
+.cconv-lbl { font:500 10.5px/1.3 var(--body); letter-spacing:.13em; text-transform:uppercase; color:var(--faint);
+  display:flex; align-items:center; gap:7px; min-height:22px; }
+.cconv-selwrap { display:flex; align-items:center; gap:7px; min-width:0; min-height:22px; }
+.cconv-selbox { position:relative; display:inline-flex; align-items:center; min-width:0; max-width:100%; }
+/* the nav's solid caret (styles.css .nav-caret) */
+.cconv-selbox::after { content:''; position:absolute; right:2px; top:50%; margin-top:-2px; width:0; height:0;
+  border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid currentColor;
+  color:var(--ink); pointer-events:none; }
+.cconv .cconv-sel { -webkit-appearance:none; appearance:none; font:500 10.5px/1.3 var(--body); letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink); background:transparent; border:0;
+  border-bottom:1px solid rgba(28,40,33,.22); border-radius:0; padding:2px 18px 3px 0; margin:0; cursor:pointer;
+  min-width:0; max-width:100%; }
+.cconv .cconv-amt { font:400 1.6rem/1.15 var(--display); font-family:var(--display) !important; color:var(--ink);
+  background:transparent; border:0; border-bottom:1px solid rgba(28,40,33,.22); border-radius:0; width:100%;
+  min-width:0; margin:0; padding:2px 0 4px; font-variant-numeric:tabular-nums; box-shadow:none; }
+.cconv-fl { width:20px; height:14px; object-fit:cover; vertical-align:-2px; border-radius:2px;
+  box-shadow:none; flex:none; }
+.cconv-eq { align-self:center; color:var(--faint); font:400 20px/1 var(--body); }
+.cconv-asof, .cconv-fb { font:400 11.5px/1.4 var(--body); letter-spacing:.06em; color:var(--faint); }
+.cconv-asof { margin-top:10px; }
+@container (max-width:480px) { .cconv-grid { grid-template-columns:1fr; } .cconv-eq { justify-self:center; } }

@@ -74,7 +74,16 @@
 }
 </script>
 <link rel="stylesheet" href="../theme.css?v=6d696122">
-<link rel="stylesheet" href="../artifact.css?v=f0463d1b">
+<link rel="stylesheet" href="../artifact.css?v=65e1e0fa">
+<style id="hero-tiers">
+/* The hero's phone tiers (2026-11-08, same pattern as Santa Ana): phones used to download the desktop file.
+   The inline background:url(...) stays as the fallback; window bands >=769px are in bg-fit. */
+@supports (background-image: image-set(url("a.webp") type("image/webp"))) {
+  @media (max-width:768px) {
+    .article-hero.gg-banner { background-image: image-set(url('../Images/web/El Salvador/hero-ruta-de-las-flores-mob-1x.webp') 1x type('image/webp'), url('../Images/web/El Salvador/hero-ruta-de-las-flores-mob.webp') 2x type('image/webp'), url('../Images/web/El Salvador/hero-ruta-de-las-flores-mob-1x.jpg') 1x type('image/jpeg'), url('../Images/web/El Salvador/hero-ruta-de-las-flores-mob.jpg') 2x type('image/jpeg')) !important; }
+  }
+}
+</style>
 <style id="bg-fit">
 /* tools/fit_backgrounds.py: each background photo at the width this window draws it. Do not edit by hand. */
 @media (min-width:769px){[data-bgfit="1"][style*="Ataco Church Dome"]{background-image:url('../Images/web/El%20Salvador/La%20Ruta%20de%20las%20Flores/Ataco/Ataco%20Church%20Dome-1499w.webp')!important}}

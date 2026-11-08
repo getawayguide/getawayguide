@@ -32,6 +32,7 @@ Salvador is, and nothing on the site points at the field notes any more:
   6. posts + count      tools/sync_guides.py: its articles join the posts page's Guides section, its
                          field-notes card leaves, and the home hero's "N and counting." is recounted
   7. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
+  9. currency          the converter on every live itinerary gets today's rates (tools/currency_widget.py)
 
 It refuses to run until <slug>/index.html is live: retiring first would point the whole site at a
 page that does not exist yet. archive/ is never touched (see the publish protocol memory).
@@ -301,6 +302,14 @@ def _finish(dry, page=None):
     if not dry:
         subprocess.run([sys.executable, str(TOOLS / "analytics_snippet.py"), "--apply"],
                        cwd=ROOT, capture_output=True, text=True)
+    # 9. the currency converter on the live itineraries, the one launched with the country included
+    #    (tools/currency_widget.py; Kevin, 2026-11-08). No network keeps the saved rates; it never fails the launch.
+    r = subprocess.run([sys.executable, str(TOOLS / "currency_widget.py"), "--live-only"]
+                       + ([] if dry else ["--refresh-rates", "--apply"]),
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    lines = (r.stdout or "").strip().splitlines()
+    log.append(("currency converter: %s" % (lines[-1] if lines else "-")) if r.returncode == 0
+               else "WARN: currency_widget.py failed - run it manually")
     return log
 
 
