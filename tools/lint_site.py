@@ -18,6 +18,9 @@ Scans live HTML pages (excludes Drafts/, .tmp/, .git/) and reports:
   9. nested bold (<b> ... <b>) — usually a paste bug
  10. booking links still carrying ad-click junk (gclid, utm_*, another partner's id); fix with
      tools/affiliate_links.py --apply (warning class)
+ 11. a live article without its hero date (field notes have none) or its "Last updated ... Contains affiliate links"
+     footnote, or with either out of step with its dateModified; fix with tools/updated_line.py --apply
+     (warning class)
 
 Usage:
   python tools/lint_site.py            # lint live pages, summary + details
@@ -42,6 +45,10 @@ try:
     import affiliate_links as _aff     # the booking-link junk rules (roadmap R2); the lint runs without it
 except Exception:
     _aff = None
+try:
+    import updated_line as _upd        # hero date + "Last updated" footnote on every live article
+except Exception:
+    _upd = None
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INCLUDE_DRAFTS = "--drafts" in sys.argv
@@ -184,6 +191,14 @@ for path, r in pages():
                 add("booking-junk", r, lineno(html, m.start()), "tracking junk (%s): python tools/affiliate_links.py --apply"
                     % ", ".join(junk[:4]))
 
+    # 3a2. every live article shows a date under its hero description and ends with "Last updated: <Month YYYY> ·
+    #      Based on firsthand experience · Contains affiliate links" before Explore More, both from its
+    #      dateModified (Kevin, 2026-11-08). The footnote is the affiliate disclosure, so a missing one matters.
+    #      Field notes have the footnote but NO hero date (Kevin, 2026-11-08); one there is flagged.
+    if _upd and not r.startswith(("archive/", "Drafts/")):
+        for msg in _upd.problems(r, html):
+            add("article-dates", r, 0, msg + ": python tools/updated_line.py --apply")
+
     # 3b. assets that exist on disk but are not in the repo (held-back draft files), and
     #     references whose case does not match — Linux serves this site, Windows does not care
     if COMMITTED and not r.startswith("Drafts/"):
@@ -307,7 +322,7 @@ if nav_lists:
 # ---- report ----
 ORDER = ["duplicate-id", "broken-link", "broken-anchor", "unpublished-asset", "missing-asset",
          "asset-case", "nav-drift", "nested-bold", "paste-artifact", "em-dash", "img-no-alt",
-         "meta", "booking-junk"]
+         "meta", "booking-junk", "article-dates"]
 LABEL = {
     "duplicate-id": "Duplicate id attributes", "broken-link": "Broken internal file links",
     "broken-anchor": "Broken in-page anchors", "nav-drift": "Nav Field-Notes list drift",
@@ -316,6 +331,7 @@ LABEL = {
     "unpublished-asset": "Assets not in the repo (404 live)",
     "missing-asset": "Assets that do not exist", "asset-case": "Asset case mismatch (Linux host)",
     "booking-junk": "Booking links with ad-click tracking",
+    "article-dates": "Article without its hero date / Last-updated footnote",
 }
 # breaking issues that should fail CI (vs. style/quality warnings like em dashes)
 ERROR_CHECKS = {"duplicate-id", "broken-link", "broken-anchor", "nav-drift",

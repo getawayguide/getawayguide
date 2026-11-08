@@ -4210,7 +4210,12 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
    itself). The "Last updated" line now sits above the block as the column's last line, without its own rule
    (Kevin, 2026-10-24: "have all articles conform to the gyumri draft"). */
 .artbody > .xm.measure { margin:40px auto 64px !important; padding-top:36px !important; }
-.artbody > .measure.gg-updated { margin:0 auto !important; padding-top:0 !important; border-top:0 !important; }
+/* every article now carries that line (it is also the affiliate disclosure: "Last updated ... · Contains
+   affiliate links", tools/updated_line.py), so the guides and field notes set it exactly as the itinerary does,
+   rather than as a second ruled footnote 56px above Explore More's own rule (Kevin, 2026-11-08: "add it to the
+   bottom area where it is on the armenia page") */
+.artbody > .measure.gg-updated,
+.article-body > .measure.gg-updated { margin:0 auto !important; padding-top:0 !important; border-top:0 !important; }
 @media (max-width:768px) { .artbody > .xm.measure { margin-bottom:0 !important; } }
 
 /* ---- a country card's overlay can be lighter or heavier than the site's: Covers' Thumbnail mode writes

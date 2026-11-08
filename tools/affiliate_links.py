@@ -31,6 +31,9 @@ WHAT IT DOES TO EACH BOOKING LINK
      site's existing tip style (div.article-tip, styled in artifact.css as an accent rule):
          DISCLOSURE (below)
      The FTC wants it clear and close to the links, not only on a separate page.
+     EXCEPT on a page that carries the "Last updated: ... · Contains affiliate links" line
+     (div.gg-updated, written by tools/updated_line.py): that line is the page's disclosure, so no tip is
+     added there and --apply removes an old one (Kevin, 2026-11-08). Pages without the line keep the tip.
 
   With NO IDs in .env nothing is tagged, no rel="sponsored" and no disclosure are added: the tool only
   cleans. It is a pure function of (page, IDs), so a second run changes nothing, and removing an ID
@@ -88,6 +91,13 @@ DISCLOSURE = ("Some booking links on this page are affiliate links: if you book 
               "I earn a small commission at no extra cost to you.")
 NOTE_CLASS = "article-tip affiliate-note"
 NOTE_RE = re.compile(r'[ \t]*<div class="article-tip affiliate-note">.*?</div>[ \t]*\r?\n?', re.S)
+# the article's own "Last updated: ... · Contains affiliate links" line (tools/updated_line.py). A page that
+# carries it is already disclosed, so the tip box is neither added nor kept (Kevin, 2026-11-08).
+LINE_RE = re.compile(r'<div class="[^"]*\bgg-updated\b[^"]*"[^>]*>[^<]*affiliate link', re.I)
+
+
+def has_line(text):
+    return bool(LINE_RE.search(text))
 
 ENV_KEYS = {"hostelworld": "HOSTELWORLD_AFFILIATE_ID", "getyourguide": "GYG_PARTNER_ID",
             "viator": "VIATOR_PID", "stay22": "STAY22_AID"}
@@ -531,7 +541,7 @@ def process(text, page_rel, ids):
     out.append(text0[last:])
     new = "".join(out)
     note = None
-    if tagged_offsets:
+    if tagged_offsets and not has_line(new):
         spot = note_spot(new, tagged_offsets)
         if spot is not None:
             nl = "\r\n" if "\r\n" in new else "\n"

@@ -250,6 +250,31 @@ def test_pages():
         check("preview report shows tags + the disclosure without writing",
               rep.exists() and "**tag**" in rep.read_text(encoding="utf-8") and "disclosure" in rep.read_text(encoding="utf-8")
               and rd(fn) == clean_fn)
+
+        # the article's own "Last updated ... Contains affiliate links" line is the disclosure: a page that
+        # carries it gets no tip box, and an old one comes off (Kevin, 2026-11-08). Pages without it are unchanged.
+        run(site, ids_env, "--apply")
+        check("tagged again: both pages carry the tip", rd(fn).count("affiliate-note") == 1 and rd(art).count("affiliate-note") == 1)
+        line = ('<div class="measure gg-updated">Last updated: November 2026 · Based on firsthand experience'
+                ' · Contains affiliate links</div>\n')
+        lined = rd(fn).replace("</main>\n", "</main>\n" + line)
+        with open(fn, "w", encoding="utf-8", newline="") as f:
+            f.write(lined)
+        r = run(site, ids_env, "--check")
+        check("--check flags the tip a lined page no longer needs", r.returncode == 1 and "disclosure-removed" in r.stdout, r.stdout[-300:])
+        r = run(site, ids_env, "--apply")
+        a, b = rd(fn), rd(art)
+        check("a page with the line loses its tip box, keeps its tags and the line",
+              "affiliate-note" not in a and "prf.hn/click/camref:1011lABC" in a and line in a, a)
+        check("a page without the line keeps its tip box", b.count("affiliate-note") == 1)
+        r = run(site, ids_env, "--check")
+        check("--check passes once the tip is gone (idempotent)", r.returncode == 0, r.stdout[-300:])
+        check("a Last-updated line without the affiliate wording is not a disclosure",
+              not A.has_line('<div class="measure gg-updated">Last updated: May 2026 · Based on firsthand experience</div>')
+              and A.has_line(line))
+        check("either wording counts: 'Contains affiliate link' / 'Some links are affiliate links', any case",
+              A.has_line('<div class="measure gg-updated">Last updated: May 2026 · Contains Affiliate Link</div>')
+              and A.has_line('<div class="measure gg-updated">Last updated: May 2026 · Some links are affiliate links</div>'))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

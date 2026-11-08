@@ -18,6 +18,8 @@ Does, in order:
      the old "X - Field Notes" title and no canonical because it used to be a separate
      manual step. The run ends by asserting canonical + og:type + dates are present and
      says so in the log.
+  8b. "Last updated ... · Contains affiliate links" footnote before Explore More + the date under the
+     hero description (tools/updated_line.py --apply), before step 9 and again after the SEO dates.
   9. Affiliate links (optional, OFF): tools/affiliate_links.py on the new page. It only writes when .env
      has the program IDs AND AFFILIATE_LINKS=on; until then the log shows its dry-run line.
 
@@ -509,6 +511,19 @@ def main():
         log.append(("ran analytics_snippet.py --apply (%s)" % (head[0] if head else "-")) if r.returncode == 0
                    else "WARN: analytics_snippet.py failed - run it manually")
 
+        # The "Last updated: <Month YYYY> · Based on firsthand experience · Contains affiliate links" footnote
+        # (right before Explore More) and the date under the hero description (tools/updated_line.py; Kevin,
+        # 2026-11-08). The footnote is the page's affiliate disclosure, so it goes in BEFORE affiliate_links.py,
+        # which then never adds its old tip box; it runs again after the SEO dates below so both lines show the
+        # page's dateModified.
+        def _updated_line(when):
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "updated_line.py"), "--root", ROOT, "--apply"],
+                               cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            head = (r.stdout or "").strip().splitlines()
+            log.append(("ran updated_line.py --apply (%s): %s" % (when, head[0] if head else "-")) if r.returncode == 0
+                       else "WARN: updated_line.py failed - run it manually")
+        _updated_line("before affiliate links")
+
         # Affiliate links (roadmap R2, 2026-11-07): OFF until Kevin puts his program IDs in .env AND sets
         # AFFILIATE_LINKS=on there. On, it cleans the new page's booking links, tags them, adds
         # rel="sponsored" and the one disclosure line. Off, it only reports, so a launch never writes it.
@@ -564,6 +579,7 @@ def main():
                                           ("Article dates", '"datePublished"')) if probe not in page]
             log.append("SEO metadata: %s" % ("complete" if not missing
                                              else "STILL MISSING " + ", ".join(missing)))
+        _updated_line("after the SEO dates")
 
         # every pin's coords vs the place its own link opens (catches a pin in the wrong part
         # of town, e.g. Oaxaca's "La Popular" 5km out on Monte Alban)

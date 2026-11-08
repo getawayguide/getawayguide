@@ -26,6 +26,9 @@ Salvador is, and nothing on the site points at the field notes any more:
                          guide (tools/guide_cards.py; Kevin, 2026-10-23)
   6b. Explore More       the three related-article cards at the end of every live page are picked again
                          (tools/explore_more.py; Kevin, 2026-10-23)
+  6c. dates              the "Last updated ... · Contains affiliate links" footnote before Explore More and
+                         the date under the hero description (not on field notes) on every live article
+                         (tools/updated_line.py)
   6. posts + count      tools/sync_guides.py: its articles join the posts page's Guides section, its
                          field-notes card leaves, and the home hero's "N and counting." is recounted
   7. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
@@ -277,6 +280,14 @@ def _finish(dry, page=None):
     for r in xm.live_pages():
         n += xm.apply_page(r, cat, pins, dry)[1] == "ok"
     log.append("Explore More cards picked again on %d pages" % n)
+    # 6c. every live article carries "Last updated: <Month YYYY> · Based on firsthand experience · Contains affiliate
+    #     links" right before Explore More, and the date under its hero description, both from its
+    #     dateModified (tools/updated_line.py; Kevin, 2026-11-08). The guides launched with the country get them here.
+    r = subprocess.run([sys.executable, str(TOOLS / "updated_line.py"), "--root", str(ROOT)] + ([] if dry else ["--apply"]),
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    head = (r.stdout or "").strip().splitlines()
+    log.append(("updated_line.py: %s" % (head[0] if head else "-")) if r.returncode == 0
+               else "WARN: updated_line.py failed - run it manually")
     # 7. sitemap + search
     for tool in ("gen_sitemap.py", "gen_search_index.py"):
         if not (TOOLS / tool).is_file():
