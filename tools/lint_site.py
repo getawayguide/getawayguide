@@ -71,6 +71,10 @@ def pages():
         r = rel(p)
         if r.startswith("Drafts/") and not INCLUDE_DRAFTS: continue
         if r.startswith(".tmp/") or r.startswith(".git/"): continue
+        # tools/ holds the editor suite's own pages (the IG post maker, ig_post_page.html): their JS template
+        # placeholders (id="${id}", ${blob(...)}) read as duplicate ids and missing assets, and they are not
+        # site pages. Committing that page on 2026-11-08 turned every CI "Lint site" run red.
+        if r.startswith("tools/"): continue
         if os.path.basename(r) in EXCLUDE or r in EXCLUDE: continue
         yield p, r
 
