@@ -1,0 +1,185 @@
+{
+  "slug": "ubud-routes",
+  "page": "Drafts/Full Articles/indonesia/ubud.html",
+  "outline_file": "tools/itinerary_maps/geo/ubud-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 731.4,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    114.42,
+    -8.93,
+    115.75,
+    -8.05
+  ],
+  "layers": [],
+  "stops": [
+    {
+      "name": "Ubud",
+      "lat": -8.517,
+      "lon": 115.2551,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "name": "Canggu",
+      "lat": -8.6399,
+      "lon": 115.1436,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "canggu-seminyak.html"
+    },
+    {
+      "name": "Seminyak",
+      "lat": -8.6899,
+      "lon": 115.1668,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "href": "canggu-seminyak.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "DPS Airport",
+      "lat": -8.7465,
+      "lon": 115.1674,
+      "anchor": "end",
+      "dx": -22,
+      "dy": 18,
+      "icon_dx": -14,
+      "icon_dy": 14
+    }
+  ],
+  "dots": [
+    {
+      "name": "Denpasar",
+      "lat": -8.6653,
+      "lon": 115.2176,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -8.695,
+          115.183
+        ],
+        [
+          -8.62,
+          115.222
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -8.625,
+          115.185
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -8.575,
+          115.17
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Grab or car"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Bali",
+      "lat": -8.28,
+      "lon": 115.15,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Bali Sea",
+      "lat": -8.09,
+      "lon": 115.15,
+      "size": 10
+    },
+    {
+      "name": "Indian Ocean",
+      "lat": -8.93,
+      "lon": 114.85,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 822.8,
+    "crop_bounds": [
+      114.87,
+      -8.93,
+      115.5,
+      -8.42
+    ],
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Grab or car"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Bali",
+        "lat": -8.42,
+        "lon": 115.08,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Indian Ocean",
+        "lat": -8.88,
+        "lon": 114.98,
+        "size": 9
+      }
+    ]
+  }
+}

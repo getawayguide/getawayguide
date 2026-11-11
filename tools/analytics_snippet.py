@@ -149,7 +149,100 @@ def main(argv):
 
     if check and tok and (missing or changed):
         return 1
-    return 0
+    return ga_main(argv)
+
+
+# ------------------------------------------------------------------ Google Analytics 4 (Kevin, 2026-11-11)
+# The queue item: "the audience number partners recognize, with a consent banner for European visitors". The ID is
+# GA_MEASUREMENT_ID in .env. One block per page, between its own markers, right before </head> (after the Cloudflare one):
+#   1. Consent Mode v2 defaults, set BEFORE gtag.js loads: everything denied for visitors Google places in the EEA, the UK
+#      and Switzerland; analytics allowed elsewhere; ads storage denied everywhere (the site runs no ads). A choice the
+#      visitor saved on this browser is applied straight after.
+#   2. gtag.js (async) and the config line.
+#   3. consent.js (defer), at the site root: the small banner. It shows only to visitors whose clock is set to a European
+#      time zone and who haven't chosen yet; Accept/Decline update the consent and are remembered. The privacy page's
+#      "Cookie settings" link opens it again (window.ggConsent.open()).
+# consent.js is linked relative to the page (".." for country pages), like the style sheets, so the local preview at
+# /site/<path> works the same as the live site.
+GA_START, GA_END = "<!-- Google Analytics -->", "<!-- End Google Analytics -->"
+GA_RE = re.compile(r"[ \t]*" + re.escape(GA_START) + r".*?" + re.escape(GA_END) + r"[ \t]*(\r?\n)?", re.S)
+GA_ID_RE = re.compile(r"^G-[A-Z0-9]{6,12}$")
+CONSENT_REGIONS = ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU",
+                   "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]
+
+
+def ga_id():
+    v = os.environ.get("GA_MEASUREMENT_ID", "")
+    env = ROOT / ".env"
+    if not v and env.exists():
+        for line in env.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("#") or "=" not in line:
+                continue
+            k, val = line.split("=", 1)
+            if k.strip() == "GA_MEASUREMENT_ID":
+                v = val.strip().strip('"').strip("'")
+    return v.strip()
+
+
+def ga_snippet(mid, rel):
+    up = "../" * rel.count("/")
+    deny = "ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'"
+    regions = ",".join("'%s'" % c for c in CONSENT_REGIONS)
+    return (GA_START + "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+            "gtag('consent','default',{%s,analytics_storage:'denied',region:[%s]});"
+            "gtag('consent','default',{%s,analytics_storage:'granted'});"
+            "try{var c=localStorage.getItem('gg-consent');if(c)gtag('consent','update',{analytics_storage:c==='granted'?'granted':'denied'});}catch(e){}"
+            "gtag('js',new Date());gtag('config','%s');</script>"
+            "<script async src=\"https://www.googletagmanager.com/gtag/js?id=%s\"></script>"
+            "<script src=\"%sconsent.js\" defer></script>" % (deny, regions, deny, mid, mid, up) + GA_END)
+
+
+def with_ga(html, mid, rel):
+    base = GA_RE.sub("", html)
+    i = base.lower().find("</head>")
+    if i < 0:
+        return None
+    nl = "\r\n" if "\r\n" in base else "\n"
+    line_start = base.rfind("\n", 0, i) + 1
+    if base[line_start:i].strip():
+        return base[:i] + ga_snippet(mid, rel) + nl + base[i:]
+    return base[:line_start] + ga_snippet(mid, rel) + nl + base[line_start:]
+
+
+def ga_main(argv):
+    """the same --apply / --check / dry run for the Google Analytics block; --remove-ga takes it out"""
+    apply_, check, remove = "--apply" in argv, "--check" in argv, "--remove-ga" in argv
+    mid = ga_id()
+    if mid and not GA_ID_RE.match(mid):
+        sys.exit("GA_MEASUREMENT_ID in .env does not look like a GA4 measurement ID (G-XXXXXXXXXX). Nothing changed.")
+    changed = []
+    for p, r in live_pages():
+        html = read(p)
+        if 'http-equiv="refresh"' in html:
+            continue
+        if remove:
+            if GA_START in html:
+                changed.append(r)
+                write(p, GA_RE.sub("", html))
+            continue
+        if not mid:
+            continue
+        new = with_ga(html, mid, r)
+        if new is not None and new != html:
+            changed.append(r)
+            if apply_:
+                write(p, with_ga(read(p), mid, r))
+    if remove:
+        msg = "Removed Google Analytics from %d page(s)." % len(changed)
+    elif not mid:
+        msg = "GA_MEASUREMENT_ID is not set in .env, so Google Analytics stays off."
+    else:
+        msg = "%s Google Analytics on %d page(s)%s." % ("Added or updated" if apply_ else "Would add or update", len(changed),
+                                                       "" if apply_ or check or not changed else " (dry run: re-run with --apply)")
+    sys.stdout.buffer.write((msg + "\n").encode("utf-8"))
+    if not (ROOT / "consent.js").is_file() and mid and not remove:
+        sys.stdout.buffer.write(b"WARNING: consent.js is missing at the site root; the banner won't show.\n")
+    return 1 if check and mid and changed else 0
 
 
 if __name__ == "__main__":

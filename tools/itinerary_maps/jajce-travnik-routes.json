@@ -1,0 +1,168 @@
+{
+  "slug": "jajce-travnik-routes",
+  "page": "Drafts/Upcoming/bosnia/jajce-travnik-day-trip.html",
+  "outline_file": "tools/itinerary_maps/geo/jajce-travnik-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 880,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    16.45,
+    43.6,
+    19.0,
+    45.0
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/jajce-travnik-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Jajce",
+      "lat": 44.3422,
+      "lon": 17.2708,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 14,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Travnik",
+      "lat": 44.2264,
+      "lon": 17.6658,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -10,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Sarajevo",
+      "lat": 43.8563,
+      "lon": 18.4131,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 6,
+      "href": "sarajevo.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Banja Luka",
+      "lat": 44.7722,
+      "lon": 17.191,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "bow": 0.09
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus from Sarajevo"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Bosnia and|Herzegovina",
+      "lat": 44.55,
+      "lon": 18.15,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Croatia",
+      "lat": 43.55,
+      "lon": 16.85,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Serbia",
+      "lat": 44.8,
+      "lon": 18.9,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 610,
+    "crop_bounds": [
+      16.75,
+      43.6,
+      18.9,
+      45.0
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 14
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -10
+      },
+      "2": {
+        "dx": -6,
+        "dy": 24,
+        "anchor": "end"
+      }
+    },
+    "country_labels": {
+      "0": {
+        "lat": 44.6,
+        "lon": 18.1,
+        "size": 10
+      },
+      "1": {
+        "lat": 43.68,
+        "lon": 17.1,
+        "size": 9
+      },
+      "2": {
+        "lat": 44.8,
+        "lon": 18.78,
+        "size": 9
+      }
+    }
+  }
+}

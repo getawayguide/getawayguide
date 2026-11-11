@@ -1,5 +1,6 @@
 {
   "iso3": "SRB",
+  "hub_detail": "full",
   "simplify": 120,
   "smooth": true,
   "pin_scale": 1.15,

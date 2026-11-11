@@ -69,7 +69,7 @@ VECTORS = {
         # every section heading, whatever page type it is on. marginTop is not
         # compared: a field note opens its section with the heading, a guide
         # reaches one mid-prose, so the two legitimately differ.
-        ".article-h2, .article-body h2, .fn-section h2, .artbody h2, .fn-city-hd h2":
+        ".article-h2:not(.fn-city-hd h2), .article-body h2, .fn-section h2, .artbody h2, .fn-city-hd h2":
             ["fontFamily", "fontSize", "fontWeight", "color",
              "paddingBottom", "borderBottomWidth"],
         # the sub level. One class across both page types: the guides reach it
@@ -84,7 +84,7 @@ VECTORS = {
         # cannot reach: the transplanted guide and the about page open a section
         # with .h-a, privacy with .privacy-heading, resources with .rbh-title.
         # One rank on the page means one size on the page.
-        ".article-h2, .article-body h2, .fn-section h2, .artbody h2,"
+        ".article-h2:not(.fn-city-hd h2), .article-body h2, .fn-section h2, .artbody h2,"
         " .fn-city-hd h2, .h-a, .privacy-heading, .rbh-title, .blk-h,"
         " .rs-blk-h, .comp-h":
             ["fontSize", "fontWeight", "paddingBottom", "borderBottomWidth",
@@ -115,22 +115,82 @@ VECTORS = {
         ".contact-input, .nav-search-q, .form-row input": ["fontFamily"],
     },
     "links": {
-        ".artbody p a, .article-body p a, .fn-section p a, .measure p a":
+        # :not(.gl): the field notes' small guide arrow after a place name is a
+        # chip, not a prose link, and it was being measured as one (2026-11-10)
+        ".artbody p a:not(.gl), .article-body p a:not(.gl),"
+        " .fn-section p a:not(.gl), .measure p a:not(.gl)":
             ["color", "textDecorationLine"],
         ".artbody p b, .article-body p b, .fn-section p b": ["color", "fontWeight"],
-        ".artbody u, .article-body u, .fn-section u": ["color", "fontStyle"],
+        # a bare <u> in running text. An author's own <i><u> is emphasis, a <u>
+        # inside <b> takes the bold ink, and one that wraps a link takes the
+        # link colour; all three are the markup working, not drift.
+        ".artbody u:not(i u, em u, b u, strong u, a u):not(:has(a)),"
+        " .article-body u:not(i u, em u, b u, strong u, a u):not(:has(a)),"
+        " .fn-section u:not(i u, em u, b u, strong u, a u):not(:has(a))":
+            ["color", "fontStyle"],
     },
     "furniture": {
         ".article-tip, .article-callout": ["backgroundColor", "borderLeftWidth",
                                            "borderLeftColor", "borderRadius"],
         "#toc-b, .article-toc": ["backgroundColor", "borderRadius", "borderTopWidth"],
-        ".gg-updated": ["fontSize", "marginTop", "marginBottom", "color"],
-        ".cmmap": ["borderRadius", "boxShadow"],
+        ".gg-updated": ["fontSize", "color"],
+        # the article footnote sits flush above Explore More, which carries the
+        # rule. Resources has no Explore More, so its footnote keeps its own rule
+        # and the 56px (40px phone) that close the page: measured apart.
+        ":is(.artbody, .article-body) > .gg-updated": ["marginTop", "marginBottom"],
+        # the article footnote ("Last updated · Based on firsthand experience ·
+        # Contains affiliate links", 2026-11-08) is also the affiliate
+        # disclosure on 54 pages; it sits flush above Explore More with no rule
+        ".measure.gg-updated": ["fontFamily", "letterSpacing", "lineHeight",
+                                "textAlign", "textTransform"],
+        ":is(.artbody, .article-body) > .measure.gg-updated":
+            ["paddingTop", "borderTopWidth"],
+        # the painted Meteora map is a full-bleed illustration with no card
+        # treatment by design (.cm-painted); the drawn city maps are compared
+        ".cmmap:not(.cm-painted .cmmap)": ["borderRadius", "boxShadow"],
         ".cmkey": ["borderRadius", "boxShadow"],
         # photo captions: 114 carry the whole treatment inline and Kosovo's two
         # use the class alone, so a rule change reaches one set and not the other
         ".article-body .img-caption, .artbody .img-caption, .fn-section .img-caption":
-            ["color", "fontSize", "fontStyle", "lineHeight", "textAlign"],
+            ["color", "fontSize", "fontStyle", "lineHeight", "textAlign",
+             "fontFamily", "fontWeight", "letterSpacing", "marginBottom"],
+        # photo to caption: 8px at every width. The caption's pull has to
+        # undo whatever margin the block above leaves, and that margin changes
+        # at 768 and again at 540 (fixed 2026-11-10: 24px between 541 and 768,
+        # 2.4px under a pair on a phone). Run at 390, 600 and 1440.
+        ":is(.article-body, .fn-section) .img-pair + .img-caption": ["marginTop"],
+        ":is(.article-body, .fn-section) .img-landscape + .img-caption": ["marginTop"],
+        # the field notes' guide arrow after a place name: a chip in a list
+        # AND in a paragraph (El Salvador's paragraph arrows had no rule and
+        # rendered as full-size underlined links until 2026-11-10)
+        ".fn-section li a.gl": ["fontSize", "fontWeight", "textDecorationLine",
+                                "paddingLeft", "display"],
+        ".fn-section p a.gl": ["fontSize", "fontWeight", "textDecorationLine",
+                               "paddingLeft", "display"],
+        # the currency converter on the itineraries (2026-11-08)
+        ".cconv": ["marginTop", "marginBottom"],
+        ".cconv-side": ["borderTopWidth", "borderTopColor", "paddingTop",
+                        "paddingLeft", "backgroundColor"],
+        ".cconv .cconv-amt": ["fontFamily", "fontSize", "color"],
+        ".cconv-lbl, .cconv .cconv-sel": ["fontSize", "letterSpacing", "color"],
+    },
+    # Explore More: the three related-article cards that close every article.
+    # It is built as a bare <section class="xm"> on the guides and field notes
+    # and as a .measure column on the two itineraries, so it is watched as a
+    # component, not left to the layout group.
+    "explore": {
+        ".xm": ["marginTop", "paddingTop", "borderTopWidth", "borderTopColor"],
+        ".xm .xm-h": ["fontFamily", "fontSize", "fontWeight", "letterSpacing",
+                      "textTransform", "color", "marginBottom"],
+        ".xm .xm-t": ["fontFamily", "fontSize", "fontWeight", "lineHeight",
+                      "color"],
+        # :not(.g): a guide's kicker is the accent with a dot, a field note's
+        # is faint, so the colour depends on which article is linked
+        ".xm .xm-k:not(.g)": ["fontFamily", "fontSize", "letterSpacing",
+                      "textTransform", "color"],
+        ".xm .xm-k.g": ["color"],
+        ".xm .xm-d": ["fontFamily", "fontSize", "lineHeight", "color", "display"],
+        ".xm .xm-c img": ["borderRadius", "aspectRatio", "objectFit"],
     },
     "a11y": {
         # search.js injects the skip link on every page; it must stay off
@@ -151,7 +211,16 @@ VECTORS = {
                                                 "paddingBottom", "minHeight"],
         # the headline over a photograph: one size, one measure, on all six
         ".article-hero.gg-banner h1, .ah-banner h1":
-            ["fontSize", "fontWeight", "maxWidth", "marginTop"],
+            ["fontSize", "fontWeight", "maxWidth", "marginTop", "marginBottom"],
+        # the lead under it and the date under that close up on a phone; the
+        # two Top 10s lacked the page block that does it (fixed 2026-11-10)
+        ".article-hero.gg-banner .article-lead": ["marginTop", "lineHeight"],
+        # the field-notes hero's "Quick reference" tag and lead line
+        # (2026-10-31; Armenia and El Salvador, each in its own <style>)
+        ".fn-hero .fn-hero-lead": ["fontSize", "lineHeight", "color", "maxWidth",
+                                   "marginBottom"],
+        ".fn-hero .fn-tag": ["fontSize", "letterSpacing", "color",
+                             "borderTopWidth", "borderRadius"],
         # and the standfirst under it
         ".article-hero .article-lead, .ah-banner .artsub, .article-hero-sub":
             ["fontSize", "fontWeight", "maxWidth", "color"],
@@ -243,6 +312,9 @@ HOVERS = [
      ["color", "borderBottomColor"], True),
     ("resource row", ".rrow", ".rrow-name", ["color"], True),
     ("footer link", "footer .footer-links a", None, ["color"], True),
+    # Explore More answers with an underline on the title, not a lift
+    ("Explore More card", ".xm a.xm-c", ".xm-t", ["textDecorationLine"], True),
+    ("guide arrow", ".fn-section a.gl", None, ["backgroundColor"], True),
     ("breadcrumb", ".country-breadcrumb a, .article-breadcrumb a,"
      " .fn-hero-crumbs a", None, ["color"], True),
 ]
@@ -251,6 +323,7 @@ HOVERS = [
 # three of them rather than all of them. Every other page is its own template
 # and is hovered in full.
 STATE_SAMPLE_NOTES = {"albania/field-notes", "georgia/field-notes",
+                      "armenia/field-notes",  # has the guide arrows
                       "philippines/field-notes"}
 
 # Faces the redesign retired. Any element that still renders in one of these is
@@ -273,8 +346,6 @@ EXPECTED = {
         "squat. The opacity and the box it sits in are what must match.",
     ("nav > ul > li > a", "color"):
         "the home nav sits over the hero photograph, so its links are white",
-    (".artbody u, .article-body u, .fn-section u", "color"):
-        "a <u> that wraps a link takes the link colour, which is the point",
     (".article-body, .artbody", "maxWidth"):
         "the transplanted guide uses .artbody, whose measure is set on its rows",
     (".cards .card-img", "aspectRatio"):
@@ -283,6 +354,10 @@ EXPECTED = {
         "both render the photo full bleed with the copy on a 96px gutter; the "
         "five live-markup guides hang that gutter on the section, the "
         "transplanted itinerary hangs it on the absolutely placed copy block",
+    (".article-hero.gg-banner h1, .ah-banner h1", "maxWidth"):
+        "Orgov's is the one title with a forced two-line break (<br class=ttl-br>, "
+        "since the 2026-10-02 launch); it takes min(980px,92%) so the break, not "
+        "the 700px box, decides where the line falls",
     ("nav", "backgroundColor"):
         "the home nav sits over the hero photograph until it pins, so it is "
         "transparent at rest there and white on every other page",
@@ -317,7 +392,18 @@ PROBE = """([sel, props]) => {
   // that this page actually has is measured, but the RESULT is tagged with the
   // member it came from. The caller keys on that tag, so a class is only ever
   // compared against itself.
-  const parts = sel.split(',').map(s => s.trim()).filter(Boolean);
+  // split on top-level commas only: ':is(.a, .b) > .c' and 'u:not(i u, b u)'
+  // are ONE member each. A naive split(',') cut them mid-paren, and Chromium
+  // auto-closes an unclosed paren, so the stub still matched -- the wrong thing.
+  const parts = [];
+  { let depth = 0, cur = '';
+    for (const ch of sel) {
+      if (ch === '(') depth++;
+      if (ch === ')') depth--;
+      if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    if (cur.trim()) parts.push(cur.trim()); }
   for (const part of parts) {
     let el = null;
     try { el = document.querySelector(part); } catch (e) { continue; }
@@ -344,15 +430,25 @@ READ = ("(el, props) => { const cs = getComputedStyle(el); const o = {};"
 SHEETS_READY = """() => {
   const links = [...document.querySelectorAll('link[rel=stylesheet]')];
   if (!links.length) return true;
+  // On file:// Chromium treats every sheet as cross-origin and cssRules THROWS
+  // a SecurityError. That used to return false forever, so every page waited
+  // out the 8s timeout and was then measured anyway, unguarded (found
+  // 2026-11-10: all 67 pages printed "a stylesheet never finished"). A sheet
+  // we may not read is left to the fingerprint below; --base http://... reads
+  // them all.
   for (const l of links) {
-    let s; try { s = l.sheet; } catch (e) { return false; }
-    if (!s || !s.cssRules || s.cssRules.length === 0) return false;
+    let s, n;
+    try { s = l.sheet; n = s && s.cssRules ? s.cssRules.length : 0; }
+    catch (e) { if (e.name === 'SecurityError' && l.sheet) continue; return false; }
+    if (!s || n === 0) return false;
   }
   // artifact.css ends on the footer/tail block; its presence proves the whole
   // 170KB was parsed, not just the first screenful of rules
   const art = links.find(l => (l.href || '').includes('artifact.css'));
   if (art && art.sheet) {
-    const txt = art.sheet.cssRules[art.sheet.cssRules.length - 1].cssText || '';
+    let txt = 'x';
+    try { txt = art.sheet.cssRules[art.sheet.cssRules.length - 1].cssText || ''; }
+    catch (e) { txt = 'x'; }
     if (!txt) return false;
   }
   if (document.fonts && document.fonts.status !== 'loaded') return false;
@@ -453,7 +549,7 @@ async def hover_probe(p, page):
     return out
 
 
-async def collect(pages, width, groups, root):
+async def collect(pages, width, groups, root, base=""):
     seen = collections.defaultdict(lambda: collections.defaultdict(list))
     hovers = collections.defaultdict(lambda: collections.defaultdict(list))
     faces = collections.defaultdict(list)
@@ -463,7 +559,9 @@ async def collect(pages, width, groups, root):
         for f in pages:
             # the 34 field notes all stem to "field-notes", so name them by path
             name = f.relative_to(root).as_posix().replace(".html", "")
-            await p.goto(f.resolve().as_uri(), wait_until="load")
+            url = (base + f.relative_to(root).as_posix()) if base \
+                else f.resolve().as_uri()
+            await p.goto(url, wait_until="load")
             # "load" can fire before a 170KB stylesheet is fully parsed, and
             # Chromium applies it incrementally, so a page sampled mid-parse
             # reports theme.css's values while its neighbours report
@@ -580,7 +678,12 @@ async def main():
     ap.add_argument("--width", type=int, default=1440)
     ap.add_argument("--only", default="", help="comma-separated group names")
     ap.add_argument("--json", default="", help="write the raw findings here")
+    ap.add_argument("--base", default="",
+                    help="serve pages from this URL instead of file://, e.g. "
+                         "http://127.0.0.1:5003/site/ (same origin, so the "
+                         "stylesheet guard can read every sheet)")
     a = ap.parse_args()
+    base = a.base if (not a.base or a.base.endswith("/")) else a.base + "/"
 
     root = SITE if a.live else SITE / "preview"
     # archive/ is the PREVIOUS design, kept browsable on purpose, so it
@@ -588,7 +691,10 @@ async def main():
     # editor.html is a local tool, not a page of the site.
     skip = {".tmp", "Drafts", "preview", "tools", "Images", "node_modules",
             "archive", "__pycache__"}
-    skip_files = {"editor.html"}
+    # links.html is the Instagram bio page: self-contained on purpose (its own
+    # <style>, no artifact.css, no site nav or dark footer) so it opens fast in
+    # the in-app browser. Comparing its bare footer to the site's is noise.
+    skip_files = {"editor.html", "links.html"}
     pages = sorted(f for f in root.rglob("*.html")
                    if not any(part in skip for part in f.relative_to(root).parts)
                    and f.name not in skip_files)
@@ -602,7 +708,7 @@ async def main():
     print(f"{len(pages)} pages, {a.width}px"
           + (f", groups: {', '.join(sorted(groups))}" if groups else ""))
 
-    seen, hovers, faces = await collect(pages, a.width, groups, root)
+    seen, hovers, faces = await collect(pages, a.width, groups, root, base)
     bad = report(seen, a.width)
     bad += report_states(hovers)
     bad += report_faces(faces)

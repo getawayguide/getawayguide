@@ -1,0 +1,143 @@
+{
+  "slug": "mykonos-guide",
+  "kicker": "Greece",
+  "city": "Mykonos",
+  "osm": ".tmp/mykonos_osm.json",
+  "article": "Drafts/Full Articles/greece/mykonos.html",
+  "embed": {
+    "pre": "<!-- city map: mykonos-guide -->",
+    "post": "<!-- /city map: mykonos-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.2439
+  },
+  "mobile": {
+    "pad": 1.479,
+    "init_w": 0.9,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 37.471453,
+      "lon": 25.38085
+    }
+  },
+  "pois": [
+    {
+      "name": "Old Town",
+      "cat": "see",
+      "match": "old town",
+      "lat": 37.450838,
+      "lon": 25.329772,
+      "href": "https://www.google.com/maps/place/Mykonos+Old+Port,+Mykonos,+Greece/@37.4460254,25.3249857,17z/data=!4m10!1m2!2m1!1sMykonos+old+port!3m6!1s0x14a2bfa7719fc6df:0x8f24c262b0503451!8m2!3d37.4508376!4d25.3297722!15sChBNeWtvbm9zIG9sZCBwb3J0kgEMbmVpZ2hib3Job29k4AEA!16s%2Fg%2F11fsg2ndz9?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "The Windmills of Mykonos",
+      "cat": "see",
+      "match": "the windmills of mykon",
+      "lat": 37.444583,
+      "lon": 25.325932,
+      "href": "https://www.google.com/maps/place/Windmills+of+Mykonos/@37.4460254,25.3249857,17z/data=!4m9!1m2!2m1!1sMykonos+old+port!3m5!1s0x14a2bf1574ba2707:0x979ee1c2b9f4448e!8m2!3d37.4445825!4d25.3259318!16s%2Fm%2F05225xz?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Little Venice",
+      "cat": "see",
+      "match": "little venice",
+      "lat": 37.445385,
+      "lon": 25.326049,
+      "href": "https://www.google.com/maps/place/View+of+Alefkandra+(Little+Venice)/@37.4460254,25.3249857,17z/data=!4m9!1m2!2m1!1sMykonos+old+port!3m5!1s0x14a2bf7c2a9fe039:0x61d8a670980cf716!8m2!3d37.4453848!4d25.3260488!16s%2Fg%2F11j015rbp1?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Panagia Paraportiani",
+      "cat": "see",
+      "match": "panagia paraportiani",
+      "lat": 37.447115,
+      "lon": 25.325717,
+      "href": "https://www.google.com/maps/place/Holy+Church+of+Panagia+Paraportiani/@37.447115,25.3257175,17z/data=!3m1!4b1!4m6!3m5!1s0x14a2bfa9348bed19:0x457a7b5b91d42edb!8m2!3d37.447115!4d25.3257175!16s%2Fm%2F0524pgc?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Megali Ammos",
+      "cat": "see",
+      "match": "megali ammos",
+      "lat": 37.439011,
+      "lon": 25.326701,
+      "href": "https://www.google.com/maps/place/Paralia+Megali+Ammos/@37.4389762,25.3262981,17z/data=!3m1!4b1!4m6!3m5!1s0x14a2be5488932b83:0x62da155beab688b7!8m2!3d37.4390115!4d25.326701!16s%2Fg%2F119vr_fn6"
+    },
+    {
+      "name": "Tropicana Beach Bar",
+      "cat": "see",
+      "match": "tropicana beach bar",
+      "lat": 37.410265,
+      "lon": 25.356756,
+      "href": "https://www.google.com/maps/place/Tropicana+Beach+Bar+-+Restaurant/@37.4460254,25.317261,15z/data=!4m6!3m5!1s0x14a2bebe59342615:0xf3848db90ea51fc3!8m2!3d37.410265!4d25.356756!16s%2Fg%2F1v13wqft?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Cavo Paradiso",
+      "cat": "see",
+      "match": "cavo paradiso",
+      "lat": 37.408113,
+      "lon": 25.36023,
+      "href": "https://www.google.com/maps/place/Cavo+Paradiso+Mykonos/@37.4102645,25.3464562,15z/data=!4m10!1m2!2m1!1sbar!3m6!1s0x14a2bf1dbe3a5491:0x28c719fda44bcf00!8m2!3d37.4081129!4d25.3602303!15sCgNiYXJaBSIDYmFykgEKbmlnaHRfY2x1YpoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VSYU5Fa3ROWE5CUlJBQuABAPoBBAg0EEw!16s%2Fg%2F1tjd1qq_?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Skandinavian Bar",
+      "cat": "see",
+      "match": "skandinavian bar",
+      "lat": 37.446869,
+      "lon": 25.326882,
+      "href": "https://www.google.com/maps/place/Skandinavian+Bar+Mykonos/@37.4468685,25.3243073,16z/data=!3m1!4b1!4m6!3m5!1s0x14a2bfa915334f03:0x1eb4a502e9fbc3a4!8m2!3d37.4468685!4d25.3268822!16s%2Fg%2F1tggkyzg?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Attica Bakery",
+      "cat": "eat",
+      "match": "attica bakery",
+      "lat": 37.449458,
+      "lon": 25.330115,
+      "href": "https://www.google.com/maps/place/Attica+Bakeries/@37.4491937,25.3292457,17z/data=!4m6!3m5!1s0x14a2bf4bea0bc585:0x5c37f070bac45b64!8m2!3d37.4494578!4d25.3301147!16s%2Fg%2F11rv8qdpnt?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Souvlaki Story",
+      "cat": "eat",
+      "match": "souvlaki story",
+      "lat": 37.444935,
+      "lon": 25.327734,
+      "href": "https://www.google.com/maps/place/Souvlaki+Story/@37.4491933,25.3215208,15z/data=!4m10!1m2!2m1!1ssouvlaki+story+mykonos!3m6!1s0x14a2bf5b25a8aa81:0x426890a359d70aba!8m2!3d37.4449347!4d25.3277339!15sChZzb3V2bGFraSBzdG9yeSBteWtvbm9zIgOIAQFaGCIWc291dmxha2kgc3RvcnkgbXlrb25vc5IBFGNob3Bob3VzZV9yZXN0YXVyYW504AEA!16s%2Fg%2F11fpkw95h3?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Niko's Taverna",
+      "cat": "eat",
+      "match": "niko's taverna",
+      "lat": 37.447131,
+      "lon": 25.326839,
+      "href": "https://www.google.com/maps/place/Niko's+Taverna,+Mykonos,+Greece/@37.4491933,25.3215208,15z/data=!4m5!3m4!1s0x14a2bfa915fa6369:0x602474df234680b3!8m2!3d37.4471312!4d25.3268392?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Mykocoon Hostel",
+      "cat": "stay",
+      "match": "mykocoon hostel",
+      "lat": 37.445,
+      "lon": 25.33,
+      "href": "https://www.google.com/maps/place/Mycocoon+Hostel+Mykonos/@37.450113,25.3300905,17z/data=!4m9!3m8!1s0x14a2bfa80c237a7b:0xf193e18e7bde484d!5m2!4m1!1i2!8m2!3d37.450113!4d25.3300905!16s%2Fg%2F11g7zfwf14?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.460471,
+    "lon": 25.421861
+  },
+  "proj_lock": {
+    "desktop": [
+      0.4436951815014231,
+      0.7060817802939856,
+      164156.1150559654
+    ],
+    "mobile": [
+      0.4429793994548028,
+      0.7063232635761241,
+      199105.48148723543
+    ]
+  }
+}

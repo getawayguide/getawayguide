@@ -1,0 +1,214 @@
+{
+  "slug": "manila-routes",
+  "page": "Drafts/Full Articles/philippines/manila.html",
+  "outline_file": "tools/itinerary_maps/geo/manila-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 960,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    116.9,
+    8.4,
+    127.5,
+    15.6
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Manila",
+      "lat": 14.5904,
+      "lon": 120.9804,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "marker": "star",
+      "no_number": true
+    },
+    {
+      "n": 1,
+      "name": "Coron",
+      "lat": 11.9986,
+      "lon": 120.2052,
+      "anchor": "end",
+      "dx": -48,
+      "dy": 4,
+      "href": "coron.html",
+      "no_number": true
+    },
+    {
+      "n": 2,
+      "name": "Puerto Princesa",
+      "lat": 9.74,
+      "lon": 118.74,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "no_number": true
+    },
+    {
+      "n": 3,
+      "name": "Siargao",
+      "lat": 9.8567,
+      "lon": 126.016,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "siargao.html",
+      "no_number": true
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Bali",
+      "lat": 8.75,
+      "lon": 119.75,
+      "anchor": "start",
+      "dx": 8,
+      "dy": 4
+    },
+    {
+      "name": "To Saigon",
+      "lat": 13.65,
+      "lon": 117.55,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Bali",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": "dot:To Saigon",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Philippines",
+      "lat": 15.2,
+      "lon": 122.35,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "South China Sea",
+      "lat": 12.8,
+      "lon": 118.6,
+      "size": 10
+    },
+    {
+      "name": "Sulu Sea",
+      "lat": 8.9,
+      "lon": 121.2,
+      "size": 10
+    },
+    {
+      "name": "Philippine Sea",
+      "lat": 12.9,
+      "lon": 126.3,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 390,
+    "crop_pad": 8,
+    "crop_bounds": [
+      117.4,
+      8.6,
+      127.2,
+      15.6
+    ],
+    "country_labels": [],
+    "water_labels": [
+      {
+        "name": "Philippine Sea",
+        "lat": 12.9,
+        "lon": 125.9,
+        "size": 9
+      }
+    ],
+    "stops": {
+      "1": {
+        "anchor": "end",
+        "dx": -32,
+        "dy": 4
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 8
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 16
+      }
+    },
+    "dots": {
+      "0": {
+        "lat": 10.7,
+        "lon": 120.16,
+        "anchor": "start",
+        "dx": 8,
+        "dy": 4
+      },
+      "1": {
+        "lat": 13.83,
+        "lon": 118.2,
+        "anchor": "middle",
+        "dx": 0,
+        "dy": -10
+      }
+    }
+  }
+}

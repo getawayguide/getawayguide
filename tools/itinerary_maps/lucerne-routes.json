@@ -1,0 +1,401 @@
+{
+  "slug": "lucerne-routes",
+  "page": "Drafts/Full Articles/switzerland/lucerne.html",
+  "outline_file": "tools/itinerary_maps/geo/lucerne-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 954.5,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    6.9,
+    46.5,
+    9.1,
+    47.82
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/lucerne-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/lucerne-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Lucerne",
+      "lat": 47.0521,
+      "lon": 8.3058,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Interlaken",
+      "lat": 46.6855,
+      "lon": 7.8585,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "interlaken.html"
+    },
+    {
+      "n": 2,
+      "name": "Bern",
+      "lat": 46.9485,
+      "lon": 7.4522,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "bern.html"
+    },
+    {
+      "n": 3,
+      "name": "Zurich (ZRH)",
+      "lat": 47.3744,
+      "lon": 8.541,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    },
+    {
+      "n": 4,
+      "name": "Basel",
+      "lat": 47.5581,
+      "lon": 7.5878,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -2
+    }
+  ],
+  "dots": [
+    {
+      "name": "Brienz",
+      "lat": 46.756,
+      "lon": 8.0303,
+      "anchor": "end",
+      "dx": -7,
+      "dy": -8
+    },
+    {
+      "name": "Brünig Pass",
+      "lat": 46.7569,
+      "lon": 8.137,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 10
+    },
+    {
+      "name": "Sarnen",
+      "lat": 46.8957,
+      "lon": 8.2461,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 4
+    }
+  ],
+  "airports": [
+    {
+      "name": "EuroAirport",
+      "lat": 47.5989,
+      "lon": 7.5293,
+      "anchor": "end",
+      "dx": -12,
+      "dy": -2,
+      "icon_dx": -2,
+      "icon_dy": -13
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": "dot:Brienz",
+      "label": "",
+      "via": [
+        [
+          46.71,
+          7.89
+        ],
+        [
+          46.735,
+          7.93
+        ],
+        [
+          46.757,
+          7.97
+        ],
+        [
+          46.77,
+          8.01
+        ]
+      ]
+    },
+    {
+      "a": "dot:Brienz",
+      "b": "dot:Brünig Pass",
+      "label": ""
+    },
+    {
+      "a": "dot:Brünig Pass",
+      "b": "dot:Sarnen",
+      "label": "",
+      "via": [
+        [
+          46.8,
+          8.142
+        ],
+        [
+          46.86,
+          8.185
+        ],
+        [
+          46.892,
+          8.225
+        ]
+      ]
+    },
+    {
+      "a": "dot:Sarnen",
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          46.98,
+          8.255
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          47.18,
+          8.22
+        ]
+      ]
+    },
+    {
+      "a": 4,
+      "b": "air",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Bus 50 to the airport",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Switzerland",
+      "lat": 46.55,
+      "lon": 8.811,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "France",
+      "lat": 47.562,
+      "lon": 6.982,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Germany",
+      "lat": 47.76,
+      "lon": 7.974,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Lake Lucerne",
+      "lat": 46.98,
+      "lon": 8.58,
+      "size": 10
+    },
+    {
+      "name": "Lake Brienz",
+      "lat": 46.68,
+      "lon": 8.06,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 572.7,
+    "crop_bounds": [
+      6.9,
+      46.5,
+      9.1,
+      47.82
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -6
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      },
+      "4": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -2
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Switzerland",
+        "lat": 46.66,
+        "lon": 8.715,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": [],
+    "dots": [],
+    "legs": [
+      {
+        "a": 1,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            46.71,
+            7.89
+          ],
+          [
+            46.735,
+            7.93
+          ],
+          [
+            46.757,
+            7.97
+          ],
+          [
+            46.77,
+            8.01
+          ],
+          [
+            46.756,
+            8.03
+          ],
+          [
+            46.7569,
+            8.137
+          ],
+          [
+            46.8,
+            8.142
+          ],
+          [
+            46.86,
+            8.185
+          ],
+          [
+            46.892,
+            8.225
+          ],
+          [
+            46.8957,
+            8.2461
+          ],
+          [
+            46.98,
+            8.255
+          ]
+        ]
+      },
+      {
+        "a": 2,
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 3,
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 4,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            47.18,
+            8.22
+          ]
+        ]
+      },
+      {
+        "a": 4,
+        "b": "air",
+        "label": "",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  }
+}

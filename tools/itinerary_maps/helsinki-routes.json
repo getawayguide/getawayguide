@@ -1,0 +1,280 @@
+{
+ "slug": "helsinki-routes",
+ "page": "Drafts/Full Articles/finland/helsinki.html",
+ "outline_file": "tools/itinerary_maps/geo/helsinki-routes-main.json",
+ "smooth": false,
+ "pin_scale": 1.15,
+ "country_width": 506,
+ "margins": {
+  "l": 240,
+  "r": 240,
+  "t": 130,
+  "b": 130
+ },
+ "crop_bounds": [
+  16.4,
+  58.2,
+  28.2,
+  61.35
+ ],
+ "layers": [
+  {
+   "file": "tools/itinerary_maps/geo/helsinki-routes-neighbors.json",
+   "under": true,
+   "fill": "#EFF0EB",
+   "stroke": "#D5DAD3",
+   "width": 0.9
+  },
+  {
+   "file": "tools/itinerary_maps/geo/helsinki-routes-route.json",
+   "under": true,
+   "fill": "#E6EAE3",
+   "stroke": "#9DB0A5",
+   "width": 1.1
+  }
+ ],
+ "stops": [
+  {
+   "name": "Helsinki",
+   "lat": 60.1699,
+   "lon": 24.9384,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 16,
+   "dy": 18,
+   "marker": "star"
+  },
+  {
+   "name": "Tallinn",
+   "lat": 59.437,
+   "lon": 24.7536,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 14,
+   "dy": 12,
+   "href": "../estonia/tallinn.html"
+  },
+  {
+   "name": "Stockholm",
+   "lat": 59.3293,
+   "lon": 18.0686,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": 12,
+   "href": "../sweden/stockholm.html"
+  }
+ ],
+ "airports": [
+  {
+   "name": "HEL Airport",
+   "lat": 60.3172,
+   "lon": 24.9633,
+   "anchor": "end",
+   "dx": -14,
+   "dy": -10,
+   "icon_dx": -14,
+   "icon_dy": 8
+  }
+ ],
+ "legs": [
+  {
+   "a": 1,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "sea": true,
+   "via": [
+    [
+     59.68,
+     24.79
+    ],
+    [
+     59.9,
+     24.99
+    ],
+    [
+     60.12,
+     24.99
+    ]
+   ],
+   "via_lock": true
+  },
+  {
+   "a": 2,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "sea": true,
+   "via": [
+    [
+     59.385,
+     18.16
+    ],
+    [
+     59.392,
+     18.33
+    ],
+    [
+     59.44,
+     18.39
+    ],
+    [
+     59.5,
+     18.47
+    ],
+    [
+     59.562,
+     18.62
+    ],
+    [
+     59.56,
+     18.88
+    ],
+    [
+     59.57,
+     19.25
+    ],
+    [
+     59.52,
+     22.5
+    ],
+    [
+     59.72,
+     24.0
+    ],
+    [
+     59.97,
+     24.75
+    ]
+   ],
+   "via_lock": true
+  },
+  {
+   "a": "dot:Porvoo",
+   "b": 0,
+   "label": ""
+  },
+  {
+   "a": "air",
+   "b": 0,
+   "label": "",
+   "color": "#7C9488",
+   "dash": true
+  }
+ ],
+ "legend": {
+  "pos": "br",
+  "scale": 0.9,
+  "items": [
+   {
+    "label": "Ferry",
+    "color": "#5E93A3"
+   },
+   {
+    "label": "Bus"
+   },
+   {
+    "label": "Airport train",
+    "color": "#7C9488",
+    "dash": true
+   }
+  ]
+ },
+ "country_labels": [
+  {
+   "name": "Finland",
+   "lat": 61.0,
+   "lon": 25.2,
+   "size": 11,
+   "weight": 700,
+   "ls": 3,
+   "color": "#4F6358"
+  },
+  {
+   "name": "Sweden",
+   "lat": 59.9,
+   "lon": 16.95,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Estonia",
+   "lat": 59.0,
+   "lon": 25.7,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  }
+ ],
+ "water_labels": [
+  {
+   "name": "Baltic Sea",
+   "lat": 58.7,
+   "lon": 19.7,
+   "size": 10
+  }
+ ],
+ "mobile": {
+  "country_width": 327,
+  "legend": {
+   "pos": "br",
+   "scale": 0.8,
+   "items": [
+    {
+     "label": "Ferry",
+     "color": "#5E93A3"
+    },
+    {
+     "label": "Bus"
+    },
+    {
+     "label": "Airport train",
+     "color": "#7C9488",
+     "dash": true
+    }
+   ]
+  },
+  "country_labels": [
+   {
+    "name": "Finland",
+    "lat": 61.0,
+    "lon": 25.2,
+    "size": 9,
+    "weight": 700,
+    "ls": 3,
+    "color": "#4F6358"
+   },
+   {
+    "name": "Sweden",
+    "lat": 59.9,
+    "lon": 16.95,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   }
+  ],
+  "water_labels": [
+   {
+    "name": "Baltic Sea",
+    "lat": 58.7,
+    "lon": 19.7,
+    "size": 9
+   }
+  ]
+ },
+ "dots": [
+  {
+   "name": "Porvoo",
+   "lat": 60.3932,
+   "lon": 25.665,
+   "anchor": "start",
+   "dx": 10,
+   "dy": -2
+  }
+ ]
+}

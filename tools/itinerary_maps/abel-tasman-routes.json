@@ -1,0 +1,362 @@
+{
+  "slug": "abel-tasman-routes",
+  "page": "Drafts/Full Articles/new-zealand/abel-tasman.html",
+  "outline_file": "tools/itinerary_maps/geo/abel-tasman-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 2078.2,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/nz-tory-channel.json",
+      "fill": "#F7F7F3"
+    }
+  ],
+  "crop_bounds": [
+    172.55,
+    -41.85,
+    175.3,
+    -40.55
+  ],
+  "stops": [
+    {
+      "name": "Kaiteriteri",
+      "lat": -41.037,
+      "lon": 173.0167,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "end",
+      "dx": -16,
+      "dy": 8
+    },
+    {
+      "name": "Picton",
+      "lat": -41.2909,
+      "lon": 174.0069,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10
+    },
+    {
+      "name": "Wellington",
+      "lat": -41.2888,
+      "lon": 174.7772,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 20,
+      "dy": -18,
+      "href": "wellington.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Torrent Bay",
+      "lat": -40.9458,
+      "lon": 173.0488,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -6
+    },
+    {
+      "name": "Marahau",
+      "lat": -41.0053,
+      "lon": 173.0098,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -2
+    },
+    {
+      "name": "Nelson",
+      "lat": -41.2711,
+      "lon": 173.2837,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 1,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via_lock": true,
+      "via": [
+        [
+          -41.275,
+          174.8
+        ],
+        [
+          -41.295,
+          174.85
+        ],
+        [
+          -41.33,
+          174.845
+        ],
+        [
+          -41.365,
+          174.81
+        ],
+        [
+          -41.37,
+          174.7
+        ],
+        [
+          -41.345,
+          174.57
+        ],
+        [
+          -41.3,
+          174.46
+        ],
+        [
+          -41.255,
+          174.385
+        ],
+        [
+          -41.238,
+          174.335
+        ],
+        [
+          -41.236,
+          174.28
+        ],
+        [
+          -41.238,
+          174.2
+        ],
+        [
+          -41.228,
+          174.15
+        ],
+        [
+          -41.232,
+          174.1
+        ],
+        [
+          -41.252,
+          174.05
+        ],
+        [
+          -41.265,
+          174.015
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -41.301,
+          173.575
+        ],
+        [
+          -41.159,
+          173.529
+        ],
+        [
+          -41.275,
+          173.33
+        ],
+        [
+          -41.33,
+          173.2
+        ],
+        [
+          -41.33,
+          173.08
+        ],
+        [
+          -41.2,
+          173.0
+        ],
+        [
+          -41.12,
+          172.99
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": "dot:Torrent Bay",
+      "label": "",
+      "color": "#5E93A3",
+      "dash": true,
+      "sea": true,
+      "via": [
+        [
+          -41.04,
+          173.06
+        ],
+        [
+          -40.95,
+          173.073
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Water taxi",
+        "color": "#5E93A3",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Abel Tasman|National Park",
+      "lat": -40.83,
+      "lon": 172.72,
+      "size": 10,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "South Island",
+      "lat": -41.6,
+      "lon": 173.5,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North Island",
+      "lat": -40.72,
+      "lon": 175.1,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Bay",
+      "lat": -41.0,
+      "lon": 173.3,
+      "size": 9
+    },
+    {
+      "name": "Cook Strait",
+      "lat": -41.1,
+      "lon": 174.55,
+      "size": 9
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Ferry",
+          "color": "#5E93A3"
+        },
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Water taxi",
+          "color": "#5E93A3",
+          "dash": true
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 10,
+        "dy": 22
+      },
+      "1": {
+        "anchor": "start",
+        "dx": -6,
+        "dy": 28
+      },
+      "2": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": -38
+      }
+    },
+    "dots": [
+      {
+        "name": "Torrent Bay",
+        "lat": -40.9458,
+        "lon": 173.0488,
+        "anchor": "start",
+        "dx": 9,
+        "dy": -6
+      },
+      {
+        "name": "Marahau",
+        "lat": -41.0053,
+        "lon": 173.0098,
+        "anchor": "end",
+        "dx": -9,
+        "dy": -6
+      },
+      {
+        "name": "Nelson",
+        "lat": -41.2711,
+        "lon": 173.2837,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 8
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Tasman Bay",
+        "lat": -40.78,
+        "lon": 173.75,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Abel Tasman|National Park",
+        "lat": -40.76,
+        "lon": 172.92,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "South Island",
+        "lat": -41.6,
+        "lon": 173.5,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 1016.0
+  }
+}

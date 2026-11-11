@@ -1,0 +1,232 @@
+{
+  "slug": "uluwatu-routes",
+  "page": "Drafts/Full Articles/indonesia/uluwatu-south-bali.html",
+  "outline_file": "tools/itinerary_maps/geo/uluwatu-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1522.7,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    114.87,
+    -8.9,
+    115.45,
+    -8.47
+  ],
+  "layers": [],
+  "stops": [
+    {
+      "name": "Uluwatu",
+      "lat": -8.8294,
+      "lon": 115.0843,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 8,
+      "marker": "star"
+    },
+    {
+      "name": "Ubud",
+      "lat": -8.517,
+      "lon": 115.2551,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "ubud.html"
+    },
+    {
+      "name": "Canggu",
+      "lat": -8.6399,
+      "lon": 115.1436,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 0,
+      "href": "canggu-seminyak.html"
+    },
+    {
+      "name": "Seminyak",
+      "lat": -8.6899,
+      "lon": 115.1668,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "canggu-seminyak.html"
+    },
+    {
+      "name": "Kuta",
+      "lat": -8.7264,
+      "lon": 115.1778,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10
+    }
+  ],
+  "airports": [
+    {
+      "name": "DPS Airport",
+      "lat": -8.7465,
+      "lon": 115.1674,
+      "anchor": "end",
+      "dx": -18,
+      "dy": 14,
+      "icon_dx": -14,
+      "icon_dy": 8
+    }
+  ],
+  "dots": [
+    {
+      "name": "Denpasar",
+      "lat": -8.6653,
+      "lon": 115.2176,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Nusa Dua",
+      "lat": -8.8017,
+      "lon": 115.2239,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 8
+    },
+    {
+      "name": "To Manila",
+      "lat": -8.6,
+      "lon": 115.43,
+      "anchor": "end",
+      "dx": -2,
+      "dy": -8
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 3,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": ""
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -8.775,
+          115.176
+        ],
+        [
+          -8.8,
+          115.155
+        ],
+        [
+          -8.815,
+          115.12
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 4,
+      "label": "",
+      "via": [
+        [
+          -8.6,
+          115.232
+        ],
+        [
+          -8.665,
+          115.205
+        ]
+      ]
+    },
+    {
+      "a": "air",
+      "b": "dot:To Manila",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.08
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Grab or car"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Bali",
+      "lat": -8.49,
+      "lon": 115.4,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Indian Ocean",
+      "lat": -8.87,
+      "lon": 115.33,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 1126.9,
+    "crop_bounds": [
+      114.94,
+      -8.91,
+      115.4,
+      -8.47
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Grab or car"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Bali",
+        "lat": -8.49,
+        "lon": 115.11,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": []
+  }
+}

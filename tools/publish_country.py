@@ -86,7 +86,7 @@ def insert_after_alpha(html, item_re, name_grp, new_name, make_line):
 # Countries that have FULL multi-page guides (not just field notes). They're folded into
 # their continent group in the merged dropdown and flagged with a green dot. (name, iso2,
 # continent, href-to-guide-index). New Zealand's guides are unfinished -> moved to Drafts, omitted.
-FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html"), ("Greece", "gr", "europe", "greece/index.html"), ("Türkiye", "tr", "asia", "turkiye/index.html")]
+FULL_GUIDES = [("Armenia", "am", "asia", "armenia/index.html"), ("El Salvador", "sv", "americas", "el-salvador/index.html"), ("Greece", "gr", "europe", "greece/index.html"), ("North Macedonia", "mk", "europe", "north-macedonia/index.html"), ("Türkiye", "tr", "asia", "turkiye/index.html")]
 NAV_SUBCOLS = [["europe", "africa"], ["asia", "americas", "oceania"]]  # left/right; empty groups skipped
 CONT_LABEL = {"europe": "Europe", "asia": "Asia", "americas": "Americas",
               "africa": "Africa", "oceania": "Oceania"}
@@ -355,6 +355,17 @@ def main():
             log.append("WARN: search index not rebuilt (%s) — run tools/gen_search_index.py" % e)
     else:
         log.append("would rebuild search-index.js")
+    # 7-thumbs. the search results' photos: gen_search_index writes the index without them, so every rebuild drops them
+    #     all until tools/build_search_thumbs.py runs (North Macedonia, 2026-11-10: run by hand). Existing ones are reused.
+    import subprocess as _sp
+    try:
+        r = _sp.run([sys.executable, os.path.join(ROOT, "tools", "build_search_thumbs.py")] + (["--dry-run"] if DRY else []),
+                    cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
+        out = (r.stdout or "").strip().splitlines()
+        log.append(("search thumbnails: %s" % (out[-1].strip() if out else "-")) if r.returncode == 0
+                   else "WARN: build_search_thumbs.py failed - run it by hand")
+    except Exception as e:
+        log.append("WARN: build_search_thumbs.py not run (%s) - run it by hand" % e)
 
     # 7a. Explore More (Kevin, 2026-10-23): a new page changes which three cards every live page shows, and
     #     the new page gets its own three
@@ -366,6 +377,18 @@ def main():
         log.append("%sExplore More cards picked again on %d pages" % ("would: " if DRY else "", n))
     except Exception as e:
         log.append("WARN: Explore More not rebuilt (%s) — run tools/explore_more.py" % e)
+
+    # 7a2. Cross-links (Kevin, 2026-11-10): bare sibling mentions get their first link per section (tools/crosslink.py;
+    #      repoint suggestions go to .tmp/crosslink/<slug>-review.md). Existing links are never touched: no relink pass,
+    #      so Google Maps pins and booking links stay as they are (Kevin, 2026-11-10: "map links should be linked to map
+    #      pins like google maps or booking links"). Report-only on a dry run.
+    try:
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import crosslink
+        cx = crosslink.run(slug, apply=not DRY, mentions=True)                        # mentions only: relinks removed
+        log += ["crosslink: " + ln for ln in cx["log"]]
+    except Exception as e:
+        log.append("WARN: cross-links not run (%s) — run tools/crosslink.py %s --apply" % (e, slug))
 
     # 7b. City-map drift (Kevin's 2026-07-31 rule): articles gain bullets after their city map
     #     was built, and the editor can strip the mobile pin overlay. Warn if the live article
@@ -602,18 +625,33 @@ def main():
         log.append("check_pin_coords: %s" % ("clean" if not bad else
                    "%d pin(s) off - run: py tools/check_pin_coords.py" % bad))
 
-        # publishing changes the nav on live pages only, so every remaining draft goes stale
-        drafts = [p.parent.name for p in __import__("draft_paths").field_notes()]
-        if drafts:
-            r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "update_draft_nav.py")] + drafts,
-                               cwd=ROOT, capture_output=True, text=True)
-            log.append("refreshed nav on %d remaining draft(s)" % len(drafts))
+        # publishing changes the nav on live pages only, so every remaining draft goes stale: all of them, articles too
+        # (it passed only the field-notes drafts' countries). Nav block only, byte-safe, so a draft with uncommitted
+        # work is safe to touch (tools/update_draft_nav.py says why).
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "update_draft_nav.py")],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        out = (r.stdout or "").strip().splitlines()
+        log.append(("draft navs: %s" % (out[-1] if out else "-")) if r.returncode == 0
+                   else "WARN: update_draft_nav.py failed - run it by hand")
         r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "lint_site.py"), "--ci"],
                            cwd=ROOT, capture_output=True, text=True)
         log.append("lint_site --ci: PASS" if r.returncode == 0
                    else "LINT FAILED - run: py tools/lint_site.py")
     elif DRY:
         log.append("would run gen_og_images / add_structured_data / gen_sitemap / lint_site --ci")
+        # what the share-image and draft-nav steps would do (the moved page is not on disk in a dry run; its share
+        # image comes from gen_og_images' country loop, which covers every live field-notes page)
+        try:
+            import gen_og_images
+            log += ["og: " + ln for ln in gen_og_images.ensure([rel(p) for p in glob.glob(os.path.join(ROOT, slug, "*.html"))], True)] \
+                or ["og: %s/field-notes.html gets Images/web/og/%s.jpg from gen_og_images.py" % (slug, slug)]
+        except Exception as e:
+            log.append("WARN: share images not checked (%s)" % e)
+        import subprocess
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "update_draft_nav.py"), "--dry-run"],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        out = (r.stdout or "").strip().splitlines()
+        log.append("draft navs: %s" % (out[-1] if out else "-"))
 
     # 8. VERIFY. Every wiring step above has silently no-opped at least once when the site
     #    markup drifted (the grid-card comment anchor, the removed index flag strip). Assert

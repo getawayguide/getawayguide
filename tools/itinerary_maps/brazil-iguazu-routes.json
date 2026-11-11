@@ -1,0 +1,267 @@
+{
+  "slug": "brazil-iguazu-routes",
+  "page": "Drafts/Full Articles/brazil/iguazu-falls.html",
+  "outline_file": "tools/itinerary_maps/geo/brazil-iguazu-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 512.4,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -62,
+    -36.2,
+    -41.6,
+    -20.3
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/brazil-iguazu-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/brazil-iguazu-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "name": "Puerto Iguazú",
+      "lat": -25.5972,
+      "lon": -54.5786,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 14
+    },
+    {
+      "name": "Foz do Iguaçu",
+      "lat": -25.5304,
+      "lon": -54.583,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -42,
+      "marker": "star"
+    },
+    {
+      "name": "Buenos Aires",
+      "lat": -34.6095,
+      "lon": -58.3888,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 12
+    },
+    {
+      "name": "São Paulo",
+      "lat": -23.5507,
+      "lon": -46.6334,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 14,
+      "href": "sao-paulo.html"
+    },
+    {
+      "name": "Rio de Janeiro",
+      "lat": -22.911,
+      "lon": -43.2094,
+      "no_number": true,
+      "anchor": "end",
+      "dx": 12,
+      "dy": -40,
+      "href": "rio-de-janeiro.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Asunción",
+      "lat": -25.28,
+      "lon": -57.6344,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 4
+    },
+    {
+      "name": "Curitiba",
+      "lat": -25.4296,
+      "lon": -49.2713,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Porto Alegre",
+      "lat": -30.0325,
+      "lon": -51.2304,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Montevideo",
+      "lat": -34.9059,
+      "lon": -56.1913,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Córdoba",
+      "lat": -31.4167,
+      "lon": -64.1834,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 4,
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.09
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Argentina",
+      "lat": -32.4,
+      "lon": -61.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Brazil",
+      "lat": -22.3,
+      "lon": -52.7,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Paraguay",
+      "lat": -23.4,
+      "lon": -58.3,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Uruguay",
+      "lat": -32.8,
+      "lon": -56.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Atlantic Ocean",
+      "lat": -29.7,
+      "lon": -45.6,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 314.1,
+    "crop_bounds": [
+      -60.6,
+      -36.2,
+      -42.2,
+      -20.5
+    ],
+    "dots": [
+      {
+        "name": "Curitiba",
+        "lat": -25.4296,
+        "lon": -49.2713,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 4
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Atlantic Ocean",
+        "lat": -29.7,
+        "lon": -45.6,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Argentina",
+        "lat": -30.0,
+        "lon": -60.0,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Brazil",
+        "lat": -21.4,
+        "lon": -53.0,
+        "size": 12,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    }
+  }
+}

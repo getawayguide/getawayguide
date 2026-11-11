@@ -1,0 +1,240 @@
+{
+  "slug": "zanzibar-routes",
+  "page": "Drafts/Full Articles/tanzania/zanzibar.html",
+  "outline_file": "tools/itinerary_maps/geo/zanzibar-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 587.3,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    36.0,
+    -7.45,
+    41.4,
+    -2.6
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/zanzibar-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "mobile": {
+    "country_width": 425.2,
+    "crop_bounds": [
+      35.3,
+      -7.45,
+      40.9,
+      -2.65
+    ],
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Ferry",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "country_labels": {
+      "0": {
+        "size": 10
+      },
+      "1": {
+        "size": 9
+      }
+    },
+    "water_labels": [],
+    "airports": [
+      {
+        "name": "",
+        "lat": -6.2241,
+        "lon": 39.2241,
+        "anchor": "start",
+        "dx": 24,
+        "dy": 28,
+        "icon_dx": 6,
+        "icon_dy": 20
+      }
+    ],
+    "dots": {
+      "2": {
+        "lat": -4.6,
+        "lon": 40.5
+      }
+    }
+  },
+  "stops": [
+    {
+      "name": "Stone Town",
+      "lat": -6.1627,
+      "lon": 39.1897,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "name": "Dar es Salaam",
+      "lat": -6.8161,
+      "lon": 39.2804,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6
+    },
+    {
+      "name": "Kilimanjaro",
+      "lat": -3.4281,
+      "lon": 37.0763,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 24,
+      "href": "serengeti-ngorongoro-safari.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Arusha",
+      "lat": -3.3697,
+      "lon": 36.6881,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    },
+    {
+      "name": "From Tel Aviv",
+      "lat": -2.95,
+      "lon": 40.0,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    },
+    {
+      "name": "To Dubai",
+      "lat": -3.6,
+      "lon": 41.3,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    }
+  ],
+  "airports": [
+    {
+      "name": "ZNZ Airport",
+      "lat": -6.2241,
+      "lon": 39.2241,
+      "anchor": "start",
+      "dx": 24,
+      "dy": 28,
+      "icon_dx": 6,
+      "icon_dy": 20
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Tel Aviv",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": "dot:To Dubai",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          -6.8,
+          39.295
+        ],
+        [
+          -6.55,
+          39.335
+        ],
+        [
+          -6.36,
+          39.144
+        ],
+        [
+          -6.16,
+          39.164
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Tanzania",
+      "lat": -5.2,
+      "lon": 37.5,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Kenya",
+      "lat": -2.95,
+      "lon": 38.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Indian Ocean",
+      "lat": -5.2,
+      "lon": 40.7,
+      "size": 10
+    }
+  ]
+}

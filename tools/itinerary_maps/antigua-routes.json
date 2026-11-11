@@ -1,0 +1,247 @@
+{
+  "slug": "antigua-routes",
+  "page": "Drafts/Full Articles/guatemala/antigua.html",
+  "outline_file": "tools/itinerary_maps/geo/antigua-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 982.7,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -92.0,
+    13.55,
+    -89.75,
+    15.25
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/antigua-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/antigua-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "name": "Antigua",
+      "lat": 14.5573,
+      "lon": -90.7332,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 22,
+      "marker": "star"
+    },
+    {
+      "name": "Lake Atitlán",
+      "lat": 14.7447,
+      "lon": -91.1537,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "href": "lake-atitlan.html"
+    },
+    {
+      "name": "Chichicastenango",
+      "lat": 14.943,
+      "lon": -91.1104,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6
+    },
+    {
+      "name": "El Paredón",
+      "lat": 13.9186,
+      "lon": -91.0747,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10,
+      "href": "el-paredon.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Quetzaltenango",
+      "lat": 14.8333,
+      "lon": -91.5167,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -8
+    },
+    {
+      "name": "Escuintla",
+      "lat": 14.2978,
+      "lon": -90.7869,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    }
+  ],
+  "airports": [
+    {
+      "name": "GUA Airport",
+      "lat": 14.588,
+      "lon": -90.5307,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Tourist shuttle"
+      },
+      {
+        "label": "Airport shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Guatemala",
+      "lat": 15.12,
+      "lon": -90.45,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "El Salvador",
+      "lat": 13.97,
+      "lon": -89.95,
+      "size": 10,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": 13.68,
+      "lon": -90.62,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 705.2,
+    "crop_bounds": [
+      -91.85,
+      13.55,
+      -90.08,
+      15.2
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 20
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 8
+      }
+    },
+    "dots": [
+      {
+        "name": "Escuintla",
+        "lat": 14.2978,
+        "lon": -90.7869,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 6
+      }
+    ],
+    "airports": [
+      {
+        "name": "GUA Airport",
+        "lat": 14.588,
+        "lon": -90.5307,
+        "anchor": "start",
+        "dx": 10,
+        "dy": 4
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Tourist shuttle"
+        },
+        {
+          "label": "Airport shuttle",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "water_labels": [
+      {
+        "name": "Pacific Ocean",
+        "lat": 13.68,
+        "lon": -90.55,
+        "size": 9
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Guatemala",
+        "lat": 15.1,
+        "lon": -90.45,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

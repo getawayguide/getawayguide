@@ -1,0 +1,209 @@
+{
+  "slug": "ghent-routes",
+  "page": "Drafts/Upcoming/belgium/ghent.html",
+  "outline_file": "tools/itinerary_maps/geo/ghent-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 833.9,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    2.55,
+    50.58,
+    5.05,
+    51.5
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/ghent-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Ghent",
+      "lat": 51.0538,
+      "lon": 3.725,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 28,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Brussels",
+      "lat": 50.8467,
+      "lon": 4.3525,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 14,
+      "href": "brussels.html"
+    },
+    {
+      "n": 2,
+      "name": "Bruges",
+      "lat": 51.2086,
+      "lon": 3.2268,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "href": "bruges.html"
+    },
+    {
+      "n": 3,
+      "name": "Tomorrowland (Boom)",
+      "lat": 51.0874,
+      "lon": 4.3667,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -8,
+      "href": "tomorrowland.html"
+    }
+  ],
+  "dots": [],
+  "airports": [
+    {
+      "name": "BRU Airport",
+      "lat": 50.9009,
+      "lon": 4.481,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 7,
+      "icon_dx": 2,
+      "icon_dy": -11
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 1,
+      "label": "",
+      "color": "#1C2821"
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Festival shuttle bus",
+        "color": "#1C2821"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Belgium",
+      "lat": 50.986,
+      "lon": 3.049,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Netherlands",
+      "lat": 51.519,
+      "lon": 4.52,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "France",
+      "lat": 50.598,
+      "lon": 2.665,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "North Sea",
+      "lat": 51.45,
+      "lon": 2.95,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 500.3,
+    "crop_bounds": [
+      2.55,
+      50.58,
+      5.05,
+      51.5
+    ],
+    "stops": {
+      "0": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 26
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 12
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 10,
+        "dy": -10
+      },
+      "3": {
+        "name": "Boom",
+        "anchor": "end",
+        "dx": -8,
+        "dy": -14
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Belgium",
+        "lat": 50.968,
+        "lon": 3.08,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Netherlands",
+        "lat": 51.543,
+        "lon": 4.642,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": []
+  }
+}

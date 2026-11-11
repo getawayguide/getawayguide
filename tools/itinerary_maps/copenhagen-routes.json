@@ -1,0 +1,155 @@
+{
+ "slug": "copenhagen-routes",
+ "page": "Drafts/Full Articles/denmark/copenhagen.html",
+ "outline_file": "tools/itinerary_maps/geo/copenhagen-routes-main.json",
+ "smooth": false,
+ "pin_scale": 1.15,
+ "country_width": 1200,
+ "margins": {
+  "l": 240,
+  "r": 240,
+  "t": 130,
+  "b": 130
+ },
+ "crop_bounds": [
+  11.4,
+  55.0,
+  14.0,
+  56.35
+ ],
+ "layers": [
+  {
+   "file": "tools/itinerary_maps/geo/copenhagen-routes-neighbors.json",
+   "under": true,
+   "fill": "#EFF0EB",
+   "stroke": "#D5DAD3",
+   "width": 0.9
+  },
+  {
+   "file": "tools/itinerary_maps/geo/copenhagen-routes-route.json",
+   "under": true,
+   "fill": "#E6EAE3",
+   "stroke": "#9DB0A5",
+   "width": 1.1
+  }
+ ],
+ "stops": [
+  {
+   "name": "Copenhagen",
+   "lat": 55.6761,
+   "lon": 12.5683,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -16,
+   "dy": -4,
+   "marker": "star"
+  },
+  {
+   "name": "Malmö",
+   "lat": 55.605,
+   "lon": 13.0038,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 12,
+   "dy": 6,
+   "href": "../sweden/malmo.html"
+  }
+ ],
+ "airports": [
+  {
+   "name": "CPH Airport",
+   "lat": 55.618,
+   "lon": 12.6508,
+   "anchor": "end",
+   "dx": -2,
+   "dy": 24,
+   "icon_dx": -14,
+   "icon_dy": 14
+  }
+ ],
+ "legs": [
+  {
+   "a": 1,
+   "b": 0,
+   "label": ""
+  },
+  {
+   "a": "air",
+   "b": 0,
+   "label": "",
+   "color": "#7C9488",
+   "dash": true
+  }
+ ],
+ "legend": {
+  "pos": "tr",
+  "scale": 0.9,
+  "items": [
+   {
+    "label": "Øresund train"
+   },
+   {
+    "label": "Airport metro or train",
+    "color": "#7C9488",
+    "dash": true
+   }
+  ]
+ },
+ "country_labels": [
+  {
+   "name": "Denmark",
+   "lat": 55.45,
+   "lon": 11.9,
+   "size": 11,
+   "weight": 700,
+   "ls": 3,
+   "color": "#4F6358"
+  },
+  {
+   "name": "Sweden",
+   "lat": 56.05,
+   "lon": 13.55,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  }
+ ],
+ "mobile": {
+  "country_width": 932,
+  "legend": {
+   "pos": "tr",
+   "scale": 0.8,
+   "items": [
+    {
+     "label": "Øresund train"
+    },
+    {
+     "label": "Airport metro or train",
+     "color": "#7C9488",
+     "dash": true
+    }
+   ]
+  },
+  "country_labels": [
+   {
+    "name": "Denmark",
+    "lat": 55.45,
+    "lon": 11.9,
+    "size": 9,
+    "weight": 700,
+    "ls": 3,
+    "color": "#4F6358"
+   },
+   {
+    "name": "Sweden",
+    "lat": 56.05,
+    "lon": 13.55,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   }
+  ]
+ }
+}

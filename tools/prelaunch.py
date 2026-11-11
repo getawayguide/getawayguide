@@ -11,12 +11,12 @@ Two lists:
   KEVIN    the judgment calls. Each shows what the page says today, so a tick is informed rather
            than from memory, and names the tool that changes it. Ticks live in .tmp/prelaunch/.
 
-The RELINK check is new: a Google Maps link to a place that has its own article (published, or in
-the same launch) should link to the article instead. Kevin: "if I'm publishing all armenia
-articles, any google maps links to Orgov should be replaced with links to my article instead."
+The RELINK check (Maps links swapped for links to his own articles) was RETIRED on 2026-11-10. Kevin:
+"map links should be linked to map pins like google maps or booking links". It reports nothing and
+its Apply writes nothing; a Maps pin or booking link is never rewritten.
 
 Checks read the files on disk. Nothing here writes an article except an explicit Fix from the tab
-(the relink Apply, the photo pipeline, article_dates --fix)."""
+(the mention links, the photo pipeline, article_dates --fix)."""
 import html as H
 import io
 import json
@@ -180,7 +180,9 @@ def body_span(html):
     return start, (end if end > 0 else len(html))
 
 
-XM_RE = re.compile(r'<section class="xm[^>]*>.*?</section><!-- /explore-more -->', re.S)
+# the block ends at its own </section>; the marker is optional, since the editor saves it on its own line and a save once
+# dropped it (North Macedonia, 2026-11-10), and the strict pattern then counted the cards' blurbs as this page's prose
+XM_RE = re.compile(r'<section class="xm[^>]*>.*?</section>(?:\s*<!-- /explore-more -->)?', re.S)
 
 
 def body_of(html):
@@ -225,152 +227,22 @@ def agree(n, one, many):
     return one if n == 1 else many
 
 
-# ----------------------------------------------------------------------------- relink
-GENERIC_NAMES = {"coast", "the coast", "valleys", "the valleys", "crowds", "city", "town", "turquoise coast",
-                 "the turquoise coast", "capital", "guide", "itinerary"}
-SLUG_TAILS = {"hike", "guide", "day", "trip", "tour", "itinerary"}
-# a one-word place name also matches its link written with one of these after it
-# ("Acatenango Volcano", "Orgov Observatory"), never with anything else ("Gyumri Train Station")
-PLACE_TAILS = {"volcano", "observatory", "telescope", "monastery", "city", "town", "village", "island", "islands",
-               "lake", "national", "park", "hike", "radio", "space", "fortress", "cathedral"}
+# ----------------------------------------------------------------------------- relink (retired 2026-11-10)
+# The name rules live in tools/crosslink.py; the names below stay importable for older callers. The relink pass itself
+# is gone from crosslink and from this tab: map pins and booking links stay as they are.
+import crosslink as cl
+GENERIC_NAMES, SLUG_TAILS, PLACE_TAILS = cl.GENERIC_NAMES, cl.SLUG_TAILS, cl.PLACE_TAILS
+article_names, name_matches = cl.article_names, cl.name_matches
 
 
-def article_names(rel, html):
-    """the place names an article is about, from its headline and its file name"""
-    k = kind_of(rel)
-    if k in ("country", "itinerary", "top10", "field-notes"):
-        return []
-    t = title_of(html)
-    head = re.split(r"\s*[—–:]\s*|\s+-\s+", t)[0]
-    head = re.sub(r"^(the ultimate guide to|the)\s+", "", head, flags=re.I)
-    head = re.sub(r"\s+guide$", "", head, flags=re.I)
-    head = head.split(",")[0] if not re.search(r"\s(&|and)\s", head) and "," in head and len(head.split(",")) == 2 else head
-    parts = [p.strip() for p in re.split(r",\s*|\s+&\s+|\s+and\s+", head) if p.strip()]
-    names = []
-    for p in parts:
-        p = re.sub(r"^the\s+", "", p, flags=re.I)
-        if len(p) >= 4 and _fold(p) not in GENERIC_NAMES:
-            names.append(p)
-    slug = [w for w in Path(rel).stem.split("-") if w not in SLUG_TAILS]
-    if slug and len(slug) <= 3 and not any(w.isdigit() for w in slug) and slug[0] in _fold(t).split():
-        names.append(" ".join(slug))
-    try:
-        extra = json.loads(ALIASES.read_text(encoding="utf-8")).get(live_twin(rel), []) if ALIASES.is_file() else []
-    except Exception:
-        extra = []
-    seen, out = set(), []
-    for n in names + list(extra):
-        f = _fold(n)
-        if f and f not in seen:
-            seen.add(f)
-            out.append(n)
-    return out
-
-
-def name_matches(link_text, name):
-    lt, nt = _fold(link_text).split(), _fold(name).split()
-    if not lt or not nt:
-        return False
-    if len(nt) == 1:
-        return lt[0] == nt[0] and all(w in PLACE_TAILS for w in lt[1:]) and len(lt) <= 3
-    return set(nt) <= set(lt) and len(lt) <= len(nt) + 2
-
-
-SECTION_SKIP = re.compile(r"^(overview|getting|how to|where to|more\b|the experience|day trips|yerevan as|faq|tips|budget|when to|what to)", re.I)
-
-
-def section_places(rel, h):
-    """{place key: (anchor, name)} for each section of an article that is about one place: an id'd
-    heading or paragraph whose Google Maps link names it. The key is the map place (id or pin), so a
-    link elsewhere to the SAME place matches, and a look-alike (Yerevan's Abovyan Street, Gyumri's
-    Abovyan walking street) does not."""
-    import coverage_check as cc
-    s0, e0 = body_span(h)
-    marks = [(m.start(), m.group(1), m.group(2), _text(m.group(3)) if m.group(1) != "p" else "")
-             for m in re.finditer(r'<(h2|h3|p)\b[^>]*\bid="([^"]+)"[^>]*>(.*?)</\1>', h[s0:e0], re.S)]
-    out = {}
-    for i, (pos, tag, anchor, title) in enumerate(marks):
-        title = title or anchor.replace("-", " ")
-        if SECTION_SKIP.match(title) or "city itself" in title.lower():
-            continue
-        a = s0 + pos
-        b = h.find("</p>", a) + 4 if tag == "p" else next((s0 + p2 for p2, t2, *_ in marks[i + 1:] if t2 != "p"), e0)
-        links = [(H.unescape(m.group(1)), _text(m.group(2)))
-                 for m in re.finditer(r'<a\b[^>]*href="([^"]*google\.[^"]*/maps/[^"]*)"[^>]*>(.*?)</a>', h[a:b], re.S)]
-        if not links:
-            continue
-        tw = set(_fold(title).split())
-        best = max(links, key=lambda l: len(set(_fold(l[1]).split()) & tw))
-        if not set(_fold(best[1]).split()) & tw:
-            if tag != "p":
-                continue
-            best = links[0]
-        for k in cc.place_keys(best[0]):
-            out.setdefault(k, (anchor, title))
-    return out
+RELINK_RETIRED = ("Retired 2026-11-10: Google Maps pins and booking links stay as they are (Kevin: \"map links should be "
+                  "linked to map pins like google maps or booking links\"). Bare mentions are linked by the check below.")
 
 
 def relink_scan(ctx):
-    """Google Maps links to places that have their own article, in every launching page and in
-    the country's live pages"""
-    targets = []                                      # (rel, [names], live)
-    for rel in ctx["set"]:
-        targets.append((rel, article_names(rel, ctx["html"][rel]), (ROOT / live_twin(rel)).is_file() or not rel.startswith("Drafts/")))
-    for rel in live_articles():
-        if rel not in ctx["set"] and all(live_twin(r) != rel for r in ctx["set"]):
-            targets.append((rel, article_names(rel, _read(ROOT / rel)), True))
-    targets = [t for t in targets if t[1]]
-    import coverage_check as cc
-    sections = {}                                     # place key -> (article, anchor, title, live)
-    for trel, names, live in [(r, None, (ROOT / live_twin(r)).is_file() or not r.startswith("Drafts/")) for r in ctx["set"]] + \
-                             [(r, None, True) for r in live_articles() if r not in ctx["set"] and all(live_twin(s) != r for s in ctx["set"])]:
-        if kind_of(trel) in ("guide",):
-            for k, (anchor, title) in section_places(trel, ctx["html"].get(trel) or _read(ROOT / trel)).items():
-                sections.setdefault(k, (trel, anchor, title, live))
-    sources = list(ctx["set"])
-    for c in ctx["countries"]:                         # the country's LIVE pages link to these too
-        for p in (ROOT / c).glob("*.html") if (ROOT / c).is_dir() else []:
-            r = p.relative_to(ROOT).as_posix()
-            if r not in sources and all(live_twin(s) != r for s in sources):
-                sources.append(r)
-    items = []
-    from page_variants import blank_hidden
-    for src in sources:
-        h = ctx["html"].get(src) or blank_hidden(_read(ROOT / src))
-        masked = MASK.sub(lambda m: " " * len(m.group(0)), h)
-        # map key rows and figures keep their Google links: they belong to the pins
-        for fig in re.finditer(r"<figure\b.*?</figure>", masked, re.S | re.I):
-            masked = masked[:fig.start()] + " " * (fig.end() - fig.start()) + masked[fig.end():]
-        s0, e0 = body_span(masked)
-        for m in ANCHOR.finditer(masked, s0, e0):
-            hm = HREF.search(m.group(1))
-            if not hm or not GMAPS.search(hm.group(1)):
-                continue
-            text = _text(h[m.start(2):m.end(2)])
-            hit = next((sections[k] for k in cc.place_keys(H.unescape(hm.group(1))) if k in sections), None)
-            if hit and live_twin(hit[0]) != live_twin(src):
-                trel, anchor, title, live = hit
-                now = live or src.startswith("Drafts/")
-                dest = trel if src.startswith("Drafts/") or not trel.startswith("Drafts/") else live_twin(trel)
-                items.append({"page": src, "text": text, "target": trel, "anchor": anchor, "href": relpath(dest, src) + "#" + anchor,
-                              "at": m.start(), "tag": h[m.start():m.start(2)],
-                              "detail": "“%s” goes to Google Maps; your %s article covers it (%s)" % (text, _title(trel, ctx), title),
-                              "apply": bool(now),
-                              "why": "" if now else "Apply after %s is published: until then the live page would link to a missing page." % Path(trel).name})
-                continue
-            for trel, names, live in targets:
-                if live_twin(trel) == live_twin(src):
-                    continue
-                if any(name_matches(text, n) for n in names):
-                    now = live or src.startswith("Drafts/")      # a live page may not link to a page that is not live yet
-                    dest = trel if src.startswith("Drafts/") or not trel.startswith("Drafts/") else live_twin(trel)
-                    items.append({"page": src, "text": text, "target": trel, "href": relpath(dest, src),
-                                  "at": m.start(), "tag": h[m.start():m.start(2)],
-                                  "detail": "“%s” goes to Google Maps; your %s article covers it" % (text, _title(trel, ctx)),
-                                  "apply": bool(now),
-                                  "why": "" if now else "Apply after %s is published: until then the live page would link to a missing page." % Path(trel).name})
-                    break
-    return items
+    """RETIRED 2026-11-10. This used to offer swapping Google Maps links for links to his own articles; Kevin wants map
+    pins and booking links kept as they are, so it reports nothing. Do not bring it back."""
+    return []
 
 
 def _title(rel, ctx):
@@ -379,34 +251,8 @@ def _title(rel, ctx):
 
 
 def relink_apply(items):
-    """rewrite the chosen links in place: the <a> keeps its classes, loses target/rel, gets the
-    article's address. Each item is found again by its exact tag and text, never by offset alone."""
-    by_page, done, missed = {}, [], []
-    for it in items:
-        by_page.setdefault(it["page"], []).append(it)
-    for page, its in by_page.items():
-        p = ROOT / page
-        raw = io.open(p, encoding="utf-8", newline="").read()
-        s = raw
-        for it in sorted(its, key=lambda x: -int(x.get("at", 0))):
-            tag = it["tag"]
-            pos = [m.start() for m in re.finditer(re.escape(tag), s)]
-            pos = sorted(pos, key=lambda x: abs(x - int(it.get("at", 0))))
-            hit = next((x for x in pos if _text(s[x + len(tag):s.find("</a>", x)]) == it["text"]), None)
-            if hit is None:
-                missed.append(it)
-                continue
-            attrs = tag[2:-1]
-            attrs = re.sub(r'\s(?:target|rel)="[^"]*"', "", attrs)
-            if not SAFE_HREF.match(it.get("href") or ""):
-                missed.append(it)
-                continue
-            attrs = HREF.sub(lambda _m: 'href="%s"' % it["href"], attrs)
-            s = s[:hit] + "<a" + attrs + ">" + s[hit + len(tag):]
-            done.append(it)
-        if s != raw:
-            io.open(p, "w", encoding="utf-8", newline="").write(s)
-    return done, missed
+    """RETIRED 2026-11-10: an existing link (a Maps pin, a booking link) is never rewritten. Writes nothing."""
+    return [], list(items or [])
 
 
 # ----------------------------------------------------------------------------- mentions
@@ -494,6 +340,9 @@ def mentions_apply(items):
                 continue
             if not SAFE_HREF.match(it.get("href") or ""):
                 continue
+            if "<" in it["text"] or ">" in it["text"] or cl.inside_anchor(raw, a) or cl.inside_anchor(raw, b - 1):
+                missed.append(it)                     # hard guard (2026-11-10): text inside an existing link is never linked
+                continue
             s = s[:a] + '<a href="%s">%s</a>' % (it["href"], it["text"]) + s[b:]
             done.append(it)
         if s != raw:
@@ -565,14 +414,8 @@ def c_repeats(ctx):
 
 
 def c_relink(ctx):
-    items = [i for i in relink_scan(ctx)
-             if not (i["page"].endswith("/field-notes.html") and field_notes_plan(i["page"].split("/")[-2]) == "retire")]
-    if not items:
-        return result("pass", "No Google Maps link points at a place you have an article about.")
-    n = sum(1 for i in items if i["apply"])
-    return result("warn", "%s could link to your own article instead of Google Maps%s." % (
-        count_label(len(items), "link"), "" if n == len(items) else " (%d once the article is live)" % (len(items) - n)),
-                  items, fix={"kind": "relink", "label": "Apply selected"})
+    """retired 2026-11-10 (see relink_scan): says so and offers nothing to apply"""
+    return result("skip", RELINK_RETIRED)
 
 
 def c_mentions(ctx):
@@ -948,6 +791,11 @@ def c_home_tile(ctx):
         live = (ROOT / country / "index.html").is_file()
         m = re.search(r'<a class="tile" href="%s/(field-notes|index)\.html">.*?</a>' % re.escape(country), h, re.S)
         if not m:
+            # a guide country with no tile (North Macedonia, 2026-11-10, passed here silently): the launch adds one in
+            # a free cell, or in the slot of the tile Kevin names (--replace-tile=<slug>) when the grid is full
+            if live:
+                items.append({"page": "index.html", "value": country,
+                              "detail": "No tile under Explore by Destination (the launch adds one; with the grid full, rerun it with --replace-tile=<slug>)"})
             continue
         if not live:
             will.append({"page": "index.html", "detail": "Tile opens the field notes until the country page is live", "value": country})
@@ -1030,6 +878,8 @@ def c_explore(ctx):
         n = h.count('id="explore-more"')
         if n > 1:        # the itinerary layout's "xm measure" block went unrecognized and stacked a copy per run (2026-10-24)
             items.append({"page": rel, "detail": "%d Explore More blocks stacked on one page" % n}); pages.append(rel)
+        elif h.count("<!-- /explore-more -->") < n:      # an editor save dropped it (North Macedonia, 2026-11-10)
+            items.append({"page": rel, "detail": "The Explore More block lost its closing marker (picking the cards again repairs it)"}); pages.append(rel)
         for t in re.findall(r'class="xm-c" href="([^"]+)"', h):
             if not (ROOT / rel).parent.joinpath(t.split("#")[0]).resolve().is_file():
                 items.append({"page": rel, "detail": "An Explore More card points at a page that is not there", "value": t}); pages.append(rel)
@@ -1108,7 +958,7 @@ def c_render(ctx):
 PASS_TEXT = {
     "prose": "No typos, spacing slips, British spellings, em dashes or leftover notes here.",
     "repeats": "No sentence here appears word for word in another page.",
-    "relink": "No Google Maps link here points at a place one of your articles covers.",
+    "relink": "Retired: Google Maps pins and booking links stay as they are.",
     "mentions": "Every mention here of a place you wrote about links to it.",
     "unlaunched": "Every article this page links to is live or launching with it.",
     "internal": "Every link, anchor and table-of-contents entry here resolves.",
@@ -1160,7 +1010,7 @@ CLAUDE = [
      "The mechanical writing checks (prose_check: lint_prose, americanize, paste artifacts, [ ] notes).", c_prose),
     ("voice", "Writing", "Sounds like you", "voice_check.py: contractions, numerals and pet words per 1,000 words against your live pages.", c_voice),
     ("repeats", "Writing", "No sentence repeated across articles", "The de-template and overlap passes: one sentence, one page.", c_repeats),
-    ("relink", "Links", "Places you wrote about link to your article", "A Google Maps link to a place with its own article (live, or launching now) should open the article.", c_relink),
+    ("relink", "Links", "Map pins and booking links stay (relink retired)", "Retired 2026-11-10: a Google Maps or booking link is never swapped for a link to your own article.", c_relink),
     ("mentions", "Links", "Articles link to each other where they mention each other", "The first mention of a place you wrote about links to that article (the field notes used to be the hub).", c_mentions),
     ("unlaunched", "Links", "No links to drafts that aren't launching", "A link to a draft left behind is a 404 the day these go live.", c_unlaunched),
     ("internal", "Links", "Internal links, anchors and the table of contents resolve", "Missing files, #anchors with no target, duplicate ids.", c_internal),
@@ -1510,12 +1360,9 @@ def api_fix():
     d = request.get_json(force=True) or {}
     kind = d.get("kind")
     if kind == "relink":
-        # safe_rel, like every other kind: `ROOT / "C:/abs/path"` IS that absolute path on Windows, so the
-        # old is_file() test let a request rewrite any file on the machine (QA 2026-10-08)
-        items = [i for i in d.get("items") or [] if isinstance(i, dict) and i.get("apply") and safe_rel(i.get("page"))]
-        done, missed = relink_apply(items)
-        return jsonify({"ok": True, "log": "%s relinked%s." % (count_label(len(done), "link"), ", %d not found (the page changed; run again)" % len(missed) if missed else ""),
-                        "pages": sorted({i["page"] for i in done})})
+        # retired 2026-11-10: Maps pins and booking links are never rewritten (Kevin: "map links should be linked to
+        # map pins like google maps or booking links")
+        return jsonify({"ok": False, "log": RELINK_RETIRED, "pages": []})
     if kind == "mentions":
         items = [i for i in d.get("items") or [] if isinstance(i, dict) and safe_rel(i.get("page"))]
         done, missed = mentions_apply(items)

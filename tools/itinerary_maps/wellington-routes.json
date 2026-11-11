@@ -1,0 +1,323 @@
+{
+  "slug": "wellington-routes",
+  "page": "Drafts/Full Articles/new-zealand/wellington.html",
+  "outline_file": "tools/itinerary_maps/geo/wellington-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 1573.1,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/nz-tory-channel.json",
+      "fill": "#F7F7F3"
+    }
+  ],
+  "crop_bounds": [
+    173.2,
+    -41.85,
+    177.3,
+    -38.3
+  ],
+  "stops": [
+    {
+      "name": "Wellington",
+      "lat": -41.2888,
+      "lon": 174.7772,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "start",
+      "dx": 16,
+      "dy": 8
+    },
+    {
+      "name": "Taupo",
+      "lat": -38.6866,
+      "lon": 176.0695,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "taupo.html"
+    },
+    {
+      "name": "Picton",
+      "lat": -41.2909,
+      "lon": 174.0069,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6
+    }
+  ],
+  "dots": [
+    {
+      "name": "Tongariro National Park",
+      "lat": -39.2011,
+      "lon": 175.5399,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 16
+    },
+    {
+      "name": "Palmerston North",
+      "lat": -40.3563,
+      "lon": 175.6112,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Napier",
+      "lat": -39.5112,
+      "lon": 176.8721,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Blenheim",
+      "lat": -41.5119,
+      "lon": 173.9546,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -38.854,
+          176.052
+        ],
+        [
+          -39.177,
+          175.402
+        ],
+        [
+          -39.344,
+          175.377
+        ],
+        [
+          -39.401,
+          175.286
+        ],
+        [
+          -39.745,
+          175.337
+        ],
+        [
+          -39.948,
+          175.051
+        ],
+        [
+          -40.221,
+          175.423
+        ],
+        [
+          -40.481,
+          175.282
+        ],
+        [
+          -40.611,
+          175.299
+        ],
+        [
+          -40.913,
+          174.994
+        ],
+        [
+          -41.217,
+          174.805
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via_lock": true,
+      "via": [
+        [
+          -41.275,
+          174.8
+        ],
+        [
+          -41.295,
+          174.85
+        ],
+        [
+          -41.33,
+          174.845
+        ],
+        [
+          -41.365,
+          174.81
+        ],
+        [
+          -41.37,
+          174.7
+        ],
+        [
+          -41.345,
+          174.57
+        ],
+        [
+          -41.3,
+          174.46
+        ],
+        [
+          -41.255,
+          174.385
+        ],
+        [
+          -41.238,
+          174.335
+        ],
+        [
+          -41.236,
+          174.28
+        ],
+        [
+          -41.238,
+          174.2
+        ],
+        [
+          -41.228,
+          174.15
+        ],
+        [
+          -41.232,
+          174.1
+        ],
+        [
+          -41.252,
+          174.05
+        ],
+        [
+          -41.265,
+          174.015
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "North Island",
+      "lat": -39.75,
+      "lon": 176.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Cook Strait",
+      "lat": -41.62,
+      "lon": 174.6,
+      "size": 9
+    },
+    {
+      "name": "Tasman Sea",
+      "lat": -39.9,
+      "lon": 173.8,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Ferry",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": 8
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 6
+      }
+    },
+    "dots": [
+      {
+        "name": "Tongariro Nat. Park",
+        "lat": -39.2011,
+        "lon": 175.5399,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 16
+      },
+      {
+        "name": "Palmerston North",
+        "lat": -40.3563,
+        "lon": 175.6112,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 4
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Tasman Sea",
+        "lat": -39.9,
+        "lon": 173.8,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "North Island",
+        "lat": -39.75,
+        "lon": 176.3,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 1118.6
+  }
+}

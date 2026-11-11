@@ -2263,6 +2263,12 @@ nav .nav-search.active ~ ul, nav:has(.nav-search.active) > ul {
     min-height:clamp(280px,78vw,480px) !important;
     padding:clamp(1.2rem,3vw,2.5rem) 1.25rem clamp(1.2rem,3vw,2.5rem) !important;
     gap:clamp(.2rem,.6vw,.4rem) !important; }
+  /* ...and the rest of that same page block, which the Top 10s also lack: the title, the lead and the date
+     close up under one another. Without it the two Top 10s ran title-to-lead 19px and lead-to-date 13px on
+     a phone against 8 and 7 on the other 13 guides (consistency audit 2026-11-10). Same values. */
+  :is(#_, [id^="page-"]) .article-hero.gg-banner h1 { margin-bottom:clamp(.3rem,1vw,.6rem) !important; }
+  :is(#_, [id^="page-"]) .article-hero.gg-banner .article-lead { margin-top:0 !important; }
+  :is(#_, [id^="page-"]) .article-hero.gg-banner [style*="margin-top:.6rem"] { margin-top:.2rem !important; }
 }
 /* the itinerary's lists indent 1.5rem too, not 20px, so all three templates match */
 .artbody .b-a ul { padding-left:1.5rem; }
@@ -4041,6 +4047,25 @@ body.gg-home nav:not(.pinned) .nav-search.active .nav-search-q::placeholder {
      The inline copies on the live pages are gone; this keeps new ones in line. */
   .article-body .img-caption, .artbody .img-caption, .fn-section .img-caption {
     width:100% !important; margin-top:-.6rem; }
+}
+/* photo to caption is 8px at every width (consistency audit 2026-11-10). The phone rule above zeroes the
+   caption's pull from 768px down, but styles.css only drops the photo's own 1.5rem margin from 540px down,
+   so between 541 and 768 a caption hung 24px under its photo, three times the desktop gap. And at 540 and
+   below a pair keeps a .15rem margin (its photo-to-photo spacing), so a caption under a pair sat 2.4px off
+   it while one under a single photo sat 8px off. (0,3,0) to outrank the (0,2,0) !important rules above.
+   Under a pair the two margins are both positive and COLLAPSE, so the caption asks for the whole 8px itself. */
+@media (min-width:541px) and (max-width:768px) {
+  :is(.article-body, .fn-section) :is(.img-pair, .img-landscape) + .img-caption { margin-top:-1rem !important; }
+}
+@media (max-width:540px) {
+  :is(.article-body, .fn-section, .artbody) :is(.img-pair, .pair) + .img-caption { margin-top:.5rem !important; }
+}
+@media (min-width:541px) and (max-width:768px) {
+  .artbody :is(.img-pair, .pair) + .img-caption { margin-top:.5rem !important; }
+}
+/* a captioned city map (Meteora's painted map) keeps its 24px margin on a phone too */
+@media (max-width:768px) {
+  :is(.article-body, .fn-section) .citymap-fig + .img-caption { margin-top:-1rem !important; }
 }
 
 /* ---- The hero veil, all five slides together. The base .veil runs

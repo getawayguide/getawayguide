@@ -1,0 +1,241 @@
+{
+  "slug": "santa-ana-routes",
+  "page": "el-salvador/santa-ana.html",
+  "outline_file": "tools/itinerary_maps/geo/santa-ana-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 480,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -91.65,
+    13.25,
+    -88.55,
+    15.15
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/santa-ana-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/santa-ana-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "name": "Santa Ana",
+      "lat": 13.9942,
+      "lon": -89.5597,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "name": "Antigua",
+      "lat": 14.5586,
+      "lon": -90.7295,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 10,
+      "href": "../guatemala/field-notes.html#antigua"
+    },
+    {
+      "name": "Lake Atitlán",
+      "lat": 14.7417,
+      "lon": -91.1586,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "href": "../guatemala/field-notes.html#atitlan"
+    },
+    {
+      "name": "El Paredón",
+      "lat": 13.915,
+      "lon": -91.0708,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6
+    },
+    {
+      "name": "Copán Ruinas",
+      "lat": 14.8408,
+      "lon": -89.156,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -2
+    }
+  ],
+  "dots": [
+    {
+      "name": "San Salvador",
+      "lat": 13.6929,
+      "lon": -89.2182,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 8
+    }
+  ],
+  "airports": [
+    {
+      "name": "SAL Airport",
+      "lat": 13.4409,
+      "lon": -89.0557,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": "air",
+      "b": "dot:San Salvador",
+      "label": ""
+    },
+    {
+      "a": "dot:San Salvador",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.09
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus with transfer"
+      },
+      {
+        "label": "Tourist shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "El Salvador",
+      "lat": 13.75,
+      "lon": -88.75,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Guatemala",
+      "lat": 15.0,
+      "lon": -90.5,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Honduras",
+      "lat": 14.45,
+      "lon": -88.72,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "mobile": {
+    "country_width": 270,
+    "crop_bounds": [
+      -91.33,
+      13.2,
+      -88.6,
+      15.1
+    ],
+    "stops": {
+      "0": {
+        "dx": 14,
+        "dy": -6
+      },
+      "1": {
+        "dx": -14,
+        "dy": 10
+      },
+      "2": {
+        "anchor": "start",
+        "dx": -8,
+        "dy": -33
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 14
+      },
+      "4": {
+        "anchor": "end",
+        "dx": -16,
+        "dy": 14
+      }
+    },
+    "country_labels": {
+      "0": {
+        "lat": 13.72,
+        "lon": -88.78,
+        "size": 10
+      },
+      "1": {
+        "lat": 14.14,
+        "lon": -90.5,
+        "size": 10
+      },
+      "2": {
+        "lat": 14.55,
+        "lon": -88.82,
+        "size": 10
+      }
+    }
+  }
+}

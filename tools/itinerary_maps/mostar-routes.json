@@ -1,0 +1,272 @@
+{
+  "slug": "mostar-routes",
+  "page": "Drafts/Upcoming/bosnia/mostar-day-trip.html",
+  "outline_file": "tools/itinerary_maps/geo/mostar-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 700,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    16.0,
+    42.42,
+    19.1,
+    44.15
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/mostar-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/mostar-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Mostar",
+      "lat": 43.3438,
+      "lon": 17.8078,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Sarajevo",
+      "lat": 43.8563,
+      "lon": 18.4131,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "sarajevo.html"
+    },
+    {
+      "n": 2,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 6,
+      "href": "../croatia/dubrovnik.html"
+    },
+    {
+      "n": 3,
+      "name": "Split",
+      "lat": 43.5081,
+      "lon": 16.4402,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "../croatia/split.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Blagaj",
+      "lat": 43.257,
+      "lon": 17.888,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 8
+    },
+    {
+      "name": "Počitelj",
+      "lat": 43.1335,
+      "lon": 17.73,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 16
+    },
+    {
+      "name": "Kravica",
+      "lat": 43.1547,
+      "lon": 17.6069,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train or bus"
+      },
+      {
+        "label": "Day trips from the coast",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Bosnia and|Herzegovina",
+      "lat": 43.97,
+      "lon": 17.55,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Croatia",
+      "lat": 44.05,
+      "lon": 16.15,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.72,
+      "lon": 18.78,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 490,
+    "crop_bounds": [
+      16.15,
+      42.45,
+      18.95,
+      44.1
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.8,
+      "items": [
+        {
+          "label": "Train or bus"
+        },
+        {
+          "label": "Day trips from the coast",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 16,
+        "dy": 6
+      },
+      "1": {
+        "dx": -12,
+        "dy": -16,
+        "anchor": "end"
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": -6
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -10
+      }
+    },
+    "dots": [
+      {
+        "name": "Blagaj",
+        "lat": 43.257,
+        "lon": 17.888,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 8
+      },
+      {
+        "name": "Počitelj",
+        "lat": 43.1335,
+        "lon": 17.73,
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 16
+      },
+      {
+        "name": "Kravica",
+        "lat": 43.1547,
+        "lon": 17.6069,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 10
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Bosnia and|Herzegovina",
+        "lat": 43.93,
+        "lon": 17.05,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Croatia",
+        "lat": 43.95,
+        "lon": 16.4,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Montenegro",
+        "lat": 42.62,
+        "lon": 18.68,
+        "size": 8,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ]
+  }
+}

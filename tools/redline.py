@@ -352,6 +352,8 @@ def task_lines():
 # one lock per article: a single lock for every article queued 50 writers on 50 different articles
 # behind each other (p50 1.7 s, stress test 2026-10-09)
 _comments_locks, _comments_locks_guard = {}, threading.Lock()
+DELETED_CAP = 300                       # deleted thread ids kept per store (the oldest fall off)
+CONSENT_PREFIX = "shadow-consent"       # "shadow-consent:" / "shadow-consent-undo:" log entries: never trimmed
 
 
 def _comments_lock_for(key):
@@ -435,7 +437,18 @@ def _comments_save(key, data):
     for x in dl_posted:
         if x not in dl:
             dl.append(x)
-    out = {"threads": merged, "deleted": dl[-300:]}
+    # The "I've reviewed Shadow's comments" log lives in this list too (review.js SC_ON / SC_OFF, read by
+    # tools/shadow_consent.py), and 300 later deletions pushed a click out, so the article read as "not confirmed"
+    # (QA 2026-11-10 #12). The cap counts and trims deleted thread ids only; the log entries are never trimmed.
+    n_ids = sum(1 for x in dl if not x.startswith(CONSENT_PREFIX))
+    drop = max(0, n_ids - DELETED_CAP)
+    kept = []
+    for x in dl:
+        if drop and not x.startswith(CONSENT_PREFIX):
+            drop -= 1
+            continue
+        kept.append(x)
+    out = {"threads": merged, "deleted": kept}
     # a temp name per writer: a shared one let one save's replace() take the file another was about to
     # move, which raised FileNotFoundError (a 500) in the other
     tmp = f.with_name("%s.%d-%d.tmp" % (f.name, os.getpid(), __import__("threading").get_ident()))

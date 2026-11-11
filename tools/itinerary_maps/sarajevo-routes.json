@@ -1,0 +1,47 @@
+{
+  "slug": "sarajevo-routes",
+  "page": "Drafts/Upcoming/bosnia/sarajevo.html",
+  "outline_file": "tools/itinerary_maps/geo/sarajevo-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 620,
+  "margins": {"l": 240, "r": 240, "t": 130, "b": 130},
+  "crop_bounds": [15.75, 42.3, 20.7, 45.95],
+  "layers": [
+    {"file": "tools/itinerary_maps/geo/sarajevo-routes-neighbors.json", "under": true, "fill": "#EFF0EB", "stroke": "#D5DAD3", "width": 0.9},
+    {"file": "tools/itinerary_maps/geo/sarajevo-routes-route.json", "under": true, "fill": "#E6EAE3", "stroke": "#9DB0A5", "width": 1.1}
+  ],
+  "stops": [
+    {"n": 0, "name": "Sarajevo", "lat": 43.8563, "lon": 18.4131, "no_number": true, "anchor": "start", "dx": 16, "dy": -8, "marker": "star"},
+    {"n": 1, "name": "Mostar", "lat": 43.3438, "lon": 17.8078, "no_number": true, "anchor": "start", "dx": 14, "dy": 12, "href": "mostar-day-trip.html"},
+    {"n": 2, "name": "Split", "lat": 43.5081, "lon": 16.4402, "no_number": true, "anchor": "middle", "dx": 0, "dy": -40, "href": "../../../croatia/field-notes.html#split"},
+    {"n": 3, "name": "Dubrovnik", "lat": 42.6507, "lon": 18.0944, "no_number": true, "anchor": "end", "dx": -14, "dy": 4, "href": "../../../croatia/field-notes.html#dubrovnik"},
+    {"n": 4, "name": "Kotor", "lat": 42.4247, "lon": 18.7712, "no_number": true, "anchor": "start", "dx": 14, "dy": 6, "href": "../../../montenegro/field-notes.html#kotor"},
+    {"n": 5, "name": "Belgrade", "lat": 44.8125, "lon": 20.4612, "no_number": true, "anchor": "end", "dx": -14, "dy": -10, "href": "../../../serbia/field-notes.html#belgrade"},
+    {"n": 6, "name": "Zagreb", "lat": 45.815, "lon": 15.9819, "no_number": true, "anchor": "start", "dx": 14, "dy": 4}
+  ],
+  "dots": [
+    {"name": "Travnik", "lat": 44.2261, "lon": 17.6645, "anchor": "start", "dx": 9, "dy": -6, "href": "jajce-travnik-day-trip.html"},
+    {"name": "Jajce", "lat": 44.3396, "lon": 17.2712, "anchor": "end", "dx": -10, "dy": 16, "href": "jajce-travnik-day-trip.html"}
+  ],
+  "airports": [
+    {"name": "SJJ Airport", "lat": 43.8246, "lon": 18.3315, "anchor": "end", "dx": -14, "dy": 14, "icon_dx": -9}
+  ],
+  "legs": [
+    {"a": 0, "b": 1, "label": ""},
+    {"a": 1, "b": 2, "label": "", "bow": 0.08},
+    {"a": 1, "b": 3, "label": "", "bow": -0.06},
+    {"a": 0, "b": 4, "label": "", "bow": 0.06},
+    {"a": 0, "b": 5, "label": "", "bow": -0.05},
+    {"a": 0, "b": "dot:Travnik", "label": ""},
+    {"a": "dot:Travnik", "b": "dot:Jajce", "label": ""},
+    {"a": "dot:Jajce", "b": 6, "label": "", "bow": 0.05}
+  ],
+  "legend": {"pos": "bl", "scale": 0.9, "items": [{"label": "Direct bus (train from Mostar)"}]},
+  "country_labels": [
+    {"name": "Bosnia and|Herzegovina", "lat": 44.55, "lon": 18.35, "size": 11, "weight": 700, "ls": 3, "color": "#4F6358"},
+    {"name": "Croatia", "lat": 45.55, "lon": 17.7, "size": 11, "weight": 600, "ls": 2.5, "color": "#A2ACA5"},
+    {"name": "Serbia", "lat": 44.1, "lon": 20.35, "size": 11, "weight": 600, "ls": 2.5, "color": "#A2ACA5"},
+    {"name": "Montenegro", "lat": 42.95, "lon": 19.3, "size": 9, "weight": 600, "ls": 2.5, "color": "#A2ACA5"}
+  ]
+}

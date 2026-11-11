@@ -1,0 +1,285 @@
+{
+  "slug": "coromandel-routes",
+  "page": "Drafts/Full Articles/new-zealand/coromandel.html",
+  "outline_file": "tools/itinerary_maps/geo/coromandel-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 2220.8,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "crop_bounds": [
+    174.3,
+    -38.65,
+    176.55,
+    -36.35
+  ],
+  "stops": [
+    {
+      "name": "Hot Water Beach",
+      "lat": -36.8898,
+      "lon": 175.8236,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "end",
+      "dx": -16,
+      "dy": -8
+    },
+    {
+      "name": "Auckland",
+      "lat": -36.8521,
+      "lon": 174.7632,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -22,
+      "href": "auckland.html"
+    },
+    {
+      "name": "Waitomo",
+      "lat": -38.2611,
+      "lon": 175.1103,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6,
+      "href": "waitomo.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Karangahake Gorge",
+      "lat": -37.4168,
+      "lon": 175.7157,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -2
+    },
+    {
+      "name": "Hamilton",
+      "lat": -37.7879,
+      "lon": 175.2818,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -36.92,
+          174.84
+        ],
+        [
+          -36.955,
+          174.865
+        ],
+        [
+          -37.0,
+          174.89
+        ],
+        [
+          -37.045,
+          174.925
+        ],
+        [
+          -37.09,
+          174.975
+        ],
+        [
+          -37.14,
+          175.0
+        ],
+        [
+          -37.22,
+          175.12
+        ],
+        [
+          -37.28,
+          175.3
+        ],
+        [
+          -37.29,
+          175.45
+        ],
+        [
+          -37.27,
+          175.58
+        ],
+        [
+          -37.19,
+          175.69
+        ],
+        [
+          -37.08,
+          175.77
+        ],
+        [
+          -36.98,
+          175.81
+        ],
+        [
+          -36.92,
+          175.8
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -36.92,
+          175.8
+        ],
+        [
+          -36.98,
+          175.81
+        ],
+        [
+          -37.08,
+          175.77
+        ],
+        [
+          -37.377,
+          175.677
+        ],
+        [
+          -37.515,
+          175.497
+        ],
+        [
+          -37.652,
+          175.523
+        ],
+        [
+          -37.879,
+          175.322
+        ],
+        [
+          -38.007,
+          175.329
+        ],
+        [
+          -38.058,
+          175.233
+        ],
+        [
+          -38.251,
+          175.181
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Coromandel|Peninsula",
+      "lat": -36.66,
+      "lon": 175.62,
+      "size": 9,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North Island",
+      "lat": -38.35,
+      "lon": 176.0,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": -37.0,
+      "lon": 176.2,
+      "size": 10
+    },
+    {
+      "name": "Tasman Sea",
+      "lat": -37.75,
+      "lon": 174.55,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -10,
+        "dy": -8
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -22
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 6
+      }
+    },
+    "dots": [
+      {
+        "name": "Karangahake Gorge",
+        "lat": -37.4168,
+        "lon": 175.7157,
+        "anchor": "start",
+        "dx": 9,
+        "dy": -2
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Pacific Ocean",
+        "lat": -37.0,
+        "lon": 176.2,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Coromandel|Peninsula",
+        "lat": -36.55,
+        "lon": 175.75,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 1038.8
+  }
+}

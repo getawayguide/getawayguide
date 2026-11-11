@@ -18,6 +18,12 @@ fallback line shows.
 Styles: the "currency converter" block in artifact.css. A page without a Currency section gets it right after
 its Key Facts box in its own .measure, with no heading.
 
+Any OTHER page that carries the block (the upgraded field notes since 2026-11-11, or any page type later) is found by
+the block's markup (BLOCK_RE), wherever it sits, on every live page and in the drafts (Upcoming, Full Articles,
+Field Notes), and gets its rates, as-of date and fallback line rebuilt in place from the block's own data-local /
+data-local-name / data-flag; only the block's bytes and the currency.js ?v= stamp change, nothing is inserted or
+moved (Kevin, 2026-11-11: "tool should update the same wherever it is"). Only itineraries get the block inserted.
+
 Rates are per US dollar from the free feed https://open.er-api.com/v6/latest/USD, kept in
 tools/currency_rates.json so --apply works offline. Bash on this machine has no internet, so --refresh-rates
 tries Python first and then PowerShell's Invoke-WebRequest (generic browser User-Agent; never an email address).
@@ -25,16 +31,20 @@ With no network it keeps the rates it has and says so: a launch never fails on i
 
     python tools/currency_widget.py                       # dry run: list what would change
     python tools/currency_widget.py --apply               # insert / refresh the widget + the script tag
-    python tools/currency_widget.py --check               # exit 1 if any itinerary is missing it or stale
-    python tools/currency_widget.py --refresh-rates --apply --live-only    # what the launch tools run
+    python tools/currency_widget.py --check               # exit 1 if any itinerary lacks it or any block is stale
+    python tools/currency_widget.py --refresh-rates --apply --live-only    # what the launch tools and the monthly
+                                                                           # GitHub workflow run
 
 --live-only skips the drafts (a launch refreshes the live pages; drafts are committed in the Drafts repo by hand).
 --root <dir> treats another folder as the site root (tools/test_currency_widget.py).
 Run by tools/publish_country.py and tools/retire_field_notes.py.
+In the editor (editor.html, cconvPrep) the block is drawn the same way from the same data-* attributes, as one
+read-only block that saves back byte-identical; tools/test_editor_currency_block.py checks it.
 """
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -89,10 +99,16 @@ NODEC = {"JPY", "KRW", "HUF", "IDR", "CLP", "COP", "TZS", "VND", "ISK"}
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 SKIP_TOP = {"Drafts", "archive", ".tmp", ".git", "tools", "node_modules"}
 DRAFT_FOLDERS = ("Upcoming", "Full Articles")
+# a converter block on any other page is found by its markup wherever it sits: every live .html outside these top
+# folders (Images/ is never touched; the editor's own page carries the block's regex, not a block), plus the drafts
+WALK_SKIP = SKIP_TOP | {"Images"}
+SKIP_FILES = {"editor.html"}
+BLOCK_DRAFT_FOLDERS = ("Upcoming", "Full Articles", "Field Notes")
 
 BLOCK_RE = re.compile(r'<div\b[^>]*\bclass="cconv"[^>]*>\s*(?:<div class="cconv-fb">[^<]*</div>)?\s*</div>')
 SCRIPT_RE = re.compile(r'[ \t]*<script\b[^>]*\bsrc="(?:\.\./)*currency\.js(?:\?v=[0-9a-f]*)?"[^>]*>\s*</script>\n?')
 DIV_TOKEN = re.compile(r"<div\b|</div\s*>", re.I)
+ATTR_RE = re.compile(r'\s(data-[a-z-]+)="([^"]*)"')
 
 
 def out(s=""):
@@ -186,7 +202,13 @@ def widget(slug, data):
     """the placeholder block for a country, or None if its currency or a rate is unknown"""
     if slug not in COUNTRIES or not data:
         return None
-    local, name, flag = COUNTRIES[slug]
+    return block_for(*COUNTRIES[slug], data)
+
+
+def block_for(local, name, flag, data):
+    """the placeholder block for a local currency (code, name shown, flag ISO), or None if a rate is unknown"""
+    if not data:
+        return None
     rates = data["rates"]
     codes = menu_for(local) + [local]
     if any(not rates.get(c) for c in codes):
@@ -305,6 +327,53 @@ def strip_block(html):
     return html
 
 
+def refresh_blocks(html, data):
+    """every converter block on the page, wherever it sits, rebuilt IN PLACE with today's rates, as-of date and
+    fallback line from its own data-local / data-local-name / data-flag (Kevin, 2026-11-11: "tool should update the
+    same wherever it is"). Only the block's own bytes change; nothing is moved or inserted.
+    Returns (html, refreshed, unknown): unknown counts blocks whose currency or attributes could not be read (kept)."""
+    parts, last, n, bad = [], 0, 0, 0
+    for m in BLOCK_RE.finditer(html):
+        attrs = dict(ATTR_RE.findall(html[m.start():html.index(">", m.start()) + 1]))
+        new = None
+        if all(attrs.get(k) for k in ("data-local", "data-local-name", "data-flag")):
+            new = block_for(attrs["data-local"], attrs["data-local-name"], attrs["data-flag"], data)
+        if new is None:
+            bad += 1
+            continue
+        if new != m.group(0):
+            parts += [html[last:m.start()], new]
+            last, n = m.end(), n + 1
+    parts.append(html[last:])
+    return "".join(parts), n, bad
+
+
+def set_stamp(html, rel, stamp):
+    """bring the currency.js tag's ?v= stamp up to date and keep the tag's other bytes (an editor-saved page writes
+    defer=""); a page with a converter but no tag gets set_script's, or the block would never render"""
+    found = SCRIPT_RE.search(html)
+    if not found:
+        return set_script(html, rel, stamp)
+    tag = re.sub(r'(src="(?:\.\./)*currency\.js)(?:\?v=[0-9a-f]*)?"', lambda m: '%s?v=%s"' % (m.group(1), stamp),
+                 found.group(0), count=1)
+    return html[:found.start()] + tag + html[found.end():]
+
+
+def refresh_page(html, rel, data, stamp):
+    """a page that is not an itinerary (field notes, a guide, anything) and already carries the converter: its
+    block(s) refreshed in place, the script stamp kept current. (new html, status) with status 'ok', 'refreshed',
+    'script' or 'unknown-country' (a block whose currency is not known; any others on the page are still refreshed)"""
+    new, n, bad = refresh_blocks(html, data)
+    status = "unknown-country" if bad else ("refreshed" if n else "ok")
+    if stamp:
+        s = set_stamp(new, rel, stamp)
+        if s != new:
+            new = s
+            if status == "ok":
+                status = "script"
+    return new, status
+
+
 def apply_page(html, rel, slug, data, stamp):
     """(new html, status) where status is 'ok' (no change), 'inserted:<where>', 'moved:<where>', 'refreshed', 'script',
     'unknown-country', 'no-place'"""
@@ -351,20 +420,56 @@ def itinerary_pages(root, live_only=False):
     return out_
 
 
+def is_itinerary(p):
+    return Path(p).name.endswith("-itinerary.html")
+
+
+def other_pages(root, live_only=False):
+    """every page that is not an itinerary and could carry a converter (the caller keeps those whose markup has one):
+    live pages anywhere under the root but WALK_SKIP / dot folders, then the drafts unless live_only"""
+    root = Path(root)
+    found = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        top = Path(dirpath) == root
+        dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and not (top and d in WALK_SKIP))
+        found += [Path(dirpath) / f for f in sorted(filenames)
+                  if f.endswith(".html") and f not in SKIP_FILES and not is_itinerary(f)]
+    if not live_only:
+        if root.resolve() == ROOT.resolve():
+            sys.path.insert(0, str(ROOT / "tools"))
+            import draft_paths as dp
+            drafts = dp.draft_pages(name="*.html", folders=BLOCK_DRAFT_FOLDERS)
+        else:
+            drafts = [p for f in BLOCK_DRAFT_FOLDERS for p in sorted((root / "Drafts" / f).glob("*/*.html"))
+                      if p.is_file() and not p.parent.name.startswith(".")]
+        found += [p for p in drafts if not is_itinerary(p)]
+    return found
+
+
 def run(root=ROOT, apply=False, live_only=False, pages=None):
+    """the itineraries get the full treatment (inserted, moved to the Currency section's end, refreshed); every other
+    page that already has a converter, whatever its type, gets it refreshed in place (refresh_page)"""
     root = Path(root)
     data = load_rates(root)
     if not data:
         return [("-", "no-rates")], {}
     stamp = js_stamp(root)
     results, changed = [], {}
-    targets = [root / p for p in pages] if pages else itinerary_pages(root, live_only)
+    if pages:
+        targets = [root / p for p in pages]
+    else:
+        targets = itinerary_pages(root, live_only) + other_pages(root, live_only)
     for p in targets:
         rel = p.relative_to(root).as_posix()
         slug = p.parent.name
         with open(p, encoding="utf-8", newline="") as fh:
             raw = fh.read()
-        new, status = apply_page(raw, rel, slug, data, stamp)
+        if is_itinerary(p):
+            new, status = apply_page(raw, rel, slug, data, stamp)
+        elif BLOCK_RE.search(raw):
+            new, status = refresh_page(raw, rel, data, stamp)
+        else:
+            continue                                    # no converter on it: not this tool's page
         results.append((rel, status))
         if new != raw:
             changed[rel] = new
@@ -380,7 +485,7 @@ def main(argv=None):
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--refresh-rates", action="store_true")
     ap.add_argument("--live-only", action="store_true")
-    ap.add_argument("--pages", nargs="*", help="repo-relative pages instead of every itinerary")
+    ap.add_argument("--pages", nargs="*", help="repo-relative pages instead of every itinerary and converter page")
     ap.add_argument("--root", help="treat this folder as the site root (tests)")
     a = ap.parse_args(argv)
     root = Path(a.root).resolve() if a.root else ROOT
@@ -398,12 +503,16 @@ def main(argv=None):
         cur = COUNTRIES.get(Path(rel).parent.name, ("?",))[0]
         if status in ("unknown-country", "no-place"):
             bad += 1
-            out("  ! %s  %s" % (rel, "currency not mapped in COUNTRIES (skipped)" if status == "unknown-country"
-                                 else "no Currency section and no Key Facts box (skipped)"))
-        elif rel in changed:
+            out("  ! %s  %s" % (rel, "no-place" == status and "no Currency section and no Key Facts box (skipped)"
+                                 or (is_itinerary(rel) and "currency not mapped in COUNTRIES (skipped)")
+                                 or "a converter block whose currency has no rate (left as is)"))
+        if rel in changed:
             out("  %s%-64s %s  %s" % (tag, rel, cur, status))
     n = len(changed)
-    out("%d itinerar%s, %d %s; rates as of %s" % (len(results), "y" if len(results) == 1 else "ies", n,
+    n_it = sum(1 for rel, _ in results if is_itinerary(rel))
+    n_ot = len(results) - n_it
+    out("%d itinerar%s and %d other page%s with a converter, %d %s; rates as of %s" % (
+        n_it, "y" if n_it == 1 else "ies", n_ot, "" if n_ot == 1 else "s", n,
         "stale or missing" if a.check else ("changed" if tag == "" else "would change"), data["asof"]))
     if a.check:
         return 1 if (n or bad) else 0

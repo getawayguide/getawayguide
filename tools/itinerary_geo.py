@@ -29,7 +29,8 @@ def country_rings(gj, iso3, points, keep):
     areas = [co.ring_area(r) for r in rings]
     big = max(areas)
     rings = [[tuple(p) for p in r] for r, a in zip(rings, areas) if a >= big * keep]
-    rings = co.simplify_rings(rings, points)
+    if points:                     # 0 = keep every vertex (the hub's "hub_detail": "full" borders then match)
+        rings = co.simplify_rings(rings, points)
     return [[[round(x, 5), round(y, 5)] for x, y in r] for r in rings]
 
 
@@ -40,7 +41,7 @@ def main():
     ap.add_argument("--route", default="", help="ISO3 list drawn a shade darker (route destinations)")
     ap.add_argument("--lakes", help="W,S,E,N box; lakes inside it go to <prefix>-lakes.json")
     ap.add_argument("--min-lake", type=float, default=0.004, help="smallest lake kept, deg^2")
-    ap.add_argument("--points", type=int, default=260)
+    ap.add_argument("--points", type=int, default=260, help="vertices per country; 0 = full detail (use with hub_detail)")
     ap.add_argument("--keep", type=float, default=0.004, help="drop islands under this share of the mainland")
     a = ap.parse_args()
     gj = im.load_geojson()

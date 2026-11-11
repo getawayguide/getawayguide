@@ -1,0 +1,182 @@
+{
+  "slug": "puerto-maldonado-routes",
+  "page": "Drafts/Full Articles/peru/puerto-maldonado-amazon.html",
+  "outline_file": "tools/itinerary_maps/geo/puerto-maldonado-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 790,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -78.6,
+    -17.2,
+    -67.5,
+    -9.8
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/puerto-maldonado-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Puerto Maldonado",
+      "lat": -12.5939,
+      "lon": -69.1867,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -42,
+      "marker": "star"
+    },
+    {
+      "name": "Lima",
+      "lat": -12.046,
+      "lon": -77.0306,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -13,
+      "dy": -8,
+      "href": "lima.html"
+    },
+    {
+      "name": "Cusco",
+      "lat": -13.5171,
+      "lon": -71.9785,
+      "no_number": true,
+      "anchor": "start",
+      "dx": -12,
+      "dy": 22,
+      "href": "cusco.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Arequipa",
+      "lat": -16.3989,
+      "lon": -71.537,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    },
+    {
+      "name": "Puno",
+      "lat": -15.8407,
+      "lon": -70.0284,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.05
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -13.15,
+          -70.6
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.14
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Night bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Peru",
+      "lat": -10.6,
+      "lon": -74.4,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bolivia",
+      "lat": -15.6,
+      "lon": -68.5,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Brazil",
+      "lat": -10.5,
+      "lon": -70.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": -15.2,
+      "lon": -77.1,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 440,
+    "crop_bounds": [
+      -78.0,
+      -17.2,
+      -67.6,
+      -10.0
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Night bus"
+        }
+      ]
+    }
+  }
+}

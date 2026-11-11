@@ -46,10 +46,12 @@ branded carousel (cover, route map, a 4-photo slide per stop, call to action) pl
 carousel/main + carousel/map and tools/ig_carousel.py seeds and renders it (Pinterest pins too). See that file.
 
 DB SHAPE the page writes (what `render` reads)
-  post/main        {status: "draft"|"ready", aspect: "4:5"|"1:1", finalCaption, hashtags, updatedAt}
-  photos/<id>      {state: "pool"|"shortlist"|"archived"|"final", slot: 1..30|null, order: n,
+  post/main        {status: "draft"|"ready", aspect: "4:5"|"3:4"|"1:1"|"1.91:1", nfinal: 10..20, finalCaption, hashtags, updatedAt}
+  photos/<id>      {state: "pool"|"archived"|"final", slot: 1..n|null, order: n,
                     note: "", crop: {aspect, cx, cy, w, rot}}
-                    slots 1-10 are the carousel (rendered, in order); 11-30 are his backlog while trimming.
+                    slots 1..nfinal (10 unless he added more, up to 20) are the carousel (rendered, in order); every
+                    slot after them is his Shortlist (2026-11-11: the old "shortlist" state is gone, the editor's
+                    Social tab migrates it into those slots; ig_post_page.html does the same in an artifact).
                     crop is on the EXIF-upright original: (cx, cy) = the crop center as a fraction
                     of the width / height, w = the crop width as a fraction of the width, rot = the
                     tilt in degrees (positive = clockwise on screen, CSS rotate()), the frame's
@@ -89,7 +91,25 @@ WEB_EDGE = 1280
 WEB_Q = 82
 OUT_W = 1080
 OUT_Q = 92
-ASPECTS = {"4:5": 5 / 4, "1:1": 1.0}
+# height / width of each feed ratio Instagram takes (Kevin, 2026-11-11: "Instagram has a third, landscape layout"):
+# 4:5 portrait 1080x1350, 3:4 tall portrait 1080x1440 (accepted since May 2025, the shape of the profile grid),
+# 1:1 square 1080x1080, 1.91:1 landscape 1080x565. One post uses one ratio.
+ASPECTS = {"4:5": 5 / 4, "3:4": 4 / 3, "1:1": 1.0, "1.91:1": 1 / 1.91}
+NFINAL_DEFAULT, NFINAL_MAX = 10, 20     # the Final row: 10 slides unless post/main.nfinal says more; Instagram's cap is 20
+
+try:                                    # photos added from the photo library are often HEIC originals
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except Exception:
+    pass
+
+
+def nfinal_of(post):
+    try:
+        n = int((post or {}).get("nfinal") or NFINAL_DEFAULT)
+    except (TypeError, ValueError):
+        n = NFINAL_DEFAULT
+    return max(1, min(NFINAL_MAX, n))
 SKIP_WEB_FOLDERS = ("flags/", "continents/", "explore/", "city-maps/", "Index/", "dest-cards/", "Bio/")
 
 
@@ -111,6 +131,9 @@ def images_folder(country):
     for d in IMAGES.iterdir():
         if d.is_dir() and slugify(d.name) == want:
             return d
+    man = TMP / want / "manifest.json"                      # a combined draft (tools/ig_combine.py) has no one folder: its name is enough
+    if man.is_file() and json.loads(man.read_text(encoding="utf-8")).get("combined"):
+        return IMAGES / json.loads(man.read_text(encoding="utf-8"))["country"]
     raise SystemExit("no Images/ folder for %r" % country)
 
 
@@ -454,14 +477,15 @@ def cmd_render(args):
     if post.get("status") != "ready" and not args.force:
         out("post/main.status is %r, not 'ready' (use --force to render anyway)" % post.get("status"))
     slots = []
+    n_final = nfinal_of(post)
     for pid, doc in st["photos"].items():
-        if doc.get("state") == "final" and doc.get("slot") and 1 <= int(doc["slot"]) <= 10:
-            slots.append((int(doc["slot"]), pid, doc))  # slots 11-30 are the backlog: never rendered
+        if doc.get("state") == "final" and doc.get("slot") and 1 <= int(doc["slot"]) <= n_final:
+            slots.append((int(doc["slot"]), pid, doc))  # the slots after the Final row are the shortlist: never rendered
     slots.sort()
     if not slots:
         raise SystemExit("no photos in the final slots")
     size = 540 if args.preview else OUT_W
-    out_dir = base / ("preview" if args.preview else "out")
+    out_dir = Path(args.out) if args.out else base / ("preview" if args.preview else "out")
     out_dir.mkdir(parents=True, exist_ok=True)
     for old in out_dir.glob("*"):
         old.unlink()
@@ -514,6 +538,7 @@ def main():
     r.add_argument("--force", action="store_true", help="render even if the post is not marked ready")
     r.add_argument("--copy-to", help="folder for the copies (default %s\\<slug>)" % PICTURES)
     r.add_argument("--no-copy", action="store_true")
+    r.add_argument("--out", help="folder for the slides (default .tmp/ig/<slug>/out; the editor's Social tab passes its own)")
     # "collect" is the default subcommand: `ig_post.py "North Macedonia" --drafts`
     argv = sys.argv[1:]
     if len(argv) >= 1 and (len(argv) == 1 or argv[1] not in ("collect", "catalog", "render")):

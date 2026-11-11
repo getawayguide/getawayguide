@@ -1,0 +1,279 @@
+{
+  "slug": "kotor-routes",
+  "page": "Drafts/Upcoming/montenegro/kotor.html",
+  "outline_file": "tools/itinerary_maps/geo/kotor-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/kotor-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/kotor-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/tirana-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_width": 470,
+  "crop_bounds": [
+    17.7,
+    41.8,
+    19.85,
+    42.92
+  ],
+  "stops": [
+    {
+      "name": "Kotor",
+      "lat": 42.4247,
+      "lon": 18.7712,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -14,
+      "marker": "star"
+    },
+    {
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -36,
+      "href": "../../../croatia/field-notes.html"
+    },
+    {
+      "name": "Shkodër",
+      "lat": 42.0683,
+      "lon": 19.5126,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 16,
+      "href": "../../../albania/field-notes.html"
+    },
+    {
+      "name": "Podgorica",
+      "lat": 42.4304,
+      "lon": 19.2594,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -48
+    }
+  ],
+  "dots": [
+    {
+      "name": "Budva",
+      "lat": 42.2864,
+      "lon": 18.84,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 14
+    },
+    {
+      "name": "Perast",
+      "lat": 42.4865,
+      "lon": 18.6989,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10,
+      "href": "perast.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "TIV Airport",
+      "lat": 42.4047,
+      "lon": 18.7233,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "icon_dx": -9
+    },
+    {
+      "name": "TGD Airport",
+      "lat": 42.3594,
+      "lon": 19.2519,
+      "anchor": "start",
+      "dx": 20,
+      "dy": -4,
+      "icon_dx": 9
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "bow": 0.085
+    },
+    {
+      "a": 2,
+      "b": "dot:Budva",
+      "label": "",
+      "via": [
+        [
+          42.04,
+          19.36
+        ],
+        [
+          42.13,
+          19.15
+        ],
+        [
+          42.25,
+          18.98
+        ],
+        [
+          42.293,
+          18.92
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": "dot:Budva",
+      "label": ""
+    },
+    {
+      "a": "dot:Budva",
+      "b": 3,
+      "label": ""
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Montenegro",
+      "lat": 42.72,
+      "lon": 19.05,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Croatia",
+      "lat": 42.52,
+      "lon": 18.05,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia",
+      "lat": 42.95,
+      "lon": 18.2,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 41.9,
+      "lon": 19.72,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "mobile": {
+    "country_width": 285,
+    "crop_bounds": [
+      17.95,
+      41.88,
+      19.72,
+      42.92
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": -6,
+        "dy": -28
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 16,
+        "dy": -34
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -44,
+        "dy": 22
+      },
+      "3": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": -48
+      }
+    },
+    "dots": {
+      "0": {
+        "anchor": "end",
+        "dx": -8,
+        "dy": 18
+      },
+      "1": {
+        "name": " "
+      }
+    },
+    "airports": {
+      "0": {
+        "anchor": "end",
+        "dx": -20,
+        "dy": 22
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 26,
+        "dy": -8
+      }
+    },
+    "country_labels": {
+      "1": {
+        "lat": 42.42,
+        "lon": 18.25
+      },
+      "2": {
+        "lat": 42.92,
+        "lon": 18.15
+      },
+      "3": {
+        "lat": 41.96,
+        "lon": 19.6
+      },
+      "0": {
+        "lat": 42.77,
+        "lon": 19.2
+      }
+    }
+  }
+}

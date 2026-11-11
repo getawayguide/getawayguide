@@ -1,0 +1,335 @@
+{
+  "slug": "rotorua-routes",
+  "page": "Drafts/Full Articles/new-zealand/rotorua.html",
+  "outline_file": "tools/itinerary_maps/geo/rotorua-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 1105.4,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "crop_bounds": [
+    171.4,
+    -44.1,
+    178.7,
+    -36.25
+  ],
+  "stops": [
+    {
+      "name": "Rotorua",
+      "lat": -38.1361,
+      "lon": 176.2525,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "start",
+      "dx": 16,
+      "dy": -4
+    },
+    {
+      "name": "Auckland",
+      "lat": -36.8521,
+      "lon": 174.7632,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6,
+      "href": "auckland.html"
+    },
+    {
+      "name": "Wellington",
+      "lat": -41.2888,
+      "lon": 174.7772,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8,
+      "href": "wellington.html"
+    },
+    {
+      "name": "Christchurch",
+      "lat": -43.531,
+      "lon": 172.6364,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    }
+  ],
+  "dots": [
+    {
+      "name": "Waitomo",
+      "lat": -38.2611,
+      "lon": 175.1103,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    },
+    {
+      "name": "Taupo",
+      "lat": -38.6866,
+      "lon": 176.0695,
+      "anchor": "middle",
+      "dx": -6,
+      "dy": 20
+    },
+    {
+      "name": "Hobbiton",
+      "lat": -37.8579,
+      "lon": 175.6809,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -16
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -36.92,
+          174.84
+        ],
+        [
+          -36.955,
+          174.865
+        ],
+        [
+          -37.0,
+          174.89
+        ],
+        [
+          -37.045,
+          174.925
+        ],
+        [
+          -37.09,
+          174.975
+        ],
+        [
+          -37.14,
+          175.0
+        ],
+        [
+          -37.818,
+          175.344
+        ]
+      ]
+    },
+    {
+      "a": "dot:Waitomo",
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -38.14,
+          175.321
+        ],
+        [
+          -38.025,
+          175.334
+        ],
+        [
+          -37.894,
+          175.481
+        ],
+        [
+          -37.885,
+          175.68
+        ],
+        [
+          -37.984,
+          175.765
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": "dot:Taupo",
+      "label": "",
+      "via": [
+        [
+          -38.353,
+          176.368
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.3
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.14
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.14
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "North|Island",
+      "lat": -39.68,
+      "lon": 175.2,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "South|Island",
+      "lat": -42.54,
+      "lon": 171.82,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Sea",
+      "lat": -39.2,
+      "lon": 172.7,
+      "size": 10
+    },
+    {
+      "name": "Pacific Ocean",
+      "lat": -42.4,
+      "lon": 176.6,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -4
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 8
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      }
+    },
+    "dots": [
+      {
+        "name": "Waitomo",
+        "lat": -38.2611,
+        "lon": 175.1103,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 4
+      },
+      {
+        "name": "Taupo",
+        "lat": -38.6866,
+        "lon": 176.0695,
+        "anchor": "middle",
+        "dx": -6,
+        "dy": 20
+      },
+      {
+        "name": "Hobbiton",
+        "lat": -37.8579,
+        "lon": 175.6809,
+        "anchor": "middle",
+        "dx": 0,
+        "dy": -16
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Tasman Sea",
+        "lat": -39.2,
+        "lon": 172.7,
+        "size": 10
+      },
+      {
+        "name": "Pacific Ocean",
+        "lat": -42.4,
+        "lon": 176.6,
+        "size": 10
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "North|Island",
+        "lat": -39.68,
+        "lon": 175.2,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "South|Island",
+        "lat": -42.54,
+        "lon": 171.82,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 786.1
+  }
+}

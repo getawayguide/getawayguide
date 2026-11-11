@@ -1,0 +1,423 @@
+{
+  "slug": "brussels-routes",
+  "page": "Drafts/Upcoming/belgium/brussels.html",
+  "outline_file": "tools/itinerary_maps/geo/brussels-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 379.8,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -0.9,
+    48.55,
+    6.2,
+    52.75
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/brussels-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/brussels-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Brussels",
+      "lat": 50.8467,
+      "lon": 4.3525,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 16,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Paris",
+      "lat": 48.8589,
+      "lon": 2.32,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 5
+    },
+    {
+      "n": 2,
+      "name": "London",
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6
+    },
+    {
+      "n": 3,
+      "name": "Amsterdam",
+      "lat": 52.3789,
+      "lon": 4.9006,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 5
+    }
+  ],
+  "dots": [
+    {
+      "name": "Ghent",
+      "lat": 51.0538,
+      "lon": 3.725,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 16,
+      "href": "ghent.html"
+    },
+    {
+      "name": "Bruges",
+      "lat": 51.2086,
+      "lon": 3.2268,
+      "anchor": "end",
+      "dx": -9,
+      "dy": -4,
+      "href": "bruges.html"
+    },
+    {
+      "name": "Antwerp",
+      "lat": 51.2211,
+      "lon": 4.3997,
+      "anchor": "end",
+      "dx": -9,
+      "dy": -4
+    },
+    {
+      "name": "Boom",
+      "lat": 51.0874,
+      "lon": 4.3667,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 4,
+      "href": "tomorrowland.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "BRU Airport",
+      "lat": 50.9009,
+      "lon": 4.481,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 7,
+      "icon_dx": 70,
+      "icon_dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          51.05,
+          1.35
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "bow": 0.09
+    },
+    {
+      "a": "dot:Bruges",
+      "b": "dot:Ghent",
+      "label": ""
+    },
+    {
+      "a": "dot:Ghent",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "dot:Antwerp",
+      "b": 0,
+      "label": "",
+      "bow": -0.12
+    },
+    {
+      "a": "dot:Boom",
+      "b": 0,
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Train from the airport",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Festival shuttle bus",
+        "color": "#1C2821"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Belgium",
+      "lat": 50.393,
+      "lon": 5.338,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "France",
+      "lat": 48.717,
+      "lon": -0.187,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Netherlands",
+      "lat": 52.068,
+      "lon": 5.723,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "England",
+      "lat": 52.252,
+      "lon": -0.252,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "North Sea",
+      "lat": 52.1,
+      "lon": 2.7,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 227.9,
+    "crop_bounds": [
+      -0.9,
+      48.55,
+      6.2,
+      52.75
+    ],
+    "stops": [
+      {
+        "n": 0,
+        "name": "Brussels",
+        "lat": 50.8467,
+        "lon": 4.3525,
+        "no_number": true,
+        "anchor": "start",
+        "dx": 12,
+        "dy": 20,
+        "marker": "star"
+      },
+      {
+        "n": 0,
+        "name": "Paris",
+        "lat": 48.8589,
+        "lon": 2.32,
+        "no_number": true,
+        "anchor": "end",
+        "dx": -12,
+        "dy": 5
+      },
+      {
+        "n": 0,
+        "name": "London",
+        "lat": 51.5074,
+        "lon": -0.1278,
+        "no_number": true,
+        "anchor": "start",
+        "dx": 12,
+        "dy": -6
+      },
+      {
+        "n": 0,
+        "name": "Amsterdam",
+        "lat": 52.3789,
+        "lon": 4.9006,
+        "no_number": true,
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      {
+        "n": 0,
+        "name": "Ghent",
+        "lat": 51.0538,
+        "lon": 3.725,
+        "no_number": true,
+        "anchor": "end",
+        "dx": -8,
+        "dy": 13
+      },
+      {
+        "n": 0,
+        "name": "Bruges",
+        "lat": 51.2086,
+        "lon": 3.2268,
+        "no_number": true,
+        "anchor": "end",
+        "dx": -12,
+        "dy": -2
+      },
+      {
+        "n": 0,
+        "name": "Antwerp",
+        "lat": 51.2211,
+        "lon": 4.3997,
+        "no_number": true,
+        "anchor": "start",
+        "dx": 34,
+        "dy": -2
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Belgium",
+        "lat": 50.329,
+        "lon": 5.061,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "France",
+        "lat": 48.773,
+        "lon": 4.282,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Netherlands",
+        "lat": 52.133,
+        "lon": 5.783,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": [],
+    "dots": [],
+    "legs": [
+      {
+        "a": 1,
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 2,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            51.05,
+            1.35
+          ],
+          [
+            50.8,
+            3.0
+          ]
+        ]
+      },
+      {
+        "a": 3,
+        "b": 0,
+        "label": "",
+        "bow": 0.09
+      },
+      {
+        "a": 5,
+        "b": 4,
+        "label": ""
+      },
+      {
+        "a": 4,
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 6,
+        "b": 0,
+        "label": "",
+        "bow": -0.12
+      },
+      {
+        "a": "air",
+        "b": 0,
+        "label": "",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ],
+    "legend": {
+      "pos": "tl",
+      "scale": 0.9,
+      "items": [
+        {
+          "label": "Train"
+        },
+        {
+          "label": "Train from the airport",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "slug": "istanbul-guide",
+  "kicker": "Türkiye",
+  "city": "Istanbul",
+  "osm": ".tmp/istanbul_osm.json",
+  "article": "Drafts/Full Articles/turkiye/istanbul.html",
+  "embed": {
+    "pre": "<!-- city map: istanbul-guide -->",
+    "post": "<!-- /city map: istanbul-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.152
+  },
+  "mobile": {
+    "pad": 1.1927,
+    "init_w": 0.85,
+    "init_x": 0.35,
+    "init_y": 0.5,
+    "center": {
+      "lat": 41.027038,
+      "lon": 28.9675
+    }
+  },
+  "pois": [
+    {
+      "name": "Beyoğlu",
+      "cat": "see",
+      "match": "beyoğlu",
+      "lat": 41.038286,
+      "lon": 28.97033,
+      "href": "https://www.google.com/maps/place/Beyo%C4%9Flu,+%C4%B0stanbul,+T%C3%BCrkiye/@41.0382864,28.9703304,12z/"
+    },
+    {
+      "name": "Kadıköy (The Asian Side)",
+      "cat": "see",
+      "match": "kadıköy (the asian sid",
+      "lat": 40.981874,
+      "lon": 29.05763,
+      "href": "https://www.google.com/maps/place/Kad%C4%B1k%C3%B6y%2F%C4%B0stanbul,+T%C3%BCrkiye/@40.981133,29.063053,13z/data=!3m1!4b1!4m6!3m5!1s0x14cac790b17ba89d:0xd2d24ea0437a7ee2!8m2!3d40.9818744!4d29.0576298!16zL20vMDV5cWY4?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Hagia Sophia",
+      "cat": "see",
+      "match": "hagia sophia",
+      "lat": 41.008583,
+      "lon": 28.980175,
+      "href": "https://www.google.com/maps/place/Hagia+Sophia+Grand+Mosque,+Sultan+Ahmet,+Ayasofya+Meydan%C4%B1,+Fatih%2F%C4%B0stanbul,+T%C3%BCrkiye/@40.6328134,22.9443733,16z/data=!4m5!3m4!1s0x14cab9be92011c27:0x236e6f6f37444fae!8m2!3d41.008583!4d28.980175?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Blue Mosque (Sultan Ahmed Mosque)",
+      "cat": "see",
+      "match": "blue mosque (sultan ah",
+      "lat": 41.00541,
+      "lon": 28.976814,
+      "href": "https://www.google.com/maps/place/The+Blue+Mosque/@41.0056647,28.9566814,14z/data=!4m10!1m2!2m1!1sblue+mosque+istanbul!3m6!1s0x14cab9bd6570f4e1:0xe52df7368a157ca4!8m2!3d41.0054096!4d28.9768138!15sChRibHVlIG1vc3F1ZSBpc3RhbmJ1bFoWIhRibHVlIG1vc3F1ZSBpc3RhbmJ1bJIBBm1vc3F1ZeABAA!16zL20vMDF5ZnZf?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Basilica Cistern",
+      "cat": "see",
+      "match": "basilica cistern",
+      "lat": 41.008384,
+      "lon": 28.977878,
+      "href": "https://www.google.com/maps/place/Basilica+Cistern/@41.008384,28.977878,16z/data=!3m1!4b1!4m6!3m5!1s0x14cab9bde0c66ac9:0x60c02fe1ee6d8471!8m2!3d41.008384!4d28.977878!16zL20vMDR4MTg4?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Grand Bazaar",
+      "cat": "see",
+      "match": "grand bazaar",
+      "lat": 41.010685,
+      "lon": 28.968068,
+      "href": "https://www.google.com/maps/place/Grand+Bazaar/@41.0106888,28.9654878,17z/data=!3m1!4b1!4m6!3m5!1s0x14cab99162d70527:0x64c8680b5ac198ab!8m2!3d41.0106848!4d28.9680681!16zL20vMDF5bV84?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Nuruosmaniye Mosque",
+      "cat": "see",
+      "match": "nuruosmaniye mosque",
+      "lat": 41.010196,
+      "lon": 28.970645,
+      "href": "https://www.google.com/maps/place/Nuruosmaniye+Mosque/@41.0100291,28.9707022,17z/data=!4m15!1m8!3m7!1s0x14cab996ab856c77:0x16bb17b5863c1ed7!2sNuruosmaniye+Mosque!8m2!3d41.0101964!4d28.9706455!10e5!16s%2Fm%2F05znr6t!3m5!1s0x14cab996ab856c77:0x16bb17b5863c1ed7!8m2!3d41.0101964!4d28.9706455!16s%2Fm%2F05znr6t?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Balat",
+      "cat": "see",
+      "match": "balat",
+      "lat": 41.029211,
+      "lon": 28.948498,
+      "href": "https://www.google.com/maps/place/Balat,+34087+Fatih%2F%C4%B0stanbul,+T%C3%BCrkiye/@41.0291753,28.9384898,15z/data=!3m1!4b1!4m6!3m5!1s0x14caba02c5222d69:0x24ba70e0cfd3483e!8m2!3d41.0292106!4d28.9484978!16s%2Fg%2F113k5yy3b?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Galata Bridge",
+      "cat": "see",
+      "match": "galata bridge",
+      "lat": 41.020015,
+      "lon": 28.97322,
+      "href": "https://www.google.com/maps/place/Tarihi+Emin%C3%B6n%C3%BC+Bal%C4%B1k+Ekmek/@41.0200195,28.9706398,17z/data=!4m14!1m7!3m6!1s0x14cab9ebc160871b:0x9500f83c603869a0!2sGalata+Bridge!8m2!3d41.0200155!4d28.9732201!16zL20vMDM5OXE2!3m5!1s0x14cab952a74248fb:0x4bca4b2f5393b2c0!8m2!3d41.0183229!4d28.9712498!16s%2Fg%2F1ptzgrhv2?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Topkapi Palace",
+      "cat": "see",
+      "match": "topkapi palace",
+      "lat": 41.011519,
+      "lon": 28.983379,
+      "href": "https://www.google.com/maps/place/Topkapi+Palace+Museum/@41.0115235,28.9807986,16z/data=!3m1!4b1!4m6!3m5!1s0x14cab9b8afa5f833:0x15aa1943c3015300!8m2!3d41.0115195!4d28.9833789!16zL20vMDFsZ2N3?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Galata Tower",
+      "cat": "see",
+      "match": "galata tower",
+      "lat": 41.025569,
+      "lon": 28.974129,
+      "href": "https://www.google.com/maps/place/Galata+Tower/@41.025573,28.9715483,16z/data=!3m1!4b1!4m6!3m5!1s0x14cab9e7a7777c43:0x4c76cf3dcc8b330b!8m2!3d41.025569!4d28.9741286!16zL20vMDFmaHhi?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Taksim Square",
+      "cat": "see",
+      "match": "taksim square",
+      "lat": 41.037002,
+      "lon": 28.985092,
+      "href": "https://www.google.com/maps/place/Taksim+Square,+Kocatepe,+34435+Beyo%C4%9Flu%2F%C4%B0stanbul,+T%C3%BCrkiye/@41.0370018,28.9850917,15z/data=!3m1!4b1!4m6!3m5!1s0x14cab7650656bd63:0x8ca058b28c20b6c3!8m2!3d41.0370023!4d28.9850917!16zL20vMDJ5cW40"
+    },
+    {
+      "name": "Coffee Restarting and Co.",
+      "cat": "eat",
+      "match": "coffee restarting and ",
+      "lat": 41.025901,
+      "lon": 28.980781,
+      "href": "https://www.google.com/maps/place/IT'S+OK+Coffee+%26+Restarting+Co.+Karak%C3%B6y/@41.0259054,28.9782009,17z/data=!3m1!4b1!4m6!3m5!1s0x14cab9924f667ba1:0xbaa73ab8989d2cf6!8m2!3d41.0259014!4d28.9807812!16s%2Fg%2F11tfjq9jhr?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "BY ANTAKYALI",
+      "cat": "eat",
+      "match": "by antakyali",
+      "lat": 41.043134,
+      "lon": 28.985505,
+      "href": "https://www.google.com/maps/place/BY+ANTAKYALI/@41.0431336,28.9855047,17z/data=!3m1!4b1!4m6!3m5!1s0x14cab76e42450191:0x9044943933bf9218!8m2!3d41.0431336!4d28.9855047!16s%2Fg%2F11b7d_1c56"
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 41.024677,
+    "lon": 28.9565
+  },
+  "roads": "major",
+  "day_trips": [
+    {
+      "name": "Prince Islands",
+      "time": "Full Day",
+      "match": "prince islands",
+      "href": "https://www.google.com/maps/place/Adalar%2F%C4%B0stanbul,+T%C3%BCrkiye/@40.8663054,29.0587004,12z/data=!3m1!4b1!4m6!3m5!1s0x14cac1836fcd740b:0x53b57c91c4d72968!8m2!3d40.8763772!4d29.095444!16zL20vMDFoM3Bo?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "district_labels": [
+    {
+      "text": "SULTANAHMET",
+      "lat": 41.002,
+      "lon": 28.9749,
+      "fixed": true
+    },
+    {
+      "text": "KARAKÖY",
+      "lat": 41.0349,
+      "lon": 28.9655,
+      "fixed": true,
+      "mobile": false
+    },
+    {
+      "text": "EMINÖNÜ",
+      "lat": 41.0201,
+      "lon": 28.951,
+      "fixed": true,
+      "mobile": {
+        "lat": 41.0201,
+        "lon": 28.946
+      }
+    }
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.505386264853738,
+      0.7864337454300849,
+      186887.52115855136
+    ],
+    "mobile": [
+      0.5055782510714575,
+      0.7864883761931748,
+      175884.71850527608
+    ]
+  }
+}

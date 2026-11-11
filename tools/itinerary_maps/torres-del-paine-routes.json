@@ -1,0 +1,254 @@
+{
+  "slug": "torres-del-paine-routes",
+  "page": "Drafts/Full Articles/chile/torres-del-paine-w-trek.html",
+  "outline_file": "tools/itinerary_maps/geo/torres-del-paine-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 973.1,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -73.75,
+    -51.98,
+    -71.95,
+    -50.72
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/torres-del-paine-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/torres-del-paine-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "name": "Paine Grande",
+      "lat": -51.0725,
+      "lon": -73.0948,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "marker": "star"
+    },
+    {
+      "name": "Pudeto",
+      "lat": -51.0612,
+      "lon": -72.9898,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -30
+    },
+    {
+      "name": "Puerto Natales",
+      "lat": -51.7262,
+      "lon": -72.506,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "puerto-natales.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Punta Arenas",
+      "lat": -51.96,
+      "lon": -72.068,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4,
+      "href": "punta-arenas.html"
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 1,
+      "label": "",
+      "via": [
+        [
+          -51.691,
+          -72.527
+        ],
+        [
+          -51.673,
+          -72.511
+        ],
+        [
+          -51.663,
+          -72.535
+        ],
+        [
+          -51.645,
+          -72.538
+        ],
+        [
+          -51.447,
+          -72.486
+        ],
+        [
+          -51.38,
+          -72.434
+        ],
+        [
+          -51.306,
+          -72.427
+        ],
+        [
+          -51.256,
+          -72.344
+        ],
+        [
+          -51.257,
+          -72.371
+        ],
+        [
+          -51.218,
+          -72.451
+        ],
+        [
+          -51.097,
+          -72.566
+        ],
+        [
+          -51.063,
+          -72.544
+        ],
+        [
+          -51.001,
+          -72.594
+        ],
+        [
+          -50.981,
+          -72.639
+        ],
+        [
+          -51.028,
+          -72.774
+        ],
+        [
+          -51.023,
+          -72.846
+        ]
+      ]
+    },
+    {
+      "a": "dot:From Punta Arenas",
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -51.792,
+          -72.17
+        ],
+        [
+          -51.701,
+          -72.325
+        ],
+        [
+          -51.688,
+          -72.405
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#3E7C92",
+      "width": 2.2,
+      "via": [
+        [
+          -51.075,
+          -72.9995
+        ],
+        [
+          -51.0945,
+          -73.018
+        ],
+        [
+          -51.0985,
+          -73.043
+        ],
+        [
+          -51.085,
+          -73.078
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Catamaran",
+        "color": "#3E7C92"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Chile",
+      "lat": -51.45,
+      "lon": -73.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Argentina",
+      "lat": -51.48,
+      "lon": -72.2,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Lago del Toro",
+      "lat": -51.2,
+      "lon": -72.72,
+      "size": 11
+    }
+  ],
+  "mobile": {
+    "country_width": 851.4,
+    "water_labels": {
+      "0": {
+        "lon": -72.86
+      }
+    },
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Catamaran",
+          "color": "#3E7C92"
+        }
+      ]
+    }
+  }
+}

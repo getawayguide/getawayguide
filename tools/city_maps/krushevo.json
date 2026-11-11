@@ -3,7 +3,7 @@
   "kicker": "North Macedonia",
   "city": "Krushevo",
   "osm": ".tmp/krushevo_osm.json",
-  "article": "Drafts/Upcoming/north-macedonia/krushevo.html",
+  "article": "north-macedonia/krushevo.html",
   "embed": {
     "pre": "  <!-- city map: krushevo -->\n",
     "post": "  <!-- /city map: krushevo -->\n"

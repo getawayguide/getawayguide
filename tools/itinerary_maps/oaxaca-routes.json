@@ -1,0 +1,249 @@
+{
+  "slug": "oaxaca-routes",
+  "page": "Drafts/Full Articles/mexico/oaxaca.html",
+  "outline_file": "tools/itinerary_maps/geo/oaxaca-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1000.1,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -100.7,
+    15.2,
+    -94.45,
+    20.3
+  ],
+  "layers": [],
+  "stops": [
+    {
+      "name": "Oaxaca",
+      "lat": 17.0732,
+      "lon": -96.7266,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "name": "Puebla",
+      "lat": 19.0414,
+      "lon": -98.2063,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "href": "puebla.html"
+    },
+    {
+      "name": "Mexico City",
+      "lat": 19.4326,
+      "lon": -99.1332,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -8,
+      "href": "mexico-city.html"
+    },
+    {
+      "name": "Puerto Escondido",
+      "lat": 15.8619,
+      "lon": -97.0682,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6,
+      "href": "puerto-escondido.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Tehuacán",
+      "lat": 18.4617,
+      "lon": -97.3928,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    },
+    {
+      "name": "Veracruz",
+      "lat": 19.1903,
+      "lon": -96.1533,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -6
+    },
+    {
+      "name": "Acapulco",
+      "lat": 16.8636,
+      "lon": -99.8825,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    },
+    {
+      "name": "Salina Cruz",
+      "lat": 16.1667,
+      "lon": -95.2,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 12
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.13
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Mexico",
+      "lat": 18.0,
+      "lon": -100.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Gulf of Mexico",
+      "lat": 19.95,
+      "lon": -95.6,
+      "size": 10
+    },
+    {
+      "name": "Pacific Ocean",
+      "lat": 15.5,
+      "lon": -98.6,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 726.1,
+    "crop_bounds": [
+      -100.4,
+      15.0,
+      -94.8,
+      20.1
+    ],
+    "stops": {
+      "3": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 20
+      },
+      "0": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      }
+    },
+    "dots": [
+      {
+        "name": "Tehuacán",
+        "lat": 18.4617,
+        "lon": -97.3928,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 6
+      },
+      {
+        "name": "Veracruz",
+        "lat": 19.1903,
+        "lon": -96.1533,
+        "anchor": "start",
+        "dx": 8,
+        "dy": 10
+      },
+      {
+        "name": "Acapulco",
+        "lat": 16.8636,
+        "lon": -99.8825,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 6
+      },
+      {
+        "name": "Salina Cruz",
+        "lat": 16.1667,
+        "lon": -95.2,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 12
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "water_labels": [
+      {
+        "name": "Gulf of Mexico",
+        "lat": 19.85,
+        "lon": -95.95,
+        "size": 10
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Mexico",
+        "lat": 18.0,
+        "lon": -99.85,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

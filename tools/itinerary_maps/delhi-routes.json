@@ -1,0 +1,216 @@
+{
+  "slug": "delhi-routes",
+  "page": "Drafts/Full Articles/india/delhi.html",
+  "outline_file": "tools/itinerary_maps/geo/delhi-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 830.8,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    70.4,
+    23.3,
+    87.3,
+    32.3
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/delhi-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Delhi",
+      "lat": 28.6328,
+      "lon": 77.2197,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -14,
+      "marker": "star"
+    },
+    {
+      "name": "Varanasi",
+      "lat": 25.3356,
+      "lon": 83.0076,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "varanasi.html"
+    },
+    {
+      "name": "Jaipur",
+      "lat": 26.9155,
+      "lon": 75.819,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "href": "jaipur.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "To Istanbul",
+      "lat": 31.5,
+      "lon": 71.0,
+      "anchor": "start",
+      "dx": -6,
+      "dy": -12
+    },
+    {
+      "name": "From Saigon",
+      "lat": 23.8,
+      "lon": 85.9,
+      "anchor": "end",
+      "dx": 4,
+      "dy": 16
+    },
+    {
+      "name": "Agra",
+      "lat": 27.1753,
+      "lon": 78.0098,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 14
+    }
+  ],
+  "legs": [
+    {
+      "a": "dot:To Istanbul",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Saigon",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.14
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "India",
+      "lat": 25.0,
+      "lon": 78.9,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Nepal",
+      "lat": 28.35,
+      "lon": 82.9,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Pakistan",
+      "lat": 28.1,
+      "lon": 71.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "China",
+      "lat": 31.8,
+      "lon": 83.6,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 519.6,
+    "crop_bounds": [
+      71.2,
+      23.2,
+      86.4,
+      32.2
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "India",
+        "lat": 25.2,
+        "lon": 78.3,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Nepal",
+        "lat": 28.3,
+        "lon": 82.7,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Pakistan",
+        "lat": 28.1,
+        "lon": 72.4,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ]
+  }
+}

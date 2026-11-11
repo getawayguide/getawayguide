@@ -1,0 +1,161 @@
+{
+  "slug": "cappadocia-routes",
+  "page": "Drafts/Full Articles/turkiye/cappadocia.html",
+  "outline_file": "tools/itinerary_maps/geo/cappadocia-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 860,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    25.6,
+    35.9,
+    38.4,
+    42.0
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Göreme",
+      "lat": 38.6431,
+      "lon": 34.8289,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 18,
+      "dy": 22,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Istanbul",
+      "lat": 41.0082,
+      "lon": 28.9784,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -10,
+      "href": "istanbul.html"
+    },
+    {
+      "n": 3,
+      "name": "Antalya",
+      "lat": 36.8969,
+      "lon": 30.7133,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 10,
+      "href": "../../../turkiye/antalya.html"
+    },
+    {
+      "n": 4,
+      "name": "Fethiye",
+      "lat": 36.6216,
+      "lon": 29.1164,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 10,
+      "href": "../../../turkiye/fethiye-oludeniz.html"
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "bow": 0.1
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "bow": 0.1
+    }
+  ],
+  "airports": [
+    {
+      "name": "NAV",
+      "lat": 38.772,
+      "lon": 34.5246,
+      "anchor": "end",
+      "dx": -28,
+      "dy": 6,
+      "icon_dx": -14,
+      "icon_dy": 10
+    },
+    {
+      "name": "ASR",
+      "lat": 38.7651,
+      "lon": 35.4843,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -12
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      }
+    ]
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/cappadocia-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Türkiye",
+      "lat": 39.5,
+      "lon": 33,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Greece",
+      "lat": 39,
+      "lon": 26,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 42,
+      "lon": 26.5,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Syria",
+      "lat": 36.5,
+      "lon": 38,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ]
+}

@@ -1,0 +1,327 @@
+{
+  "slug": "lake-bled-routes",
+  "page": "Drafts/Upcoming/slovenia/lake-bled.html",
+  "outline_file": "tools/itinerary_maps/geo/lake-bled-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 660,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    13.4,
+    45.35,
+    16.45,
+    46.85
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/lake-bled-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/lake-bled-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Lake Bled",
+      "lat": 46.3683,
+      "lon": 14.1136,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 4,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Ljubljana",
+      "lat": 46.0511,
+      "lon": 14.5051,
+      "no_number": true,
+      "anchor": "start",
+      "dx": -20,
+      "dy": 34,
+      "href": "ljubljana.html"
+    },
+    {
+      "n": 2,
+      "name": "Zagreb",
+      "lat": 45.815,
+      "lon": 15.9819,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6
+    }
+  ],
+  "dots": [
+    {
+      "name": "Radovljica",
+      "lat": 46.3442,
+      "lon": 14.1744,
+      "anchor": "start",
+      "dx": 9,
+      "dy": -10
+    },
+    {
+      "name": "Lesce-Bled",
+      "lat": 46.357,
+      "lon": 14.161,
+      "anchor": "start",
+      "dx": 9,
+      "dy": -24
+    },
+    {
+      "name": "Kranj",
+      "lat": 46.2389,
+      "lon": 14.3556,
+      "anchor": "start",
+      "dx": 6,
+      "dy": -12
+    }
+  ],
+  "airports": [
+    {
+      "name": "LJU Airport",
+      "lat": 46.2237,
+      "lon": 14.4576,
+      "anchor": "start",
+      "dx": 8,
+      "dy": 8,
+      "icon_dx": 2,
+      "icon_dy": 2
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": "dot:Kranj",
+      "label": ""
+    },
+    {
+      "a": "dot:Kranj",
+      "b": "dot:Radovljica",
+      "label": ""
+    },
+    {
+      "a": "dot:Radovljica",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": "dot:Lesce-Bled",
+      "label": "",
+      "color": "#5E93A3",
+      "bow": 0.11
+    },
+    {
+      "a": "dot:Lesce-Bled",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 1,
+      "label": ""
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Slovenia",
+      "lat": 45.68,
+      "lon": 14.55,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Croatia",
+      "lat": 45.55,
+      "lon": 15.55,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Austria",
+      "lat": 46.72,
+      "lon": 14.5,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Italy",
+      "lat": 46.1,
+      "lon": 13.5,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Hungary",
+      "lat": 46.72,
+      "lon": 16.25,
+      "size": 8,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 330,
+    "crop_bounds": [
+      13.5,
+      45.45,
+      16.3,
+      46.8
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.8,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Train",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "1": {
+        "anchor": "start",
+        "dx": -16,
+        "dy": 34
+      },
+      "2": {
+        "anchor": "start",
+        "dx": -10,
+        "dy": 24
+      }
+    },
+    "dots": [
+      {
+        "name": "Kranj",
+        "lat": 46.2389,
+        "lon": 14.3556,
+        "anchor": "start",
+        "dx": 6,
+        "dy": -12
+      },
+      {
+        "name": "Lesce-Bled",
+        "lat": 46.357,
+        "lon": 14.161,
+        "anchor": "start",
+        "dx": 8,
+        "dy": -12
+      }
+    ],
+    "legs": [
+      {
+        "a": 1,
+        "b": "dot:Kranj",
+        "label": ""
+      },
+      {
+        "a": "dot:Kranj",
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 1,
+        "b": "dot:Lesce-Bled",
+        "label": "",
+        "color": "#5E93A3",
+        "bow": 0.11
+      },
+      {
+        "a": "dot:Lesce-Bled",
+        "b": 0,
+        "label": ""
+      },
+      {
+        "a": 2,
+        "b": 1,
+        "label": ""
+      }
+    ],
+    "airports": [
+      {
+        "name": "LJU Airport",
+        "lat": 46.2237,
+        "lon": 14.4576,
+        "anchor": "start",
+        "dx": 18,
+        "dy": 8,
+        "icon_dx": 2,
+        "icon_dy": 2
+      }
+    ],
+    "country_labels": {
+      "0": {
+        "lat": 45.7,
+        "lon": 14.45,
+        "size": 10
+      },
+      "1": {
+        "lat": 45.55,
+        "lon": 15.5,
+        "size": 9
+      },
+      "2": {
+        "lat": 46.68,
+        "lon": 14.6,
+        "size": 9
+      },
+      "3": {
+        "lat": 46.05,
+        "lon": 13.62,
+        "size": 9
+      },
+      "4": {
+        "lat": 46.7,
+        "lon": 16.1,
+        "size": 8
+      }
+    }
+  }
+}

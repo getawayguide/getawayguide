@@ -23,7 +23,17 @@ So each background gets files at the widths it needs, and the page chooses betwe
     background-position (the crop the Hero Picker sets) still applies. URLs live in the page's
     own style block, not in CSS variables: Chrome resolves a url() inside a variable against the
     stylesheet that uses it, which broke every path under the photo server's /site/ prefix.
-  * phones (under 769 px) keep what they have.
+  * phone CARDS (Kevin, 2026-11-08: posts.html loaded ~15 MB of card photos on a 393 px phone at 3x)
+    get bands of their own between 320 and 440 px: per band a 2x screen (1.5-2.49dppx) and a 3x one
+    (2.5 and up) take a file 1.35x-1.6x of the device pixels the card is drawn at. Measured on phones
+    (.tmp/phone_sweep/): Chrome draws a card sharpest from a file 1.6x-1.9x its device pixels, and a
+    file at 1.0x-1.1x, or one cut to exactly 1:1, lost 20-35% of the fine detail; 1.35x is what the
+    Türkiye and Armenia cards already were. Where the source is too small for that, a JPEG card gets a
+    WebP at the same width. A rule is written only where its file is fewer bytes than the one the phone
+    loads now, so a card never gets a heavier file, nor one under 1.35x. Full-width backgrounds
+    (heroes) keep their -mob files; 1x screens under 769 px keep what they have. The phone rules come
+    after the desktop ones and are bounded by width and resolution on both sides, so the desktop rules
+    are exactly what they were without them.
 
 Files: <web stem>-<width>w.webp next to the web copy. A file older than the web copy is cut again
 (the Hero Picker saved a new photo under the same name). Needs the photo server for /site/.
@@ -50,6 +60,11 @@ SITE = "http://127.0.0.1:5003/site/"
 _STARTS = [769, 830, 900, 970, 1024, 1100, 1200, 1280, 1366, 1400, 1440, 1536, 1600, 1700, 1800, 1920, 2048, 2200, 2400]
 BANDS = [(a, b - 1) for a, b in zip(_STARTS, _STARTS[1:])] + [(_STARTS[-1], 2560)]
 ONE_X = (1.35, 1.95)                          # a 1x screen: the sharp band
+# Phone bands (2026-11-08): each narrower than PHONE_FIT's 1.6 / 1.35 = 1.19, so one file serves a whole band.
+PHONE_BANDS = [(320, 359), (360, 389), (390, 413), (414, 440)]
+PHONE_FIT = (1.35, 1.6)                       # x the device pixels a phone draws the card at
+PHONE_TIERS = (("2x", 2, " and (min-resolution:1.5dppx) and (max-resolution:2.499dppx)"),
+               ("3x", 3, " and (min-resolution:2.5dppx)"))
 MAX_W = 3600                                  # 1.35 x a 2560 window; wider files cost storage for 5K screens only
 
 
@@ -70,7 +85,8 @@ MEASURE = """() => [...document.querySelectorAll('[data-bgfit]')].map(e => {
   const m = img ? null : (cs.backgroundImage || '').match(/url\\("?([^")]+)"?\\)/);
   const desk = img ? e.closest('picture').querySelector('source[type="image/webp"]:not([media])') : null;
   const url = img ? (desk ? new URL(desk.getAttribute('srcset').split(',')[0].trim().split(' ')[0], location.href).href : '') : (m ? m[1] : '');
-  return { n: e.getAttribute('data-bgfit'), url, w: r.width, h: r.height, img,
+  return { n: e.getAttribute('data-bgfit'), url, w: r.width, h: r.height, img, bg: img ? '' : cs.backgroundImage,
+           vw: document.documentElement.clientWidth,
            size: img ? (cs.objectFit === 'contain' ? 'contain' : 'cover') : cs.backgroundSize,
            shown: r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden' && !e.closest('nav') };
 })"""
@@ -116,7 +132,7 @@ def measure(rel, html_text):
     """{window width: {n: box}}, cached by the tagged page's content: a run the laptop's sleep cut
     short (net::ERR_NETWORK_IO_SUSPENDED, 2026-10-01) picks up where it stopped"""
     import hashlib, json
-    cache = ROOT / ".tmp" / "bgfit_cache" / (hashlib.sha1((html_text + repr(BANDS)).encode("utf-8")).hexdigest()[:16] + ".json")
+    cache = ROOT / ".tmp" / "bgfit_cache" / (hashlib.sha1((html_text + repr(BANDS) + repr(PHONE_BANDS)).encode("utf-8")).hexdigest()[:16] + ".json")
     if cache.exists():
         return {int(k): v for k, v in json.loads(cache.read_text(encoding="utf-8")).items()}
     out = _measure(rel, html_text)
@@ -152,6 +168,10 @@ def _measure(rel, html_text):
             pg.wait_for_timeout(300)
             for vw in sorted({w for band in BANDS for w in band}):
                 pg.set_viewport_size({"width": vw, "height": 1000})
+                pg.wait_for_timeout(60)
+                out[vw] = {x["n"]: x for x in pg.evaluate(MEASURE)}
+            for vw in sorted({w for band in PHONE_BANDS for w in band}):     # after the desktop widths, as before
+                pg.set_viewport_size({"width": vw, "height": 852})
                 pg.wait_for_timeout(60)
                 out[vw] = {x["n"]: x for x in pg.evaluate(MEASURE)}
             pg.close()
@@ -335,6 +355,63 @@ def _cut(img, src, w):
     return GHV.sharpen(im, hero_sharpen(img))
 
 
+def current_file(bg, dpr):
+    """the file a phone of this density loads now for a computed background-image: from an image-set
+    Chrome takes the lowest resolution at or above the screen's (else the highest); type() alternatives
+    are all 1x and the first supported one wins"""
+    cands = []
+    for m in re.finditer(r'url\(\s*"?([^")]+)"?\s*\)\s*(?:([0-9.]+)(x|dppx)|type\(\s*"([^"]+)"\s*\))?', bg):
+        typ = m.group(4)
+        if typ and typ not in ("image/webp", "image/jpeg", "image/png", "image/avif"):
+            continue
+        cands.append((float(m.group(2)) if m.group(2) else 1.0, m.group(1)))
+    if not cands:
+        return None
+    if "image-set" not in bg:
+        return cands[0][1]
+    ge = [c for c in cands if c[0] >= dpr - 1e-6]
+    return (min(ge, key=lambda c: c[0]) if ge else max(cands, key=lambda c: c[0]))[1]
+
+
+_w_cache = {}
+
+
+def width_of(rel_img):
+    if rel_img not in _w_cache:
+        try:
+            with Image.open(ROOT / rel_img) as im:
+                _w_cache[rel_img] = ImageOps.exif_transpose(im).width
+        except Exception:
+            _w_cache[rel_img] = 0
+    return _w_cache[rel_img]
+
+
+def phone_items(meas):
+    """[(n, img, [(box at band start, box at band end) | None per phone band])] for every card a phone
+    draws: a background-size: cover photo under Images/web, narrower than the window"""
+    out = []
+    for n in sorted({k for v in meas.values() for k in v}, key=int):
+        img, per = None, [None] * len(PHONE_BANDS)
+        for k, (a, z) in enumerate(PHONE_BANDS):
+            ma, mz = meas.get(a, {}).get(n), meas.get(z, {}).get(n)
+            if not ma or not mz or ma.get("img") or not ma["shown"] or not mz["shown"]:
+                continue
+            if ma["size"] != "cover" or mz["size"] != "cover" or ma["url"] != mz["url"] or ma.get("bg") != mz.get("bg"):
+                continue
+            if ma["w"] >= ma.get("vw", a) - 8 or mz["w"] >= mz.get("vw", z) - 8:
+                continue                                  # full width: a hero, which keeps its own phone files
+            u = web_path(ma["url"])
+            if "/Images/web/" not in "/" + u or not (ROOT / u).exists() or u.lower().endswith((".svg", ".png", ".gif")):
+                continue
+            if img and u != img:
+                continue                                  # one photo per element: keep the first
+            img = u
+            per[k] = (ma, mz)
+        if img:
+            out.append((n, img, per))
+    return out
+
+
 def file_for(img, w):
     stem = re.sub(r"(-[123]x)$", "", Path(img).stem)
     return (ROOT / img).with_name("%s-%dw.webp" % (stem, w))
@@ -344,7 +421,7 @@ def run(rels, dry=False):
     """all pages at once, so a photo used on several (a destination card on the home, posts and
     destinations pages) is cut once, at the fewest widths that serve every place it appears"""
     classes = css_bg_classes()
-    pages, ivals, srcs = {}, {}, {}
+    pages, ivals, srcs, pivals = {}, {}, {}, {}
     for rel in rels:
         raw = (ROOT / rel).read_text(encoding="utf-8", newline="")
         stamp = (ROOT / rel).stat().st_mtime_ns
@@ -381,24 +458,73 @@ def run(rels, dry=False):
                     iv[tier][k] = (lo, hi)
                     ivals.setdefault(img, []).append((lo, hi))
             items.append((n, img, bool(first.get("img")), iv))
-        pages[rel] = (raw, tagged, items, stamp)   # each page keeps its own stamp (one shared variable made every
+        ph = []
+        for n, img, per in phone_items(meas):        # the widths each phone band can take, per density
+            if img not in srcs:
+                srcs[img] = source_for(img, rel)
+            ar = srcs[img][0].width / srcs[img][0].height
+            cap = min(srcs[img][0].width, MAX_W)
+            iv = {}
+            for k, x in enumerate(per):
+                if not x:
+                    continue
+                da, dz = drawn(x[0], ar), drawn(x[1], ar)
+                for t, dpr, _ in PHONE_TIERS:
+                    lo, hi = PHONE_FIT[0] * dpr * max(da, dz), PHONE_FIT[1] * dpr * min(da, dz)
+                    if lo > hi:                       # a band too wide for one file: its middle
+                        lo = hi = (lo + hi) / 2
+                    if lo >= cap:                     # the source cannot reach it: its own width
+                        lo = hi = cap
+                    iv[(t, k)] = (lo, min(hi, cap))
+                    pivals.setdefault(img, []).append(iv[(t, k)])
+            ph.append((n, img, per, iv))
+        pages[rel] = (raw, tagged, items, stamp, ph)   # each page keeps its own stamp (one shared variable made every
                                                    # page but the last look "changed" on a multi-page run, 2026-11-01)
 
     cap = {img: min(srcs[img][0].width, MAX_W) for img in ivals}
     chosen = {img: cover_points(v, cap[img]) for img, v in ivals.items()}
+    # phone widths: the desktop files first (no new file where one already fits), then the fewest more
+    pchosen = {}
+    for img, v in pivals.items():
+        pts = list(chosen.get(img, []))
+        need = [x for x in v if not any(x[0] - 0.5 <= p <= x[1] + 0.5 for p in pts)]
+        pchosen[img] = sorted(set(pts + cover_points(need, 10 ** 6)))
     made = [0]
+    made_files, used_files = set(), set()
 
-    def ensure(img, w):                             # cut a file only when a band actually uses it
+    def ensure(img, w, use=True):                   # cut a file only when a band actually uses it
         f = file_for(img, w)
         if not dry and (not f.exists() or f.stat().st_mtime < (ROOT / img).stat().st_mtime):
             src, icc = srcs[img]
             im = _cut(img, src, w)
             im.save(f, "WEBP", quality=WEBP_Q, method=6, **({"icc_profile": icc} if icc else {}))
             made[0] += 1
+            made_files.add(f)
+        if use:
+            used_files.add(f)
+        return f
+
+    def phone_choice(img, lo, hi, cur):
+        """the file for a card a phone band draws at [lo, hi] device pixels, or None where nothing is
+        lighter than `cur`, the file the phone loads now"""
+        cw = width_of(cur)
+        cur_bytes = (ROOT / cur).stat().st_size if (ROOT / cur).exists() else 0
+        if not cw or not cur_bytes:
+            return None
+        fits = [p for p in pchosen[img] if lo - 0.5 <= p <= hi + 0.5]
+        w = min(fits) if fits else int(hi)
+        if w >= cw * 0.97:                              # no narrower: only a JPEG's own pixels as WebP
+            if cur.lower().endswith(".webp") or srcs[img][0].width < cw:
+                return None
+            w = cw
+        f = ensure(img, w, use=False)
+        if f.exists() and f.stat().st_size >= cur_bytes:
+            return None
+        used_files.add(f)
         return f
 
     sig = lambda t: re.findall(r"<[^>]*\sdata-bgfit=\"\d+\"[^>]*>", t)
-    for rel, (raw, tagged, items, stamp) in pages.items():
+    for rel, (raw, tagged, items, stamp, ph) in pages.items():
         # a page saved while this ran (the editor is open while it measures): fit the saved page, if its
         # photos are the ones measured; otherwise leave it for the next run rather than write over it
         now = (ROOT / rel).read_text(encoding="utf-8", newline="")
@@ -432,13 +558,43 @@ def run(rels, dry=False):
                     if href and href != prev:
                         rules[t][k].append("[data-bgfit=\"%s\"]%s{background-image:url('%s')!important}" % (n, scope, href))
                         prev = href
+        prules = {}                                     # (tier, first band, last band) -> rules
+        for n, img, per, iv in ph:
+            scope = scope_for(tagged, n, img)
+            for t, dpr, res in PHONE_TIERS:
+                picks = []
+                for k, x in enumerate(per):
+                    cur = current_file(x[0].get("bg") or "", dpr) if x else None
+                    picks.append(phone_choice(img, *iv[(t, k)], web_path(cur)) if cur and (t, k) in iv else None)
+                k = 0
+                while k < len(picks):
+                    if not picks[k]:
+                        k += 1
+                        continue
+                    k1 = k
+                    while k1 + 1 < len(picks) and picks[k1 + 1] == picks[k] and PHONE_BANDS[k1 + 1][0] == PHONE_BANDS[k1][1] + 1:
+                        k1 += 1
+                    f = picks[k]
+                    href = up + quote(f.relative_to(ROOT).as_posix())
+                    # :not(#bgfit) lifts the rule over an id rule in styles.css that swaps the photo on phones
+                    # (#dest-latvia .dest-bg{background-image:url(latvia-landscape.jpg) !important})
+                    prules.setdefault((t, k, k1), []).append(
+                        "[data-bgfit=\"%s\"]%s:not(#bgfit){background-image:url('%s')!important}" % (n, scope, href))
+                    k = k1 + 1
         out = tagged
-        if any(rules[t][k] for t in rules for k in range(len(BANDS))):
+        if any(rules[t][k] for t in rules for k in range(len(BANDS))) or prules:
             css = ["/* tools/fit_backgrounds.py: each background photo at the width this window draws it. Do not edit by hand. */"]
             for t, res in (("1x", ""), ("hi", " and (min-resolution:1.5dppx)")):
                 for k, (a, z) in enumerate(BANDS):
                     if rules[t][k]:
                         css.append("@media (min-width:%dpx)%s{%s}" % (a, res, "".join(rules[t][k])))
+            if prules:
+                css.append("/* phones: each card at 1.35-1.6x of a 2x or 3x screen's pixels, where lighter than before */")
+                order = [t for t, _, _ in PHONE_TIERS]
+                for t, k0, k1 in sorted(prules, key=lambda x: (order.index(x[0]), x[1])):
+                    res = dict((a, c) for a, _, c in PHONE_TIERS)[t]
+                    css.append("@media (min-width:%dpx) and (max-width:%.2fpx)%s{%s}"
+                               % (PHONE_BANDS[k0][0], PHONE_BANDS[k1][1] + 0.98, res, "".join(prules[(t, k0, k1)])))
             out = out.replace("</head>", '<style id="bg-fit">\n' + "\n".join(css) + "\n</style>\n</head>", 1)
         for n, per in pics.items():                     # a hero <img>: one <source> per run of bands, sharper screens first
             parts = []
@@ -470,7 +626,11 @@ def run(rels, dry=False):
                 print("! %s changed while this ran; its background rules were not rewritten (run again)" % rel)
                 sys.exit(3)
             (ROOT / rel).write_text(out, encoding="utf-8", newline="")
-        print("%s%s: %d photo(s) fitted (%d hero image(s))" % ("[dry] " if dry else "", rel, len(items), len(pics)))
+        print("%s%s: %d photo(s) fitted (%d hero image(s)), %d phone card(s)" % ("[dry] " if dry else "", rel, len(items),
+              len(pics), len({r.split('"')[1] for v in prules.values() for r in v})))
+    for f in made_files - used_files:               # cut for a phone band, then not lighter: not kept
+        f.unlink(missing_ok=True)
+        made[0] -= 1
     files = sum(len(v) for v in chosen.values())
     print("%s%d photo(s), %d file(s) in all (%.1f each), %d cut now" % ("[dry] " if dry else "", len(chosen), files,
           files / max(1, len(chosen)), made[0]))

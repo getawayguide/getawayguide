@@ -1,0 +1,224 @@
+{
+  "slug": "fethiye-routes",
+  "page": "turkiye/fethiye-oludeniz.html",
+  "outline_file": "tools/itinerary_maps/geo/fethiye-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1220,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    27.25,
+    35.75,
+    31.75,
+    37.65
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Fethiye",
+      "lat": 36.6216,
+      "lon": 29.1164,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 22,
+      "dy": -28,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Antalya",
+      "lat": 36.8969,
+      "lon": 30.7133,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -24,
+      "dy": -12,
+      "href": "antalya.html"
+    },
+    {
+      "n": 3,
+      "name": "Kaş",
+      "lat": 36.2018,
+      "lon": 29.6377,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 14,
+      "href": "antalya.html#kas"
+    },
+    {
+      "n": 4,
+      "name": "Rhodes",
+      "lat": 36.4341,
+      "lon": 28.2176,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 1,
+      "href": "../greece/field-notes.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Olympos",
+      "lat": 36.3955,
+      "lon": 30.4723,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -8,
+      "href": "blue-cruise.html"
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via_lock": true,
+      "via": [
+        [
+          36.47,
+          28.42
+        ],
+        [
+          36.5,
+          28.72
+        ],
+        [
+          36.59,
+          28.95
+        ],
+        [
+          36.645,
+          29.04
+        ]
+      ]
+    },
+    {
+      "a": "dot:Olympos",
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "dash": true,
+      "sea": true,
+      "via_lock": true,
+      "via": [
+        [
+          36.37,
+          30.52
+        ],
+        [
+          36.14,
+          30.5
+        ],
+        [
+          36.03,
+          30.05
+        ],
+        [
+          36.02,
+          29.65
+        ],
+        [
+          36.15,
+          29.3
+        ],
+        [
+          36.42,
+          29.0
+        ],
+        [
+          36.59,
+          28.95
+        ],
+        [
+          36.645,
+          29.04
+        ]
+      ]
+    }
+  ],
+  "airports": [
+    {
+      "name": "DLM",
+      "lat": 36.7114,
+      "lon": 28.7873,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -10
+    },
+    {
+      "name": "AYT",
+      "lat": 36.8987,
+      "lon": 30.8005,
+      "anchor": "start",
+      "dx": 40,
+      "dy": 4,
+      "icon_dx": 20,
+      "icon_dy": 14
+    },
+    {
+      "name": "BJV",
+      "lat": 37.2509,
+      "lon": 27.6667,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Blue Cruise (sailboat)",
+        "color": "#5E93A3",
+        "dash": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/fethiye-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Türkiye",
+      "lat": 37.362,
+      "lon": 29.118,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "slug": "jaipur-routes",
+  "page": "Drafts/Full Articles/india/jaipur.html",
+  "outline_file": "tools/itinerary_maps/geo/jaipur-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 850.3,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    73.4,
+    25.2,
+    80.4,
+    29.8
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/jaipur-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Jaipur",
+      "lat": 26.9155,
+      "lon": 75.819,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "name": "Delhi",
+      "lat": 28.6328,
+      "lon": 77.2197,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "delhi.html"
+    },
+    {
+      "name": "Agra",
+      "lat": 27.1753,
+      "lon": 78.0098,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 10,
+      "href": "agra.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Ajmer",
+      "lat": 26.4691,
+      "lon": 74.639,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 10
+    },
+    {
+      "name": "Gwalior",
+      "lat": 26.2037,
+      "lon": 78.1574,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3"
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3"
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.18
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "India",
+      "lat": 28.3,
+      "lon": 74.9,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "mobile": {
+    "country_width": 648.0,
+    "crop_bounds": [
+      73.9,
+      25.4,
+      79.9,
+      29.6
+    ],
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Train",
+          "color": "#5E93A3"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "India",
+        "lat": 28.25,
+        "lon": 75.3,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "dots": {
+      "0": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 18
+      }
+    }
+  }
+}

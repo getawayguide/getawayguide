@@ -1,0 +1,103 @@
+{
+  "slug": "naxos-guide",
+  "kicker": "Greece",
+  "city": "Naxos",
+  "osm": ".tmp/naxos_osm.json",
+  "article": "Drafts/Full Articles/greece/naxos-ios.html",
+  "embed": {
+    "pre": "<!-- city map: naxos-guide -->",
+    "post": "<!-- /city map: naxos-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.9238
+  },
+  "mobile": {
+    "pad": 1.9861,
+    "init_w": 0.9,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 37.100987,
+      "lon": 25.4697
+    }
+  },
+  "pois": [
+    {
+      "name": "Temple of Apollo (Portara)",
+      "cat": "see",
+      "match": "temple of apollo (port",
+      "lat": 37.110127,
+      "lon": 25.372466,
+      "href": "https://www.google.com/maps/place/Temple+of+Apollo/@37.1101271,25.3698912,17z/data=!3m1!4b1!4m6!3m5!1s0x14980a2ca64fffff:0x8c2cd3253f72f58a!8m2!3d37.1101271!4d25.3724661!16s%2Fg%2F120_lzwp?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Venetian Castle",
+      "cat": "see",
+      "match": "venetian castle",
+      "lat": 37.105532,
+      "lon": 25.377184,
+      "href": "https://www.google.com/maps/place/Venetian+Castle+of+Naxos/@37.1055317,25.3746095,17z/data=!3m1!4b1!4m6!3m5!1s0x14980b38a1ca77a3:0x27ac7c6d690b4106!8m2!3d37.1055317!4d25.3771844!16s%2Fg%2F11k2j1fsk1?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Agios Georgios Beach",
+      "cat": "see",
+      "match": "agios georgios beach",
+      "lat": 37.099272,
+      "lon": 25.374866,
+      "href": "https://www.google.com/maps/place/Agios+Georgios+Beach/@37.0992692,25.3542662,14z/data=!3m1!4b1!4m6!3m5!1s0x14980bd764b4baa1:0x8cd92cbe28995a71!8m2!3d37.0992715!4d25.3748659!16s%2Fg%2F11c75v8_j2?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Menu με νου",
+      "cat": "eat",
+      "match": "menu με νου",
+      "lat": 37.100839,
+      "lon": 25.375909,
+      "href": "https://www.google.com/maps/place/Menu+me+nou/@37.1008394,25.3733336,16z/data=!3m1!4b1!4m6!3m5!1s0x14980bb968c7716d:0xbde91562ef206d89!8m2!3d37.1008394!4d25.3759085!16s%2Fg%2F11hz0529ds?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Bossa Cafe",
+      "cat": "eat",
+      "match": "bossa cafe",
+      "lat": 37.103684,
+      "lon": 25.374904,
+      "href": "https://www.google.com/maps/place/Bossa+Cafe/@37.103684,25.374904,17z/data=!3m1!4b1!4m6!3m5!1s0x14a1a4aaceb4d2cf:0xe8183a04294f2025!8m2!3d37.103684!4d25.374904!16s%2Fg%2F11b6xbq0ws"
+    },
+    {
+      "name": "Hotel Kymata",
+      "cat": "stay",
+      "match": "hotel kymata",
+      "lat": 37.100966,
+      "lon": 25.373778,
+      "href": "https://www.google.com/maps/place/Kymata+Hotel/@37.1009657,25.3737778,17z/data=!4m9!3m8!1s0x14980bd73b693f1b:0x51e8183373265681!5m2!4m1!1i2!8m2!3d37.1009657!4d25.3737778!16s%2Fg%2F1tkzjdj4?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 37.061786,
+    "lon": 25.535888
+  },
+  "district_labels": [
+    {
+      "text": "OLD TOWN",
+      "lat": 37.103,
+      "lon": 25.427,
+      "fixed": true
+    }
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.44568532660655036,
+      0.697338819368103,
+      69251.95099104186
+    ],
+    "mobile": [
+      0.44453012449519974,
+      0.6981964160574745,
+      97907.93071147296
+    ]
+  }
+}

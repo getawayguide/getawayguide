@@ -1,0 +1,203 @@
+{
+  "slug": "varanasi-routes",
+  "page": "Drafts/Full Articles/india/varanasi.html",
+  "outline_file": "tools/itinerary_maps/geo/varanasi-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 865.9,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    75.2,
+    24.0,
+    85.4,
+    30.0
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/varanasi-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Varanasi",
+      "lat": 25.3356,
+      "lon": 83.0076,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "name": "Delhi",
+      "lat": 28.6328,
+      "lon": 77.2197,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "delhi.html"
+    },
+    {
+      "name": "Agra",
+      "lat": 27.1753,
+      "lon": 78.0098,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "agra.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Lucknow",
+      "lat": 26.8381,
+      "lon": 80.9346,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -12
+    },
+    {
+      "name": "Patna",
+      "lat": 25.6093,
+      "lon": 85.1235,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 18
+    },
+    {
+      "name": "Prayagraj",
+      "lat": 25.4381,
+      "lon": 81.8338,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 14
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": ""
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Overnight bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "India",
+      "lat": 25.0,
+      "lon": 78.6,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Nepal",
+      "lat": 28.55,
+      "lon": 83.2,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 609.9,
+    "crop_bounds": [
+      76.0,
+      24.2,
+      84.5,
+      30.2
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Overnight bus"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "India",
+        "lat": 25.2,
+        "lon": 78.9,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Nepal",
+        "lat": 28.75,
+        "lon": 83.0,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": 30,
+        "dy": 24
+      }
+    },
+    "dots": [
+      {
+        "name": "Lucknow",
+        "lat": 26.8381,
+        "lon": 80.9346,
+        "anchor": "middle",
+        "dx": 0,
+        "dy": -12
+      },
+      {
+        "name": "Prayagraj",
+        "lat": 25.4381,
+        "lon": 81.8338,
+        "anchor": "end",
+        "dx": -10,
+        "dy": 14
+      }
+    ]
+  }
+}

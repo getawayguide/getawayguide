@@ -91,6 +91,7 @@
       </div>
       <div class="rv-status" id="rv-status"></div>
       <div class="rv-check" id="rv-check"></div>
+      <div class="rv-shadow" id="rv-shadow"></div>
       <div class="rv-voice" id="rv-voice" style="display:none" title="How this article measures against your live pages. Click for the numbers."></div>
       <div class="rv-body" id="rv-body"><div class="rv-list" id="rv-list"></div><div class="rv-canvas" id="rv-canvas"></div></div>
       <div id="rv-toast"></div>`;
@@ -542,16 +543,35 @@
   // resolved by hand afterwards (Kevin, 2026-10-31: "when I accept a claude comment in the editor, the comment still
   // lingers and i have to click it again to make it go away"). Once every change a reply names is decided and at least
   // one was accepted, the thread resolves itself. All rejected leaves it open, so it can be answered again.
+  // The changes a thread's Claude reply names for the OPEN round: "Round krushevo-r10 (g34)", or "In round 5 (g02)" when
+  // the open round's slug ends in -r5, with "g19 to g21" read as a range. Shared by the auto-resolve below and by the
+  // tick on a comment card (resolve).
+  // QA 2026-11-10, three forms real replies use: a hyphen range "(g01-g04)" (only g01 and g04 were read, so a rewrite
+  // split over four changes came out half-applied), "(g20, carried from r6 g22)" (the r6 id is ANOTHER round's g22, and
+  // the open round's unrelated g22 was accepted), and "round" must be a whole word ("around 7 (g50)" named g50).
+  function namedChanges(t) {
+    if (!state.slug || !t) return [];
+    const esc = state.slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const n = /-r(\d+)$/.exec(state.slug);
+    const re = new RegExp('\\bround\\s+(?:' + esc + (n ? '|' + n[1] : '') + ')\\s*\\(([^)]*)\\)', 'i');
+    const rep = (t.replies || []).filter(r => r.author === 'Claude' && re.test(r.text || '')).pop();
+    if (!rep) return [];
+    let txt = rep.text.match(re)[1];
+    // an id qualified by a round ("carried from r6 g22", "r6's g22", "round 6 g22") is that round's change: dropped
+    // unless the round named is the open one
+    txt = txt.replace(/(?:\bround\s+|\br)(\d+)(?:'s|’s)?\s*:?\s*([a-z]\d{1,3})\b/gi, (m, r, g) => (n && r === n[1] ? ' ' + g : ' '));
+    // ranges: "g19 to g21", "g01-g04", "g01–g04", "g01 - 04"
+    txt = txt.replace(/\b([a-z])(\d{1,3})\s*(?:to|-|–|—)\s*\1?(\d{1,3})\b/gi, (m, p, a, b) => {
+      if (+b < +a) return m;
+      const o = []; for (let i = +a; i <= +b && o.length < 60; i++) o.push(p + String(i).padStart(a.length, '0')); return o.join(', '); });
+    return [...new Set(txt.match(/\b[a-z]\d{1,3}\b/gi) || [])].filter(x => byId(x));
+  }
   function resolveAnsweredThreads() {
     if (!state.slug || !state.comments || !state.comments.threads) return;
-    const esc = state.slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp('round\\s+' + esc + '\\s*\\(([^)]*)\\)', 'i');
     let changed = false;
     for (const t of state.comments.threads) {
       if (t.resolved) continue;
-      const rep = (t.replies || []).filter(r => r.author === 'Claude' && re.test(r.text || '')).pop();
-      if (!rep) continue;
-      const ids = (rep.text.match(re)[1].match(/\b[a-z]\d{1,3}\b/gi) || []).filter(x => byId(x));
+      const ids = namedChanges(t);
       if (!ids.length || ids.some(x => state.st[x] === undefined)) continue;
       if (!ids.some(x => state.st[x] === true)) continue;
       t.resolved = true; t.resolved_by = 'round'; stamp(t); unwrapMark(t.id); changed = true;   // not Kevin's click: the Shadow reviewer's scoring must not read it as his acceptance (2026-11-06)
@@ -963,6 +983,8 @@
     let r; try { r = await (await fetch(API + `/comments/${state.key}`, { cache: 'no-store' })).json(); } catch (e) { state._polling = false; return; }
     state._polling = false;
     let touched = false;
+    { const mine = state.comments.deleted || (state.comments.deleted = []), add = (r.deleted || []).filter(x => typeof x === 'string' && x.startsWith('shadow-consent') && !mine.includes(x));   // another tab's "I've reviewed" or Undo
+      if (add.length) { mine.push(...add); touched = true; } }
     // a thread another tab deleted goes here too (QA 2026-10-08: it stayed on screen in the other tab)
     { const gone = new Set(r.deleted || []);
       if (gone.size) { const keep = state.comments.threads.filter(t => !gone.has(t.id));
@@ -1217,7 +1239,62 @@
     return generalEl({});
   }
   const stamp = t => { t.at = new Date().toISOString(); };
-  function resolve(id, on) { const t = thread(id); if (!t) return; t.resolved = on; if (on) t.resolved_by = 'user'; else delete t.resolved_by; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
+  // A tick is ONE undo step (QA 2026-11-10 #7): it could accept two changes and close the thread, and Ctrl+Z took back
+  // one change at a time and never reopened the thread, so its changes were pending again with no card beside them.
+  // The editor's History.group makes the tick's edits one step, and the step carries the threads' closed state (this
+  // thread's, and any other the accepted changes closed by themselves): undo puts it back as it was before the tick,
+  // redo as it was after. Only the threads the tick changed are touched; each is stamped, so the store keeps the newest.
+  const TH_KEYS = ['resolved', 'resolved_by', 'status'];
+  const threadSnap = () => new Map(state.comments.threads.map(t => [t.id, TH_KEYS.map(k => t[k])]));
+  function threadRestore(snap, ids) {
+    for (const id of ids) {
+      const t = thread(id), v = snap.get(id); if (!t || !v) continue;
+      TH_KEYS.forEach((k, i) => { if (v[i] === undefined) delete t[k]; else t[k] = v[i]; });
+      stamp(t); if (t.resolved) unwrapMark(id);
+    }
+    if (state.tickWarned) ids.forEach(id => state.tickWarned.delete(id));
+    saveComments();                                   // the redraw follows: History.apply calls syncFromDom next
+  }
+  function resolve(id, on) {
+    const h = H();
+    if (!on || !h || !h.group) return resolveNow(id, on);
+    const t = thread(id); if (!t || t.resolved) return resolveNow(id, on);
+    const before = threadSnap();
+    h.group(() => {
+      resolveNow(id, on);
+      const after = threadSnap();
+      const ids = [...after.keys()].filter(k => before.has(k) && before.get(k).some((v, i) => v !== after.get(k)[i]));
+      if (!ids.length) return null;                   // the tick only warned (and maybe applied what it could): text edits only
+      if (h.label) h.label('Ticked comment: ' + plain(t.text || '').replace(/\s+/g, ' ').slice(0, 48));
+      return { undo: () => threadRestore(before, ids), redo: () => threadRestore(after, ids) };
+    });
+  }
+  function resolveNow(id, on) { const t = thread(id); if (!t) return;
+    // Ticking a comment that a round answers also accepts the change(s) its reply names. Kevin ticked the comment card
+    // beside each change and the thread closed with nothing applied (North Macedonia r5, 2026-11-08: "some of my comments
+    // aren't going through even when I check the box"). Only changes still undecided AND drawn in the text are accepted,
+    // so a change that can't apply is never recorded as accepted.
+    // A Shadow reviewer thread is the exception: there a tick with no reply means "no, skip it" (Kevin's convention,
+    // 2026-11-06), so its changes are decided on their own change cards only.
+    // A named change that can't go in (not in the open text, or its passage was edited since) is not passed over in
+    // silence: the tick says which and leaves the comment open; a second tick closes it anyway (QA 2026-11-10 #8).
+    if (on && !t.resolved && t.author !== 'Shadow reviewer') {
+      const pending = namedChanges(t).filter(x => state.st[x] === undefined);
+      pending.filter(x => ed().querySelector(`[data-id="${x}"]`)).forEach(x => decide(x, true, true));
+      const stuck = pending.filter(x => state.st[x] !== true);
+      state.tickWarned = state.tickWarned || new Set();
+      if (stuck.length && !state.tickWarned.has(id)) {
+        state.tickWarned.add(id);
+        const gone = stuck.filter(x => !ed().querySelector(`[data-id="${x}"]`)), unfit = stuck.filter(x => !gone.includes(x));
+        toast([gone.length ? `${gone.join(', ')} ${gone.length === 1 ? 'is' : 'are'} not in the open text` : '',
+               unfit.length ? `${unfit.join(', ')} no longer ${unfit.length === 1 ? 'fits its' : 'fit their'} passage (edited since)` : ''].filter(Boolean).join('; ')
+              + `, so ${stuck.length === 1 ? 'it was' : 'they were'} not applied. The comment stays open: reject the change or make the edit by hand, or tick again to close it anyway.`, 9000);
+        if (pending.length !== stuck.length) renderAll();      // the ones that did go in show as accepted
+        return;
+      }
+      state.tickWarned.delete(id);
+    }
+    t.resolved = on; if (on) t.resolved_by = 'user'; else delete t.resolved_by; stamp(t); if (on) unwrapMark(id); else if (!isGeneral(t.anchor)) { const r = findRange(t.anchor); if (r) wrapRange(r, id, false); else t.unanchored = true; } saveComments(); renderAll(); }
   function delThread(id) { if (!confirm('Delete this comment thread?')) return; state.comments.threads = state.comments.threads.filter(t => t.id !== id); (state.comments.deleted = state.comments.deleted || []).push(id); unwrapMark(id); saveComments(); renderAll(); }
   // the microphone on a comment box (Kevin, 2026-10-25: "add dictate button into comment"): the editor's own dictation
   // (local Whisper) with the text handed to this box instead of the article; a second click stops the recording
@@ -1330,9 +1407,66 @@
       else if (k === 'wait') { const t = waiting[0]; const m = cmQ(`mark.cm[data-cm="${t.id}"]`); if (m) m.scrollIntoView({ block: 'center' }); }
     });
   }
+  // "I've reviewed Shadow's comments" (Kevin, 2026-11-10: "add a way to confirm I reviewed all of the shadow comments as a
+  // fail safe in case I just quickly open the article and close it"). Silence counts as a yes on Shadow's price comments
+  // (tools/shadow_consent.py) only for threads a click here covers; link comments go through without it, and the click stays
+  // his record that he reviewed. Opening or closing an article records nothing.
+  // The record is a string in the store's `deleted` list, on purpose: comments_save keeps only `threads` and `deleted` (any
+  // other top-level key is dropped), a stamp on a thread is overwritten by the next stale tab's POST, and `deleted` is
+  // merged as a union, so nothing a tab posts can take an entry away. It is a log: a click appends a record, Undo appends
+  // its cancellation, and tools/shadow_consent.py replays the same log. No thread id can start with these prefixes.
+  const SC_ON = 'shadow-consent:', SC_OFF = 'shadow-consent-undo:';
+  function shadowConfirmations() {
+    const on = [], off = new Set();
+    for (const x of state.comments.deleted || []) {
+      if (typeof x !== 'string') continue;
+      try {
+        if (x.startsWith(SC_ON)) { const c = JSON.parse(x.slice(SC_ON.length)); if (c && c.id && c.at && Array.isArray(c.threads)) on.push(c); }
+        else if (x.startsWith(SC_OFF)) off.add(JSON.parse(x.slice(SC_OFF.length)).id);
+      } catch (e) {}
+    }
+    return on.filter(c => !off.has(c.id));
+  }
+  const shadowOpen = () => state.comments.threads.filter(t => t.author === 'Shadow reviewer' && !t.resolved);
+  function shadowUnconfirmed() { const covered = new Set(shadowConfirmations().flatMap(c => c.threads)); return shadowOpen().filter(t => !covered.has(t.id)); }
+  function logShadow(entry) { (state.comments.deleted = state.comments.deleted || []).push(entry); saveComments(); renderAll(); }
+  function confirmShadow() {
+    const ids = shadowUnconfirmed().map(t => t.id); if (!state.key || !ids.length) return;
+    const id = 'sc-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    logShadow(SC_ON + JSON.stringify({ id, at: new Date().toISOString(), threads: ids }));
+  }
+  function undoShadow(id) { logShadow(SC_OFF + JSON.stringify({ id, at: new Date().toISOString() })); }
+  // Every click in force can be taken back, not only the newest (QA 2026-11-10: two Shadow passes, two clicks, and
+  // Undo reached only the second). The strip's line keeps the newest click and its Undo; when more than one stands, a
+  // small "All N" toggle opens the list of them, each with its day, time, how many of its comments are still open, and
+  // its own Undo. Undo logs a cancellation of THAT click's id (tools/shadow_consent.py replays the same log), so its
+  // comments count as not reviewed again and the button comes back counting them. The list stays shut unless asked for.
+  function renderShadowReview() {
+    const el = $('rv-shadow'); if (!el) return;
+    if (!state.rel || state.awaitingFile) { el.innerHTML = ''; return; }
+    const open = shadowOpen(), fresh = shadowUnconfirmed();
+    const standing = shadowConfirmations().filter(c => open.some(t => c.threads.includes(t.id)));   // in force, a thread still open
+    const stands = standing[standing.length - 1];                                                  // the newest
+    const when = c => new Date(c.at);
+    const day = c => when(c).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const time = c => when(c).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (standing.length < 2) state.scList = false;
+    const list = standing.length > 1 && !!state.scList;
+    el.innerHTML = (fresh.length ? `<button type="button" id="rv-shadow-ok" class="rv-btn" title="Say you have read Shadow's comments on this article. Until you do, its price comments need your typed yes. After this, price comments you left unanswered can go into the next round.">I've reviewed Shadow's comments (${fresh.length})</button>` : '')
+      + (stands ? `<span class="rv-shadow-done">${fresh.length ? 'Earlier ones' : 'Shadow comments'} reviewed ${esc(day(stands))}<button type="button" id="rv-shadow-undo" data-sc="${esc(stands.id)}" title="Take back your newest confirmation (${esc(day(stands))}, ${esc(time(stands))}): its comments count as not reviewed again">Undo</button>`
+        + (standing.length > 1 ? `<button type="button" id="rv-shadow-all" aria-expanded="${list}" title="Every confirmation still in force, each with its own Undo">All ${standing.length}</button>` : '') + '</span>' : '')
+      + (list ? `<ul class="rv-shadow-list" id="rv-shadow-list">${standing.slice().reverse().map(c => {
+          const n = open.filter(t => c.threads.includes(t.id)).length;
+          return `<li data-sc="${esc(c.id)}"><span>${esc(day(c))}, ${esc(time(c))} · ${n} comment${n === 1 ? '' : 's'}</span><button type="button" data-sc="${esc(c.id)}" title="Take back this confirmation: its ${n} comment${n === 1 ? '' : 's'} count as not reviewed again">Undo</button></li>`; }).join('')}</ul>` : '');
+    if (fresh.length) $('rv-shadow-ok').onclick = confirmShadow;
+    // a double-click's second click (detail 2) would land on the row that slid under the pointer (QA 2026-11-10 #5)
+    el.querySelectorAll('button[data-sc]').forEach(b => b.onclick = ev => { if (ev.detail > 1) return; undoShadow(b.dataset.sc); });
+    const all = $('rv-shadow-all'); if (all) all.onclick = ev => { if (ev.detail > 1) return; state.scList = !state.scList; renderShadowReview(); };
+  }
   function renderAll() {
     if (!$('review-pane')) return;
     try { renderChecklist(); } catch (e) {}
+    try { renderShadowReview(); } catch (e) {}
     mapsCount();
     const pend = pending(), open = state.comments.threads.filter(t => !t.resolved).length + (state.draft ? 1 : 0);
     const lostAll = state.hidden.filter(id => state.st[id] === undefined).length;   // not found in the open text, still undecided
@@ -1532,8 +1666,11 @@
     applyAvatars(d);
     d.onclick = e => { if (!e.target.closest('button,textarea,.dd') && !selecting()) focusThread(t.id, false); };
     d.querySelector('[data-a="more"]').onclick = e => { e.stopPropagation(); d.querySelector('.dd').classList.toggle('open'); };
-    const on = (a, f) => { const b = d.querySelector(`[data-a="${a}"]`); if (b) b.onclick = e => { e.stopPropagation(); f(); }; };
-    on('resolve', () => resolve(t.id, true)); on('resolve2', () => resolve(t.id, true)); on('reopen', () => resolve(t.id, false)); on('del', () => delThread(t.id));
+    // once: a double-click counts as one click. The card closes on the first click and the next card slides under the
+    // pointer, so the second click closed THAT comment too (and accepted the changes its reply names; QA 2026-11-10).
+    // Same guard as the change cards' tick and cross.
+    const on = (a, f, once) => { const b = d.querySelector(`[data-a="${a}"]`); if (b) b.onclick = e => { e.stopPropagation(); if (once && e.detail > 1) return; f(); }; };
+    on('resolve', () => resolve(t.id, true), true); on('resolve2', () => resolve(t.id, true), true); on('reopen', () => resolve(t.id, false), true); on('del', () => delThread(t.id));
     on('send', () => sendToClaude(t.id)); on('use', () => useTaskEdit(t));
     on('edit', () => editInPlace(d.querySelector(':scope > .tx'), t.text, nt => editText(t.id, null, nt)));
     d.querySelectorAll('[data-a="edit-r"]').forEach(b => b.onclick = e => { e.stopPropagation(); const rp = b.closest('.rp'); const r = t.replies.find(x => x.id === rp.dataset.rid); editInPlace(rp.querySelector('.tx'), r.text, nt => editText(t.id, r.id, nt)); });
@@ -1945,6 +2082,17 @@ body.review-open #review-pane{display:flex}
 .rv-card .act .send{border-color:#b9d4c5;color:#2D6B50}
 .rv-check{display:flex;flex-wrap:wrap;gap:.25rem;padding:.3rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff;min-height:0}
 .rv-check:empty{display:none}
+.rv-shadow{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem .55rem;padding:.35rem .6rem;border-bottom:1px solid #e6e6e2;background:#fff}
+.rv-shadow:empty{display:none}
+.rv-shadow-done{font:400 .72rem/1.4 'Hanken Grotesk',sans-serif;color:#6b7a70}
+#review-pane .rv-shadow-done button{font:inherit;color:#2D6B50;background:none;border:0;border-bottom:1px dotted #2D6B50;padding:0;margin-left:.45rem;cursor:pointer}
+/* a double-click on the strip's buttons selected the word "reviewed" (QA 2026-11-10): nothing here is text to copy */
+.rv-shadow{-webkit-user-select:none;user-select:none}
+#review-pane .rv-shadow-done #rv-shadow-all{color:#6b7a70;border-bottom-color:#9aa59e}
+#review-pane .rv-shadow-done #rv-shadow-all[aria-expanded="true"]{color:#1C2821}
+.rv-shadow-list{flex-basis:100%;list-style:none;margin:.1rem 0 0;padding:0;font:400 .7rem/1.4 'Hanken Grotesk',sans-serif;color:#6b7a70}
+.rv-shadow-list li{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;padding:.12rem 0;border-top:1px solid #f0f0ec}
+#review-pane .rv-shadow-list button{font:inherit;color:#2D6B50;background:none;border:0;border-bottom:1px dotted #2D6B50;padding:0;cursor:pointer;flex:none}
 .rv-check button{font:600 .55rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:.3rem .45rem;border:1px solid #F1E2A8;background:#FFF8E1;color:#5c4a12;border-radius:999px;cursor:pointer}
 .rv-check button:hover{background:#FBEFC2}
 .rv-check .ok{font:600 .55rem/1.6 'Hanken Grotesk',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2D6B50}

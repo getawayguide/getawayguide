@@ -1,0 +1,264 @@
+{
+  "slug": "waitomo-routes",
+  "page": "Drafts/Full Articles/new-zealand/waitomo.html",
+  "outline_file": "tools/itinerary_maps/geo/waitomo-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 2115.3,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "crop_bounds": [
+    174.3,
+    -38.75,
+    176.85,
+    -36.55
+  ],
+  "stops": [
+    {
+      "name": "Waitomo",
+      "lat": -38.2611,
+      "lon": 175.1103,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "end",
+      "dx": -16,
+      "dy": 6
+    },
+    {
+      "name": "Hot Water Beach",
+      "lat": -36.8898,
+      "lon": 175.8236,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -8,
+      "href": "coromandel.html"
+    },
+    {
+      "name": "Rotorua",
+      "lat": -38.1361,
+      "lon": 176.2525,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "href": "rotorua.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Karangahake Gorge",
+      "lat": -37.4168,
+      "lon": 175.7157,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -2
+    },
+    {
+      "name": "Hobbiton",
+      "lat": -37.8579,
+      "lon": 175.6809,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -8
+    },
+    {
+      "name": "Auckland",
+      "lat": -36.8521,
+      "lon": 174.7632,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -4
+    },
+    {
+      "name": "Hamilton",
+      "lat": -37.7879,
+      "lon": 175.2818,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -37.046,
+          175.828
+        ],
+        [
+          -37.377,
+          175.677
+        ],
+        [
+          -37.515,
+          175.497
+        ],
+        [
+          -37.652,
+          175.523
+        ],
+        [
+          -37.879,
+          175.322
+        ],
+        [
+          -38.007,
+          175.329
+        ],
+        [
+          -38.058,
+          175.233
+        ],
+        [
+          -38.251,
+          175.181
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -38.14,
+          175.321
+        ],
+        [
+          -38.025,
+          175.334
+        ],
+        [
+          -37.894,
+          175.481
+        ],
+        [
+          -37.885,
+          175.68
+        ],
+        [
+          -37.984,
+          175.765
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "North Island",
+      "lat": -38.55,
+      "lon": 175.9,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Sea",
+      "lat": -37.75,
+      "lon": 174.55,
+      "size": 10
+    },
+    {
+      "name": "Bay of Plenty",
+      "lat": -37.3,
+      "lon": 176.3,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": 6
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -4
+      }
+    },
+    "dots": [
+      {
+        "name": "Karangahake Gorge",
+        "lat": -37.4168,
+        "lon": 175.7157,
+        "anchor": "start",
+        "dx": 9,
+        "dy": -2
+      },
+      {
+        "name": "Hobbiton",
+        "lat": -37.8579,
+        "lon": 175.6809,
+        "anchor": "start",
+        "dx": 9,
+        "dy": -8
+      },
+      {
+        "name": "Auckland",
+        "lat": -36.8521,
+        "lon": 174.7632,
+        "anchor": "end",
+        "dx": -9,
+        "dy": -4
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Bay of Plenty",
+        "lat": -37.3,
+        "lon": 176.3,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "North Island",
+        "lat": -38.55,
+        "lon": 175.9,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 998.9
+  }
+}

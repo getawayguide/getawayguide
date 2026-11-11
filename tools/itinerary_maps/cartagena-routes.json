@@ -1,0 +1,318 @@
+{
+  "slug": "cartagena-routes",
+  "page": "Drafts/Full Articles/colombia/cartagena.html",
+  "outline_file": "tools/itinerary_maps/geo/cartagena-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 760,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -80.3,
+    3.9,
+    -70.3,
+    12.0
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/cartagena-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Cartagena",
+      "lat": 10.4238,
+      "lon": -75.55,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -15,
+      "dy": -8,
+      "marker": "star"
+    },
+    {
+      "name": "Medellín",
+      "lat": 6.2443,
+      "lon": -75.5736,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -13,
+      "dy": 6,
+      "href": "medellin.html"
+    },
+    {
+      "name": "Bogotá",
+      "lat": 4.6534,
+      "lon": -74.0836,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 13,
+      "dy": 6
+    },
+    {
+      "name": "Santa Marta",
+      "lat": 11.2454,
+      "lon": -74.2058,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 13,
+      "dy": -6,
+      "href": "santa-marta-tayrona.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "San Bernardo Islands",
+      "lat": 9.7964,
+      "lon": -75.8364,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 7,
+      "href": "san-bernardo-islands.html"
+    },
+    {
+      "name": "Barranquilla",
+      "lat": 10.9939,
+      "lon": -74.7926,
+      "anchor": "end",
+      "dx": -8,
+      "dy": -9
+    },
+    {
+      "name": "Bucaramanga",
+      "lat": 7.1193,
+      "lon": -73.1227,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.12
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": "",
+      "via": [
+        [
+          10.445,
+          -75.475
+        ],
+        [
+          10.58,
+          -75.43
+        ],
+        [
+          10.72,
+          -75.29
+        ],
+        [
+          10.86,
+          -75.1
+        ],
+        [
+          10.97,
+          -74.92
+        ],
+        [
+          10.99,
+          -74.79
+        ],
+        [
+          10.985,
+          -74.55
+        ],
+        [
+          10.98,
+          -74.4
+        ],
+        [
+          10.985,
+          -74.32
+        ],
+        [
+          11.02,
+          -74.235
+        ],
+        [
+          11.13,
+          -74.19
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": "dot:San Bernardo Islands",
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via_lock": true,
+      "via": [
+        [
+          10.4,
+          -75.568
+        ],
+        [
+          10.385,
+          -75.62
+        ],
+        [
+          10.3,
+          -75.68
+        ],
+        [
+          10.12,
+          -75.77
+        ],
+        [
+          9.95,
+          -75.82
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Boat",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Colombia",
+      "lat": 5.6,
+      "lon": -71.9,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Venezuela",
+      "lat": 8.6,
+      "lon": -71.5,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Panama",
+      "lat": 8.9,
+      "lon": -79.6,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Caribbean Sea",
+      "lat": 12.0,
+      "lon": -77.0,
+      "size": 10
+    },
+    {
+      "name": "Pacific Ocean",
+      "lat": 5.6,
+      "lon": -79.0,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 650,
+    "crop_bounds": [
+      -79.0,
+      4.0,
+      -71.6,
+      12.0
+    ],
+    "stops": {},
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Boat",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Colombia",
+        "lat": 5.4,
+        "lon": -72.2,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Venezuela",
+        "lat": 8.7,
+        "lon": -71.95,
+        "size": 9.6,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Caribbean Sea",
+        "lat": 11.9,
+        "lon": -77.1,
+        "size": 10
+      },
+      {
+        "name": "Pacific Ocean",
+        "lat": 5.4,
+        "lon": -78.25,
+        "size": 10
+      }
+    ]
+  }
+}

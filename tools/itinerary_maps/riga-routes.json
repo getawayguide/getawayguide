@@ -1,0 +1,200 @@
+{
+ "slug": "riga-routes",
+ "page": "Drafts/Full Articles/latvia/riga.html",
+ "outline_file": "tools/itinerary_maps/geo/riga-routes-main.json",
+ "smooth": false,
+ "pin_scale": 1.15,
+ "country_width": 390,
+ "margins": {
+  "l": 240,
+  "r": 240,
+  "t": 130,
+  "b": 130
+ },
+ "crop_bounds": [
+  19.9,
+  54.1,
+  29.0,
+  59.8
+ ],
+ "layers": [
+  {
+   "file": "tools/itinerary_maps/geo/riga-routes-neighbors.json",
+   "under": true,
+   "fill": "#EFF0EB",
+   "stroke": "#D5DAD3",
+   "width": 0.9
+  },
+  {
+   "file": "tools/itinerary_maps/geo/riga-routes-route.json",
+   "under": true,
+   "fill": "#E6EAE3",
+   "stroke": "#9DB0A5",
+   "width": 1.1
+  }
+ ],
+ "stops": [
+  {
+   "name": "Riga",
+   "lat": 56.9496,
+   "lon": 24.1052,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 16,
+   "dy": -6,
+   "marker": "star"
+  },
+  {
+   "name": "Tallinn",
+   "lat": 59.437,
+   "lon": 24.7536,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 14,
+   "dy": -4,
+   "href": "../estonia/tallinn.html"
+  },
+  {
+   "name": "Vilnius",
+   "lat": 54.6872,
+   "lon": 25.2797,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 12,
+   "dy": 8
+  }
+ ],
+ "airports": [
+  {
+   "name": "RIX Airport",
+   "lat": 56.9236,
+   "lon": 23.9711,
+   "anchor": "end",
+   "dx": -14,
+   "dy": 22,
+   "icon_dx": -14,
+   "icon_dy": 10
+  }
+ ],
+ "legs": [
+  {
+   "a": 1,
+   "b": 0,
+   "label": "",
+   "via": [
+    [
+     58.2,
+     24.72
+    ],
+    [
+     57.65,
+     24.6
+    ],
+    [
+     57.25,
+     24.45
+    ]
+   ]
+  },
+  {
+   "a": 2,
+   "b": 0,
+   "label": ""
+  }
+ ],
+ "legend": {
+  "pos": "bl",
+  "scale": 0.9,
+  "items": [
+   {
+    "label": "Long-distance bus"
+   }
+  ]
+ },
+ "country_labels": [
+  {
+   "name": "Latvia",
+   "lat": 56.5,
+   "lon": 26.0,
+   "size": 11,
+   "weight": 700,
+   "ls": 3,
+   "color": "#4F6358"
+  },
+  {
+   "name": "Estonia",
+   "lat": 58.7,
+   "lon": 25.9,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Lithuania",
+   "lat": 55.4,
+   "lon": 23.6,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  }
+ ],
+ "water_labels": [
+  {
+   "name": "Baltic Sea",
+   "lat": 57.5,
+   "lon": 20.5,
+   "size": 10
+  }
+ ],
+ "mobile": {
+  "country_width": 310,
+  "legend": {
+   "pos": "bl",
+   "scale": 0.8,
+   "items": [
+    {
+     "label": "Long-distance bus"
+    }
+   ]
+  },
+  "country_labels": [
+   {
+    "name": "Latvia",
+    "lat": 56.5,
+    "lon": 26.0,
+    "size": 9,
+    "weight": 700,
+    "ls": 3,
+    "color": "#4F6358"
+   },
+   {
+    "name": "Estonia",
+    "lat": 58.7,
+    "lon": 25.9,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   },
+   {
+    "name": "Lithuania",
+    "lat": 55.4,
+    "lon": 23.6,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   }
+  ],
+  "water_labels": [
+   {
+    "name": "Baltic Sea",
+    "lat": 57.5,
+    "lon": 20.5,
+    "size": 9
+   }
+  ]
+ }
+}

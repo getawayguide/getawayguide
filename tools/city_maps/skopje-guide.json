@@ -3,7 +3,7 @@
   "kicker": "North Macedonia",
   "city": "Skopje",
   "osm": ".tmp/skopje_osm.json",
-  "article": "Drafts/Upcoming/north-macedonia/skopje.html",
+  "article": "north-macedonia/skopje.html",
   "embed": {
     "pre": "<!-- city map: skopje-guide -->",
     "post": "<!-- /city map: skopje-guide -->"

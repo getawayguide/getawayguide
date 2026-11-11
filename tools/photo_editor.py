@@ -2885,17 +2885,35 @@ def api_caption():
         return ("", 204)
     b = request.get_json(silent=True) or {}
     refs = [str(x) for x in (b.get("images") or []) if x][:3]
-    if not refs:
+    new = b.get("photo") if isinstance(b.get("photo"), dict) else None      # the photo open in the crop dialog: not in the article yet
+    if not refs and not new:
         return jsonify(ok=False, error="no photos named"), 400
     sys.path.insert(0, str(ROOT / "tools"))
     import alt_writer
     import ask_gemini
     parts = [{"text": CAPTION_RULES}]
-    pair = bool(b.get("pair")) or len(refs) > 1
-    for i, ref in enumerate(refs):
+    sources = []
+    for ref in refs:
         p = _archive_original(ref)
-        if p is None:
+        if p is not None:
+            sources.append(p)
+        elif not new:                     # from the dialog a partner without an archive copy is just left out
             return jsonify(ok=False, error="no archive photo for %s" % ref.split("/")[-1]), 404
+    if new:
+        try:
+            np = source_path(str(new.get("root", "")), new.get("path", ""))
+            np.stat()
+        except Exception:
+            return jsonify(ok=False, error="no such photo"), 404
+        try:
+            at = max(0, min(int(new.get("index") or 0), len(sources)))
+        except (TypeError, ValueError):
+            at = len(sources)
+        sources.insert(at, np)
+    sources = sources[:3]
+    refs = sources
+    pair = bool(b.get("pair")) or len(sources) > 1
+    for i, p in enumerate(sources):
         small = None
         try:
             t = bthumb_path(p, 2000)

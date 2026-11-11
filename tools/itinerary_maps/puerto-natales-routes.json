@@ -1,0 +1,199 @@
+{
+  "slug": "puerto-natales-routes",
+  "page": "Drafts/Full Articles/chile/puerto-natales.html",
+  "outline_file": "tools/itinerary_maps/geo/puerto-natales-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 635.1,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -74.7,
+    -53.8,
+    -69.9,
+    -50.45
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/puerto-natales-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Puerto Natales",
+      "lat": -51.7262,
+      "lon": -72.506,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "marker": "star"
+    },
+    {
+      "name": "Punta Arenas",
+      "lat": -53.1626,
+      "lon": -70.9078,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 12,
+      "href": "punta-arenas.html"
+    },
+    {
+      "name": "Torres del Paine",
+      "lat": -50.9754,
+      "lon": -72.7467,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": -6,
+      "href": "torres-del-paine-w-trek.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Santiago",
+      "lat": -50.72,
+      "lon": -70.75,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -52.982,
+          -70.818
+        ],
+        [
+          -52.425,
+          -71.414
+        ],
+        [
+          -52.219,
+          -71.33
+        ],
+        [
+          -52.077,
+          -71.375
+        ],
+        [
+          -52.04,
+          -71.938
+        ],
+        [
+          -51.701,
+          -72.325
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -51.447,
+          -72.486
+        ],
+        [
+          -51.256,
+          -72.344
+        ],
+        [
+          -51.218,
+          -72.451
+        ],
+        [
+          -50.981,
+          -72.639
+        ]
+      ]
+    },
+    {
+      "a": "dot:From Santiago",
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Santiago",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Chile",
+      "lat": -52.55,
+      "lon": -71.9,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Argentina",
+      "lat": -51.45,
+      "lon": -71.45,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [],
+  "mobile": {
+    "country_width": 564.5,
+    "country_labels": {
+      "1": {
+        "lat": -51.58,
+        "lon": -71.35
+      }
+    },
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    }
+  }
+}

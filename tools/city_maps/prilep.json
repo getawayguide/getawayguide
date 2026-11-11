@@ -3,7 +3,7 @@
   "kicker": "North Macedonia",
   "city": "Prilep",
   "osm": ".tmp/prilep_osm.json",
-  "article": "Drafts/Upcoming/north-macedonia/krushevo.html",
+  "article": "north-macedonia/krushevo.html",
   "embed": {
     "pre": "  <!-- city map: prilep -->\n",
     "post": "  <!-- /city map: prilep -->\n"

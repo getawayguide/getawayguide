@@ -11,7 +11,7 @@
     "b": 130
   },
   "slug": "skopje-routes",
-  "page": "Drafts/Upcoming/north-macedonia/skopje.html",
+  "page": "north-macedonia/skopje.html",
   "legend": {
     "pos": "tr",
     "scale": 0.9,
@@ -161,7 +161,7 @@
       "anchor": "start",
       "dx": 12,
       "dy": 4,
-      "href": "../../../kosovo/field-notes.html#prishtina"
+      "href": "../kosovo/field-notes.html#prishtina"
     },
     {
       "n": 3,
@@ -172,7 +172,7 @@
       "anchor": "start",
       "dx": 12,
       "dy": 4,
-      "href": "../../../serbia/field-notes.html#belgrade"
+      "href": "../serbia/field-notes.html#belgrade"
     },
     {
       "n": 4,
@@ -193,7 +193,7 @@
       "anchor": "end",
       "dx": -12,
       "dy": 4,
-      "href": "../../../albania/field-notes.html#tirana"
+      "href": "../albania/field-notes.html#tirana"
     },
     {
       "n": 6,
@@ -204,7 +204,7 @@
       "anchor": "start",
       "dx": 12,
       "dy": 4,
-      "href": "../../../greece/thessaloniki.html"
+      "href": "../greece/thessaloniki.html"
     },
     {
       "n": 7,

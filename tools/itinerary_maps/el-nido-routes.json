@@ -1,0 +1,189 @@
+{
+  "slug": "el-nido-routes",
+  "page": "Drafts/Full Articles/philippines/el-nido.html",
+  "outline_file": "tools/itinerary_maps/geo/el-nido-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 720,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    118.25,
+    9.95,
+    121.15,
+    12.4
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "El Nido",
+      "lat": 11.18,
+      "lon": 119.3905,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "marker": "star",
+      "no_number": true
+    },
+    {
+      "n": 1,
+      "name": "Coron",
+      "lat": 11.9986,
+      "lon": 120.2052,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "coron.html",
+      "no_number": true
+    },
+    {
+      "n": 2,
+      "name": "Port Barton",
+      "lat": 10.4089,
+      "lon": 119.1652,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "port-barton.html",
+      "no_number": true
+    }
+  ],
+  "dots": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "sea": true,
+      "color": "#5E93A3",
+      "via": [
+        [
+          11.99,
+          120.204
+        ],
+        [
+          11.61,
+          120.041
+        ],
+        [
+          11.61,
+          119.561
+        ],
+        [
+          11.48,
+          119.429
+        ],
+        [
+          11.18,
+          119.378
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          11.13,
+          119.44
+        ],
+        [
+          11.0,
+          119.43
+        ],
+        [
+          10.885,
+          119.44
+        ],
+        [
+          10.838,
+          119.475
+        ],
+        [
+          10.78,
+          119.5
+        ],
+        [
+          10.701,
+          119.49
+        ],
+        [
+          10.587,
+          119.364
+        ],
+        [
+          10.45,
+          119.37
+        ],
+        [
+          10.382,
+          119.377
+        ],
+        [
+          10.316,
+          119.331
+        ],
+        [
+          10.322,
+          119.29
+        ],
+        [
+          10.345,
+          119.25
+        ],
+        [
+          10.36,
+          119.195
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Boat expedition",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Shared van",
+        "color": "#2D6B50"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Palawan",
+      "lat": 10.13,
+      "lon": 119.0,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "South China Sea",
+      "lat": 11.75,
+      "lon": 118.85,
+      "size": 10
+    },
+    {
+      "name": "Sulu Sea",
+      "lat": 10.6,
+      "lon": 120.55,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 415,
+    "crop_pad": 8
+  }
+}

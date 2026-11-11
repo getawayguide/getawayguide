@@ -1,0 +1,267 @@
+{
+  "slug": "bern-routes",
+  "page": "Drafts/Full Articles/switzerland/bern.html",
+  "outline_file": "tools/itinerary_maps/geo/bern-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1015.0,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    6.7,
+    46.4,
+    8.7,
+    47.3
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/bern-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/bern-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Bern",
+      "lat": 46.9485,
+      "lon": 7.4522,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Interlaken",
+      "lat": 46.6855,
+      "lon": 7.8585,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8,
+      "href": "interlaken.html"
+    },
+    {
+      "n": 2,
+      "name": "Lucerne",
+      "lat": 47.0521,
+      "lon": 8.3058,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "href": "lucerne.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Spiez",
+      "lat": 46.6919,
+      "lon": 7.6775,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 14
+    },
+    {
+      "name": "Thun",
+      "lat": 46.7583,
+      "lon": 7.6281,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 3
+    }
+  ],
+  "airports": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": "dot:Spiez",
+      "label": "",
+      "via": [
+        [
+          46.663,
+          7.845
+        ],
+        [
+          46.648,
+          7.81
+        ],
+        [
+          46.64,
+          7.77
+        ],
+        [
+          46.645,
+          7.74
+        ],
+        [
+          46.678,
+          7.69
+        ]
+      ]
+    },
+    {
+      "a": "dot:Spiez",
+      "b": "dot:Thun",
+      "label": "",
+      "via": [
+        [
+          46.7,
+          7.645
+        ],
+        [
+          46.74,
+          7.61
+        ]
+      ]
+    },
+    {
+      "a": "dot:Thun",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Switzerland",
+      "lat": 47.19,
+      "lon": 7.657,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "France",
+      "lat": 47.214,
+      "lon": 6.739,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Lake Thun",
+      "lat": 46.765,
+      "lon": 7.8,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 609.0,
+    "crop_bounds": [
+      6.7,
+      46.4,
+      8.7,
+      47.3
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 5
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -2
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Switzerland",
+        "lat": 46.437,
+        "lon": 7.475,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": [],
+    "dots": [],
+    "legs": [
+      {
+        "a": 1,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            46.663,
+            7.845
+          ],
+          [
+            46.648,
+            7.81
+          ],
+          [
+            46.64,
+            7.77
+          ],
+          [
+            46.645,
+            7.74
+          ],
+          [
+            46.678,
+            7.69
+          ],
+          [
+            46.6919,
+            7.6775
+          ],
+          [
+            46.7,
+            7.645
+          ],
+          [
+            46.74,
+            7.61
+          ],
+          [
+            46.7583,
+            7.6281
+          ]
+        ]
+      },
+      {
+        "a": 2,
+        "b": 0,
+        "label": ""
+      }
+    ]
+  }
+}

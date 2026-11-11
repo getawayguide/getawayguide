@@ -1,0 +1,154 @@
+{
+  "slug": "santorini-guide",
+  "kicker": "Greece",
+  "city": "Santorini",
+  "osm": ".tmp/santorini_osm.json",
+  "article": "Drafts/Full Articles/greece/santorini.html",
+  "embed": {
+    "pre": "<!-- city map: santorini-guide -->",
+    "post": "<!-- /city map: santorini-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.5327
+  },
+  "mobile": {
+    "pad": 2.2077,
+    "init_w": 0.9,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 36.428575,
+      "lon": 25.4209
+    }
+  },
+  "pois": [
+    {
+      "name": "Castle of Oia",
+      "cat": "see",
+      "match": "castle of oia",
+      "lat": 36.4614,
+      "lon": 25.3756,
+      "href": "https://www.google.com/maps/place/Castle+of+Oia/@36.4648609,25.3548155,14z/data=!4m15!1m8!3m7!1s0x1499cdce05e3bce9:0x9f4c192bbefa1db!2sFira+847+00,+Greece!3b1!8m2!3d36.4182677!4d25.4323206!16zL20vMDd3enF6!3m5!1s0x1499cb81660b8813:0x5aa16a50a5bb5623!8m2!3d36.4600133!4d25.3729387!16s%2Fg%2F11bt_kbj5q?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Karavolades Stairs",
+      "cat": "see",
+      "match": "karavolades stairs",
+      "lat": 36.418575,
+      "lon": 25.427877,
+      "href": "https://www.google.com/maps/place/Karavolades+Stairs/@36.4185754,25.425297,17z/data=!3m1!4b1!4m6!3m5!1s0x1499cd9b2928e9f3:0x1ca9d80621c105f0!8m2!3d36.4185754!4d25.4278773!16s%2Fg%2F11f8lxrhf1?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Panoramic View Fira",
+      "cat": "see",
+      "match": "panoramic view fira",
+      "lat": 36.418575,
+      "lon": 25.427877,
+      "href": "https://www.google.com/maps/place/Panoramic+View+Fira/@36.4205093,25.4264235,17z/data=!4m14!1m7!3m6!1s0x1499cd9b2928e9f3:0x1ca9d80621c105f0!2sKaravolades+Stairs!8m2!3d36.4185754!4d25.4278773!16s%2Fg%2F11f8lxrhf1!3m5!1s0x1499cd128c15cecd:0x5ce82bfccfb0e39d!8m2!3d36.4201075!4d25.4303526!16s%2Fg%2F11rckm01bs?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Three Bells of Fira",
+      "cat": "see",
+      "match": "three bells of fira",
+      "lat": 36.423326,
+      "lon": 25.428326,
+      "href": "https://www.google.com/maps/place/Three+Bells+of+Fira/@36.4205093,25.4186988,15z/data=!4m14!1m7!3m6!1s0x1499cd9b2928e9f3:0x1ca9d80621c105f0!2sKaravolades+Stairs!8m2!3d36.4185754!4d25.4278773!16s%2Fg%2F11f8lxrhf1!3m5!1s0x1499cb805271821f:0x569d87b03d71c07a!8m2!3d36.4233257!4d25.4283259!16s%2Fg%2F11g1j3w1r4?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Orthodox Metropolitan Cathedral",
+      "cat": "see",
+      "match": "orthodox metropolitan cathedral",
+      "lat": 36.416942,
+      "lon": 25.431696,
+      "href": "https://www.google.com/maps/place/Metropolitan+Church+of+the+Presentation+of+the+Lord/@36.4169422,25.4316957,17z/data=!3m1!4b1!4m6!3m5!1s0x1499cdd3d9b5065f:0x34430e2572f12a4e!8m2!3d36.4169422!4d25.4316957!16s%2Fg%2F11b7yptkl7?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Svoronos Bakery",
+      "cat": "eat",
+      "match": "svoronos bakery",
+      "lat": 36.419047,
+      "lon": 25.432097,
+      "href": "https://www.google.com/maps/place/Svoronos+Bakery/@36.4190468,25.4295164,17z/data=!3m2!4b1!5s0x1499cdd1f44d7411:0x2183d820c3328621!4m6!3m5!1s0x1499cdd1f4218f6d:0x46ea2fdb9118843f!8m2!3d36.4190468!4d25.4320967!16s%2Fg%2F11b86w41hs?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Taverna El Greco",
+      "cat": "eat",
+      "match": "taverna el greco",
+      "lat": 36.41824,
+      "lon": 25.432758,
+      "href": "https://www.google.com/maps/place/Taverna+El+Greco/@36.4182404,25.430178,17z/data=!3m1!4b1!4m6!3m5!1s0x1499cdd193feda5f:0x330862812af443d8!8m2!3d36.4182404!4d25.4327583!16s%2Fg%2F11bwn56lh8?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Vero Latte Gelato Santorini",
+      "cat": "eat",
+      "match": "vero latte gelato sant",
+      "lat": 36.419686,
+      "lon": 25.431148,
+      "href": "https://www.google.com/maps/place/Vero+Latte+Gelato+Santorini/@36.4196864,25.4285679,17z/data=!3m1!4b1!4m6!3m5!1s0x1499cde5f6044a73:0xde069a8c8aed7020!8m2!3d36.4196864!4d25.4311482!16s%2Fg%2F11kqf19pmg?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Zafora Bar",
+      "cat": "eat",
+      "match": "zafora bar",
+      "lat": 36.420184,
+      "lon": 25.430432,
+      "href": "https://www.google.com/maps/place/Zafora/@36.3892258,25.3733055,13z/data=!4m10!1m2!2m1!1sZafora+Bar+santorini!3m6!1s0x1499cdd274a93ab1:0x81a80ccf908265e3!8m2!3d36.4201841!4d25.430432!15sChRaYWZvcmEgQmFyIHNhbnRvcmluaVoWIhR6YWZvcmEgYmFyIHNhbnRvcmluaZIBEGdyZWVrX3Jlc3RhdXJhbnSaAURDaTlEUVVsUlFVTnZaRU5vZEhsalJqbHZUMjFXU0ZadE5WbGpNMFl4VVc1YU1FNUdSbnBpVnpsSVVXdHdRMVpzUlJBQuABAPoBBAgAEDY!16s%2Fg%2F11bw68c4mh?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Fira Backpackers Place",
+      "cat": "stay",
+      "match": "fira backpackers p",
+      "lat": 36.4173922,
+      "lon": 25.4349181,
+      "href": "https://www.google.com/maps/place/Fira+Backpackers+Place/@36.4173338,25.4348053,17z/data=!4m9!3m8!1s0x1499cdd1aca3357d:0xa72a02a21f997739!5m2!4m1!1i2!8m2!3d36.4173338!4d25.4348053!16s%2Fg%2F11c3kcc4j2?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "sea_bg": true,
+  "district_labels": [
+    {
+      "text": "FIRA",
+      "lat": 36.415,
+      "lon": 25.448,
+      "fixed": true
+    },
+    {
+      "text": "OIA",
+      "lat": 36.4605,
+      "lon": 25.395,
+      "fixed": true
+    },
+    {
+      "text": "FIROSTEFANI",
+      "lat": 36.43,
+      "lon": 25.4625,
+      "fixed": true
+    }
+  ],
+  "activities": [
+    {
+      "name": "Caldera Boat Tour",
+      "time": "Half Day",
+      "href": "https://www.getyourguide.com/santorini-l753/santorini-port-3-hour-cruise-to-volcano-and-hot-springs-t688760/"
+    }
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.44409447226576104,
+      0.6830989365375478,
+      132189.78894046886
+    ],
+    "mobile": [
+      0.4436784038202265,
+      0.6835466175745095,
+      189062.13999625196
+    ]
+  },
+  "center": {
+    "lat": 36.407934,
+    "lon": 25.444739
+  }
+}

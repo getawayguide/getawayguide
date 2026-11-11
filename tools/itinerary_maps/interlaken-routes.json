@@ -1,0 +1,484 @@
+{
+  "slug": "interlaken-routes",
+  "page": "Drafts/Full Articles/switzerland/interlaken.html",
+  "outline_file": "tools/itinerary_maps/geo/interlaken-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 815.6,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    5.75,
+    45.95,
+    9.05,
+    47.8
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/interlaken-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/interlaken-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Interlaken",
+      "lat": 46.6855,
+      "lon": 7.8585,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Bern",
+      "lat": 46.9485,
+      "lon": 7.4522,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "bern.html"
+    },
+    {
+      "n": 2,
+      "name": "Basel",
+      "lat": 47.5581,
+      "lon": 7.5878,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4
+    },
+    {
+      "n": 3,
+      "name": "Zurich (ZRH)",
+      "lat": 47.3744,
+      "lon": 8.541,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 5
+    },
+    {
+      "n": 4,
+      "name": "Geneva (GVA)",
+      "lat": 46.2018,
+      "lon": 6.1466,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 12
+    }
+  ],
+  "dots": [
+    {
+      "name": "Olten",
+      "lat": 47.3497,
+      "lon": 7.9038,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Thun",
+      "lat": 46.7583,
+      "lon": 7.6281,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 1
+    },
+    {
+      "name": "Spiez",
+      "lat": 46.6919,
+      "lon": 7.6775,
+      "anchor": "end",
+      "dx": -9,
+      "dy": 14
+    },
+    {
+      "name": "Lauterbrunnen",
+      "lat": 46.5939,
+      "lon": 7.9078,
+      "anchor": "start",
+      "dx": 6,
+      "dy": 14
+    },
+    {
+      "name": "Grindelwald",
+      "lat": 46.6243,
+      "lon": 8.0367,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 6
+    }
+  ],
+  "airports": [
+    {
+      "name": "EuroAirport",
+      "lat": 47.5989,
+      "lon": 7.5293,
+      "anchor": "end",
+      "dx": -12,
+      "dy": -2,
+      "icon_dx": -2,
+      "icon_dy": -13
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": "dot:Olten",
+      "label": ""
+    },
+    {
+      "a": "dot:Olten",
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": "dot:Thun",
+      "label": ""
+    },
+    {
+      "a": "dot:Thun",
+      "b": "dot:Spiez",
+      "label": "",
+      "via": [
+        [
+          46.74,
+          7.61
+        ],
+        [
+          46.7,
+          7.645
+        ]
+      ]
+    },
+    {
+      "a": "dot:Spiez",
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          46.678,
+          7.69
+        ],
+        [
+          46.645,
+          7.74
+        ],
+        [
+          46.64,
+          7.77
+        ],
+        [
+          46.648,
+          7.81
+        ],
+        [
+          46.663,
+          7.845
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          46.76,
+          7.92
+        ],
+        [
+          46.715,
+          7.875
+        ]
+      ]
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          46.29,
+          6.13
+        ],
+        [
+          46.42,
+          6.25
+        ],
+        [
+          46.55,
+          6.6
+        ],
+        [
+          46.56,
+          7.1
+        ],
+        [
+          46.55,
+          7.55
+        ],
+        [
+          46.62,
+          7.79
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": "dot:Lauterbrunnen",
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": 0,
+      "b": "dot:Grindelwald",
+      "label": "",
+      "color": "#1C2821"
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Mountain railway",
+        "color": "#1C2821"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Switzerland",
+      "lat": 46.329,
+      "lon": 7.511,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "France",
+      "lat": 47.292,
+      "lon": 6.119,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Germany",
+      "lat": 47.768,
+      "lon": 7.99,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Italy",
+      "lat": 45.972,
+      "lon": 8.352,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [],
+  "mobile": {
+    "country_width": 489.4,
+    "crop_bounds": [
+      5.75,
+      45.95,
+      9.05,
+      47.8
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -4
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -2
+      },
+      "3": {
+        "name": "Zurich",
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      },
+      "4": {
+        "name": "Geneva",
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Switzerland",
+        "lat": 46.231,
+        "lon": 7.454,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "France",
+        "lat": 47.325,
+        "lon": 6.102,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Italy",
+        "lat": 45.929,
+        "lon": 8.388,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "dots": [],
+    "airports": [],
+    "legend": {
+      "pos": "tl",
+      "scale": 0.9,
+      "items": [
+        {
+          "label": "Train"
+        }
+      ]
+    },
+    "legs": [
+      {
+        "a": 2,
+        "b": 1,
+        "label": ""
+      },
+      {
+        "a": 1,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            46.7583,
+            7.6281
+          ],
+          [
+            46.74,
+            7.61
+          ],
+          [
+            46.7,
+            7.645
+          ],
+          [
+            46.6919,
+            7.6775
+          ],
+          [
+            46.678,
+            7.69
+          ],
+          [
+            46.645,
+            7.74
+          ],
+          [
+            46.64,
+            7.77
+          ],
+          [
+            46.648,
+            7.81
+          ],
+          [
+            46.663,
+            7.845
+          ]
+        ]
+      },
+      {
+        "a": 3,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            46.76,
+            7.92
+          ],
+          [
+            46.715,
+            7.875
+          ]
+        ]
+      },
+      {
+        "a": 4,
+        "b": 0,
+        "label": "",
+        "via": [
+          [
+            46.29,
+            6.13
+          ],
+          [
+            46.42,
+            6.25
+          ],
+          [
+            46.55,
+            6.6
+          ],
+          [
+            46.56,
+            7.1
+          ],
+          [
+            46.55,
+            7.55
+          ],
+          [
+            46.62,
+            7.79
+          ]
+        ]
+      }
+    ]
+  }
+}

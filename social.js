@@ -28,9 +28,10 @@
   };
   // the two output types: the page mode each one is, and the views its sub-tab bar offers (maker views open the iframe)
   const TYPES = {
-    personal: { label: 'Personal post', mode: 'free', hint: 'Your own Instagram: any 10 photos, cropped and captioned',
-                views: [['all', 'Photos'], ['shortlist', 'Shortlist'], ['final', 'Slots'], ['archived', 'Archived'], ['caption', 'Caption'], ['renders', 'Post'], ['stories', 'Stories']],
-                maker: ['all', 'shortlist', 'final', 'archived', 'caption'], home: 'all' },
+    // Kevin, 2026-11-11: "remove the Shortlist: the slots are the shortlist", so the slots view is called Shortlist
+    personal: { label: 'Personal post', mode: 'free', hint: 'Your own Instagram: up to 20 photos, cropped and captioned',
+                views: [['all', 'Photos'], ['final', 'Shortlist'], ['archived', 'Archived'], ['caption', 'Caption'], ['renders', 'Post'], ['stories', 'Stories']],
+                maker: ['all', 'final', 'archived', 'caption'], home: 'all' },
     blog: { label: 'Travel Blog post', mode: 'template', hint: 'The branded itinerary carousel: cover, route map, a slide per stop, call to action',
             views: [['layout', 'Layout'], ['slides', 'Slides'], ['stories', 'Stories'], ['pins', 'Pins']], maker: ['layout'], home: 'layout' }
   };
@@ -38,7 +39,11 @@
   const S = { root: null, state: 'loading', error: '', countries: [], slug: store.get('country', ''), type: typeOf(store.get('type', 'personal')),
               views: { personal: store.get('view:personal', 'all'), blog: store.get('view:blog', 'layout') }, article: { personal: '', blog: '' },
               renders: null, rendersFor: null, job: null, light: null, loadedAt: 0, busy: false, pg: null, pgFor: null, synced: false };
+  if (S.views.personal === 'shortlist') S.views.personal = 'final';           // the old Shortlist view (2026-11-11)
   for (const t of Object.keys(TYPES)) if (!TYPES[t].views.some(v => v[0] === S.views[t])) S.views[t] = TYPES[t].home;
+  // the feed ratios Instagram takes: Meta's publishing docs allow 4:5 to 1.91:1, and since May 2025 the app takes 3:4 too
+  const RATIOS = [['4:5', 'Portrait, 1080 × 1350'], ['3:4', 'Tall portrait, 1080 × 1440: the profile grid’s own shape'], ['1:1', 'Square, 1080 × 1080'], ['1.91:1', 'Landscape, 1080 × 565']];
+  const arCss = a => ({ '4:5': '4/5', '3:4': '3/4', '1:1': '1/1', '1.91:1': '1.91/1' }[a] || '4/5');
 
   // ------------------------------------------------------------------ look (the Launch and Queue tabs' language, one type scale)
   const css = document.createElement('style');
@@ -103,14 +108,17 @@
   .so-body.scroll{overflow:auto;display:block}
   .so-panel{padding:18px 18px 24px} .so-panel[hidden]{display:none}
   .so-frame{flex:1;width:100%;height:100%;border:0;display:block;background:#fff} .so-frame[hidden]{display:none}
+  /* the maker fills the window while its preview or crop editor is open (the page asks with {ig:1, event:'full'}) */
+  .so-frame.full{position:fixed;inset:0;width:100vw;height:100vh;z-index:150;background:#000}
+  .so-seg.sm{padding:2px;margin:0}.so-seg.sm button{padding:6px 9px;font-size:12px;font-variant-numeric:tabular-nums}
   .so-group{font:600 11px/1 'Hanken Grotesk',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--so-faint);margin:0 0 10px;display:flex;align-items:center;gap:8px}
   .so-group .n{background:#EFEFE9;border-radius:999px;padding:2px 6px;letter-spacing:0;color:var(--so-mute)}
-  .so-group .hint{font:400 12px/1 'Hanken Grotesk',sans-serif;letter-spacing:0;text-transform:none;color:var(--so-mute)}
+  .so-group .hint{display:none}   /* Kevin, 2026-11-11: "hide the descriptions from social" (the sizes live in the tooltips) */
   .so-group+.so-group,.so-cap+.so-group,.so-grid+.so-group,.so-strip+.so-group{margin-top:26px}
   .so-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:0 0 14px}
   .so-grid.pins{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
   .so-thumb{position:relative;border-radius:8px;overflow:hidden;background:#EFEFE9;aspect-ratio:4/5;cursor:zoom-in;border:1px solid var(--so-line);padding:0;display:block;width:100%}
-  .so-grid.pins .so-thumb{aspect-ratio:2/3}
+  .so-grid.pins .so-thumb{aspect-ratio:2/3} .so-grid.f .so-thumb{aspect-ratio:var(--so-ar,4/5)}
   .so-thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .so-thumb .k{position:absolute;left:6px;bottom:6px;font:600 10px/1 'Hanken Grotesk',sans-serif;background:rgba(255,255,255,.92);color:var(--so-ink);border-radius:999px;padding:4px 7px;letter-spacing:.04em;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-sizing:border-box}
   .so-thumb:focus-visible{outline:2px solid var(--so-green);outline-offset:2px}
@@ -133,16 +141,42 @@
   #so-light .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:52px;box-sizing:border-box}
   #so-light .ttl{font-weight:600;font-size:.9rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #so-light .pos{font-size:.72rem;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums}
-  #so-light .x,#so-light .nav{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;flex:none}
-  #so-light .x:hover,#so-light .nav:hover{background:rgba(255,255,255,.16)} #so-light .nav[disabled]{opacity:.3;cursor:default}
+  #so-light .x{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;flex:none}
+  #so-light .x:hover{background:rgba(255,255,255,.16)}
   #so-light svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  #so-light .stage{position:relative;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 64px 20px}
+  #so-light .stage{position:relative;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 84px 20px}
   #so-light .stage img{max-width:100%;max-height:100%;display:block;box-shadow:0 10px 40px rgba(0,0,0,.4);background:#fff}
   #so-light .stage img.story{border-radius:24px}
-  #so-light .nav.l,#so-light .nav.r{position:absolute;top:50%;transform:translateY(-50%)} #so-light .nav.l{left:12px} #so-light .nav.r{right:12px}
+  /* previous / next: the photo library's big side arrows (editor.html #light .nav), against the screen edges */
+  #so-light .nav{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:82px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;font:400 1.5rem/1 'Hanken Grotesk',sans-serif;border-radius:6px;padding:0;user-select:none}
+  #so-light .nav:hover{background:rgba(255,255,255,.22)} #so-light .nav[disabled]{opacity:.2;cursor:default} #so-light .nav.l{left:16px} #so-light .nav.r{right:16px}
+  /* the photo library picker (Add photos): hangs off <body> like the lightbox, so no --so- variables */
+  #so-lib{position:fixed;inset:0;z-index:120;background:rgba(20,26,22,.55);display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Hanken Grotesk',sans-serif;color:#1C2821;font-size:13px}
+  #so-lib[hidden]{display:none}
+  #so-lib .box{background:#fff;border-radius:12px;width:min(1180px,100%);height:min(860px,100%);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  #so-lib .hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #E7E6DF;flex-wrap:wrap}
+  #so-lib h2{font:400 1.35rem/1.1 'Newsreader',Georgia,serif;margin:0 6px 0 0}
+  #so-lib select{height:30px;padding:0 26px 0 9px;border:1px solid rgba(28,40,33,.16);border-radius:6px;background:#fff;color:#1C2821;font:400 12.5px/1 'Hanken Grotesk',sans-serif;max-width:min(320px,60vw)}
+  #so-lib .chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:#4f5c54;cursor:pointer}
+  #so-lib .sp{flex:1}
+  #so-lib .grid{overflow:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-content:start}
+  #so-lib .t{position:relative;border:0;padding:0;border-radius:8px;overflow:hidden;background:#EFEFE9;aspect-ratio:1/1;cursor:pointer;outline:2px solid transparent;outline-offset:-2px}
+  #so-lib .t img{width:100%;height:100%;object-fit:cover;display:block}
+  #so-lib .t.on{outline-color:#2D6B50;box-shadow:0 0 0 3px #E8F1EC}
+  #so-lib .t.on::after{content:'';position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:#2D6B50 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center/13px no-repeat}
+  #so-lib .t.in{opacity:.35;cursor:default}
+  #so-lib .t.pk::before{content:'';position:absolute;left:7px;top:7px;width:8px;height:8px;border-radius:50%;background:#E0A93B;box-shadow:0 0 0 2px #fff}
+  #so-lib .ft{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #E7E6DF}
+  #so-lib .msg{color:#6b7670;font-size:12.5px;padding:30px 0;grid-column:1/-1;text-align:center}
+  #so-lib .btn{font:600 .62rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:999px;padding:.62rem 1rem;border:1px solid #E7E6DF;background:#fff;color:#1C2821;min-height:34px}
+  #so-lib .btn.primary{background:#2D6B50;border-color:#2D6B50;color:#fff} #so-lib .btn[disabled]{opacity:.55;cursor:default}
+  @media (max-width:700px){#so-lib{padding:0}#so-lib .box{border-radius:0;height:100%}#so-lib .grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:10px}}
   @media (max-width:700px){.so-wrap{padding:12px 12px 0}.so-country{font-size:1.5rem}.so-meta{display:none}.so-top{gap:10px 12px}.so-seg{order:5;width:100%;justify-content:stretch}.so-seg button{flex:1;text-align:center}
-    .so-btn.art span{display:none}.so-btn.art{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%}.so-tabs .acts{margin-left:0;width:100%;justify-content:flex-start}.so-body{margin-bottom:12px}
-    .so-grid{grid-template-columns:repeat(2,1fr)}.so-grid.pins{grid-template-columns:repeat(2,1fr)}.so-strip .so-thumb{width:140px}#so-light .stage{padding:0 8px 8px}#so-light .nav.l,#so-light .nav.r{display:none}}
+    .so-seg.sm{order:0;width:auto}.so-seg.sm button{flex:none;padding:6px 8px}
+    .so-btn.art span,.so-tabs .acts .so-btn span{display:none}.so-btn.art{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%}.so-tabs .acts{margin-left:0;width:100%;justify-content:flex-start}.so-body{margin-bottom:12px}
+    .so-grid{grid-template-columns:repeat(2,1fr)}.so-grid.pins{grid-template-columns:repeat(2,1fr)}.so-strip .so-thumb{width:140px}#so-light .stage{padding:0 40px 8px}
+    #so-light .nav{width:34px;height:60px}#so-light .nav.l{left:3px}#so-light .nav.r{right:3px}}
   `;
   document.head.appendChild(css);
 
@@ -151,9 +185,10 @@
     left: '<svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>', right: '<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
     copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
     down: '<svg viewBox="0 0 24 24"><path d="M12 3v13M6 10l6 6 6-6M4 21h16"/></svg>', refresh: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>',
-    inbox: '<svg viewBox="0 0 24 24"><path d="M3 13h5l2 3h4l2-3h5"/><path d="M5 5h14l2 8v6H3v-6z"/></svg>'
+    plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+    eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'
   };
-  const SHORTCUTS = 'Keyboard shortcuts in the maker\nS  shortlist\nA  archive\n1–0  slide 1–10\nShift+1–0  backlog 11–20\nAlt+1–0  backlog 21–30\nEnter  crop\n[ ]  move';
+  const SHORTCUTS = 'Keyboard shortcuts\nArrows  move around the grid\nShift+arrows  move the photo\n1–0  into slide 1–10\nS  into the Shortlist (again: out)\nDelete  out of its slot\nA  archive\nEnter  edit (crop and tilt)\nP or Space  preview\nEsc  close';
 
   // ------------------------------------------------------------------ api
   async function api(path, body) {
@@ -208,12 +243,6 @@
       else { render(); toast(S.job.status === 'done' ? 'Rendered.' : 'The render failed; the log is below.', S.job.status !== 'done'); loadRenders(); load(true); }
     }, 1500);
   }
-  async function importExport() {
-    const dir = prompt('Folder of an ArtifactData export (under .tmp), e.g. .tmp/ig/' + S.slug + '/state-export');
-    if (!dir) return;
-    try { const j = await api('/api/social/' + encodeURIComponent(S.slug) + '/import', { dir }); toast(j.copied + ' document' + (j.copied === 1 ? '' : 's') + ' imported.'); remakeFrame(); }
-    catch (e) { toast(e.message, true); }
-  }
   async function seed() {
     if (S.busy) return; S.busy = true; render();
     try { await api('/api/social/' + encodeURIComponent(S.slug) + '/seed', {}); toast('Plan seeded from tools/ig_carousel/' + S.slug + '.json.'); remakeFrame(); }
@@ -234,6 +263,7 @@
   function onMessage(e) {
     const f = frameEl(); if (!f || e.source !== f.contentWindow || !e.data || e.data.ig !== 1) return;
     const m = e.data; const c = cur(); if (!c) return;
+    if (m.event === 'full') { f.classList.toggle('full', !!m.on); if (m.on) { try { f.focus(); } catch (x) {} } return; }   // the preview or the crop editor takes the window
     S.pg = m; S.pgFor = c.slug;
     if (m.mode !== TYPES[S.type].mode) { sync(); return; }           // the page woke up in the other mode (or the handshake was lost): tell it again
     // the page moved itself (Ready jumps to Caption): the tab's sub-tab follows, but only once the tab has had its say
@@ -242,7 +272,16 @@
   }
   window.addEventListener('message', onMessage);
   function frameLoaded(f) { S.synced = true; sync(); }
-  function sendReady() { const f = frameEl(); if (f && f.contentWindow) f.contentWindow.postMessage({ so: 1, cmd: 'ready' }, '*'); }
+  function send(msg) { const f = frameEl(); if (f && f.contentWindow) f.contentWindow.postMessage(Object.assign({ so: 1 }, msg), '*'); }
+  // Render (Kevin, 2026-11-11: "Ready to render becomes Render"): the post is marked ready and rendered in one go, and
+  // the tab moves to what it renders into (Post for the Personal post, Slides for the Travel Blog post)
+  function renderNow() {
+    if (S.busy) return;
+    send({ cmd: 'markready' });
+    const blog = S.type === 'blog';
+    setTimeout(() => { startRender(blog ? 'carousel' : 'free'); setView(blog ? 'slides' : 'renders'); }, 400);   // the ready write lands first
+  }
+  function openPreview() { const f = frameEl(); send({ cmd: 'preview' }); if (f) try { f.focus(); } catch (e) {} }
 
   // ------------------------------------------------------------------ render
   const root = () => S.root || $('#social-root');
@@ -269,7 +308,8 @@
     const pg = S.pgFor === c.slug && S.pg && S.pg.mode === T.mode ? S.pg : null, k = (pg && pg.counts) || {};
     const cnt = { carousel: rd ? rd.carousel.length : c.renders.carousel, free: rd ? rd.free.length : c.renders.free, pins: rd ? rd.pins.length : c.renders.pins,
                   sc: rd ? rd.stories_carousel.length : (c.renders.stories_carousel || 0), sf: rd ? rd.stories_free.length : (c.renders.stories_free || 0) };
-    const badge = id => id === 'all' ? n(k.all) : id === 'shortlist' ? n(k.shortlist) : id === 'final' ? (pg ? `<span class="n ${k.final === 10 ? 'full' : ''}">${k.final}/10${k.backlog ? ' +' + k.backlog : ''}</span>` : '')
+    const nfin = k.nfinal || 10;
+    const badge = id => id === 'all' ? n(k.all) : id === 'final' ? (pg ? `<span class="n ${k.final === nfin ? 'full' : ''}">${k.final}/${nfin}${k.shortlist ? ' +' + k.shortlist : ''}</span>` : '')
       : id === 'archived' ? n(k.archived) : id === 'layout' ? (pg && pg.hasPlan ? `<span class="n ${k.placed === k.boxes ? 'full' : ''}">${k.slides}</span>` : '') : id === 'renders' ? n(cnt.free) : id === 'slides' ? n(cnt.carousel)
       : id === 'stories' ? n(S.type === 'blog' ? cnt.sc : cnt.sf) : id === 'pins' ? n(cnt.pins) : '';
     const tabs = T.views.map(([id, label], i) => (i && T.maker.includes(T.views[i - 1][0]) && !T.maker.includes(id) ? '<span class="sep" aria-hidden="true"></span>' : '')
@@ -280,18 +320,23 @@
     const rbtn = (kind, label, ok, why, primary) => `<button class="so-btn sm ${primary ? 'primary' : ''}" data-act="render" data-kind="${kind}" ${off || !ok ? 'disabled' : ''} title="${esc(ok ? why : why)}">${label}</button>`;
     let acts = '';
     if (isMaker()) {
-      const filter = ['all', 'shortlist', 'archived', 'layout'].includes(v) && pg && pg.articles && pg.articles.length > 1
+      const filter = ['all', 'archived', 'layout'].includes(v) && pg && pg.articles && pg.articles.length > 1
         ? `<select class="so-sel ${S.article[S.type] ? 'has' : ''}" data-act="article" aria-label="Filter by article"><option value="">Every article</option>${pg.articles.map(a => `<option value="${esc(a.k)}" ${a.k === S.article[S.type] ? 'selected' : ''}>${esc(a.v)}</option>`).join('')}</select>` : '';
-      const help = S.type === 'personal' ? `<button class="so-ib sm" type="button" data-act="help" title="${esc(SHORTCUTS)}" aria-label="Keyboard shortcuts">?</button>` : '';
+      const personal = S.type === 'personal';
+      const help = personal ? `<button class="so-ib sm" type="button" data-act="help" title="${esc(SHORTCUTS)}" aria-label="Keyboard shortcuts">?</button>` : '';
+      // the post's ratio, one for every slide (Instagram shows a carousel at one ratio); the crop editor has it too
+      const ratio = personal && pg && v !== 'caption' ? `<div class="so-seg sm" role="group" aria-label="Aspect ratio">${RATIOS.map(([r, tip]) => `<button type="button" class="${pg.aspect === r ? 'on' : ''}" data-act="aspect" data-aspect="${r}" aria-pressed="${pg.aspect === r}" title="${esc(tip)}">${r}</button>`).join('')}</div>` : '';
+      const add = personal && v === 'all' ? `<button class="so-btn sm" data-act="library" title="Add photos to this country from the photo library">${I.plus}<span>Add photos</span></button>` : '';
+      const prev = personal && pg && v !== 'caption' ? `<button class="so-btn sm" data-act="preview" title="${v === 'final' ? 'The slides, big, on black (P)' : 'These photos, big, on black (P)'}">${I.eye}<span>Preview</span></button>` : '';
       const seedBtn = S.type === 'blog' && c.has_seed && !hasPlan ? `<button class="so-btn sm" data-act="seed" ${S.busy ? 'disabled' : ''} title="Build the itinerary plan from tools/ig_carousel/${esc(c.slug)}.json">Seed plan</button>` : '';
-      const ready = pg ? pg.ready : false;
-      const readyBtn = pg && (S.type === 'personal' || hasPlan) ? `<button class="so-btn sm ${ready ? '' : 'primary'}" data-act="ready" title="${ready ? 'Back to a draft' : 'Mark this post final: the render reads the final state'}">${ready ? 'Back to draft' : 'Ready to render'}</button>` : '';
-      acts = `${jobLine}${filter}${help}${pg ? `<span class="so-pill ${ready ? 'live' : ''}">${ready ? 'Ready' : 'Draft'}</span>` : ''}${seedBtn}${readyBtn}`;
-    } else if (v === 'renders') acts = `${jobLine}${rbtn('free', 'Render the post', true, 'Render slots 1–10 from the originals at 1080 px (tools/ig_post.py)', true)}`;
+      const canRender = pg && (personal ? k.final > 0 : hasPlan);
+      const renderBtn = pg && (personal || hasPlan) ? `<button class="so-btn sm primary" data-act="rendernow" ${off || !canRender ? 'disabled' : ''} title="${personal ? (k.final ? 'Render the Final row at 1080 px from the originals' : 'Put a photo in the Final row first') : 'Render the carousel at 1080 × 1350'}">Render</button>` : '';
+      acts = `${jobLine}${filter}${ratio}${add}${prev}${help}${seedBtn}${renderBtn}`;
+    } else if (v === 'renders') acts = `${jobLine}${rbtn('free', 'Render the post', true, 'Render the Final row from the originals at 1080 px (tools/ig_post.py)', true)}`;
     else if (v === 'slides') acts = `${jobLine}${rbtn('carousel', 'Render the carousel', hasPlan, hasPlan ? 'Render the slides at 1080 × 1350 from the originals (tools/ig_carousel.py)' : 'No plan yet: seed one or lay it out in Layout', true)}`;
     else if (v === 'stories') acts = S.type === 'blog'
       ? `${jobLine}${rbtn('stories-carousel', 'Render stories', hasPlan, hasPlan ? 'Story frames at 1080 × 1920: cover, route map, one per stop, call to action (tools/ig_story.py)' : 'No plan yet: seed one or lay it out in Layout', true)}`
-      : `${jobLine}${rbtn('stories-free', 'Render stories', true, 'One 1080 × 1920 frame per slot 1–10, the slot note as the line (tools/ig_story.py)', true)}`;
+      : `${jobLine}${rbtn('stories-free', 'Render stories', true, 'One 1080 × 1920 frame per slide of the Final row, its note as the line (tools/ig_story.py)', true)}`;
     else if (v === 'pins') acts = `${jobLine}${rbtn('pins', 'Render pins', c.has_seed, c.has_seed ? 'Render the Pinterest pins listed in tools/ig_carousel/' + esc(c.slug) + '.json' : 'No seed file with a pins list', true)}`;
     // the chrome re-draws; the Maker's iframe stays put (re-made only for another country), or its page would reload
     let wrap = r.querySelector('.so-wrap');
@@ -301,10 +346,10 @@
         <div class="so-meta">${c.photos} photos · ${c.pages} article${c.pages === 1 ? '' : 's'}${c.drafts ? ' (drafts)' : ''}</div>
         <div class="so-seg" role="group" aria-label="Output type">${Object.keys(TYPES).map(t => `<button type="button" class="${S.type === t ? 'on' : ''}" data-act="type" data-type="${t}" aria-pressed="${S.type === t}" title="${esc(TYPES[t].hint)}">${TYPES[t].label}</button>`).join('')}</div>
         <span class="so-spacer"></span>
-        ${c.artifact ? `<a class="so-btn art" href="${esc(c.artifact)}" target="_blank" rel="noopener" title="The claude.ai artifact for ${esc(c.country)} (its own store)">${I.ext}<span>claude.ai</span></a>` : ''}
-        <a class="so-ib" href="${esc(API + '/social/' + encodeURIComponent(c.slug) + '/page')}" target="_blank" rel="noopener" title="The maker in its own window" aria-label="Open in a window">${I.ext}</a>
-        <button class="so-ib" data-act="import" title="Import an ArtifactData export into this store" aria-label="Import">${I.inbox}</button>
-        <button class="so-ib" data-act="reload" title="Reload" aria-label="Reload">${I.refresh}</button>`;
+        ${c.artifact ? `<a class="so-btn art" href="${esc(c.artifact)}" target="_blank" rel="noopener" title="The claude.ai artifact for ${esc(c.country)} (its own store)">${I.ext}<span>claude.ai</span></a>` : ''}`;
+    // (Kevin, 2026-11-11: "remove these buttons": open-in-a-window, import and reload are gone from the top. The maker
+    // still opens alone at /social/<slug>/page, an ArtifactData export still imports with POST /api/social/<slug>/import
+    // (Claude's job), and the tab reloads its list by itself when it is shown after 30 s.)
     wrap.querySelector('.so-tabs').innerHTML = `${tabs}<span class="acts">${acts}</span>`;
     const body = wrap.querySelector('.so-body');
     body.classList.toggle('scroll', !isMaker());
@@ -333,9 +378,10 @@
   const slideKey = f => f.name.replace(/\.png$/, '').replace(/^\d+-/, '');
   function renderFree(c, rd, job) {
     if (!rd) return '<div class="so-empty">Loading…</div>';
-    let h = failLog(job) + `<div class="so-group">The post <span class="n">${rd.free.length}</span><span class="hint">1080 px, slides 1–10 · also in Pictures\\IG\\${esc(c.slug)}</span></div>`;
-    h += rd.free.length ? thumbs(rd.free, 'f', (f, i) => i + 1) + capBox((rd.free_caption || '').trim() + (rd.free_notes ? '\n\n' + rd.free_notes.trim() : ''), 'so-cap-f')
-      : '<div class="so-empty">No render yet. Fill slots 1–10 in Slots, mark it ready, then Render the post.</div>';
+    let h = failLog(job) + `<div class="so-group" title="1080 px wide · also in Pictures\\IG\\${esc(c.slug)}">The post <span class="n">${rd.free.length}</span></div>`;
+    const ar = S.pg && S.pgFor === c.slug && S.pg.aspect ? S.pg.aspect : '4:5';
+    h += rd.free.length ? thumbs(rd.free, 'f', (f, i) => i + 1).replace('<div class="so-grid f', `<div style="--so-ar:${arCss(ar)}" class="so-grid f`) + capBox((rd.free_caption || '').trim() + (rd.free_notes ? '\n\n' + rd.free_notes.trim() : ''), 'so-cap-f')
+      : '<div class="so-empty">No render yet. Fill the Final row in Shortlist, then press Render.</div>';
     return h;
   }
   function renderSlides(c, rd, job) {
@@ -351,7 +397,7 @@
     let h = failLog(job) + `<div class="so-group">Stories <span class="n">${list.length}</span><span class="hint">1080 × 1920 · the top 250 px and bottom 340 px are left to Instagram's UI</span></div>`;
     h += list.length ? thumbs(list, blog ? 'sc' : 'sf', slideKey, true)
       : `<div class="so-empty">${blog ? 'No story frames yet. Render stories above: the cover, the route map, one frame per stop and the call to action, from the same plan as the carousel.'
-                                       : 'No story frames yet. Fill slots 1–10 in Slots (a slot note becomes the line on its frame), then Render stories above.'}</div>`;
+                                       : 'No story frames yet. Fill the Final row in Shortlist (a slide’s note becomes its line), then Render stories above.'}</div>`;
     return h;
   }
   function renderPins(c, rd, job) {
@@ -385,9 +431,76 @@
     v.innerHTML = `<div class="bar"><button class="x" data-act="close" title="Close (Esc)" aria-label="Close">${I.x}</button><span class="ttl">${esc(f.name)}${story ? ' · story 1080 × 1920' : ''}</span><span class="pos">${S.light.i + 1} / ${list.length}</span>
         <a class="x" href="${esc(API + f.url)}" download="${esc(f.name)}" title="Save the file" aria-label="Save">${I.down}</a></div>
       <div class="stage"><img class="${story ? 'story' : ''}" src="${esc(API + f.url)}?t=${Math.round(f.mtime)}" alt="${esc(f.name)}">
-        <button class="nav l" data-act="prev" title="Previous (←)" aria-label="Previous" ${S.light.i === 0 ? 'disabled' : ''}>${I.left}</button>
-        <button class="nav r" data-act="next" title="Next (→)" aria-label="Next" ${S.light.i >= list.length - 1 ? 'disabled' : ''}>${I.right}</button></div>`;
+        <button class="nav l" data-act="prev" title="Previous (←)" aria-label="Previous" ${S.light.i === 0 ? 'disabled' : ''}>&#8249;</button>
+        <button class="nav r" data-act="next" title="Next (→)" aria-label="Next" ${S.light.i >= list.length - 1 ? 'disabled' : ''}>&#8250;</button></div>`;
   }
+
+  // ------------------------------------------------------------------ add photos from the photo library
+  // Kevin, 2026-11-11: "let me add more photos to the Photos tab from the photo library". The albums come from the
+  // Library app's own routes on the photo server (/api/albums, /api/backup_browse, /bthumb); the picked photos go
+  // through POST /api/social/<slug>/add, which makes their web copies and manifest entries (tools/social_tab.py), and
+  // the maker picks them up on its next poll. Its "article" filter lists them as "Photo library: <album>".
+  const LIB = { albums: null, album: '', photos: [], inSet: new Set(), sel: new Set(), picks: false, busy: false };
+  function libEl() {
+    let v = $('#so-lib');
+    if (!v) {
+      v = document.createElement('div'); v.id = 'so-lib'; v.hidden = true; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true'); v.setAttribute('aria-label', 'Add photos from the photo library');
+      document.body.appendChild(v);
+      v.addEventListener('click', e => {
+        if (e.target === v) { closeLib(); return; }
+        const t = e.target.closest('[data-l]'); if (!t) return; const a = t.dataset.l;
+        if (a === 'close') closeLib(); else if (a === 'add') libAdd();
+        else if (a === 't') { const nm = t.dataset.n; if (LIB.inSet.has(nm)) return; if (LIB.sel.has(nm)) LIB.sel.delete(nm); else LIB.sel.add(nm); t.classList.toggle('on', LIB.sel.has(nm)); libFoot(); }
+      });
+      v.addEventListener('change', e => { if (e.target.matches('select')) libAlbum(e.target.value); else if (e.target.matches('input[type=checkbox]')) { LIB.picks = e.target.checked; libGrid(); } });
+      document.addEventListener('keydown', e => { if (!v.hidden && e.key === 'Escape') { e.preventDefault(); closeLib(); } });
+    }
+    return v;
+  }
+  async function openLib() {
+    const v = libEl(); v.hidden = false; LIB.sel = new Set();
+    v.innerHTML = `<div class="box"><div class="hd"><h2>Add photos</h2><select aria-label="Album"></select><label class="chk"><input type="checkbox" ${LIB.picks ? 'checked' : ''}> Blog picks only</label><span class="sp"></span><button class="btn" data-l="close">Close</button></div>
+      <div class="grid"><div class="msg">Loading the albums…</div></div><div class="ft"><span class="cnt"></span><span class="sp"></span><button class="btn primary" data-l="add" disabled>Add</button></div></div>`;
+    try { if (!LIB.albums) { const j = await api('/api/albums'); LIB.albums = (j.albums || []).map(a => a.name).filter(Boolean); } }
+    catch (e) { const g = $('#so-lib .grid'); if (g) g.innerHTML = `<div class="msg">The photo library is not answering (${esc(e.message)}).</div>`; return; }
+    const c = cur(), want = store.get('lib:' + S.slug, ''), first = c ? c.country.toLowerCase().split(/[\s+]+/)[0] : '';
+    const guess = want && LIB.albums.includes(want) ? want : (LIB.albums.find(a => first && a.toLowerCase().startsWith(first)) || LIB.albums[0] || '');
+    const sel = $('#so-lib select'); if (!sel) return;
+    sel.innerHTML = LIB.albums.map(a => `<option ${a === guess ? 'selected' : ''}>${esc(a)}</option>`).join('');
+    if (guess) libAlbum(guess); else $('#so-lib .grid').innerHTML = '<div class="msg">The photo library has no albums.</div>';
+  }
+  async function libAlbum(name) {
+    LIB.album = name; LIB.sel = new Set(); store.set('lib:' + S.slug, name);
+    const g = $('#so-lib .grid'); if (!g) return; g.innerHTML = '<div class="msg">Loading…</div>'; libFoot();
+    try {
+      const [b, have] = await Promise.all([api('/api/backup_browse?album=' + encodeURIComponent(name)), api('/api/social/' + encodeURIComponent(S.slug) + '/library?album=' + encodeURIComponent(name))]);
+      if (LIB.album !== name) return;
+      LIB.photos = b.photos || []; LIB.inSet = new Set(have.names || []);
+    } catch (e) { g.innerHTML = `<div class="msg">Could not read this album (${esc(e.message)}).</div>`; return; }
+    libGrid();
+  }
+  function libGrid() {
+    const g = $('#so-lib .grid'); if (!g) return;
+    const list = LIB.picks ? LIB.photos.filter(p => p.picked) : LIB.photos;
+    g.innerHTML = list.length ? list.map(p => `<button type="button" class="t ${LIB.sel.has(p.n) ? 'on' : ''} ${LIB.inSet.has(p.n) ? 'in' : ''} ${p.picked ? 'pk' : ''}" data-l="t" data-n="${esc(p.n)}" title="${esc(p.n)}${LIB.inSet.has(p.n) ? ': already in' : p.picked ? ': a blog pick' : ''}"><img loading="lazy" src="${esc(API + '/bthumb?album=' + encodeURIComponent(LIB.album) + '&name=' + encodeURIComponent(p.n) + '&s=400')}" alt=""></button>`).join('')
+      : `<div class="msg">${LIB.picks ? 'No blog picks in this album.' : 'No photos in this album.'}</div>`;
+    libFoot();
+  }
+  function libFoot() {
+    const n = LIB.sel.size, b = $('#so-lib [data-l="add"]'), c = $('#so-lib .cnt');
+    if (b) { b.disabled = !n || LIB.busy; b.textContent = LIB.busy ? 'Adding…' : n ? 'Add ' + n + ' photo' + (n > 1 ? 's' : '') : 'Add'; }
+    if (c) c.textContent = n ? n + ' selected' : '';
+  }
+  async function libAdd() {
+    if (!LIB.sel.size || LIB.busy) return; LIB.busy = true; libFoot();
+    try {
+      const j = await api('/api/social/' + encodeURIComponent(S.slug) + '/add', { album: LIB.album, names: [...LIB.sel] });
+      toast(j.added.length + ' photo' + (j.added.length === 1 ? '' : 's') + ' added' + (j.skipped.length ? ', ' + j.skipped.length + ' skipped' : '') + '.');
+      LIB.busy = false; closeLib(); send({ cmd: 'poll' }); load(true);
+    } catch (e) { toast(e.status === 0 ? 'The photo server is not answering.' : e.message, true); }
+    finally { LIB.busy = false; libFoot(); }
+  }
+  function closeLib() { const v = $('#so-lib'); if (v) { v.hidden = true; v.innerHTML = ''; } }
 
   // ------------------------------------------------------------------ events
   function setView(id) { S.views[S.type] = id; store.set('view:' + S.type, id); render(); if (isMaker()) sync(); else loadRenders(); }
@@ -399,9 +512,11 @@
     if (act === 'type') { const t = typeOf(el.dataset.type); if (t === S.type) return; S.type = t; store.set('type', t); S.job = null; render(); if (isMaker()) sync(); else loadRenders(); return; }
     if (act === 'view') { setView(el.dataset.view); return; }
     if (act === 'render') { startRender(el.dataset.kind); return; }
-    if (act === 'ready') { sendReady(); return; }
+    if (act === 'rendernow') { renderNow(); return; }
+    if (act === 'aspect') { send({ cmd: 'aspect', aspect: el.dataset.aspect }); return; }
+    if (act === 'preview') { openPreview(); return; }
+    if (act === 'library') { openLib(); return; }
     if (act === 'seed') { seed(); return; }
-    if (act === 'import') { importExport(); return; }
     if (act === 'help') { toast(SHORTCUTS.replace(/\n/g, ' · ')); return; }
     if (act === 'light') { openLight(el.dataset.set, +el.dataset.i); return; }
     if (act === 'copy') { const box = document.getElementById(el.dataset.for); const text = box ? box.textContent : ''; (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('Copied.'), () => toast('Could not copy.', true)); }

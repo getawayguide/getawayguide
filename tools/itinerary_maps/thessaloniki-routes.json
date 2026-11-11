@@ -1,0 +1,199 @@
+{
+  "slug": "thessaloniki-routes",
+  "page": "greece/thessaloniki.html",
+  "outline_file": "tools/itinerary_maps/geo/thessaloniki-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 640,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    19.9,
+    37.35,
+    25.0,
+    41.75
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Thessaloniki",
+      "lat": 40.6401,
+      "lon": 22.9444,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -8,
+      "marker": "star"
+    },
+    {
+      "n": 2,
+      "name": "Athens",
+      "lat": 37.9838,
+      "lon": 23.7275,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "field-notes.html#athens"
+    },
+    {
+      "n": 3,
+      "name": "Meteora",
+      "lat": 39.7047,
+      "lon": 21.6276,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "meteora.html"
+    },
+    {
+      "n": 4,
+      "name": "Bitola",
+      "lat": 41.0319,
+      "lon": 21.3347,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 18,
+      "dy": -18,
+      "href": "../north-macedonia/field-notes.html#bitola"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Trikala",
+      "lat": 39.5557,
+      "lon": 21.7673,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 14
+    },
+    {
+      "name": "Florina",
+      "lat": 40.7845,
+      "lon": 21.4131,
+      "anchor": "start",
+      "dx": 8,
+      "dy": 20
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "bow": -0.08
+    },
+    {
+      "a": 2,
+      "b": "dot:Trikala",
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": "dot:Trikala",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "dot:Florina",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": "dot:Florina",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "airports": [
+    {
+      "name": "Airport",
+      "lat": 40.5238,
+      "lon": 22.9764,
+      "anchor": "start",
+      "dx": 46,
+      "dy": 10,
+      "icon_dx": 30,
+      "icon_dy": 14
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Bus Transfer",
+        "color": "#9DB5A8"
+      },
+      {
+        "label": "Taxi",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/thessaloniki-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/thessaloniki-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Greece",
+      "lat": 39.2,
+      "lon": 21.8,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "North|Macedonia",
+      "lat": 41.5,
+      "lon": 21.6,
+      "size": 10,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Albania",
+      "lat": 40.5,
+      "lon": 20.2,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Bulgaria",
+      "lat": 41.6,
+      "lon": 24,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ]
+}

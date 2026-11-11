@@ -1,0 +1,200 @@
+{
+  "slug": "puebla-routes",
+  "page": "Drafts/Full Articles/mexico/puebla.html",
+  "outline_file": "tools/itinerary_maps/geo/puebla-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1035.3,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -100.6,
+    15.7,
+    -95.0,
+    20.2
+  ],
+  "layers": [],
+  "stops": [
+    {
+      "name": "Puebla",
+      "lat": 19.0414,
+      "lon": -98.2063,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -10,
+      "marker": "star"
+    },
+    {
+      "name": "Mexico City",
+      "lat": 19.4326,
+      "lon": -99.1332,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -8,
+      "href": "mexico-city.html"
+    },
+    {
+      "name": "Oaxaca",
+      "lat": 17.0732,
+      "lon": -96.7266,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "href": "oaxaca.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Tehuacán",
+      "lat": 18.4617,
+      "lon": -97.3928,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    },
+    {
+      "name": "Veracruz",
+      "lat": 19.1903,
+      "lon": -96.1533,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -6
+    },
+    {
+      "name": "Acapulco",
+      "lat": 16.8636,
+      "lon": -99.8825,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": ""
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "ADO bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Mexico",
+      "lat": 17.9,
+      "lon": -99.7,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Gulf of Mexico",
+      "lat": 19.85,
+      "lon": -95.6,
+      "size": 10
+    },
+    {
+      "name": "Pacific Ocean",
+      "lat": 16.05,
+      "lon": -99.15,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 719.2,
+    "crop_bounds": [
+      -100.4,
+      15.85,
+      -95.3,
+      20.1
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -12
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -8
+      }
+    },
+    "dots": [
+      {
+        "name": "Tehuacán",
+        "lat": 18.4617,
+        "lon": -97.3928,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 6
+      },
+      {
+        "name": "Veracruz",
+        "lat": 19.1903,
+        "lon": -96.1533,
+        "anchor": "start",
+        "dx": 8,
+        "dy": 10
+      },
+      {
+        "name": "Acapulco",
+        "lat": 16.8636,
+        "lon": -99.8825,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 4
+      }
+    ],
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "ADO bus"
+        }
+      ]
+    },
+    "water_labels": [
+      {
+        "name": "Pacific Ocean",
+        "lat": 16.15,
+        "lon": -99.2,
+        "size": 10
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Mexico",
+        "lat": 17.75,
+        "lon": -99.5,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

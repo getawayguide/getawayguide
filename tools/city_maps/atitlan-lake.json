@@ -34,7 +34,8 @@
       "match": "santa cruz",
       "lat": 14.7389,
       "lon": -91.1869,
-      "lab": "s"
+      "lab": "s",
+      "href": "https://www.google.com/maps/place/Santa+Cruz+la+Laguna,+Guatemala/@14.7430058,-91.2043279,16z/data=!3m1!4b1!4m6!3m5!1s0x85894b514cc739fd:0xfb096e57fe425f01!8m2!3d14.7424095!4d-91.205524!16zL20vMDc5MWdm?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "San Marcos La Laguna",
@@ -92,7 +93,8 @@
       "match": "tolim",
       "lat": 14.6122,
       "lon": -91.1892,
-      "lab": "e"
+      "lab": "e",
+      "href": "https://www.google.com/maps/place/Volc%C3%A1n+Tolim%C3%A1n/@14.6166665,-91.1833333,15z/data=!3m1!4b1!4m6!3m5!1s0x8589351b34d0538b:0x163c86f4476b91f5!8m2!3d14.6166667!4d-91.1833333!16zL20vMDRmeGhm?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
     },
     {
       "name": "Volcán Atitlán",

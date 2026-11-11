@@ -1,0 +1,260 @@
+{
+  "slug": "ruta-routes",
+  "page": "el-salvador/ruta-de-las-flores.html",
+  "outline_file": "tools/itinerary_maps/geo/ruta-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -91.05,
+    13.2,
+    -88.85,
+    14.8
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/ruta-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/ruta-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "name": "Juayúa",
+      "lat": 13.8437,
+      "lon": -89.7456,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 26,
+      "dy": -2,
+      "marker": "star"
+    },
+    {
+      "name": "Santa Ana",
+      "lat": 13.9942,
+      "lon": -89.5597,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "href": "santa-ana.html"
+    },
+    {
+      "name": "San Salvador",
+      "lat": 13.6929,
+      "lon": -89.2182,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4
+    },
+    {
+      "name": "El Tunco",
+      "lat": 13.4932,
+      "lon": -89.3836,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10,
+      "href": "el-tunco.html"
+    },
+    {
+      "name": "Antigua",
+      "lat": 14.5586,
+      "lon": -90.7295,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 2,
+      "href": "../guatemala/field-notes.html#antigua"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Ataco",
+      "lat": 13.8706,
+      "lon": -89.8481,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 10
+    },
+    {
+      "name": "Apaneca",
+      "lat": 13.8594,
+      "lon": -89.8064,
+      "anchor": "end",
+      "dx": 2,
+      "dy": -12
+    },
+    {
+      "name": "Nahuizalco",
+      "lat": 13.7728,
+      "lon": -89.7353,
+      "anchor": "end",
+      "dx": -6,
+      "dy": 18
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#9DB5A8"
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "via": [
+        [
+          13.99,
+          -89.74
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "label": "Bus Transfer",
+        "color": "#9DB5A8"
+      },
+      {
+        "label": "Tourist shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "El Salvador",
+      "lat": 14.08,
+      "lon": -89.15,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Guatemala",
+      "lat": 14.6,
+      "lon": -90.25,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Honduras",
+      "lat": 14.45,
+      "lon": -88.98,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 350,
+    "crop_bounds": [
+      -90.9,
+      13.0,
+      -88.85,
+      14.78
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": 24
+      },
+      "1": {
+        "dx": 14,
+        "dy": -8
+      },
+      "2": {
+        "name": "San|Salvador",
+        "dx": 12,
+        "dy": -14
+      },
+      "3": {
+        "dx": 14,
+        "dy": 12
+      },
+      "4": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -14
+      }
+    },
+    "dots": [
+      {
+        "name": "Ataco",
+        "lat": 13.8706,
+        "lon": -89.8481,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 4
+      },
+      {
+        "name": "Apaneca",
+        "lat": 13.8594,
+        "lon": -89.8064,
+        "anchor": "end",
+        "dx": 2,
+        "dy": -12
+      }
+    ],
+    "country_labels": {
+      "0": {
+        "lat": 13.56,
+        "lon": -88.95,
+        "size": 10
+      },
+      "1": {
+        "lat": 14.4,
+        "lon": -90.35,
+        "size": 10
+      },
+      "2": {
+        "lat": 14.5,
+        "lon": -89.05
+      }
+    }
+  }
+}

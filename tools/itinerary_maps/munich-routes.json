@@ -1,0 +1,211 @@
+{
+  "slug": "munich-routes",
+  "page": "Drafts/Upcoming/germany/munich.html",
+  "outline_file": "tools/itinerary_maps/geo/munich-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 657.8,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    9.75,
+    47.2,
+    14.45,
+    49.85
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/munich-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/munich-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Munich",
+      "lat": 48.1371,
+      "lon": 11.5754,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Nuremberg",
+      "lat": 49.4539,
+      "lon": 11.0773,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    },
+    {
+      "n": 2,
+      "name": "Salzburg",
+      "lat": 47.7981,
+      "lon": 13.0465,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    },
+    {
+      "n": 3,
+      "name": "Garmisch",
+      "lat": 47.4924,
+      "lon": 11.0963,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    }
+  ],
+  "dots": [],
+  "airports": [
+    {
+      "name": "MUC Airport",
+      "lat": 48.3539,
+      "lon": 11.7786,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "icon_dx": 2,
+      "icon_dy": -11
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "S-Bahn from the airport",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Germany",
+      "lat": 48.652,
+      "lon": 10.383,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Austria",
+      "lat": 47.337,
+      "lon": 13.853,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Czechia",
+      "lat": 49.269,
+      "lon": 14.04,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [],
+  "mobile": {
+    "country_width": 394.7,
+    "crop_bounds": [
+      9.75,
+      47.2,
+      14.45,
+      49.85
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 5
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 4
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 4
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 5
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Germany",
+        "lat": 48.634,
+        "lon": 10.296,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Austria",
+        "lat": 47.282,
+        "lon": 13.974,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ]
+  }
+}

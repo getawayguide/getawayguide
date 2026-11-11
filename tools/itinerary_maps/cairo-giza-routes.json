@@ -1,0 +1,254 @@
+{
+  "slug": "cairo-giza-routes",
+  "page": "Drafts/Full Articles/egypt/cairo-giza.html",
+  "outline_file": "tools/itinerary_maps/geo/cairo-giza-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 589.7,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    27.0,
+    23.45,
+    37.0,
+    31.9
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/cairo-giza-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/cairo-giza-routes-nile.json",
+      "fill": "none",
+      "stroke": "#A9CBD6",
+      "width": 2
+    }
+  ],
+  "mobile": {
+    "country_width": 569.4,
+    "crop_bounds": [
+      28.4,
+      23.5,
+      35.9,
+      31.85
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Sleeper train"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Egypt",
+        "lat": 27.3,
+        "lon": 30.0,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": [
+      {
+        "name": "Red Sea",
+        "lat": 25.8,
+        "lon": 35.0,
+        "size": 9
+      }
+    ]
+  },
+  "stops": [
+    {
+      "name": "Cairo & Giza",
+      "lat": 30.0444,
+      "lon": 31.2357,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 4,
+      "marker": "star"
+    },
+    {
+      "name": "Luxor",
+      "lat": 25.7021,
+      "lon": 32.6472,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "luxor.html"
+    },
+    {
+      "name": "Aswan",
+      "lat": 24.0911,
+      "lon": 32.8973,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "aswan.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Munich",
+      "lat": 31.8,
+      "lon": 31.55,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    },
+    {
+      "name": "Alexandria",
+      "lat": 31.1992,
+      "lon": 29.8952,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": "dot:From Munich",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.2
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "via": [
+        [
+          29.444,
+          31.44
+        ],
+        [
+          28.989,
+          31.263
+        ],
+        [
+          28.533,
+          31.048
+        ],
+        [
+          28.078,
+          31.029
+        ],
+        [
+          27.622,
+          31.095
+        ],
+        [
+          27.167,
+          31.437
+        ],
+        [
+          26.711,
+          31.817
+        ],
+        [
+          26.256,
+          32.233
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          25.37,
+          32.757
+        ],
+        [
+          25.14,
+          32.941
+        ],
+        [
+          24.91,
+          33.065
+        ],
+        [
+          24.68,
+          33.134
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Sleeper train"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Egypt",
+      "lat": 27.3,
+      "lon": 29.6,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Saudi Arabia",
+      "lat": 28.4,
+      "lon": 36.3,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Red Sea",
+      "lat": 25.8,
+      "lon": 35.0,
+      "size": 10
+    },
+    {
+      "name": "Mediterranean Sea",
+      "lat": 31.6,
+      "lon": 27.9,
+      "size": 9
+    }
+  ]
+}

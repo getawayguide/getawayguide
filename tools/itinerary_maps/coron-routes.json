@@ -1,0 +1,155 @@
+{
+  "slug": "coron-routes",
+  "page": "Drafts/Full Articles/philippines/coron.html",
+  "outline_file": "tools/itinerary_maps/geo/coron-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 760,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    117.6,
+    9.75,
+    124.75,
+    15.05
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Coron",
+      "lat": 11.9986,
+      "lon": 120.2052,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "marker": "star",
+      "no_number": true
+    },
+    {
+      "n": 1,
+      "name": "Manila",
+      "lat": 14.5904,
+      "lon": 120.9804,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "manila.html",
+      "no_number": true
+    },
+    {
+      "n": 2,
+      "name": "Cebu",
+      "lat": 10.2935,
+      "lon": 123.9018,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "no_number": true
+    },
+    {
+      "n": 3,
+      "name": "El Nido",
+      "lat": 11.18,
+      "lon": 119.3905,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "el-nido.html",
+      "no_number": true
+    }
+  ],
+  "dots": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": "",
+      "sea": true,
+      "color": "#5E93A3",
+      "via": [
+        [
+          11.99,
+          120.204
+        ],
+        [
+          11.61,
+          120.041
+        ],
+        [
+          11.61,
+          119.561
+        ],
+        [
+          11.48,
+          119.429
+        ],
+        [
+          11.18,
+          119.378
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Boat expedition",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Philippines",
+      "lat": 14.55,
+      "lon": 123.6,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "South China Sea",
+      "lat": 13.0,
+      "lon": 118.75,
+      "size": 10
+    },
+    {
+      "name": "Sulu Sea",
+      "lat": 10.15,
+      "lon": 121.5,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 378,
+    "crop_pad": 8
+  }
+}

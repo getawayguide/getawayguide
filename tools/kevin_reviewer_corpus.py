@@ -1,19 +1,25 @@
 """Kevin-reviewer corpus: every Kevin-authored review comment, reply and round decision.
 
-Read-only on the comment store (redline.COMMENTS) and on .tmp/redline/*/decisions.json.
+Read-only on the comment store (redline.COMMENTS), .tmp/redline/*/decisions.json and the Drafts git history.
 Writes:
-  .tmp/kevin_reviewer/corpus.jsonl       one record per line (kind = comment | reply | decision)
+  .tmp/kevin_reviewer/corpus.jsonl       one record per line (kind = comment | reply | decision | edit)
   .tmp/kevin_reviewer/last_refresh.json  (only with --mark) newest timestamp + ids already folded into model.md
 
 Usage:
   python tools/kevin_reviewer_corpus.py            rebuild corpus.jsonl, print counts
   python tools/kevin_reviewer_corpus.py --new      rebuild, print only records not in the stamp
   python tools/kevin_reviewer_corpus.py --mark     rebuild, record every current id as folded in
+  python tools/kevin_reviewer_corpus.py --mark --hold serbia__belgrade --hold belgrade-
+                                                   same, but NEW records whose key or round starts with a --hold
+                                                   prefix stay unfolded (an article he hasn't finished, e.g. an
+                                                   open round); records folded earlier stay folded
   python tools/kevin_reviewer_corpus.py --new --json   same, new records as JSON lines
 
 Record ids: comment  = "<key>#<thread id>"
             reply    = "<key>#<thread id>/<reply id>"
             decision = "round:<slug>/<change id>"
+            edit     = "edit:<key>/<hash>"  his own typing, what we handed him vs what he saved, round changes taken out
+                       (tools/kevin_edits.py). The backlog is seeded: `--new` shows only saves after EDITS_SEEDED_THROUGH.
 Threads duplicated across files (greece__meteora / greece__thessaloniki share one set) are kept once,
 under the first key alphabetically, with `also_in` listing the others.
 """
@@ -31,6 +37,9 @@ OUT_DIR = os.path.join(ROOT, ".tmp", "kevin_reviewer")
 CORPUS = os.path.join(OUT_DIR, "corpus.jsonl")
 STAMP = os.path.join(OUT_DIR, "last_refresh.json")
 REDLINE = os.path.join(ROOT, ".tmp", "redline")
+# Edit records were added on 2026-11-08 with hundreds of past saves already in them. Those go through
+# tools/shadow_retrieve.py, not a --new listing, so only saves after this moment count as new.
+EDITS_SEEDED_THROUGH = "2026-11-09T08:00:00.000Z"
 
 
 def comments_dir():
@@ -108,7 +117,7 @@ def decision_records():
             continue
         if not isinstance(dec, dict):
             continue
-        changes = {}
+        changes, p = {}, None
         prop = os.path.join(REDLINE, slug, "proposal.json")
         if os.path.exists(prop):
             try:
@@ -131,9 +140,23 @@ def decision_records():
                 "find": plain(c.get("find") or c.get("old"))[:400],
                 "replace": plain(c.get("replace") or c.get("new"))[:400],
                 "why": plain(c.get("why") or c.get("note") or c.get("reason"))[:300],
+                # where the change came from. "shadow-loop" = a fix the review loop applied from a Shadow prediction or
+                # tools/draft_check.py BEFORE Kevin saw the draft (pilot 2026-11-08). His tick/cross on it scores the
+                # Shadow reviewer's prediction; it is NOT a Kevin-originated ask, so never count it as one of his comments.
+                "origin": c.get("origin") or (p.get("origin") if isinstance(p, dict) else None),
                 "decided_mtime": mtime,
             })
     return recs
+
+
+def edit_records():
+    """Kevin's own typing from the Drafts history; a failure here must not cost the comment records."""
+    try:
+        import kevin_edits
+        return kevin_edits.mine()[0]
+    except Exception as e:  # noqa: BLE001
+        print(f"edit records skipped: {type(e).__name__}: {e}", file=sys.stderr)
+        return []
 
 
 def main():
@@ -141,9 +164,11 @@ def main():
     ap.add_argument("--new", action="store_true", help="print only records not yet folded into model.md")
     ap.add_argument("--mark", action="store_true", help="record every current id as folded into model.md")
     ap.add_argument("--json", action="store_true", help="with --new: print records as JSON lines")
+    ap.add_argument("--hold", action="append", default=[], metavar="PREFIX",
+                    help="with --mark: leave new records whose key or round starts with PREFIX unfolded (repeatable)")
     a = ap.parse_args()
 
-    recs = comment_records() + decision_records()
+    recs = comment_records() + decision_records() + edit_records()
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(CORPUS, "w", encoding="utf-8") as f:
         for r in recs:
@@ -163,11 +188,15 @@ def main():
     folded = set(stamp.get("folded_ids", []))
 
     if a.new:
-        new = [r for r in recs if r["id"] not in folded]
+        new = [r for r in recs if r["id"] not in folded
+               and not (r["kind"] == "edit" and (r.get("created") or "") <= EDITS_SEEDED_THROUGH)]
         say(f"new since last refresh ({stamp.get('refreshed_at', 'never')}): {len(new)}")
         for r in sorted(new, key=lambda r: (r.get("created") or "", r["id"])):
             if a.json:
                 say(json.dumps(r, ensure_ascii=False))
+            elif r["kind"] == "edit":
+                say(f"[edit] {r['id']} {r.get('created', '')[:10]} [{r['section'][:40]}] "
+                    f"{r['before'][:120]!r} -> {r['after'][:120]!r}")
             elif r["kind"] == "decision":
                 state = {True: "ACCEPTED", False: "REJECTED", None: "?"}[r["accepted"]]
                 say(f"[{state}] {r['id']}: {r['find'][:90]!r} -> {r['replace'][:90]!r}")
@@ -177,16 +206,24 @@ def main():
 
     if a.mark:
         import datetime
-        newest = max((r.get("created") or "" for r in recs if r["kind"] != "decision"), default="")
+        def held(r):
+            if r["id"] in folded:  # folded at an earlier refresh: never un-fold it
+                return False
+            return any((r.get("key") or "").startswith(h) or (r.get("round") or "").startswith(h) for h in a.hold)
+
+        keep = [r for r in recs if not held(r)]
+        newest = max((r.get("created") or "" for r in keep if r["kind"] != "decision"), default="")
         stamp = {
             "refreshed_at": datetime.datetime.now().isoformat(timespec="seconds"),
             "newest_created": newest,
             "counts": kinds,
-            "folded_ids": sorted(r["id"] for r in recs),
+            "held": a.hold,
+            "folded_ids": sorted(r["id"] for r in keep),
         }
         with open(STAMP, "w", encoding="utf-8") as f:
             json.dump(stamp, f, ensure_ascii=False, indent=1)
-        say(f"marked {len(recs)} ids as folded; newest comment {newest} -> {STAMP}")
+        say(f"marked {len(keep)} ids as folded ({len(recs) - len(keep)} held back: {', '.join(a.hold) or 'none'}); "
+            f"newest comment {newest} -> {STAMP}")
 
 
 if __name__ == "__main__":

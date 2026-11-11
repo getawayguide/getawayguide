@@ -1,0 +1,161 @@
+{
+  "slug": "cappadocia-guide",
+  "kicker": "Türkiye",
+  "city": "Cappadocia",
+  "osm": ".tmp/cappadocia_osm.json",
+  "article": "Drafts/Full Articles/turkiye/cappadocia.html",
+  "embed": {
+    "pre": "<!-- city map: cappadocia-guide -->",
+    "post": "<!-- /city map: cappadocia-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.2,
+    "init_w": 0.82,
+    "init_x": 0.5,
+    "init_y": 0.5
+  },
+  "pois": [
+    {
+      "name": "Göreme",
+      "cat": "see",
+      "match": "göreme",
+      "lat": 38.653119,
+      "lon": 34.863308,
+      "href": "https://www.google.com/maps/place/Goreme+Historical+National+Park/@38.6531233,34.8607281,17z/data=!3m1!4b1!4m6!3m5!1s0x152a67e71fa1a0ad:0x7ec4bfe33424779b!8m2!3d38.6531191!4d34.8633084!16s%2Fg%2F11b60sz996?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Göreme Panorama",
+      "cat": "see",
+      "match": "göreme panorama",
+      "lat": 38.645202,
+      "lon": 34.821053,
+      "href": "https://www.google.com/maps/place/G%C3%B6reme+Panorama+View/@38.6485398,34.8416866,15z/data=!4m10!1m2!2m1!1sG%C3%B6reme+Panorama+viewpoint!3m6!1s0x152a6928c2f4b98b:0xc4372fe72eb25ecb!8m2!3d38.6452022!4d34.821053!15sChpHw7ZyZW1lIFBhbm9yYW1hIHZpZXdwb2ludFocIhpnw7ZyZW1lIHBhbm9yYW1hIHZpZXdwb2ludJIBC3NjZW5pY19zcG90mgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVU51YmpZM1l6QlJSUkFC4AEA-gEECAAQRA!16s%2Fg%2F11swyyfjxv"
+    },
+    {
+      "name": "Göreme Open Air Museum",
+      "cat": "see",
+      "match": "göreme open air museum",
+      "lat": 38.641579,
+      "lon": 34.843927,
+      "href": "https://www.google.com/maps/place/G%C3%B6reme+Open+Air+Museum/@38.6415834,34.8413464,16z/data=!3m1!4b1!4m6!3m5!1s0x152a67ece7bbe4ed:0xbbca14b0d18fccfe!8m2!3d38.6415792!4d34.8439267!16s%2Fg%2F11h_vbv71j?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Dark Church",
+      "cat": "see",
+      "match": "dark church",
+      "lat": 38.638512,
+      "lon": 34.846189,
+      "href": "https://www.google.com/maps/place/Dark+Church/@38.6385119,34.8461893,17z/data=!3m1!4b1!4m6!3m5!1s0x152a6877bfffffff:0xdef610ec979ce016!8m2!3d38.6385119!4d34.8461893!16s%2Fg%2F1ptyvyzjn"
+    },
+    {
+      "name": "Uçhisar",
+      "cat": "see",
+      "match": "uçhisar",
+      "lat": 38.629906,
+      "lon": 34.805403,
+      "href": "https://www.google.com/maps/place/Uchisar+Castle/@38.6289472,34.7832404,14z/data=!4m6!3m5!1s0x152a68ee7113bdc5:0x48a54ea63a91c5c9!8m2!3d38.6299062!4d34.805403!16s%2Fg%2F1hdzfc388?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Love Valley",
+      "cat": "see",
+      "match": "love valley",
+      "lat": 38.658907,
+      "lon": 34.821461,
+      "href": "https://www.google.com/maps/place/Love+Valley+Cappadocia/@38.6589111,34.8188811,17z/data=!3m1!4b1!4m6!3m5!1s0x152a670063b10ad3:0xa2000d390ec04f1d!8m2!3d38.6589069!4d34.8214614!16s%2Fg%2F11x949l1fs?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "White Valley",
+      "cat": "see",
+      "match": "white valley",
+      "lat": 38.673903,
+      "lon": 34.829927,
+      "href": "https://www.google.com/maps/place/white+valley/@38.6739076,34.8273471,17z/data=!3m1!4b1!4m6!3m5!1s0x152a67000fbca2d7:0x6036d5679f750c50!8m2!3d38.6739034!4d34.8299274!16s%2Fg%2F11mc9q04ms?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Red Valley",
+      "cat": "see",
+      "match": "red valley",
+      "lat": 38.64662,
+      "lon": 34.862456,
+      "href": "https://www.google.com/maps/place/Red+Valley+Park/@38.6466239,34.8598757,17z/data=!3m1!4b1!4m6!3m5!1s0x152a5da4082acf69:0xeb4e91d14ed431b3!8m2!3d38.6466197!4d34.862456!16s%2Fg%2F11rr7467l9?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Pigeon Valley",
+      "cat": "see",
+      "match": "pigeon valley",
+      "lat": 38.62038,
+      "lon": 34.804694,
+      "href": "https://www.google.com/maps/place/Pigeon+Valley/@38.6466878,34.8211595,13z/data=!4m10!1m2!2m1!1sPigeon+Valley!3m6!1s0x152a68e538f79a33:0x696e2818277fe674!8m2!3d38.6203802!4d34.8046945!15sCg1QaWdlb24gVmFsbGV5Wg8iDXBpZ2VvbiB2YWxsZXmSARJ0b3VyaXN0X2F0dHJhY3Rpb27gAQA!16s%2Fg%2F1tjvtl9q?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Uçhisar Castle",
+      "cat": "see",
+      "match": "uçhisar castle",
+      "lat": 38.629906,
+      "lon": 34.805403,
+      "href": "https://www.google.com/maps/place/Uchisar+Castle/@38.6203802,34.7634958,13z/data=!4m6!3m5!1s0x152a68ee7113bdc5:0x48a54ea63a91c5c9!8m2!3d38.6299062!4d34.805403!16s%2Fg%2F1hdzfc388?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Ortahisar Castle",
+      "cat": "see",
+      "match": "ortahisar castle",
+      "lat": 38.619997,
+      "lon": 34.864233,
+      "href": "https://www.google.com/maps/place/Ortahisar+Castle/@38.6300196,34.7228185,12z/data=!4m10!1m2!2m1!1sOrtahisar+castle!3m6!1s0x152a42a7236f82f9:0x14484c418323abe7!8m2!3d38.6199972!4d34.8642335!15sChBPcnRhaGlzYXIgY2FzdGxlWhIiEG9ydGFoaXNhciBjYXN0bGWSARNoaXN0b3JpY2FsX2xhbmRtYXJr4AEA!16s%2Fg%2F11b7p_yyfm?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "My Mother’s Restaurant",
+      "cat": "eat",
+      "match": "my mother’s restaurant",
+      "lat": 38.642837,
+      "lon": 34.828805,
+      "href": "https://www.google.com/maps/place/My+Mother%E2%80%99s+restaurant/@38.6428411,34.8262249,17z/data=!3m1!4b1!4m6!3m5!1s0x152a69f34ee4a24b:0x135839bbd0492fda!8m2!3d38.6428369!4d34.8288052!16s%2Fg%2F11h6nszpsj?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Arinna Cappadocia",
+      "cat": "stay",
+      "match": "arinna cappadocia",
+      "lat": 38.6425,
+      "lon": 34.829,
+      "href": "https://www.google.com/maps/place/Arinna+Cappadocia/@38.6407478,34.8274302,17z/data=!4m9!3m8!1s0x152a69bd01223645:0xc6c390562159e8be!5m2!4m1!1i2!8m2!3d38.6407478!4d34.8274302!16s%2Fg%2F11h9bk0_ym?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Terra Cave Hotel",
+      "cat": "stay",
+      "match": "terra cave hotel",
+      "lat": 38.6447,
+      "lon": 34.8306,
+      "href": "https://www.google.com/maps/place/Terra+Cave+Hotel/@38.6418283,34.8263479,17z/data=!4m9!3m8!1s0x152a69254120d317:0xe395d26baabc5008!5m2!4m1!1i2!8m2!3d38.6418283!4d34.8263479!16s%2Fg%2F11bycktg12?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 38.639663,
+    "lon": 34.836251
+  },
+  "district_labels": [
+    {
+      "text": "GÖREME",
+      "lat": 38.6435,
+      "lon": 34.829
+    }
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.608171020046307,
+      0.7324094794361694,
+      302123.50293644454
+    ],
+    "mobile": [
+      0.6080072833121251,
+      0.7322179996169262,
+      446455.27230179386
+    ]
+  }
+}

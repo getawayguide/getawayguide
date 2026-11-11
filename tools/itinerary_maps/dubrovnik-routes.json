@@ -1,0 +1,392 @@
+{
+  "slug": "dubrovnik-routes",
+  "page": "Drafts/Upcoming/croatia/dubrovnik.html",
+  "outline_file": "tools/itinerary_maps/geo/dubrovnik-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 660,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    15.8,
+    42.25,
+    19.25,
+    43.85
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/dubrovnik-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/dubrovnik-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 36,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Split",
+      "lat": 43.5081,
+      "lon": 16.4402,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -2,
+      "href": "split.html"
+    },
+    {
+      "n": 2,
+      "name": "Hvar",
+      "lat": 43.1729,
+      "lon": 16.4411,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8,
+      "href": "hvar.html"
+    },
+    {
+      "n": 3,
+      "name": "Kotor",
+      "lat": 42.4247,
+      "lon": 18.7712,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "../montenegro/kotor.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Mostar",
+      "lat": 43.3438,
+      "lon": 17.8078,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4,
+      "href": "../bosnia/mostar-day-trip.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "DBV Airport",
+      "lat": 42.5614,
+      "lon": 18.2682,
+      "anchor": "start",
+      "dx": 2,
+      "dy": 30,
+      "icon_dx": -4,
+      "icon_dy": 34
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          43.44,
+          16.7
+        ],
+        [
+          43.29,
+          17.03
+        ],
+        [
+          43.07,
+          17.43
+        ],
+        [
+          42.94,
+          17.63
+        ],
+        [
+          42.8,
+          17.86
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          43.47,
+          16.38
+        ],
+        [
+          43.45,
+          16.16
+        ],
+        [
+          43.38,
+          16.11
+        ],
+        [
+          43.28,
+          16.18
+        ],
+        [
+          43.12,
+          16.3
+        ],
+        [
+          42.97,
+          16.5
+        ],
+        [
+          42.84,
+          16.7
+        ],
+        [
+          42.79,
+          16.98
+        ],
+        [
+          42.74,
+          17.18
+        ],
+        [
+          42.68,
+          17.45
+        ],
+        [
+          42.65,
+          17.7
+        ],
+        [
+          42.63,
+          17.95
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          43.12,
+          16.48
+        ],
+        [
+          43.0,
+          16.57
+        ],
+        [
+          42.92,
+          16.62
+        ],
+        [
+          42.875,
+          16.75
+        ],
+        [
+          42.875,
+          17.05
+        ],
+        [
+          42.85,
+          17.3
+        ],
+        [
+          42.83,
+          17.45
+        ],
+        [
+          42.8,
+          17.57
+        ],
+        [
+          42.775,
+          17.72
+        ],
+        [
+          42.72,
+          17.88
+        ],
+        [
+          42.68,
+          18.02
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          42.47,
+          18.72
+        ],
+        [
+          42.52,
+          18.55
+        ],
+        [
+          42.58,
+          18.32
+        ]
+      ]
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Catamaran",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Airport shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Croatia",
+      "lat": 43.82,
+      "lon": 16.05,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia and|Herzegovina",
+      "lat": 43.8,
+      "lon": 17.9,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.75,
+      "lon": 19.05,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Adriatic Sea",
+      "lat": 42.55,
+      "lon": 16.9,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 395,
+    "crop_bounds": [
+      15.95,
+      42.25,
+      19.15,
+      43.8
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -12
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 6
+      },
+      "3": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 14
+      }
+    },
+    "airports": [
+      {
+        "name": "DBV Airport",
+        "lat": 42.5614,
+        "lon": 18.2682,
+        "anchor": "middle",
+        "dx": -14,
+        "dy": 26,
+        "icon_dx": -22,
+        "icon_dy": 12
+      }
+    ],
+    "dots": [],
+    "water_labels": [],
+    "country_labels": [
+      {
+        "name": "Croatia",
+        "lat": 43.78,
+        "lon": 16.55,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Bosnia and|Herzegovina",
+        "lat": 43.62,
+        "lon": 18.05,
+        "size": 9,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

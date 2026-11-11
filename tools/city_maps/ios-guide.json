@@ -1,0 +1,179 @@
+{
+  "slug": "ios-guide",
+  "kicker": "Greece",
+  "city": "Ios",
+  "osm": ".tmp/ios_osm.json",
+  "article": "Drafts/Full Articles/greece/naxos-ios.html",
+  "embed": {
+    "pre": "<!-- city map: ios-guide -->",
+    "post": "<!-- /city map: ios-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.6095
+  },
+  "mobile": {
+    "pad": 1.5342,
+    "init_w": 0.9,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 36.740341,
+      "lon": 25.32445
+    }
+  },
+  "pois": [
+    {
+      "name": "Church of Panagia Gremniotissa",
+      "cat": "see",
+      "match": "church of panagia grem",
+      "lat": 36.723907,
+      "lon": 25.281408,
+      "href": "https://www.google.com/maps/place/Church+of+Panagia+Gremniotissa/@36.7239072,25.278833,17z/data=!3m1!4b1!4m6!3m5!1s0x14984780e63fce67:0xf271616b9d4cd9cb!8m2!3d36.7239072!4d25.2814079!16s%2Fg%2F11ggb3mb24?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Mylopotas",
+      "cat": "see",
+      "match": "mylopotas",
+      "lat": 36.71395,
+      "lon": 25.29473,
+      "href": "https://www.google.com/maps/place/Chora+840+01,+Greece/@36.7266314,25.2688983,15z/data=!3m1!4b1!4m6!3m5!1s0x1498478227f6a3b7:0xc3c522699223b522!8m2!3d36.7217767!4d25.2819385!16s%2Fg%2F128dgwqcn?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "FarOut Beach Club",
+      "cat": "see",
+      "match": "farout beach club",
+      "lat": 36.711393,
+      "lon": 25.296244,
+      "href": "https://www.google.com/maps/place/FarOut+Beach+Club,+Waterside/@36.7113927,25.2936692,17z/data=!4m14!1m7!3m6!1s0x149839fff80dc8ab:0xcab4b17c4f3427ec!2sFar+Out+Village!8m2!3d36.7113927!4d25.2962441!16s%2Fg%2F11rxqggq5q!3m5!1s0x1498390054c138ff:0x94f4ff8c65943ba9!8m2!3d36.7106875!4d25.2959375!16s%2Fg%2F11whgxj_g7?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Little Gem",
+      "cat": "see",
+      "match": "little gem",
+      "lat": 36.721777,
+      "lon": 25.281938,
+      "href": "https://www.google.com/maps/place//@36.7154345,25.2893582,17z/data=!4m9!1m8!3m7!1s0x1498478227f6a3b7:0xc3c522699223b522!2sChora+840+01,+Greece!3b1!8m2!3d36.7217767!4d25.2819385!16s%2Fg%2F128dgwqcn?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Pathos Bar",
+      "cat": "see",
+      "match": "pathos bar",
+      "lat": 36.729293,
+      "lon": 25.256,
+      "href": "https://www.google.com/maps/place/Pathos+Club+%26+Restaurant/@36.7292932,25.2534252,17z/data=!3m1!4b1!4m6!3m5!1s0x149847a16c8b8bf3:0xdf3b2ec3972e4cab!8m2!3d36.7292932!4d25.2560001!16s%2Fg%2F11b7gcyr13?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Loretzaina",
+      "cat": "see",
+      "match": "loretzaina",
+      "lat": 36.751886,
+      "lon": 25.264033,
+      "href": "https://www.google.com/maps/place/Loretzaina/@36.7519195,25.1815792,12z/data=!4m6!3m5!1s0x14984741dbb01d17:0xfb24f3b0a3aa2108!8m2!3d36.7518865!4d25.2640329!16s%2Fg%2F11cmp4shxt?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Paralia Gialos",
+      "cat": "see",
+      "match": "paralia gialos",
+      "lat": 36.725494,
+      "lon": 25.273294,
+      "href": "https://www.google.com/maps/place/Paralia+Gialos/@36.7263529,25.2691852,17z/data=!3m1!4b1!4m6!3m5!1s0x149847832ba2641b:0x21cbbeb740428265!8m2!3d36.7254939!4d25.2732939!16s%2Fg%2F119t_9scl?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Sweet Irish Dream",
+      "cat": "eat",
+      "match": "sweet irish dream",
+      "lat": 36.722482,
+      "lon": 25.280033,
+      "href": "https://www.google.com/maps/place/Sweet+Irish+Dream/@36.7225101,25.2801191,3a,75y,90t/data=!3m8!1e2!3m6!1sCIABIhBrHakvsH_-P6Z1VRAymvZq!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAPNQkAG_INTC_XJTTEvoPl1YhlCojQHmYG4pqq6xPZ4OWM3ReIloAVrHCgG5LymM_fsq_Slo-uaQdiIN_t_XNXUrjwwosBOtrLOm8aFt9anh8H3DT5pNATuQmX0VnyGoM9oFPgblTNvqWeD4298%3Dw86-h129-k-no!7i1363!8i2048!4m10!1m2!2m1!1sshot+bar!3m6!1s0x14984786ccd9f78b:0xc4a0f1e61ccc6337!8m2!3d36.7224824!4d25.2800335!10e5!16s%2Fg%2F11bv30lf5r?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Shush Silent Disco",
+      "cat": "eat",
+      "match": "shush silent disco",
+      "lat": 36.722931,
+      "lon": 25.281429,
+      "href": "https://www.google.com/maps/place/Shush+Silent+Disco/@36.7227671,25.2803051,16z/data=!4m6!3m5!1s0x149847be8a37bde7:0xe7db4dfd57516cae!8m2!3d36.7229311!4d25.2814287!16s%2Fg%2F11hdr88zfs?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Lost Boys",
+      "cat": "eat",
+      "match": "lost boys",
+      "lat": 36.722767,
+      "lon": 25.28288,
+      "href": "https://www.google.com/maps/place/Lost+Boys+Bar+Ios/@36.7227671,25.2803051,16z/data=!3m1!4b1!4m6!3m5!1s0x14984780bafb53a7:0x206fe76dc4333ae4!8m2!3d36.7227671!4d25.28288!16s%2Fg%2F11ddxszjr9?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Harmony Ios",
+      "cat": "eat",
+      "match": "harmony ios",
+      "lat": 36.714914,
+      "lon": 25.291094,
+      "href": "https://www.google.com/maps/place/Harmony+Ios/@36.7154345,25.2893582,17z/data=!4m15!1m8!3m7!1s0x1498478227f6a3b7:0xc3c522699223b522!2sChora+840+01,+Greece!3b1!8m2!3d36.7217767!4d25.2819385!16s%2Fg%2F128dgwqcn!3m5!1s0x14983870a1cb4fb3:0x54d22bebeaed5728!8m2!3d36.714914!4d25.291094!16s%2Fg%2F11b7j3dbzy?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Beach House Ios",
+      "cat": "eat",
+      "match": "beach house ios",
+      "lat": 36.726022,
+      "lon": 25.273086,
+      "href": "https://www.google.com/maps/place/Beach+House+Ios/@36.7260225,25.2730861,17z/data=!3m1!4b1!4m6!3m5!1s0x149847bdb4473b47:0xae0c1a3678ea3393!8m2!3d36.7260225!4d25.2730861!16s%2Fg%2F11sv1qpjns"
+    },
+    {
+      "name": "Kabouris Restaurant",
+      "cat": "eat",
+      "match": "kabouris restaurant",
+      "lat": 36.723322,
+      "lon": 25.282393,
+      "href": "https://www.google.com/maps/place/Kabouris+Restaurant/@36.7233217,25.2823932,17z/data=!3m1!4b1!4m6!3m5!1s0x14984780b8d33755:0x81c936714c8b76ee!8m2!3d36.7233217!4d25.2823932!16s%2Fg%2F11c59xp1r2"
+    },
+    {
+      "name": "Salt",
+      "cat": "eat",
+      "match": "salt",
+      "lat": 36.715585,
+      "lon": 25.292952,
+      "href": "https://www.google.com/maps/place/Salt+Restaurant+Bar/@36.7155851,25.292952,17z/data=!3m1!4b1!4m6!3m5!1s0x1498387a3043bf91:0x7951c75e33736720!8m2!3d36.7155851!4d25.292952!16s%2Fg%2F11c3nylr2_"
+    },
+    {
+      "name": "Francesco's Hostel",
+      "cat": "stay",
+      "match": "francesco's hostel",
+      "lat": 36.7236,
+      "lon": 25.282,
+      "href": "https://www.google.com/maps/place/Francesco's/@36.723485,25.2800989,17z/data=!4m9!3m8!1s0x14984781258e1167:0xf5cf8f4457608472!5m2!4m1!1i2!8m2!3d36.723485!4d25.2800989!16s%2Fg%2F1tft0w26?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "sea_bg": true,
+  "center": {
+    "lat": 36.718252,
+    "lon": 25.3579
+  },
+  "district_labels": [
+    {
+      "text": "CHORA",
+      "lat": 36.7255,
+      "lon": 25.302,
+      "fixed": true,
+      "mobile": {
+        "lat": 36.731,
+        "lon": 25.301
+      }
+    }
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.4425788440843658,
+      0.6898420567556021,
+      132748.59372038557
+    ],
+    "mobile": [
+      0.441995033756678,
+      0.6903230858227566,
+      180049.81677017812
+    ]
+  }
+}

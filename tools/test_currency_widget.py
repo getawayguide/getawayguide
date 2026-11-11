@@ -9,6 +9,10 @@ memory feedback_test_cleanup_never_in_real_folders).
   special      a euro country drops EUR from the menu and defaults to USD; a US-dollar country (El Salvador) drops
                USD and opens on 1 EUR = x USD; an unmapped country is skipped
   JS off       the fallback line is inside the div; the rendered widget (Playwright, file://) replaces it
+  field notes  any other page with a block (live or Drafts/Field Notes) is found by its markup and refreshed in place:
+               byte-identical apart from the block and the ?v= stamp (defer="" and CRLF kept), stale fails --check,
+               --live-only skips the drafts' copy, a page without a block never gets one, archive/ Images/ and
+               editor.html are never touched, a block in a currency with no rate is left as is and reported
 
     python tools/test_currency_widget.py
 """
@@ -52,6 +56,21 @@ ONELINE = (HEAD + '<div class="measure" id="currency"><div class="v v-head" data
            '</div></div></div>\n<div class="measure"><p class="copy">El Salvador uses the dollar.</p></div>\n' + TAIL)
 NOSECTION = HEAD + KEYFACTS + '  <div class="measure">\n    <p class="copy">Text.</p>\n  </div>\n' + TAIL
 
+# a field-notes page that carries the block between two lists, as north-macedonia/field-notes.html does (2026-11-11),
+# saved by the editor (defer="") with an old stamp and old rates: refreshed IN PLACE, nothing else touched
+FN_OLD = ('<div class="cconv" data-local="MKD" data-local-name="Denar" data-flag="mk" data-asof="2026-11-01" '
+          'data-rates="USD:1 EUR:0.8 GBP:0.7 AUD:1.4 CAD:1.3 CHF:0.8 MKD:50"><div class="cconv-fb">1 USD ≈ 50.00 MKD '
+          '(mid-market, Nov 1, 2026).</div></div>')
+FIELDNOTES = ('<html><head></head><body class="fn">\n<h2 id="money">Money, Safety &amp; Language</h2>\n<ul>\n'
+              '  <li><b>Cash</b> — ATMs everywhere.</li>\n</ul>\n    ' + FN_OLD + '\n<ul>\n  <li><b>Safety</b> — fine.'
+              '</li>\n</ul>\n<script defer="" src="../currency.js?v=00000000"></script>\n</body></html>\n')
+# the same in a draft, CRLF, with the attributes in another order (an editor round can re-serialize them)
+FN_OLD_DRAFT = FN_OLD.replace('data-local="MKD" data-local-name="Denar" data-flag="mk"',
+                              'data-flag="mk" data-local-name="Denar" data-local="MKD"')
+FIELDNOTES_DRAFT = (FIELDNOTES.replace(FN_OLD, FN_OLD_DRAFT).replace("../currency.js", "../../../currency.js")
+                    .replace("\n", "\r\n"))
+NOBLOCK = '<html><head></head><body>\n<h2 id="money">Money</h2>\n<ul>\n  <li><b>Cash</b> — dram.</li>\n</ul>\n</body></html>\n'
+
 
 def build(tmp):
     site = Path(tmp) / "site"
@@ -61,7 +80,13 @@ def build(tmp):
              "Drafts/Full Articles/greece/greece-itinerary.html": NOSECTION,
              "Drafts/Full Articles/indonesia/indonesia-itinerary.html": ONELINE.replace("El Salvador uses the dollar", "Rupiah"),
              "Drafts/Full Articles/atlantis/atlantis-itinerary.html": PRETTY,
-             "archive/old-itinerary.html": PRETTY}
+             "archive/old-itinerary.html": PRETTY,
+             "north-macedonia/field-notes.html": FIELDNOTES,
+             "Drafts/Field Notes/north-macedonia/field-notes.html": FIELDNOTES_DRAFT,
+             "armenia/field-notes.html": NOBLOCK,
+             "archive/field-notes.html": FIELDNOTES,
+             "Images/web/stray.html": FIELDNOTES,
+             "editor.html": FIELDNOTES}
     for rel, body in pages.items():
         p = site / rel
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -95,10 +120,12 @@ def main():
         gr = site / "Drafts/Full Articles/greece/greece-itinerary.html"
         idr = site / "Drafts/Full Articles/indonesia/indonesia-itinerary.html"
         atl = site / "Drafts/Full Articles/atlantis/atlantis-itinerary.html"
+        fn = site / "north-macedonia/field-notes.html"
+        fnd = site / "Drafts/Field Notes/north-macedonia/field-notes.html"
         stamp = C.js_stamp(site)
 
         code, out = run(site)
-        check("dry run writes nothing", rd(arm) == PRETTY and rd(nm) == PRETTY, out)
+        check("dry run writes nothing", rd(arm) == PRETTY and rd(nm) == PRETTY and rd(fn) == FIELDNOTES, out)
         code, out = run(site, "--check")
         check("--check is 1 while pages lack it", code == 1, out)
 
@@ -142,7 +169,22 @@ def main():
         check("Key Facts placement only when there is no Currency section", 'data-local="AMD"' in a and
               a.index('class="cconv"') > a.index('id="currency"'))
 
-        before = {p: rd(p) for p in (arm, nm, gr, idr, es)}
+        # field notes (any page that is not an itinerary): found by the block's markup, refreshed in place
+        fn_new = C.widget("north-macedonia", RATES)
+        f = rd(fn)
+        check("field notes: the block is refreshed in place (new rates, as-of, fallback), the page byte-identical "
+              "otherwise, the editor's defer=\"\" kept and only the ?v= stamp updated",
+              f == FIELDNOTES.replace(FN_OLD, fn_new).replace("v=00000000", "v=" + stamp), f)
+        check("field notes: reported as refreshed", "north-macedonia/field-notes.html" in out and "refreshed" in out, out)
+        fd = rd(fnd)
+        check("draft field notes (Drafts/Field Notes, CRLF, attributes re-ordered): rebuilt in place, CRLF kept",
+              fd == FIELDNOTES_DRAFT.replace(FN_OLD_DRAFT, fn_new).replace("v=00000000", "v=" + stamp), fd)
+        check("a non-itinerary page without a block is never given one", rd(site / "armenia/field-notes.html") == NOBLOCK)
+        check("archive/, Images/ and editor.html are never touched, block or not",
+              all(rd(site / r) == FIELDNOTES for r in ("archive/field-notes.html", "Images/web/stray.html", "editor.html")))
+        check("summary counts the other pages", "and 2 other pages with a converter" in out, out)
+
+        before = {p: rd(p) for p in (arm, nm, gr, idr, es, fn, fnd)}
         code, out = run(site, "--apply")
         check("second --apply changes nothing (idempotent)", all(rd(p) == s for p, s in before.items()), out)
         code, out = run(site, "--check")
@@ -150,6 +192,25 @@ def main():
         atl.unlink()
         code, out = run(site, "--check")
         check("--check is 0 when every page is current", code == 0, out)
+
+        # a stale field-notes block fails --check; a block whose currency has no rate is left as is and reported
+        cur_fn = rd(fn)
+        with open(fn, "w", encoding="utf-8", newline="") as fh:
+            fh.write(cur_fn.replace(fn_new, FN_OLD))
+        code, out = run(site, "--check")
+        check("--check is 1 when a field-notes block is stale", code == 1 and "north-macedonia/field-notes.html" in out
+              and "1 stale" in out, out)
+        run(site, "--apply")
+        check("...and --apply puts it back byte for byte", rd(fn) == cur_fn)
+        odd = site / "kosovo/guide.html"
+        odd.parent.mkdir(parents=True, exist_ok=True)
+        odd_html = cur_fn.replace('data-local="MKD"', 'data-local="XYZ"')
+        with open(odd, "w", encoding="utf-8", newline="") as fh:
+            fh.write(odd_html)
+        code, out = run(site, "--apply")
+        check("a block in a currency with no rate: left as is and reported", rd(odd) == odd_html
+              and "kosovo/guide.html" in out and "no rate" in out, out)
+        odd.unlink()
 
         # a widget in the old spot (under the first paragraph, before 2026-11-08) moves to the end of the section
         cur = rd(arm)
@@ -176,8 +237,16 @@ def main():
         check("refresh: new rate + as-of in the block", 'data-asof="2026-12-01"' in a and "AMD:400" in a
               and "1 USD ≈ 400 AMD (mid-market, Dec 1, 2026)" in a, a)
         check("refresh: block still once", a.count('class="cconv"') == 1)
+        f = rd(fn)
+        check("refresh: the field-notes block takes the new date in place",
+              f == cur_fn.replace(fn_new, C.widget("north-macedonia", r2)) and "(mid-market, Dec 1, 2026)" in f, f)
+        # --live-only: a draft's stale block stays stale
+        fd_before = rd(fnd).replace(C.widget("north-macedonia", r2), FN_OLD)
+        with open(fnd, "w", encoding="utf-8", newline="") as fh:
+            fh.write(fd_before)
         code, out = run(site, "--apply", "--live-only")
-        check("--live-only leaves drafts alone", "Drafts/" not in out, out)
+        check("--live-only leaves drafts alone", "Drafts/" not in out and rd(fnd) == fd_before, out)
+        run(site, "--apply")
 
         # refresh_rates: a fetch that fails keeps the file; a good payload replaces it
         def boom():

@@ -1,0 +1,281 @@
+{
+  "slug": "el-tunco-routes",
+  "page": "el-salvador/el-tunco.html",
+  "outline_file": "tools/itinerary_maps/geo/el-tunco-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 380,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -91.05,
+    12.65,
+    -86.7,
+    14.85
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/el-tunco-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/el-tunco-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "name": "El Tunco",
+      "lat": 13.4932,
+      "lon": -89.3836,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 30,
+      "marker": "star"
+    },
+    {
+      "name": "San Salvador",
+      "lat": 13.6929,
+      "lon": -89.2182,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8
+    },
+    {
+      "name": "Santa Ana",
+      "lat": 13.9942,
+      "lon": -89.5597,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "href": "santa-ana.html"
+    },
+    {
+      "name": "Juayúa",
+      "lat": 13.8437,
+      "lon": -89.7456,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 2,
+      "href": "ruta-de-las-flores.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": " ",
+      "lat": 14.32,
+      "lon": -90.6,
+      "anchor": "start"
+    },
+    {
+      "name": "  ",
+      "lat": 14.25,
+      "lon": -87.75,
+      "anchor": "start"
+    },
+    {
+      "name": "   ",
+      "lat": 12.88,
+      "lon": -87.5,
+      "anchor": "start"
+    }
+  ],
+  "airports": [
+    {
+      "name": "SAL Airport",
+      "lat": 13.4409,
+      "lon": -89.0557,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "dot: ",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.1
+    },
+    {
+      "a": "dot:  ",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.2
+    },
+    {
+      "a": "dot:   ",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.12
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Tourist shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "El Salvador",
+      "lat": 13.57,
+      "lon": -88.4,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Guatemala",
+      "lat": 14.55,
+      "lon": -90.5,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Honduras",
+      "lat": 14.45,
+      "lon": -87.6,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Nicaragua",
+      "lat": 12.9,
+      "lon": -87.1,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "mobile": {
+    "country_width": 235,
+    "crop_bounds": [
+      -90.62,
+      12.72,
+      -87.0,
+      14.62
+    ],
+    "stops": {
+      "0": {
+        "dx": 0,
+        "dy": 30
+      },
+      "1": {
+        "dx": 16,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -16
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": -6
+      }
+    },
+    "dots": {
+      "0": {
+        "lat": 13.82,
+        "lon": -90.4
+      },
+      "1": {
+        "lat": 14.42,
+        "lon": -88.9
+      },
+      "2": {
+        "lat": 13.0,
+        "lon": -87.5
+      }
+    },
+    "legs": {
+      "4": {
+        "bow": -0.15
+      },
+      "5": {
+        "bow": -0.02
+      },
+      "6": {
+        "bow": 0.1
+      }
+    },
+    "country_labels": {
+      "0": {
+        "lat": 13.6,
+        "lon": -88.15,
+        "size": 10
+      },
+      "1": {
+        "lat": 14.42,
+        "lon": -90.05,
+        "size": 10
+      },
+      "2": {
+        "lat": 14.48,
+        "lon": -88.3,
+        "size": 10
+      },
+      "3": {
+        "lat": 12.84,
+        "lon": -87.2,
+        "size": 10
+      }
+    }
+  }
+}

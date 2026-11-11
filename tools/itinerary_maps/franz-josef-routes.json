@@ -1,0 +1,300 @@
+{
+  "slug": "franz-josef-routes",
+  "page": "Drafts/Full Articles/new-zealand/franz-josef.html",
+  "outline_file": "tools/itinerary_maps/geo/franz-josef-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 1435.7,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "crop_bounds": [
+    168.0,
+    -45.35,
+    173.6,
+    -40.75
+  ],
+  "stops": [
+    {
+      "name": "Franz Josef",
+      "lat": -43.3874,
+      "lon": 170.1819,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "end",
+      "dx": -16,
+      "dy": -2
+    },
+    {
+      "name": "Kaiteriteri",
+      "lat": -41.037,
+      "lon": 173.0167,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "href": "abel-tasman.html"
+    },
+    {
+      "name": "Queenstown",
+      "lat": -45.0322,
+      "lon": 168.661,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 24,
+      "href": "queenstown.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Lake Rotoiti",
+      "lat": -41.8014,
+      "lon": 172.8478,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Cape Foulwind",
+      "lat": -41.749,
+      "lon": 171.4657,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -2
+    },
+    {
+      "name": "Pancake Rocks",
+      "lat": -42.1147,
+      "lon": 171.3267,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    },
+    {
+      "name": "Greymouth",
+      "lat": -42.4499,
+      "lon": 171.208,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 6
+    },
+    {
+      "name": "Wanaka",
+      "lat": -44.6942,
+      "lon": 169.1365,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Haast Pass",
+      "lat": -44.1073,
+      "lon": 169.3548,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -41.284,
+          172.802
+        ],
+        [
+          -41.785,
+          172.894
+        ],
+        [
+          -41.685,
+          172.439
+        ],
+        [
+          -41.797,
+          172.362
+        ],
+        [
+          -41.785,
+          172.027
+        ],
+        [
+          -41.859,
+          171.978
+        ],
+        [
+          -41.815,
+          171.576
+        ],
+        [
+          -41.95,
+          171.47
+        ],
+        [
+          -42.11,
+          171.4
+        ],
+        [
+          -42.28,
+          171.34
+        ],
+        [
+          -42.45,
+          171.29
+        ],
+        [
+          -42.58,
+          171.17
+        ],
+        [
+          -42.72,
+          171.03
+        ],
+        [
+          -42.9,
+          170.9
+        ],
+        [
+          -43.1,
+          170.68
+        ],
+        [
+          -43.16,
+          170.462
+        ],
+        [
+          -43.285,
+          170.408
+        ],
+        [
+          -43.255,
+          170.245
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -44.992,
+          168.939
+        ],
+        [
+          -44.613,
+          169.248
+        ],
+        [
+          -44.35,
+          169.171
+        ],
+        [
+          -43.975,
+          169.424
+        ],
+        [
+          -43.967,
+          169.165
+        ],
+        [
+          -43.891,
+          169.048
+        ],
+        [
+          -43.772,
+          169.36
+        ],
+        [
+          -43.576,
+          169.805
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "South Island",
+      "lat": -43.1,
+      "lon": 172.2,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Sea",
+      "lat": -43.0,
+      "lon": 168.9,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "legend": {
+      "pos": "br",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": -2
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -4
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 24
+      }
+    },
+    "water_labels": [
+      {
+        "name": "Tasman Sea",
+        "lat": -43.0,
+        "lon": 168.9,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "South Island",
+        "lat": -43.1,
+        "lon": 172.2,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 630.1
+  }
+}

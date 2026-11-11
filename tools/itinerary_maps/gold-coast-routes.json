@@ -1,0 +1,233 @@
+{
+  "slug": "gold-coast-routes",
+  "page": "Drafts/Full Articles/australia/gold-coast.html",
+  "outline_file": "tools/itinerary_maps/geo/gold-coast-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "country_width": 823.5,
+  "crop_bounds": [
+    151.2,
+    -29.0,
+    155.2,
+    -27.05
+  ],
+  "stops": [
+    {
+      "name": "Surfers Paradise",
+      "lat": -27.999,
+      "lon": 153.424,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 2,
+      "marker": "star"
+    },
+    {
+      "name": "Brisbane",
+      "lat": -27.465,
+      "lon": 153.025,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 2,
+      "href": "brisbane.html"
+    },
+    {
+      "name": "Byron Bay",
+      "lat": -28.644,
+      "lon": 153.613,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "byron-bay.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Helensvale",
+      "lat": -27.9254,
+      "lon": 153.339,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    }
+  ],
+  "airports": [
+    {
+      "name": "Gold Coast Airport",
+      "lat": -28.1675,
+      "lon": 153.5098,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8,
+      "icon_dx": 8,
+      "icon_dy": 2
+    },
+    {
+      "name": "Brisbane Airport",
+      "lat": -27.3876,
+      "lon": 153.1216,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "icon_dx": 0,
+      "icon_dy": 0
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -27.544,
+          153.062
+        ],
+        [
+          -27.829,
+          153.3
+        ],
+        [
+          -27.958,
+          153.374
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": "dot:Helensvale",
+      "label": "",
+      "color": "#5E93A3",
+      "bow": -0.14
+    },
+    {
+      "a": "dot:Helensvale",
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "bow": -0.14
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -28.046,
+          153.407
+        ],
+        [
+          -28.09,
+          153.427
+        ],
+        [
+          -28.114,
+          153.418
+        ],
+        [
+          -28.121,
+          153.462
+        ],
+        [
+          -28.233,
+          153.48
+        ],
+        [
+          -28.287,
+          153.515
+        ],
+        [
+          -28.404,
+          153.528
+        ],
+        [
+          -28.455,
+          153.501
+        ],
+        [
+          -28.532,
+          153.539
+        ],
+        [
+          -28.635,
+          153.549
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Train and tram",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Australia",
+      "lat": -27.45,
+      "lon": 151.95,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": -27.7,
+      "lon": 154.6,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 497.9,
+    "crop_bounds": [
+      152.0,
+      -29.0,
+      154.4,
+      -27.05
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.9,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Train and tram",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Australia",
+        "lat": -27.18,
+        "lon": 152.55,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": []
+  }
+}

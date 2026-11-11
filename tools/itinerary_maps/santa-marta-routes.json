@@ -1,0 +1,217 @@
+{
+  "slug": "santa-marta-routes",
+  "page": "Drafts/Full Articles/colombia/santa-marta-tayrona.html",
+  "outline_file": "tools/itinerary_maps/geo/santa-marta-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 720,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -76.2,
+    9.9,
+    -73.3,
+    11.85
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/santa-marta-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Santa Marta",
+      "lat": 11.2454,
+      "lon": -74.2058,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -15,
+      "dy": -8,
+      "marker": "star"
+    },
+    {
+      "name": "Cartagena",
+      "lat": 10.4238,
+      "lon": -75.55,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -13,
+      "dy": 6,
+      "href": "cartagena.html"
+    },
+    {
+      "name": "Tayrona (El Zaíno)",
+      "lat": 11.2734,
+      "lon": -73.9312,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 13,
+      "dy": -6
+    }
+  ],
+  "dots": [
+    {
+      "name": "Barranquilla",
+      "lat": 10.9939,
+      "lon": -74.7926,
+      "anchor": "end",
+      "dx": -8,
+      "dy": -9
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          10.445,
+          -75.475
+        ],
+        [
+          10.58,
+          -75.43
+        ],
+        [
+          10.72,
+          -75.29
+        ],
+        [
+          10.86,
+          -75.1
+        ],
+        [
+          10.97,
+          -74.92
+        ],
+        [
+          10.99,
+          -74.79
+        ],
+        [
+          10.985,
+          -74.55
+        ],
+        [
+          10.98,
+          -74.4
+        ],
+        [
+          10.985,
+          -74.32
+        ],
+        [
+          11.02,
+          -74.235
+        ],
+        [
+          11.13,
+          -74.19
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3",
+      "via": [
+        [
+          11.2275,
+          -74.1749
+        ],
+        [
+          11.2855,
+          -74.0036
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Long-distance bus"
+      },
+      {
+        "label": "Local bus",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Colombia",
+      "lat": 10.35,
+      "lon": -74.55,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Caribbean Sea",
+      "lat": 11.68,
+      "lon": -74.35,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 500,
+    "crop_bounds": [
+      -75.95,
+      9.5,
+      -73.45,
+      11.8
+    ],
+    "stops": {
+      "2": {
+        "name": "Tayrona"
+      }
+    },
+    "water_labels": [
+      {
+        "name": "Caribbean Sea",
+        "lat": 11.68,
+        "lon": -74.9,
+        "size": 10
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Long-distance bus"
+        },
+        {
+          "label": "Local bus",
+          "color": "#5E93A3"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Colombia",
+        "lat": 10.45,
+        "lon": -74.6,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

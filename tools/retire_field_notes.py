@@ -10,7 +10,11 @@ Salvador is, and nothing on the site points at the field notes any more:
   1. destinations.html   the country's card opens <slug>/index.html and wears the In-Depth Guide
                          badge, says Read Guide; the map's entry for it opens the same page
   1b. index.html         the home page's Explore tile opens the country page, counts its stories and says
-                         Read Guide (Kevin, 2026-10-24)
+                         Read Guide (Kevin, 2026-10-24). A country with no tile gets one (2026-11-11; North
+                         Macedonia had none): in a free cell of the grid's last row, or in the slot of the tile
+                         --replace-tile=<slug> names; with the grid full and no --replace-tile, the log says ACTION
+                         NEEDED and lists the field-notes tiles that could make way. A new tile gets its photo
+                         bands from tools/fit_backgrounds.py index.html (needs the photo server, :5003).
   2. publish_country.py  FULL_GUIDES gains the country, so every nav built from now on lists it
                          as a guide (green dot) and not as field notes
   3. the nav             regenerated on every live page from destinations.html + FULL_GUIDES
@@ -22,6 +26,9 @@ Salvador is, and nothing on the site points at the field notes any more:
                          anymore like armenia field notes, those belong in the archive folder"), so old links and
                          bookmarks still land and the country folder holds live pages only. Until 2026-10-24 the page
                          was overwritten with a redirect stub that stayed in the folder.
+  5a. share images      every live page of the country gets its own og image if it has none: the country page
+                         from its destinations card's photo, an article from its card (gen_og_images.ensure; North
+                         Macedonia's country page needed a hand edit of PAGE_SRC, 2026-11-10)
   5b. guide cards       a kept field-notes page gets a card under each city heading whose city now has its own
                          guide (tools/guide_cards.py; Kevin, 2026-10-23)
   6b. Explore More       the three related-article cards at the end of every live page are picked again
@@ -32,6 +39,8 @@ Salvador is, and nothing on the site points at the field notes any more:
   6. posts + count      tools/sync_guides.py: its articles join the posts page's Guides section, its
                          field-notes card leaves, and the home hero's "N and counting." is recounted
   7. sitemap + search    tools/gen_sitemap.py and tools/gen_search_index.py run again
+  7b. search photos      tools/build_search_thumbs.py: the rebuilt index has no thumbnails until it runs
+  7c. draft navs         tools/update_draft_nav.py rebuilds the menu on every draft, nav block only, byte-safe
   9. currency          the converter on every live itinerary gets today's rates (tools/currency_widget.py)
 
 It refuses to run until <slug>/index.html is live: retiring first would point the whole site at a
@@ -44,6 +53,7 @@ page that the site keeps linking to (steps 4 and 5 are skipped). That is the "Ke
     python tools/retire_field_notes.py armenia --dry-run     # what it would change (the tab shows this)
     python tools/retire_field_notes.py armenia               # at launch, after the guide is live
     python tools/retire_field_notes.py greece --keep-field-notes   # a guide launch that keeps the notes live
+    python tools/retire_field_notes.py north-macedonia --keep-field-notes --replace-tile=kosovo   # its home tile takes Kosovo's
 """
 import io
 import json
@@ -130,7 +140,8 @@ def plan(slug):
                 else "%s joins the nav as a guide (green dot) once pages carry the nav (none do yet)" % name,
                 "%d other link(s) on %d page(s) move to the country page" % (sum(i["links"] for i in inbound), len(inbound)),
                 "%s moves to Drafts/.Archive and its address 301s to %s/index.html, so old links still land" % (page, slug),
-                "The sitemap and site search drop it"]}
+                "The sitemap and site search drop it",
+                "Home: " + _home_tile(slug, dry=True)[0][-1].replace("index.html: ", "")]}
 
 
 STUB = """<!DOCTYPE html>
@@ -148,7 +159,7 @@ STUB = """<!DOCTYPE html>
 """
 
 
-def apply(slug, dry=False, force=False, keep=False):
+def apply(slug, dry=False, force=False, keep=False, replace_tile=None):
     p = plan(slug)
     if p["retired"] and not keep:
         return ["%s is already retired" % p["page"]]
@@ -178,7 +189,12 @@ def apply(slug, dry=False, force=False, keep=False):
             io.open(ROOT / "destinations.html", "w", encoding="utf-8", newline="").write(d2)
     # 1b. the home page's tile for the country opens the country page and reads as a guide (Kevin, 2026-10-24:
     #     "Turkiye card on home should link to the index card")
-    log += home_tile(slug, dry)
+    #     A guide country with no tile gets one (North Macedonia had none, 2026-11-10): in a free cell, or in the slot of
+    #     the tile --replace-tile names; with the grid full and no --replace-tile, the log says ACTION NEEDED.
+    tile_log, tile_new = _home_tile(slug, dry, replace_tile)
+    log += tile_log
+    if tile_new:
+        log += fit_home_tiles(dry)
     # 2. FULL_GUIDES
     pcf = TOOLS / "publish_country.py"
     src = io.open(pcf, encoding="utf-8", newline="").read()
@@ -235,21 +251,162 @@ def apply(slug, dry=False, force=False, keep=False):
     return log + _finish(dry, p["page"])
 
 
-def home_tile(slug, dry=False):
+def _tile_re(slug):
+    return re.compile(r'<a class="tile" href="%s/(?:field-notes|index)\.html">.*?</a>' % re.escape(slug), re.S)
+
+
+def _stories(slug):
+    return len([p for p in (ROOT / slug).glob("*.html") if p.name not in ("index.html",) and 'http-equiv="refresh"' not in p.read_text(encoding="utf-8")[:4000]])
+
+
+def tiles_grid(h):
+    """the Explore by Destination grid on the home page: (start, end, columns, [tile matches]) or None. The grid is
+    <div class="tiles five">: five columns on a desktop (artifact.css .tiles; "four" makes it four), two full rows today
+    (nine countries and the map tile)."""
+    g = re.search(r'<div class="tiles(?: ([\w ]*))?">', h)
+    if not g:
+        return None
+    depth = 0
+    for t in re.finditer(r"<(/?)div\b[^>]*>", h[g.start():]):
+        depth += -1 if t.group(1) else 1
+        if depth == 0:
+            end = g.start() + t.end()
+            break
+    else:
+        return None
+    cols = 4 if "four" in (g.group(1) or "").split() else 5
+    tiles = list(re.finditer(r'<a class="tile(?: [^"]*)?" href="[^"]*">.*?</a>', h[g.start():end], re.S))
+    return g.start(), end, cols, tiles
+
+
+def new_tile(slug, name, n, bgfit=None):
+    """a guide country's tile, built the way the others are: the destinations card's photo and framing (its dest-bg
+    style, byte for byte, as every tile on the page has it), "N stories" and Read Guide"""
+    d = _read("destinations.html")
+    c = re.search(r"location\.href='%s/(?:field-notes|index)\.html'[^>]*>\s*<div class=\"dest-bg\" style=\"([^\"]*)\"" % re.escape(slug), d)
+    style = c.group(1) if c else ("background-image:url('Images/web/dest-cards/%s.jpg');background-size:cover;"
+                                  "background-position:50%% 50%%" % slug)
+    return ('<a class="tile" href="%s/index.html"><div class="tile-bg" style="%s"%s></div><div class="veil"></div>'
+            '<div class="lab"><div class="serif nm">%s</div><div class="sub">%d stories</div><span class="rn">Read Guide</span>'
+            '</div></a>' % (slug, style, (' data-bgfit="%s"' % bgfit) if bgfit else "", name, n))
+
+
+def home_tile(slug, dry=False, replace=None):
     """index.html's Explore tile for `slug`: href to the country page, "N stories" for the sub line, Read Guide"""
+    return _home_tile(slug, dry, replace)[0]
+
+
+def _home_tile(slug, dry=False, replace=None):
+    """(log, wrote a new tile). A tile that exists is rewired (href, story count, Read Guide). A guide country with no
+    tile gets one (North Macedonia, 2026-11-10, had none and the launch said only "no tile"):
+      * replace=<slug>: it takes that country's tile and its slot (the data-bgfit number, so the page's per-band photo
+        rules stay keyed right until fit_backgrounds.py recuts them). Kevin picks it, as he did for North Macedonia:
+        "replace Kosovo under Explore by Destination with North Macedonia"
+      * else, if the grid's last row has room, it goes in before the map tile
+      * else the grid is full (adding one would start a row of one): nothing is written and the log says it is needed
+        and which tiles could make way, so the launch is rerun with --replace-tile=<slug>
+    """
     h = _read("index.html")
-    m = re.search(r'<a class="tile" href="%s/(?:field-notes|index)\.html">.*?</a>' % re.escape(slug), h, re.S)
-    if not m:
-        return ["index.html: no tile for %s" % slug]
-    n = len([p for p in (ROOT / slug).glob("*.html") if p.name not in ("index.html",) and 'http-equiv="refresh"' not in p.read_text(encoding="utf-8")[:4000]])
-    t = m.group(0).replace('href="%s/field-notes.html"' % slug, 'href="%s/index.html"' % slug)
-    t = re.sub(r'<div class="sub">[^<]*</div>', '<div class="sub">%d stories</div>' % n, t, count=1)
-    t = t.replace('<span class="rn">Read Notes</span>', '<span class="rn">Read Guide</span>')
-    if t == m.group(0):
-        return ["index.html: the %s tile already opens the country page" % slug]
-    if not dry:
-        io.open(ROOT / "index.html", "w", encoding="utf-8", newline="").write(h[:m.start()] + t + h[m.end():])
-    return ["index.html: %s tile -> %s/index.html, %d stories, Read Guide" % (slug, slug, n)]
+    m = _tile_re(slug).search(h)
+    n = _stories(slug)
+    name = facts(slug)[0]
+    if m:
+        t = m.group(0).replace('href="%s/field-notes.html"' % slug, 'href="%s/index.html"' % slug)
+        t = re.sub(r'<div class="sub">[^<]*</div>', '<div class="sub">%d stories</div>' % n, t, count=1)
+        t = t.replace('<span class="rn">Read Notes</span>', '<span class="rn">Read Guide</span>')
+        if replace and replace != slug:
+            log = ["index.html: %s already has a tile, so --replace-tile=%s was not used" % (slug, replace)]
+        else:
+            log = []
+        if t == m.group(0):
+            return log + ["index.html: the %s tile already opens the country page" % slug], False
+        if not dry:
+            io.open(ROOT / "index.html", "w", encoding="utf-8", newline="").write(h[:m.start()] + t + h[m.end():])
+        return log + ["index.html: %s tile -> %s/index.html, %d stories, Read Guide" % (slug, slug, n)], False
+    grid = tiles_grid(h)
+    if not grid:
+        return ["ACTION NEEDED index.html: no tile for %s and no Explore by Destination grid found to add one to" % slug], False
+    g0, g1, cols, tiles = grid
+    if replace:
+        old = _tile_re(replace).search(h, g0, g1)
+        if not old:
+            return ["ACTION NEEDED index.html: no tile for %s, and --replace-tile=%s names no tile on the home page" % (slug, replace)], False
+        bf = re.search(r'data-bgfit="(\d+)"', old.group(0))
+        t = new_tile(slug, name, n, bf.group(1) if bf else None)
+        if not dry:
+            io.open(ROOT / "index.html", "w", encoding="utf-8", newline="").write(h[:old.start()] + t + h[old.end():])
+        return ["index.html: %s tile replaced by a %s tile -> %s/index.html, %d stories, Read Guide%s"
+                % (replace, slug, slug, n, "" if dry else " (photo bands recut below)")], True
+    if len(tiles) % cols:                              # the last row has a gap: fill it, before the map tile
+        mp = next((t for t in tiles if "map-live" in t.group(0) or 'href="destinations.html"' in t.group(0)), None)
+        at = g0 + (mp.start() if mp else tiles[-1].end())
+        t = new_tile(slug, name, n)
+        if not dry:
+            io.open(ROOT / "index.html", "w", encoding="utf-8", newline="").write(h[:at] + t + h[at:])
+        return ["index.html: added a %s tile under Explore by Destination -> %s/index.html, %d stories, Read Guide%s"
+                % (slug, slug, n, "" if dry else " (photo bands recut below)")], True
+    notes = [re.search(r'href="([a-z-]+)/field-notes\.html"', t.group(0)) for t in tiles]
+    cands = [x.group(1) for x in notes if x]
+    return ["ACTION NEEDED index.html: %s has no tile under Explore by Destination and the grid is full (%d tiles, %d a row). "
+            "Pick one to make way and rerun with --replace-tile=<slug>%s"
+            % (slug, len(tiles), cols, ("; field-notes tiles: " + ", ".join(cands)) if cands else "")], False
+
+
+def fit_home_tiles(dry=False):
+    """a new tile needs its own photo files per window band, like every other tile: tools/fit_backgrounds.py index.html
+    (CLAUDE.md: run it after adding a card by hand). It loads the page through the photo server (:5003)."""
+    if dry:
+        return ["would run fit_backgrounds.py index.html (the new tile's photo bands)"]
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "fit_backgrounds.py"), "index.html"], cwd=ROOT, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", timeout=1800)
+        tail = (r.stdout or "").strip().splitlines()
+        if r.returncode == 0:
+            return ["fit_backgrounds.py index.html: %s" % (tail[-1] if tail else "done")]
+        err = (r.stderr or r.stdout or "").strip().splitlines()
+        return ["WARN: fit_backgrounds.py index.html failed (%s) - run it with the photo server up" % (err[-1] if err else r.returncode)]
+    except Exception as e:
+        return ["WARN: fit_backgrounds.py index.html not run (%s) - run it with the photo server up" % e]
+
+
+def country_pages(slug):
+    """the country's live pages (country page, articles, kept field notes), redirect stubs left out"""
+    d = ROOT / slug
+    return [p.relative_to(ROOT).as_posix() for p in sorted(d.glob("*.html"))
+            if 'http-equiv="refresh"' not in p.read_text(encoding="utf-8", errors="replace")[:4000]] if d.is_dir() else []
+
+
+def search_thumbs(dry=False):
+    """tools/build_search_thumbs.py after the search index is rebuilt (it reuses every thumbnail that exists)"""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "build_search_thumbs.py")] + (["--dry-run"] if dry else []), cwd=ROOT,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
+    except Exception as e:
+        return ["WARN: build_search_thumbs.py not run (%s) - run it by hand" % e]
+    out = (r.stdout or "").strip().splitlines()
+    if r.returncode != 0:
+        err = (r.stderr or r.stdout or "").strip().splitlines()
+        return ["WARN: build_search_thumbs.py failed (%s) - run it by hand" % (err[-1] if err else r.returncode)]
+    cut = sum(1 for ln in out if ln.strip().startswith(("cut ", "would cut")))
+    missing = [ln.strip() for ln in (r.stderr or "").splitlines() if ln.strip()]
+    log = ["search thumbnails: %s (%d new)" % (out[-1].strip() if out else "-", cut)]
+    if missing:
+        log.append("search thumbnails: %d without a photo, e.g. %s" % (len(missing), missing[0]))
+    return log
+
+
+def draft_navs(dry=False):
+    """every draft's nav rebuilt from the launched menu, nav block only (tools/update_draft_nav.py)"""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "update_draft_nav.py")] + (["--dry-run"] if dry else []), cwd=ROOT,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
+    except Exception as e:
+        return ["WARN: draft navs not refreshed (%s) - run tools/update_draft_nav.py" % e]
+    out = (r.stdout or "").strip().splitlines()
+    if r.returncode != 0:
+        err = (r.stderr or r.stdout or "").strip().splitlines()
+        return ["WARN: update_draft_nav.py failed (%s) - run it by hand" % (err[-1] if err else r.returncode)]
+    return ["draft navs: " + (out[-1].strip() if out else "-")]
 
 
 def _finish(dry, page=None):
@@ -259,6 +416,15 @@ def _finish(dry, page=None):
     if page and "/" in page:
         import site_archive
         log += ["folder: " + ln for ln in site_archive.sweep([page.split("/")[0]], dry)]
+    # 5a. share images (North Macedonia, 2026-11-10: its country page had none until gen_og_images.PAGE_SRC was edited by
+    #     hand): every live page of the country gets its own og image if it has none, the country page from its
+    #     destinations card's photo, an article from its country-page card; a page that already has one is left alone
+    if page and "/" in page:
+        try:
+            import gen_og_images
+            log += ["og: " + ln for ln in gen_og_images.ensure(country_pages(page.split("/")[0]), dry)]
+        except Exception as e:
+            log.append("WARN: share images not checked (%s) - run tools/gen_og_images.py" % e)
     # 5b. guide cards (Kevin, 2026-10-23: "add field notes badges as part of launch steps"): a field-notes section
     #     whose city now has its own published guide gets the card under its heading (tools/guide_cards.py). A
     #     retired page is a redirect by now, so only a kept page gets them.
@@ -270,6 +436,18 @@ def _finish(dry, page=None):
                 log.append("guide card on %s#%s -> %s: %s" % (page, sec, guide, what))
             if not rep:
                 log.append("guide cards: no section of %s links to a published guide" % page)
+    # 5d. cross-links (Kevin, 2026-11-10: "I want the articles to cross link ... make the crosslink a tool that can be
+    #     replicated"): the first bare mention of a sibling article's place in each section links to it
+    #     (tools/crosslink.py). Existing links are never touched: no relink pass, so a Google Maps pin or a booking
+    #     link stays as it is (Kevin, 2026-11-10: "map links should be linked to map pins like google maps or booking
+    #     links"). Repoint suggestions go to .tmp/crosslink/<slug>-review.md for Kevin, never guessed.
+    if page and "/" in page:
+        try:
+            import crosslink
+            cx = crosslink.run(page.split("/")[0], apply=not dry, mentions=True)      # mentions only: relinks removed
+            log += ["crosslink: " + ln for ln in cx["log"]]
+        except Exception as e:
+            log.append("WARN: cross-links not run (%s) — run tools/crosslink.py %s --apply" % (e, page.split("/")[0]))
     # 6. the posts page lists the country's articles under Guides (a retired country's field-notes card
     #    leaves), and the home hero's "N and counting." is recounted (tools/sync_guides.py; Kevin, 2026-10-02)
     import sync_guides
@@ -296,6 +474,13 @@ def _finish(dry, page=None):
         log.append("ran %s" % tool)
         if not dry:
             subprocess.run([sys.executable, str(TOOLS / tool)], cwd=ROOT, capture_output=True, text=True)
+    # 7b. the search results' photos: gen_search_index writes the index without them, so every rebuild drops all of them
+    #     until tools/build_search_thumbs.py runs (North Macedonia, 2026-11-10: run by hand). It reuses a thumbnail that
+    #     exists and cuts only the missing ones.
+    log += search_thumbs(dry)
+    # 7c. the drafts' nav: the launch changed the menu (a new guide, its green dot), so every draft's copy is stale. Only
+    #     the nav block is rewritten, byte-safe, so a draft with uncommitted work is safe to touch (tools/update_draft_nav.py)
+    log += draft_navs(dry)
     # 8. Cloudflare Web Analytics beacon in the head of every live page, the new guide pages included
     #    (idempotent; a no-op while CF_ANALYTICS_TOKEN is missing from .env)
     log.append("ran analytics_snippet.py --apply")
@@ -323,7 +508,8 @@ def main():
     if "--json" in sys.argv:
         sys.stdout.buffer.write(json.dumps(plan(slug), ensure_ascii=False).encode("utf-8"))
         return 0
-    for line in apply(slug, dry=dry, force="--force" in sys.argv, keep="--keep-field-notes" in sys.argv):
+    rt = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--replace-tile=")), None)
+    for line in apply(slug, dry=dry, force="--force" in sys.argv, keep="--keep-field-notes" in sys.argv, replace_tile=rt):
         print(("[dry] " if dry else "") + line)
     return 0
 

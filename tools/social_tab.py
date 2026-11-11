@@ -41,6 +41,15 @@ Routes (CORS open like the rest of the photo server):
   GET  /api/social/job/<id>                 -> {ok, job: {id, slug, kind, status, log, started, ended, error}}
   POST /api/social/<slug>/seed              -> runs ig_carousel.py seed, copies the plan + map into the store
   POST /api/social/<slug>/import {dir}      -> copies an ArtifactData out_dir (under .tmp) into the store; {ok, copied}
+                                               (the tab's Import button went 2026-11-11; Claude calls this route directly)
+  GET  /api/social/<slug>/library?album=    -> {ok, names}: that album's photos already in this country
+  POST /api/social/<slug>/add {album, names} -> photos from the photo library (~/Backup/<album>, SOCIAL_BACKUP_DIR for tests):
+                                               1280 px sRGB web copies + manifest entries; {ok, added, skipped, version}
+
+2026-11-11 redesign (Kevin: "remove the Shortlist, the slots are the shortlist"): a photo's state is pool, archived or
+final; slots 1..post/main.nfinal (10, up to Instagram's 20) are the post and every later slot is the Shortlist. A store
+still holding the old 'shortlist' state (or two photos in one slot) is migrated on the next read (migrate_store), after a
+copy of the state folder to .tmp/ig/<slug>/state.bak-<time>.
 
 Standalone (tests):  python tools/social_tab.py --serve 5041
 """
@@ -179,11 +188,66 @@ def catalog_from_manifest(man, slug):
     return {"country": man.get("country"), "slug": slug, "pages": man.get("pages"), "items": items, "source": "manifest"}
 
 
+NFINAL_DEFAULT, NFINAL_MAX = 10, 20          # Instagram takes up to 20 photos in one post (Meta's content-publishing docs)
+
+
+def nfinal_of(post):
+    """how many slots the Final row has: post/main.nfinal, 10 by default, never more than Instagram's 20"""
+    try:
+        n = int((post or {}).get("nfinal") or NFINAL_DEFAULT)
+    except (TypeError, ValueError):
+        n = NFINAL_DEFAULT
+    return max(1, min(NFINAL_MAX, n))
+
+
+def migrate_store(slug, docs):
+    """Kevin, 2026-11-11: "remove the Shortlist: the slots are the shortlist". A photo still in the old shortlist
+    state (or a final photo without a usable slot, or two photos claiming one slot) moves into the next free slot
+    after the Final row, so nothing he picked is lost. The state folder is copied to state.bak-<time> first, once per
+    migration. Returns True when it wrote anything."""
+    photos = {k.split("/", 1)[1]: v for k, v in docs.items() if k.startswith("photos/") and isinstance(v, dict)}
+    n_final = nfinal_of(docs.get("post/main"))
+    taken, moves = set(), []
+
+    def num(v):                                         # a slot or order that is not a number counts as none
+        try:
+            return int(v or 0)
+        except (TypeError, ValueError):
+            return 0
+    for pid, d in sorted(photos.items(), key=lambda kv: (num(kv[1].get("slot")), kv[0])):
+        if d.get("state") != "final":
+            continue
+        s = num(d.get("slot"))
+        if s >= 1 and s not in taken:
+            taken.add(s)
+        else:
+            moves.append(pid)                                     # a duplicate or a missing slot
+    olds = sorted((pid for pid, d in photos.items() if d.get("state") == "shortlist"),
+                  key=lambda pid: (num(photos[pid].get("order")), pid))
+    moves = olds + moves
+    if not moves:
+        return False
+    bak = state_dir(slug).parent / ("state.bak-" + time.strftime("%Y%m%d-%H%M%S"))
+    if not bak.exists():
+        import shutil
+        shutil.copytree(state_dir(slug), bak)
+    nxt = n_final + 1
+    for pid in moves:
+        while nxt in taken:
+            nxt += 1
+        taken.add(nxt)
+        d = dict(photos[pid])
+        d.update(state="final", slot=nxt, order=0)
+        write_doc(slug, "photos/" + pid, d)
+    return True
+
+
 def ensure_store(slug, man):
     """first read of a country: a catalog from the manifest, and the seed's plan + map (ig_carousel.py seed wrote
-    .tmp/ig/<slug>/carousel/main.json + map.json) copied in, so the template mode opens on the current plan"""
+    .tmp/ig/<slug>/carousel/main.json + map.json) copied in, so the template mode opens on the current plan; then the
+    old shortlist migrated into the slots (migrate_store)"""
     docs = read_store(slug)
-    changed = False
+    changed = migrate_store(slug, docs)
     if "catalog/main" not in docs or (docs["catalog/main"].get("source") == "manifest" and len(docs["catalog/main"].get("items") or []) != len(man.get("photos") or [])):
         write_doc(slug, "catalog/main", catalog_from_manifest(man, slug))
         changed = True
@@ -255,7 +319,7 @@ def start_render(slug, kind, country):
     elif kind == "pins":
         cmd = [sys.executable, str(TOOLS / "ig_carousel.py"), country, "pins", "--out", str(out_dir() / "pins")]
     elif kind == "free":
-        cmd = [sys.executable, str(TOOLS / "ig_post.py"), country, "render", "--state", str(st), "--force"]
+        cmd = [sys.executable, str(TOOLS / "ig_post.py"), country, "render", "--state", str(st), "--force", "--out", str(render_folder(slug, "free"))]
         if os.environ.get("SOCIAL_IG_DIR"):
             cmd.append("--no-copy")                     # a test run never writes Pictures\IG
     elif kind in ("stories-carousel", "stories-free"):
@@ -307,6 +371,10 @@ SHIM = r"""
 (function(){
   const API = window.SOCIAL_API, SLUG = window.SOCIAL_SLUG;
   let docs = {}, version = null, loaded = false;
+  // Stress test 2026-11-11: a poll's answer that was read BEFORE one of this page's writes but arrived after it put the
+  // older documents back (a photo popped out of the slot it had just been given, for up to 6 s), and a save made on that
+  // photo meanwhile wrote the old fields back for good. A poll that crossed a write is dropped; the next one is current.
+  let wseq = 0, writing = 0;
   const docL = new Map(), collL = new Map();
   const snapDoc = p => { const d = docs[p]; return { exists: d !== undefined, data: () => d, id: p.split('/')[1], metadata: { fromCache: false } }; };
   const snapColl = c => { const ds = Object.keys(docs).filter(k => k.startsWith(c + '/')).map(snapDoc); return { docs: ds, size: ds.length, metadata: { fromCache: false }, empty: !ds.length }; };
@@ -324,18 +392,23 @@ SHIM = r"""
     return [...changed];
   }
   async function poll() {
+    const w0 = wseq;
     try { const r = await fetch(API + '/api/social/' + SLUG + '/db?version=' + encodeURIComponent(version || ''), { cache: 'no-store' });
       if (r.status === 304) return; const j = await r.json(); if (!j.ok || j.version === version) return;
+      if (wseq !== w0 || writing) return;
       const before = docs; docs = j.docs || {}; version = j.version;
       fire([...new Set([...Object.keys(before), ...Object.keys(docs)])].filter(k => JSON.stringify(before[k]) !== JSON.stringify(docs[k])));
     } catch (e) {}
   }
   const ready = load().then(() => { setInterval(poll, 6000); }).catch(e => { console.error(e); throw e; });
   async function write(path, data) {
-    const r = await fetch(API + '/api/social/' + SLUG + '/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: data === null ? 'delete' : 'set', path, data }) });
-    if (!r.ok) throw Object.assign(new Error('write ' + r.status), { code: 'unavailable' });
-    const j = await r.json(); version = j.version;
-    if (data === null) delete docs[path]; else docs[path] = JSON.parse(JSON.stringify(data));
+    writing++;
+    try {
+      const r = await fetch(API + '/api/social/' + SLUG + '/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: data === null ? 'delete' : 'set', path, data }) });
+      if (!r.ok) throw Object.assign(new Error('write ' + r.status), { code: 'unavailable' });
+      const j = await r.json(); version = j.version;
+      if (data === null) delete docs[path]; else docs[path] = JSON.parse(JSON.stringify(data));
+    } finally { writing--; wseq++; }
     fire([path]);
   }
   const db = {
@@ -353,7 +426,7 @@ SHIM = r"""
     })
   };
   window.claude = { use: name => name === 'db' ? Promise.resolve(db) : Promise.resolve(null), local: true };
-  window.__socialDb = { docs: () => docs, version: () => version, loaded: () => loaded, poll };
+  window.__socialDb = { docs: () => docs, version: () => version, loaded: () => loaded, poll, write };
   // the editor suite's own faces, so the page sits in the tab like the other tabs
   document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.setProperty('--display', "'Newsreader', Georgia, serif"); document.documentElement.style.setProperty('--ui', "'Hanken Grotesk', sans-serif"); });
 })();
@@ -373,7 +446,8 @@ def page_html(slug, api_base, embed=False):
 
 # ------------------------------------------------------------------------------------- routes
 def _json():
-    return request.get_json(force=True, silent=True) or {}
+    b = request.get_json(force=True, silent=True)
+    return b if isinstance(b, dict) else {}
 
 
 def _cors(resp):
@@ -443,7 +517,10 @@ def api_db(slug):
             elif body.get("op") == "set":
                 write_doc(slug, str(body.get("path") or ""), body.get("data"))
             elif body.get("op") == "batch":
-                for o in body.get("ops") or []:
+                ops = body.get("ops")
+                if not isinstance(ops, list) or not all(isinstance(o, dict) for o in ops):
+                    raise ValueError("a batch needs ops: a list of {op, path, data}")
+                for o in ops:
                     write_doc(slug, str(o.get("path") or ""), None if o.get("op") == "delete" else o.get("data"))
             else:
                 return jsonify({"ok": False, "error": "op must be set, delete or batch"}), 400
@@ -577,6 +654,138 @@ def api_import(slug):
                 except Exception:
                     continue
     return jsonify({"ok": True, "copied": copied, "version": version_of(slug)})
+
+
+# ------------------------------------------------------------------------------------- photos from the photo library
+# Kevin, 2026-11-11: "let me add more photos to the Photos tab from the photo library". The library is the backed-up
+# albums (~/Backup/<album>/, the editor's Library app); a picked photo gets the same 1280 px sRGB web copy and manifest
+# entry ig_post.py collect makes for an article photo, with its original being the album file itself (read only), so
+# the renders cut it from full resolution like any other. Its "article" is "library" and its title the album's name.
+LIB_EXTS = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"}
+
+
+def backup_dir():
+    return Path(os.environ.get("SOCIAL_BACKUP_DIR") or (Path.home() / "Backup"))
+
+
+def _album(name):
+    """one folder name under the backup root, or None (no separators, no dot tricks)"""
+    s = str(name or "").strip()
+    if not s or s in (".", "..") or re.search(r'[\\/:*?"<>|\x00-\x1f]', s):
+        return None
+    p = backup_dir() / s
+    try:
+        p.resolve().relative_to(backup_dir().resolve())
+    except ValueError:
+        return None
+    return p if p.is_dir() else None
+
+
+def _orig_key(p):
+    return str(p).replace("\\", "/").lower()
+
+
+def _write_json(f, data):
+    tmp = f.with_name(f.name + ".%d.tmp" % os.getpid())
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    os.replace(tmp, f)
+
+
+def add_library_photos(slug, album, names):
+    """web copies + manifest entries for the picked album photos; returns (added ids, skipped names)"""
+    import ig_post                                            # PIL + the ICC-aware helpers (and the HEIC opener)
+    folder = _album(album)
+    if folder is None:
+        raise ValueError("no album %r in the photo library" % album)
+    base = ig_dir() / slug
+    man_f = base / "manifest.json"
+    man = json.loads(man_f.read_text(encoding="utf-8"))
+    photos = man.setdefault("photos", [])
+    have = {_orig_key((ROOT / p["original"]) if not Path(p["original"]).is_absolute() else p["original"]) for p in photos if p.get("original")}
+    ids = {p["id"] for p in photos}
+    web = base / "web"
+    web.mkdir(parents=True, exist_ok=True)
+    added, skipped = [], []
+    for name in names:
+        name = os.path.basename(str(name or ""))
+        f = folder / name
+        if not name or f.suffix.lower() not in LIB_EXTS or not f.is_file() or _orig_key(f.resolve()) in have:
+            skipped.append(name)
+            continue
+        try:
+            im, icc = ig_post.open_upright(f)
+            t, gps = ig_post.exif_info(ig_post.Image.open(f))
+            w, h = im.size
+            pid0 = re.sub(r"[^a-z0-9_.-]+", "-", ("lib-%s-%s" % (album, f.stem)).lower()).strip("-")[:110]
+            pid, k = pid0, 2
+            while pid in ids:
+                pid, k = "%s-%d" % (pid0, k), k + 1
+            s = ig_post.WEB_EDGE / max(w, h)
+            small = im.resize((round(w * s), round(h * s)), ig_post.Image.LANCZOS) if s < 1 else im
+            dst = web / (pid + ".jpg")
+            ig_post.save_srgb(ig_post.to_srgb(small, icc), dst, ig_post.WEB_Q)
+        except Exception as e:                               # an unreadable file is skipped, the rest still go in
+            skipped.append("%s (%s)" % (name, str(e)[:80]))
+            continue
+        rel = _rel(f)
+        photos.append({"id": pid, "original": rel or str(f.resolve()).replace("\\", "/"), "article": "library",
+                       "article_title": "Photo library: " + album, "section": "", "caption": "", "alt": "", "time": t, "gps": gps,
+                       "w": w, "h": h, "web": _rel(dst) or str(dst), "web_bytes": dst.stat().st_size, "icc": bool(icc),
+                       "source": "library", "album": album, "name": name})
+        ids.add(pid)
+        have.add(_orig_key(f.resolve()))
+        added.append(pid)
+    if added:
+        _write_json(man_f, man)
+        cat = read_store(slug).get("catalog/main")
+        if cat and cat.get("source") != "manifest":            # an imported artifact catalog: the new photos are appended to it
+            new = [p for p in photos if p["id"] in set(added)]
+            cat["items"] = (cat.get("items") or []) + [{k: p.get(k) for k in ("id", "article", "article_title", "section", "caption", "alt", "time", "w", "h")} | {"asset": p["id"]} for p in new]
+            write_doc(slug, "catalog/main", cat)
+        ensure_store(slug, man)                                # a manifest catalog is rebuilt, so the version moves and the page's poll sees it
+    return added, skipped
+
+
+@bp.route("/api/social/<slug>/library", methods=["GET", "OPTIONS"])
+def api_library(slug):
+    """the names of one album's photos that are already in this country's photos (the picker marks them)"""
+    if request.method == "OPTIONS":
+        return "", 204
+    slug = _slug(slug)
+    man = manifest(slug) if slug else None
+    if not man:
+        return jsonify({"ok": False, "error": "no such country"}), 404
+    folder = _album(request.args.get("album"))
+    if folder is None:
+        return jsonify({"ok": True, "names": []})
+    root = _orig_key(folder.resolve()) + "/"
+    names = []
+    for p in man.get("photos") or []:
+        o = p.get("original") or ""
+        k = _orig_key((ROOT / o).resolve() if not Path(o).is_absolute() else Path(o).resolve())
+        if k.startswith(root):
+            names.append(Path(o).name)
+    return jsonify({"ok": True, "names": names})
+
+
+@bp.route("/api/social/<slug>/add", methods=["POST", "OPTIONS"])
+def api_add(slug):
+    """POST {album, names: [...]} -> {ok, added: [ids], skipped: [names], version}"""
+    if request.method == "OPTIONS":
+        return "", 204
+    slug = _slug(slug)
+    if not slug or not manifest(slug):
+        return jsonify({"ok": False, "error": "no such country"}), 404
+    body = _json()
+    names = body.get("names") or []
+    if not isinstance(names, list) or not names or len(names) > 300:
+        return jsonify({"ok": False, "error": "names: 1 to 300 photo file names"}), 400
+    try:
+        with _lock:
+            added, skipped = add_library_photos(slug, str(body.get("album") or ""), names)
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    return jsonify({"ok": True, "added": added, "skipped": skipped, "version": version_of(slug)})
 
 
 def register(app):

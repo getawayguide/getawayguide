@@ -1,0 +1,220 @@
+{
+  "slug": "puerto-escondido-routes",
+  "page": "Drafts/Full Articles/mexico/puerto-escondido.html",
+  "outline_file": "tools/itinerary_maps/geo/puerto-escondido-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 920.2,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -105.3,
+    14.9,
+    -95.1,
+    21.9
+  ],
+  "layers": [],
+  "stops": [
+    {
+      "name": "Puerto Escondido",
+      "lat": 15.8619,
+      "lon": -97.0682,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 26,
+      "marker": "star"
+    },
+    {
+      "name": "Oaxaca",
+      "lat": 17.0732,
+      "lon": -96.7266,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "href": "oaxaca.html"
+    },
+    {
+      "name": "Mexico City",
+      "lat": 19.4326,
+      "lon": -99.1332,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "href": "mexico-city.html"
+    },
+    {
+      "name": "Guadalajara",
+      "lat": 20.6767,
+      "lon": -103.3475,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6
+    }
+  ],
+  "dots": [
+    {
+      "name": "Puebla",
+      "lat": 19.0414,
+      "lon": -98.2063,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Acapulco",
+      "lat": 16.8636,
+      "lon": -99.8825,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 10
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.28
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.07
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.1
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus or shuttle van"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Mexico",
+      "lat": 20.9,
+      "lon": -100.8,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": 16.7,
+      "lon": -103.2,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 562.8,
+    "crop_bounds": [
+      -104.9,
+      14.35,
+      -95.2,
+      21.6
+    ],
+    "stops": {
+      "3": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": -10
+      },
+      "0": {
+        "anchor": "end",
+        "dx": -6,
+        "dy": 20
+      },
+      "1": {
+        "dx": 12,
+        "dy": -4
+      }
+    },
+    "dots": [
+      {
+        "name": "Puebla",
+        "lat": 19.0414,
+        "lon": -98.2063,
+        "anchor": "start",
+        "dx": 8,
+        "dy": 4
+      },
+      {
+        "name": "Acapulco",
+        "lat": 16.8636,
+        "lon": -99.8825,
+        "anchor": "end",
+        "dx": -8,
+        "dy": 10
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus or shuttle van"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "water_labels": [
+      {
+        "name": "Pacific Ocean",
+        "lat": 17.0,
+        "lon": -103.4,
+        "size": 10
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Mexico",
+        "lat": 21.25,
+        "lon": -98.9,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

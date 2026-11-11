@@ -1,0 +1,206 @@
+{
+  "slug": "yerevan-routes",
+  "page": "armenia/yerevan.html",
+  "outline_file": "tools/itinerary_maps/geo/yerevan-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 400,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    42.35,
+    39.1,
+    46.9,
+    42.15
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/yerevan-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/yerevan-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "name": "Yerevan",
+      "lat": 40.1792,
+      "lon": 44.4991,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": 2,
+      "marker": "star"
+    },
+    {
+      "name": "Tbilisi",
+      "lat": 41.7151,
+      "lon": 44.8271,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "../georgia/field-notes.html#tbilisi"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Sadakhlo border",
+      "lat": 41.2455,
+      "lon": 44.7995,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Gyumri",
+      "lat": 40.7929,
+      "lon": 43.8465,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4,
+      "href": "gyumri.html"
+    },
+    {
+      "name": "From Istanbul & Athens",
+      "lat": 40.26,
+      "lon": 43.05,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    },
+    {
+      "name": "From Dubai & Doha",
+      "lat": 39.42,
+      "lon": 45.0,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "airports": [
+    {
+      "name": "EVN Airport",
+      "lat": 40.1473,
+      "lon": 44.3959,
+      "anchor": "end",
+      "dx": -30,
+      "dy": 20,
+      "icon_dx": -16,
+      "icon_dy": 22
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": "dot:Sadakhlo border",
+      "label": ""
+    },
+    {
+      "a": "dot:Sadakhlo border",
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "bow": -0.14
+    },
+    {
+      "a": "dot:From Istanbul & Athens",
+      "b": "air",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Dubai & Doha",
+      "b": "air",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Marshrutka or bus"
+      },
+      {
+        "label": "Overnight train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Armenia",
+      "lat": 40.55,
+      "lon": 45.45,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Georgia",
+      "lat": 42.0,
+      "lon": 45.75,
+      "size": 13,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Türkiye",
+      "lat": 39.75,
+      "lon": 42.9,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Azerbaijan",
+      "lat": 40.9,
+      "lon": 46.3,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Iran",
+      "lat": 39.12,
+      "lon": 46.1,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 255
+  }
+}

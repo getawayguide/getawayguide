@@ -1,0 +1,340 @@
+{
+  "slug": "svaneti-routes",
+  "page": "Drafts/Full Articles/georgia/svaneti.html",
+  "outline_file": "tools/itinerary_maps/geo/svaneti-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 862.6,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    40.75,
+    41.2,
+    45.5,
+    43.55
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/svaneti-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "mobile": {
+    "country_width": 574.4,
+    "crop_bounds": [
+      41.15,
+      41.25,
+      45.25,
+      43.5
+    ],
+    "stops": {
+      "0": {
+        "dx": 14,
+        "dy": -6
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 16
+      },
+      "2": {
+        "dx": 12,
+        "dy": -6
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -10,
+        "dy": 14
+      }
+    },
+    "dots": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 12
+      }
+    },
+    "legend": {
+      "pos": "tr",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Minibus"
+        },
+        {
+          "label": "Train",
+          "color": "#5E93A3"
+        },
+        {
+          "label": "Transfer",
+          "color": "#1C2821"
+        },
+        {
+          "label": "4WD",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "country_labels": {
+      "0": {
+        "size": 10
+      },
+      "1": {
+        "size": 9,
+        "lon": 43.65
+      },
+      "2": {
+        "size": 9
+      },
+      "3": {
+        "size": 9
+      }
+    },
+    "water_labels": []
+  },
+  "stops": [
+    {
+      "name": "Mestia",
+      "lat": 43.0438,
+      "lon": 42.7245,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -4,
+      "marker": "star"
+    },
+    {
+      "name": "Tbilisi",
+      "lat": 41.6935,
+      "lon": 44.8014,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "tbilisi.html"
+    },
+    {
+      "name": "Kutaisi",
+      "lat": 42.2716,
+      "lon": 42.7054,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -8
+    },
+    {
+      "name": "Zugdidi",
+      "lat": 42.5072,
+      "lon": 41.8717,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 12
+    }
+  ],
+  "dots": [
+    {
+      "name": "Enguri Dam",
+      "lat": 42.7585,
+      "lon": 42.0309,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 14
+    },
+    {
+      "name": "Ushguli",
+      "lat": 42.9891,
+      "lon": 43.1205,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3",
+      "via": [
+        [
+          41.93,
+          44.2
+        ],
+        [
+          42.0,
+          43.6
+        ],
+        [
+          42.14,
+          43.05
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 3,
+      "label": "",
+      "color": "#5E93A3",
+      "via": [
+        [
+          41.93,
+          44.2
+        ],
+        [
+          42.0,
+          43.6
+        ],
+        [
+          42.08,
+          43.05
+        ],
+        [
+          42.03,
+          42.5
+        ],
+        [
+          42.22,
+          42.1
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 3,
+      "label": "",
+      "via": [
+        [
+          41.86,
+          44.2
+        ],
+        [
+          41.93,
+          43.6
+        ],
+        [
+          41.99,
+          43.05
+        ],
+        [
+          41.93,
+          42.45
+        ],
+        [
+          42.15,
+          42.03
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          42.76,
+          41.93
+        ],
+        [
+          42.92,
+          42.3
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": "dot:Enguri Dam",
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": "dot:Enguri Dam",
+      "b": 0,
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": 0,
+      "b": "dot:Ushguli",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Minibus"
+      },
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Transfer",
+        "color": "#1C2821"
+      },
+      {
+        "label": "4WD",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Georgia",
+      "lat": 42.15,
+      "lon": 44.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Russia",
+      "lat": 43.45,
+      "lon": 44.3,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Türkiye",
+      "lat": 41.3,
+      "lon": 41.8,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Armenia",
+      "lat": 41.25,
+      "lon": 44.3,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Black Sea",
+      "lat": 42.2,
+      "lon": 41.15,
+      "size": 10
+    }
+  ]
+}

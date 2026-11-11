@@ -1,0 +1,164 @@
+{
+  "slug": "melbourne-routes",
+  "page": "Drafts/Full Articles/australia/melbourne.html",
+  "outline_file": "tools/itinerary_maps/geo/melbourne-routes-main.json",
+  "smooth": false,
+  "pin_scale": 0.85,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "country_width": 483.5,
+  "crop_bounds": [
+    139.5,
+    -39.6,
+    157.0,
+    -26.3
+  ],
+  "stops": [
+    {
+      "name": "Melbourne",
+      "lat": -37.8142,
+      "lon": 144.9632,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 8,
+      "marker": "star"
+    },
+    {
+      "name": "Sydney",
+      "lat": -33.8698,
+      "lon": 151.2083,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "sydney.html"
+    },
+    {
+      "name": "Brisbane",
+      "lat": -27.465,
+      "lon": 153.025,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": -4,
+      "href": "brisbane.html"
+    },
+    {
+      "name": "Gold Coast",
+      "lat": -27.999,
+      "lon": 153.424,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "gold-coast.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Canberra",
+      "lat": -35.2976,
+      "lon": 149.1013,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -10
+    }
+  ],
+  "airports": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.14
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": -0.12
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "bow": 0.02
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Australia",
+      "lat": -30.5,
+      "lon": 144.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Sea",
+      "lat": -37.3,
+      "lon": 153.8,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 312.0,
+    "crop_bounds": [
+      140.5,
+      -39.5,
+      155.6,
+      -26.3
+    ],
+    "pin_scale": 0.6,
+    "dots": [],
+    "legend": {
+      "pos": "tr",
+      "scale": 0.9,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Australia",
+        "lat": -30.2,
+        "lon": 144.3,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": []
+  }
+}

@@ -219,6 +219,8 @@ try:
         k = (i.get("group") or {}).get("key", "_other")
         if k not in groups and i["status"] != "done":
             groups.append(k)
+    up = set(t.get("upcoming") or [])                              # Nov 11: Upcoming (a Drafts/Upcoming folder) first, then Backlog
+    groups = [k for k in groups if k in up] + [k for k in groups if k not in up and k != "_other"] + [k for k in groups if k == "_other"]
     n_open = lambda k: sum(1 for i in rn if (i.get("group") or {}).get("key", "_other") == k and i["status"] != "done")
     n_all = lambda k: sum(1 for i in rn if (i.get("group") or {}).get("key", "_other") == k)
     with sync_playwright() as p:
@@ -233,7 +235,8 @@ try:
         pg.locator(".qt-cat[data-cat='rounds'] .qt-catb").click(); pg.wait_for_timeout(300)
         cg = pg.locator(".qt-cat[data-cat='rounds'] .qt-cg")
         keys = pg.evaluate("[...document.querySelectorAll(\".qt-cat[data-cat='rounds'] .qt-cg\")].map(g => g.dataset.cg)")
-        ok("U1 rounds opens to one row per country, in the order his items first name them, Other last, no bare rows", keys == groups and keys[-1] == "_other" and pg.locator(".qt-cat[data-cat='rounds'] > .qt-card > .qt-todo").count() == 0, (keys, groups))
+        secs = pg.evaluate("[...document.querySelectorAll(\".qt-cat[data-cat='rounds'] .qt-cgsec\")].map(x => x.textContent.trim().split(' ')[0])")
+        ok("U1 rounds opens to one row per country, Upcoming countries first and then Backlog, each in the order his items first name them, Other last, no bare rows", keys == groups and (secs == ["Upcoming", "Backlog"] if any(k in up for k in groups) and any(k not in up for k in groups) else True) and keys[-1] == "_other" and pg.locator(".qt-cat[data-cat='rounds'] > .qt-card > .qt-todo").count() == 0, (keys, groups, secs))
         ok("U1b every country row is collapsed by default", pg.locator(".qt-cat[data-cat='rounds'] .qt-cg.open").count() == 0 and pg.locator(".qt-cat[data-cat='rounds'] .qt-todo").count() == 0, "")
         first = cg.first; k0 = keys[0]
         flag = first.locator("img.fl")
@@ -250,7 +253,9 @@ try:
            and [r for r in pg.evaluate(f"[...document.querySelectorAll(\".qt-cg[data-cg='{k0}'] [data-list='todo'] > .qt-todo\")].map(r => r.dataset.id)")] == [i["id"] for i in rn if (i.get("group") or {}).get("key") == k0 and i["status"] != "done"], rows.count())
         cname = first.locator(".nm").inner_text()
         ok("U3b inside a country the item does not repeat the country chip; its round chip and link chip stay", not any(x.strip() == cname for x in pg.evaluate(f"[...document.querySelectorAll(\".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.plain\")].map(c => c.textContent)"))
-           and pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.link").count() >= 1 and pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.plain[title]").count() >= 1, "")
+           and pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.link").count() >= 1 and (pg.locator(f".qt-cg[data-cg='{k0}'] .qt-todo .qt-chip.plain[title]").count() >= 1
+               # Nov 11: a country whose only item is an applied upgrade (Serbia) has no open round, so no round chip
+               or not any(((i.get("round") or {}).get("left") or 0) > 0 for i in rn if (i.get("group") or {}).get("key") == k0 and i["status"] != "done")), (cname, pg.evaluate(f"[...document.querySelectorAll(\".qt-cg[data-cg='{k0}'] .qt-todo\")].map(r => r.dataset.id + ': ' + [...r.querySelectorAll('.qt-chip')].map(c => c.className + '=' + c.textContent.trim() + (c.title ? '[t]' : '')).join(' | '))")))
         done_ids = [i["id"] for i in rn if (i.get("group") or {}).get("key") == k0 and i["status"] == "done"]
         in_done = sum(1 for d in done_ids if pg.locator(f"details[data-fold='done:todo'] .qt-todo[data-id='{d}']").count() == 1)
         ok("U3c the country's done items are out of its list, in the column's one Done section (2026-11-08)", pg.locator(f".qt-cg[data-cg='{k0}'] details[data-fold]").count() == 0
@@ -292,7 +297,13 @@ try:
         drag(f".qt-cg[data-cg='{kk}'] .qt-todo[data-idx='0'] .qt-grip", f".qt-cg[data-cg='{kk2}'] .qt-todo[data-idx='0']", "before")
         all3 = [i["id"] for i in api.call("/api/todo?sync=0")[1]["items"] if i["cat"] == "rounds" and i["status"] != "done"]
         ok("U6b an item dropped on another country's row stays where it was", all3 == all2, "")
-        # drag a country row above the first: the whole run moves, items inside keep their order
+        # drag a country row above the first: the whole run moves, items inside keep their order. Fold the open countries
+        # first: with Greece's ~20 rows open, the two header rows are more than a screen apart, and the helper's scroll to
+        # bring the source on screen pushed the target off it, so the mouse let go over nothing (QA 2026-11-10). The drag's
+        # own edge auto-scroll is checked by .tmp/qa/q1110/queue_hunt.py.
+        for k in keys:
+            if pg.locator(f".qt-cg[data-cg='{k}'].open").count():
+                pg.locator(f".qt-cg[data-cg='{k}'] .qt-cgb").click(); pg.wait_for_timeout(150)
         gi = keys.index(kk)
         if gi > 0:
             drag(f".qt-cg[data-cg='{kk}'] .qt-cgh .qt-grip", f".qt-cg[data-idx='0'] .qt-cgh", "before")
@@ -303,6 +314,8 @@ try:
             drag(f".qt-cg[data-idx='1'] .qt-cgh .qt-grip", f".qt-cg[data-idx='0'] .qt-cgh", "before")
             keys2 = pg.evaluate("[...document.querySelectorAll(\".qt-cat[data-cat='rounds'] .qt-cg\")].map(g => g.dataset.cg)")
             ok("U7 dragging the second country row above the first swaps them; persisted", keys2[:2] == [keys[1], keys[0]] and keys2[-1] == "_other", (keys2, keys))
+        if not pg.locator(f".qt-cg[data-cg='{kk}'].open").count():          # the checks below work inside kk again
+            pg.locator(f".qt-cg[data-cg='{kk}'] .qt-cgb").click(); pg.wait_for_timeout(250)
         # the viewer still walks the whole category, the status select and Due-soon jump still work
         shot_item = next((i for i in rn if i["shots"] and i["status"] != "done"), None)
         if shot_item:
@@ -314,7 +327,11 @@ try:
             ok("U8 the viewer opens from inside a country and still counts through the whole category", "Review" in pos and int(pos.split("/")[1].split("·")[0]) == sum(1 for i in rn if i["shots"] and i["status"] != "done"), pos)
             pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
         row = pg.locator(f".qt-cg[data-cg='{kk}'] .qt-todo").first; rid = row.get_attribute("data-id")
-        row.locator(".qt-stsel").select_option("needs-changes"); pg.wait_for_timeout(700)
+        row.locator(".qt-stsel").select_option("needs-changes")
+        try:                                            # wait for the redraw, not a fixed 0.7 s (a busy machine is slower)
+            pg.wait_for_selector(f".qt-cg[data-cg='{kk}'] .qt-cgh .n.needs", timeout=8000)
+        except Exception:
+            pass
         hdr = pg.locator(f".qt-cg[data-cg='{kk}'] .qt-cgh .n.needs")
         st9 = next(i for i in api.call("/api/todo?sync=0")[1]["items"] if i["id"] == rid)["status"]
         ok("U9 the status select works inside a country and the country row shows the needs-changes count", st9 == "needs-changes" and hdr.count() == 1,
@@ -331,6 +348,27 @@ try:
         n_maps_open = sum(1 for i in t["items"] if i["cat"] == "maps" and i["status"] != "done")
         ok("U11 Review: maps is still a flat list (no country rows): its open items, or 'Nothing open.'", pg.locator(".qt-cat[data-cat='maps'] .qt-cg").count() == 0
            and pg.locator(".qt-cat[data-cat='maps'] [data-list='todo'] .qt-todo").count() == n_maps_open and (n_maps_open or "Nothing open" in pg.locator(".qt-cat[data-cat='maps'] [data-list='todo']").inner_text()), n_maps_open)
+        # Upcoming <-> Backlog (Kevin, 2026-11-11: "let me drag between upcoming and backlog"): a Backlog country dragged onto
+        # the Upcoming heading moves there and is saved; its draft folder never moves; set back, the override goes away
+        pg.locator(".qt-cat[data-cat='maps'] .qt-catb").click(); pg.wait_for_timeout(200)
+        for k in keys:
+            if pg.locator(f".qt-cg[data-cg='{k}'].open").count():
+                pg.locator(f".qt-cg[data-cg='{k}'] .qt-cgb").click(); pg.wait_for_timeout(120)
+        up1 = set(api.call("/api/todo?sync=0")[1].get("upcoming") or [])
+        back = [k for k in keys if k != "_other" and k not in up1]
+        if back:
+            kb = back[0]
+            had_folder = (ROOT / "Drafts" / "Upcoming" / kb).exists()
+            drag(f".qt-cg[data-cg='{kb}'] .qt-cgh .qt-grip", ".qt-cgsec[data-part='up']", "after")
+            pg.wait_for_timeout(700)
+            up2 = set(api.call("/api/todo?sync=0")[1].get("upcoming") or [])
+            ok("U11b a Backlog country dragged onto the Upcoming heading moves there, is saved, and its folder stays put",
+               kb in up2 and pg.locator(f".qt-cgs[data-part='up'] .qt-cg[data-cg='{kb}']").count() == 1 and (ROOT / "Drafts" / "Upcoming" / kb).exists() == had_folder,
+               (kb, sorted(up2)))
+            st_, j_ = api.call("/api/todo", {"op": "set_upcoming", "key": kb, "upcoming": False})
+            ok("U11c set back to Backlog, it leaves Upcoming and no override is left behind", kb not in set(j_.get("upcoming") or []), (st_, j_.get("upcoming")))
+            st_, j_ = api.call("/api/todo", {"op": "set_upcoming", "key": "nowhere", "upcoming": True})
+            ok("U11d an unknown country is refused", st_ == 400, st_)
         pg.set_viewport_size({"width": 393, "height": 852}); pg.wait_for_timeout(400)
         over = pg.evaluate("[document.scrollingElement.scrollWidth, document.getElementById('queue-root').scrollWidth, document.getElementById('queue-root').clientWidth]")
         ok("U12 393 px: no sideways scroll with countries open", over[0] <= 393 and over[1] <= over[2], over)

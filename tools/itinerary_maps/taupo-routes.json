@@ -1,0 +1,334 @@
+{
+  "slug": "taupo-routes",
+  "page": "Drafts/Full Articles/new-zealand/taupo.html",
+  "outline_file": "tools/itinerary_maps/geo/taupo-routes-main.json",
+  "smooth": false,
+  "simplify": 5000,
+  "pin_scale": 1.15,
+  "country_width": 1145.8,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "crop_bounds": [
+    172.6,
+    -41.75,
+    178.7,
+    -36.3
+  ],
+  "stops": [
+    {
+      "name": "Taupo",
+      "lat": -38.6866,
+      "lon": 176.0695,
+      "no_number": true,
+      "marker": "star",
+      "anchor": "start",
+      "dx": 16,
+      "dy": 6
+    },
+    {
+      "name": "Rotorua",
+      "lat": -38.1361,
+      "lon": 176.2525,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "rotorua.html"
+    },
+    {
+      "name": "Auckland",
+      "lat": -36.8521,
+      "lon": 174.7632,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6,
+      "href": "auckland.html"
+    },
+    {
+      "name": "Wellington",
+      "lat": -41.2888,
+      "lon": 174.7772,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "wellington.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Wai-O-Tapu",
+      "lat": -38.3559,
+      "lon": 176.3643,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 6
+    },
+    {
+      "name": "Hamilton",
+      "lat": -37.7879,
+      "lon": 175.2818,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    },
+    {
+      "name": "Napier",
+      "lat": -39.5112,
+      "lon": 176.8721,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "New Plymouth",
+      "lat": -39.058,
+      "lon": 174.0806,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Tauranga",
+      "lat": -37.683,
+      "lon": 176.1681,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -4
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -38.353,
+          176.368
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -36.92,
+          174.84
+        ],
+        [
+          -36.955,
+          174.865
+        ],
+        [
+          -37.0,
+          174.89
+        ],
+        [
+          -37.045,
+          174.925
+        ],
+        [
+          -37.09,
+          174.975
+        ],
+        [
+          -37.14,
+          175.0
+        ],
+        [
+          -37.444,
+          175.151
+        ],
+        [
+          -37.68,
+          175.212
+        ],
+        [
+          -37.867,
+          175.405
+        ],
+        [
+          -37.944,
+          175.67
+        ],
+        [
+          -38.058,
+          175.664
+        ],
+        [
+          -38.334,
+          176.004
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -41.217,
+          174.805
+        ],
+        [
+          -40.913,
+          174.994
+        ],
+        [
+          -40.611,
+          175.299
+        ],
+        [
+          -40.07,
+          175.418
+        ],
+        [
+          -39.733,
+          175.844
+        ],
+        [
+          -39.474,
+          175.668
+        ],
+        [
+          -38.996,
+          175.805
+        ],
+        [
+          -38.852,
+          176.054
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "North|Island",
+      "lat": -39.4,
+      "lon": 174.85,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Tasman Sea",
+      "lat": -38.0,
+      "lon": 173.2,
+      "size": 10
+    },
+    {
+      "name": "Pacific Ocean",
+      "lat": -40.6,
+      "lon": 177.4,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 14,
+        "dy": 6
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -6
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -6
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      }
+    },
+    "dots": [
+      {
+        "name": "Wai-O-Tapu",
+        "lat": -38.3559,
+        "lon": 176.3643,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 6
+      },
+      {
+        "name": "Hamilton",
+        "lat": -37.7879,
+        "lon": 175.2818,
+        "anchor": "end",
+        "dx": -9,
+        "dy": 4
+      },
+      {
+        "name": "Napier",
+        "lat": -39.5112,
+        "lon": 176.8721,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 4
+      },
+      {
+        "name": "New Plymouth",
+        "lat": -39.058,
+        "lon": 174.0806,
+        "anchor": "start",
+        "dx": 9,
+        "dy": 4
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        }
+      ]
+    },
+    "water_labels": [
+      {
+        "name": "Tasman Sea",
+        "lat": -38.0,
+        "lon": 173.2,
+        "size": 11
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "North|Island",
+        "lat": -39.4,
+        "lon": 174.85,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "country_width": 814.8
+  }
+}

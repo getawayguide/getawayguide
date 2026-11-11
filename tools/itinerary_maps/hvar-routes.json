@@ -1,0 +1,323 @@
+{
+  "slug": "hvar-routes",
+  "page": "Drafts/Upcoming/croatia/hvar.html",
+  "outline_file": "tools/itinerary_maps/geo/hvar-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 690,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    15.8,
+    42.35,
+    18.85,
+    43.95
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/hvar-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Hvar Town",
+      "lat": 43.1729,
+      "lon": 16.4411,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 24,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Split",
+      "lat": 43.5081,
+      "lon": 16.4402,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -8,
+      "href": "split.html"
+    },
+    {
+      "n": 2,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10,
+      "href": "dubrovnik.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Stari Grad",
+      "lat": 43.1845,
+      "lon": 16.5956,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -6
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          43.47,
+          16.38
+        ],
+        [
+          43.45,
+          16.16
+        ],
+        [
+          43.38,
+          16.11
+        ],
+        [
+          43.27,
+          16.19
+        ],
+        [
+          43.19,
+          16.3
+        ],
+        [
+          43.155,
+          16.39
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 1,
+      "b": "dot:Stari Grad",
+      "label": "",
+      "color": "#5E93A3",
+      "dash": true,
+      "sea": true,
+      "via": [
+        [
+          43.46,
+          16.425
+        ],
+        [
+          43.39,
+          16.42
+        ],
+        [
+          43.33,
+          16.39
+        ],
+        [
+          43.27,
+          16.44
+        ],
+        [
+          43.225,
+          16.49
+        ],
+        [
+          43.207,
+          16.54
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": "dot:Stari Grad",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          42.68,
+          18.02
+        ],
+        [
+          42.72,
+          17.88
+        ],
+        [
+          42.775,
+          17.72
+        ],
+        [
+          42.8,
+          17.57
+        ],
+        [
+          42.83,
+          17.45
+        ],
+        [
+          42.85,
+          17.3
+        ],
+        [
+          42.875,
+          17.05
+        ],
+        [
+          42.875,
+          16.75
+        ],
+        [
+          42.92,
+          16.62
+        ],
+        [
+          43.0,
+          16.57
+        ],
+        [
+          43.12,
+          16.48
+        ]
+      ],
+      "via_lock": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Catamaran",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Big car ferry",
+        "color": "#5E93A3",
+        "dash": true
+      },
+      {
+        "label": "Bus or taxi",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Croatia",
+      "lat": 43.8,
+      "lon": 16.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia and|Herzegovina",
+      "lat": 43.72,
+      "lon": 17.8,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.55,
+      "lon": 18.62,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Adriatic Sea",
+      "lat": 42.55,
+      "lon": 16.85,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 430,
+    "crop_bounds": [
+      15.85,
+      42.35,
+      18.7,
+      43.85
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 22
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -10
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      }
+    },
+    "dots": {
+      "0": {
+        "anchor": "start",
+        "dx": 8,
+        "dy": 14
+      }
+    },
+    "water_labels": {
+      "0": {
+        "lat": 42.72,
+        "lon": 16.6,
+        "size": 9
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Croatia",
+        "lat": 43.75,
+        "lon": 16.5,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Bosnia and|Herzegovina",
+        "lat": 43.5,
+        "lon": 17.8,
+        "size": 9,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

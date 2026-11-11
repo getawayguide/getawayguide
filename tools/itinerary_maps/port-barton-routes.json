@@ -1,0 +1,214 @@
+{
+  "slug": "port-barton-routes",
+  "page": "Drafts/Full Articles/philippines/port-barton.html",
+  "outline_file": "tools/itinerary_maps/geo/port-barton-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 620,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    117.9,
+    9.4,
+    120.15,
+    11.55
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Port Barton",
+      "lat": 10.4089,
+      "lon": 119.1652,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "marker": "star",
+      "no_number": true
+    },
+    {
+      "n": 1,
+      "name": "El Nido",
+      "lat": 11.18,
+      "lon": 119.3905,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "el-nido.html",
+      "no_number": true
+    },
+    {
+      "n": 2,
+      "name": "Puerto Princesa",
+      "lat": 9.74,
+      "lon": 118.74,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "no_number": true
+    }
+  ],
+  "dots": [],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          11.13,
+          119.44
+        ],
+        [
+          11.0,
+          119.43
+        ],
+        [
+          10.885,
+          119.44
+        ],
+        [
+          10.838,
+          119.475
+        ],
+        [
+          10.78,
+          119.5
+        ],
+        [
+          10.701,
+          119.49
+        ],
+        [
+          10.587,
+          119.364
+        ],
+        [
+          10.45,
+          119.37
+        ],
+        [
+          10.382,
+          119.377
+        ],
+        [
+          10.316,
+          119.331
+        ],
+        [
+          10.322,
+          119.29
+        ],
+        [
+          10.345,
+          119.25
+        ],
+        [
+          10.36,
+          119.195
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          9.859,
+          118.738
+        ],
+        [
+          9.925,
+          118.74
+        ],
+        [
+          9.965,
+          118.8
+        ],
+        [
+          9.995,
+          118.878
+        ],
+        [
+          10.02,
+          119.0
+        ],
+        [
+          10.06,
+          119.1
+        ],
+        [
+          10.075,
+          119.17
+        ],
+        [
+          10.09,
+          119.2
+        ],
+        [
+          10.181,
+          119.225
+        ],
+        [
+          10.252,
+          119.206
+        ],
+        [
+          10.305,
+          119.232
+        ],
+        [
+          10.345,
+          119.25
+        ],
+        [
+          10.36,
+          119.195
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus or shared van",
+        "color": "#2D6B50"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Palawan",
+      "lat": 9.57,
+      "lon": 118.48,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "South China Sea",
+      "lat": 10.95,
+      "lon": 118.3,
+      "size": 10
+    },
+    {
+      "name": "Sulu Sea",
+      "lat": 9.85,
+      "lon": 119.75,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 400,
+    "crop_pad": 8
+  }
+}

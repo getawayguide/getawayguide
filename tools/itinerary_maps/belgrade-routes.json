@@ -1,134 +1,176 @@
 {
-  "slug": "belgrade-routes",
-  "page": "Drafts/Upcoming/serbia/belgrade.html",
-  "iso3": "SRB",
-  "country_width": 260,
-  "simplify": 120,
-  "smooth": true,
-  "pin_scale": 1.15,
-  "margins": {
-    "l": 240,
-    "r": 240,
-    "t": 130,
-    "b": 130
-  },
-  "stops": [
-    {
-      "n": 1,
-      "name": "Belgrade",
-      "lat": 44.8125,
-      "lon": 20.4612,
-      "anchor": "start",
-      "dx": 16,
-      "dy": -10,
-      "no_number": true,
-      "marker": "star"
-    },
-    {
-      "n": 2,
-      "name": "Novi Sad",
-      "lat": 45.2671,
-      "lon": 19.8335,
-      "anchor": "end",
-      "dx": -10,
-      "dy": -22,
-      "no_number": true
-    },
-    {
-      "n": 3,
-      "name": "Sarajevo",
-      "lat": 43.8563,
-      "lon": 18.4131,
-      "anchor": "end",
-      "dx": -12,
-      "dy": 4,
-      "no_number": true,
-      "href": "../../../bosnia/field-notes.html#sarajevo"
-    },
-    {
-      "n": 4,
-      "name": "Skopje",
-      "lat": 41.9981,
-      "lon": 21.4254,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "no_number": true,
-      "href": "../../../north-macedonia/field-notes.html#skopje"
-    },
-    {
-      "n": 5,
-      "name": "Zagreb",
-      "lat": 45.815,
-      "lon": 15.9819,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "no_number": true,
-      "href": "../../../croatia/field-notes.html"
-    },
-    {
-      "n": 6,
-      "name": "Budapest",
-      "lat": 47.4979,
-      "lon": 19.0402,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "no_number": true,
-      "href": "../../../hungary/field-notes.html#budapest"
-    },
-    {
-      "n": 7,
-      "name": "Podgorica",
-      "lat": 42.4304,
-      "lon": 19.2594,
-      "anchor": "end",
-      "dx": -12,
-      "dy": 4,
-      "no_number": true,
-      "href": "../../../montenegro/field-notes.html"
-    },
-    {
-      "n": 8,
-      "name": "Prishtina",
-      "lat": 42.6629,
-      "lon": 21.1655,
-      "anchor": "start",
-      "dx": 2,
-      "dy": 8,
-      "no_number": true,
-      "href": "../../../kosovo/field-notes.html#prishtina"
-    },
-    {
-      "n": 9,
-      "name": "Sofia",
-      "lat": 42.6977,
-      "lon": 23.3219,
-      "anchor": "start",
-      "dx": 12,
-      "dy": 4,
-      "no_number": true
-    }
-  ],
   "airports": [
     {
-      "name": "BEG Airport",
-      "lat": 44.8184,
-      "lon": 20.3091,
       "anchor": "end",
       "dx": -22,
       "dy": 7,
       "icon_dx": -12,
-      "icon_dy": 12
+      "icon_dy": 12,
+      "lat": 44.8184,
+      "lon": 20.3091,
+      "name": "BEG Airport"
     }
   ],
+  "country_labels": [
+    {
+      "color": "#4F6358",
+      "lat": 43.55,
+      "lon": 21.95,
+      "ls": 2.5,
+      "name": "Serbia",
+      "size": 13,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 46.35,
+      "lon": 18.55,
+      "ls": 2.5,
+      "name": "Hungary",
+      "size": 13,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 45.4,
+      "lon": 15.35,
+      "ls": 2.5,
+      "name": "Croatia",
+      "size": 13,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 44.4,
+      "lon": 17.45,
+      "ls": 2.5,
+      "name": "Bosnia",
+      "size": 13,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 41.55,
+      "lon": 21.75,
+      "ls": 2.5,
+      "name": "North|Macedonia",
+      "size": 13,
+      "weight": 700,
+      "dx": -0.8,
+      "dy": -1.6
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 45.5,
+      "lon": 23.2,
+      "ls": 2.5,
+      "name": "Romania",
+      "size": 9,
+      "weight": 600
+    },
+    {
+      "color": "#4F6358",
+      "lat": 42.22,
+      "lon": 20.62,
+      "ls": 1.8,
+      "name": "Kosovo",
+      "size": 9,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 43.08,
+      "lon": 19,
+      "ls": 1.2,
+      "name": "Montenegro",
+      "size": 10,
+      "weight": 700
+    },
+    {
+      "color": "#4F6358",
+      "lat": 43.45,
+      "lon": 24.05,
+      "ls": 2.5,
+      "name": "Bulgaria",
+      "size": 13,
+      "weight": 700
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 41.5,
+      "lon": 19.75,
+      "ls": 2.5,
+      "name": "Albania",
+      "size": 9,
+      "weight": 600
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 46.1,
+      "lon": 14.6,
+      "ls": 2.5,
+      "name": "Slovenia",
+      "size": 9,
+      "weight": 600
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 47.75,
+      "lon": 15.3,
+      "ls": 2.5,
+      "name": "Austria",
+      "size": 9,
+      "weight": 600
+    }
+  ],
+  "country_width": 260,
+  "crop_bounds": [
+    13.4,
+    40.75,
+    24.7,
+    48.55
+  ],
+  "iso3": "SRB",
+  "hub_detail": "full",
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-routes-neighbors.json",
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "under": true,
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-routes-route.json",
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "under": true,
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "legend": {
+    "items": [
+      {
+        "label": "Direct bus"
+      },
+      {
+        "dash": true,
+        "label": "High-speed train"
+      }
+    ],
+    "pos": "tr",
+    "scale": 0.9
+  },
   "legs": [
     {
       "a": 1,
       "b": 0,
-      "label": "",
-      "dash": true
+      "dash": true,
+      "label": ""
     },
     {
       "a": 2,
@@ -166,153 +208,114 @@
       "label": ""
     }
   ],
-  "legend": {
-    "pos": "tr",
-    "scale": 0.9,
-    "items": [
-      {
-        "label": "Direct bus"
-      },
-      {
-        "label": "High-speed train",
-        "dash": true
-      }
-    ]
+  "margins": {
+    "b": 130,
+    "l": 240,
+    "r": 240,
+    "t": 130
   },
-  "layers": [
+  "page": "Drafts/Upcoming/serbia/belgrade.html",
+  "pin_scale": 1.15,
+  "simplify": 120,
+  "slug": "belgrade-routes",
+  "smooth": true,
+  "stops": [
     {
-      "file": "tools/itinerary_maps/geo/belgrade-routes-neighbors.json",
-      "under": true,
-      "fill": "#EFF0EB",
-      "stroke": "#D5DAD3",
-      "width": 0.9
+      "anchor": "start",
+      "dx": 16,
+      "dy": -10,
+      "lat": 44.8125,
+      "lon": 20.4612,
+      "marker": "star",
+      "n": 1,
+      "name": "Belgrade",
+      "no_number": true
     },
     {
-      "file": "tools/itinerary_maps/geo/belgrade-routes-route.json",
-      "under": true,
-      "fill": "#E6EAE3",
-      "stroke": "#9DB0A5",
-      "width": 1.1
+      "anchor": "end",
+      "dx": -10,
+      "dy": -22,
+      "lat": 45.2671,
+      "lon": 19.8335,
+      "n": 2,
+      "name": "Novi Sad",
+      "no_number": true
     },
     {
-      "file": "tools/itinerary_maps/geo/belgrade-routes-lakes.json",
-      "fill": "#A9CBD6"
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "../../../bosnia/field-notes.html#sarajevo",
+      "lat": 43.8563,
+      "lon": 18.4131,
+      "n": 3,
+      "name": "Sarajevo",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 1,
+      "dy": 10.3,
+      "href": "../../../north-macedonia/field-notes.html#skopje",
+      "lat": 41.9981,
+      "lon": 21.4254,
+      "n": 4,
+      "name": "Skopje",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../croatia/field-notes.html",
+      "lat": 45.815,
+      "lon": 15.9819,
+      "n": 5,
+      "name": "Zagreb",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "href": "../../../hungary/field-notes.html#budapest",
+      "lat": 47.4979,
+      "lon": 19.0402,
+      "n": 6,
+      "name": "Budapest",
+      "no_number": true
+    },
+    {
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "href": "../../../montenegro/field-notes.html",
+      "lat": 42.4304,
+      "lon": 19.2594,
+      "n": 7,
+      "name": "Podgorica",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 2,
+      "dy": 8,
+      "href": "../../../kosovo/field-notes.html#prishtina",
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "n": 8,
+      "name": "Prishtina",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 12,
+      "dy": 4,
+      "lat": 42.6977,
+      "lon": 23.3219,
+      "n": 9,
+      "name": "Sofia",
+      "no_number": true
     }
-  ],
-  "country_labels": [
-    {
-      "name": "Serbia",
-      "lat": 43.55,
-      "lon": 21.95,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Hungary",
-      "lat": 46.35,
-      "lon": 18.55,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Croatia",
-      "lat": 45.4,
-      "lon": 15.35,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Bosnia",
-      "lat": 44.4,
-      "lon": 17.45,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "North|Macedonia",
-      "lat": 41.55,
-      "lon": 21.75,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Romania",
-      "lat": 45.5,
-      "lon": 23.2,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Kosovo",
-      "lat": 42.22,
-      "lon": 20.62,
-      "size": 9,
-      "weight": 700,
-      "ls": 1.8,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Montenegro",
-      "lat": 43.08,
-      "lon": 19.0,
-      "size": 10,
-      "weight": 700,
-      "ls": 1.2,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Bulgaria",
-      "lat": 43.45,
-      "lon": 24.05,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Albania",
-      "lat": 41.5,
-      "lon": 19.75,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Slovenia",
-      "lat": 46.1,
-      "lon": 14.6,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Austria",
-      "lat": 47.75,
-      "lon": 15.3,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    }
-  ],
-  "crop_bounds": [
-    13.4,
-    40.75,
-    24.7,
-    48.55
   ]
 }

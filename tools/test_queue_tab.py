@@ -4,13 +4,17 @@ served by the standalone `python tools/queue_tab.py --serve <port>`; the editor 
 window.QUEUE_API pointed at that port, so the live photo server is never needed and the real files are never written.
 The last section reads the REAL files through a read-only server (QUEUE_TAB_READONLY=1) for a render check only.
 
-  API    the md parsed into cards; add / reorder (renumbers) / hold edit only their lines and keep every other byte
-         (BOM-less CRLF file stays CRLF); a stale version is refused with 409 and nothing is written; the inbox's
+  API    the md parsed into cards: every "N. [ ]" AND "- [ ]" line is an item, wholly bold lines are group headings
+         (QA 2026-11-10: the mixed file hid 13 open items); add lands after the open items of a group (never below
+         the done archive); move shifts only the named item's lines (no heading dragged along, nothing renumbered);
+         hold changes one character; every other byte is kept (CRLF + BOM too); a stale version is refused with 409
+         and nothing is written; the old whole-list "reorder" is refused; the same checks on a copy of the REAL md; the inbox's
          add / update / toggle / reorder (inside a category) / reorder_cats / batch / 409; live rounds + Shadow threads
          folded in and finished by themselves; the seed's old "shadow" category is migrated into rounds on load
   UI     the tab in the bar with Ctrl+Alt+6 in its tooltip and the shortcut working; badge = open items of the shown
          categories; categories folded by default, filter chips remembered across a reload; add / check off / status;
-         drag to reorder Claude's queue, a category, and an item inside a category (pointer drag on the grip);
+         Claude's list under its group headings with the true open count; drag an item across a heading, onto a
+         heading, the arrows across a heading, add into a picked group; a category, and an item inside a category;
          the viewer (screenshot, Desktop/Phone, ← →, Esc, new → seen); a question's reply; 393 px without sideways
          scroll; the "restart the photo server" message on a 404; a concurrent edit refused in the UI
   REAL   read-only render of the real queue + inbox, screenshots to .tmp/previews/queue-tab-*.png, POST refused (403)
@@ -97,9 +101,65 @@ MD = SCRATCH / "away_queue.md"
 TODO = SCRATCH / "kevin_todo.json"
 RL = SCRATCH / "redline"
 REAL_MD = ROOT / ".tmp" / "away_queue.md"
-shutil.copyfile(REAL_MD, MD)
+# a fixed md in the shape the real one has had since 2026-11-10 (numbered and "- [ ]" items mixed, bold group headings,
+# a "**Now:**" note line, a done archive at the bottom), so the checks test behavior, not whatever the real file holds today
+FIXTURE = """# Away queue: test
+
+The work Claude does while Kevin is traveling.
+
+Markers: `[ ]` pending, `[x]` done, `[~]` running, `[-]` on hold.
+
+## Queue (in order)
+<!-- Queue lines stay one or two plain sentences. -->
+**No input from you: Claude works through these in order (reordered 2026-11-10, least input first).**
+- [x] **Done bullet A.** Done Nov 10: found things.
+10. [x] **Done numbered B.** Done Nov 10: fixed it.
+- [~] **Running bullet C.** Found 3 bugs so far.
+- [ ] **Pending bullet D.** Looks for drift. (added by Kevin 2026-11-10)
+- [x] **Done bullet E.** Done Nov 9: cleared.
+
+**Claude does the work, and you review it later.**
+- [ ] **Push package.** One page with everything ready to push.
+20. [ ] **Media kit page.** For tourism boards and brands.
+   - detail one
+   - detail two
+9. [ ] **Upgrade the remaining countries.** Rewrite each country's drafts.
+18. [-] **Email content for Kit.** The welcome series.
+
+**Needs you.**
+- [ ] **Confirm Google Remote Desktop is working.** Check it before the 13th. (added by Kevin 2026-11-10)
+25. [ ] **Add Google Analytics.** You'd create the account.
+
+**Top:**
+- [x] **Old done one.** Done Nov 9: shipped.
+
+**Now:** the Social tab polish, then the queue in order.
+
+**Before the trip:**
+- [x] **Pause Windows Update.** Done Nov 7.
+
+
+1. [x] **Editor stress test.** Done Nov 6: 25 fixes.
+2. [x] **Bus maps.** Done Nov 6.
+
+## Waiting on Kevin
+- **Shadow reviewer on every article** now runs alongside the upgrades.
+
+## Log
+- 2026-11-06: Kevin, "let's start".
+"""
+MD.write_bytes(FIXTURE.encode("utf-8"))
 md_bytes0 = MD.read_bytes()
 CRLF = b"\r\n" in md_bytes0
+sys.path.insert(0, str(ROOT / "tools"))
+import re  # noqa: E402
+import queue_tab as qt  # noqa: E402
+ITEM_LINE = re.compile(r"^(?:\d+\.|[-*])\s+\[[ xX~>-]\]")
+OPEN_LINE = re.compile(r"^(?:\d+\.|[-*])\s+\[[ ~>-]\]")
+
+
+def queue_section(text):
+    return text.split("## Queue", 1)[1].split("\n## ", 1)[0].splitlines()[1:]
 
 (RL / "zz-test-r1").mkdir(parents=True)
 (RL / "zz-test-r1" / "proposal.json").write_text(json.dumps({"slug": "zz-test-r1", "title": "Zz Test, round 1", "article_dir": "Drafts/Upcoming/zz", "article": "test.html",
@@ -135,61 +195,132 @@ api = Api(PORT)
 lines = lambda b: b.split(b"\r\n" if CRLF else b"\n")
 
 try:
-    # ----------------------------------------------------------------------------- API: Claude's queue
+    # ----------------------------------------------------------------------------- API: Claude's queue (the fixture)
+    T = lambda q, t: next((i for i in q["queue"] if i["title"] == t), None)
+    S = lambda: MD.read_bytes().decode("utf-8").split("\n")
     st, q = api.call("/api/queue")
-    ok("Q1 GET /api/queue parses the md", st == 200 and q["ok"] and len(q["queue"]) >= 10 and len(q["version"]) == 16, (st, len(q.get("queue", []))))
-    it1 = next((i for i in q["queue"] if i["num"] == 1), None)
-    ok("Q1b item 1 = bold title, done, with details", it1 and it1["title"] == "Editor suite stress test" and it1["state"] == "done" and len(it1["details"]) == 2, it1)
-    bold = [i for i in q["queue"] if i["title"] and not i["title"].startswith("DONE")]       # the md's own items change as Claude works; the shape is what is tested
-    ok("Q1c titles are the bold run, never the ** marks or an '(added by' tail", bold and all("**" not in i["title"] and "(added by" not in i["title"] for i in q["queue"]), [i["title"][:60] for i in q["queue"] if "**" in i["title"] or "(added by" in i["title"]])
-    n_pre = sum(1 for l in md_bytes0.decode("utf-8-sig").split("## Queue", 1)[1].split("\n1. [", 1)[0].splitlines() if l.lstrip().startswith(("- [", "* [")))
-    ok("Q1d the ticks above the first numbered item (the FIRST / NEXT checklists) and the sections come through", len(q["queue_pre"]["items"]) == n_pre >= 1 and any(s["name"].startswith("Waiting on Kevin") for s in q["sections"]) and any(s["name"] == "Log" for s in q["sections"]), (len(q["queue_pre"]["items"]), n_pre, [s["name"] for s in q["sections"]]))
-    n0 = len(q["queue"]); maxnum = max(i["num"] for i in q["queue"])
+    sec0 = queue_section(FIXTURE)
+    ok("Q1 every checkbox line in the Queue section is an item, numbered or '- [ ]' (QA 2026-11-10: bullets between numbered items were never drawn)",
+       st == 200 and q["ok"] and len(q["queue"]) == sum(1 for l in sec0 if ITEM_LINE.match(l)) == 15 and len(q["version"]) == 16, (st, len(q.get("queue", []))))
+    ok("Q1a the count is the real number of open items: 6 pending + 1 running + 1 held = 8 open",
+       q["counts"] == {"pending": 6, "running": 1, "hold": 1, "done": 7, "open": 8} and q["counts"]["open"] == sum(1 for l in sec0 if OPEN_LINE.match(l)), q["counts"])
+    rd, mk, c = T(q, "Confirm Google Remote Desktop is working"), T(q, "Media kit page"), T(q, "Running bullet C")
+    ok("Q1b items keep their text and marker as in the file: a bullet has num null, a numbered one its number and sub-bullets, [~] reads running",
+       rd and rd["num"] is None and rd["state"] == "pending" and rd["added_by"] == "2026-11-10" and rd["text"] == "**Confirm Google Remote Desktop is working.** Check it before the 13th. (added by Kevin 2026-11-10)"
+       and mk and mk["num"] == 20 and mk["details"] == ["detail one", "detail two"] and c and c["mark"] == "~" and c["state"] == "running" and [i["id"] for i in q["queue"]] == list(range(15)), (rd, mk, c))
+    ok("Q1c titles are the bold run, never the ** marks or an '(added by' tail", all(i["title"] and "**" not in i["title"] and "(added by" not in i["title"] for i in q["queue"]), [i["title"][:60] for i in q["queue"]])
+    names = [g["name"] for g in q["groups"]]
+    ok("Q1d the wholly bold lines are the groups (a '**Now:** text' note is not), with open/total counts; every item carries its group; the other sections come through",
+       names == ["No input from you: Claude works through these in order", "Claude does the work, and you review it later", "Needs you", "Top", "Before the trip"]
+       and [(g["open"], g["total"]) for g in q["groups"]] == [(2, 5), (4, 4), (2, 2), (0, 1), (0, 3)] and rd["group"] == 2 and mk["group"] == 1 and T(q, "Editor stress test")["group"] == 4
+       and any(s["name"].startswith("Waiting on Kevin") for s in q["sections"]) and any(s["name"] == "Log" for s in q["sections"]) and q["queue_pre"]["items"] == [],
+       (names, [(g["open"], g["total"]) for g in q["groups"]], [s["name"] for s in q["sections"]]))
+    ok("Q1e a 'Done Nov 10' line gets a done_on date for the Done fold's order", T(q, "Done bullet A")["done_on"] and T(q, "Done bullet A")["done_on"].endswith("-11-10"), T(q, "Done bullet A"))
 
     st, r = api.call("/api/queue", {"version": q["version"], "op": "add", "title": "Zz test item", "details": "first detail\nsecond detail"})
     b1 = MD.read_bytes()
     L0, L1 = lines(md_bytes0), lines(b1)
     new = [l for l in L1 if l not in L0]
-    ok("Q2 add appends a numbered [ ] item with (added by Kevin <date>) + sub-bullets", st == 200 and len(r["queue"]) == n0 + 1 and r["queue"][-1]["num"] == maxnum + 1 and r["queue"][-1]["title"] == "Zz test item"
-       and new[0].startswith(f"{maxnum + 1}. [ ] **Zz test item** (added by Kevin 20".encode()) and new[1:] == [b"   - first detail", b"   - second detail"], (st, new[:3]))
-    wi = next(i for i, l in enumerate(L1) if l.startswith(b"## Waiting on Kevin"))
-    k = L1.index(new[0])
-    ok("Q2b ...as one 3-line insertion after the last item (before '## Waiting on Kevin'), every other byte kept, CRLF kept",
-       len(new) == 3 and L1[:k] == L0[:k] and L1[k + 3:] == L0[k:] and k < wi and all(not l.startswith(b"## ") for l in L0[k:wi - 3]) and (b"\r\n" in b1) == CRLF and (not CRLF or b1.count(b"\r\n") == len(L1) - 1), (k, wi, L1[k - 1:k + 4]))
+    k = L1.index(new[0]) if new else -1
+    ok("Q2 add (no group named) writes a '- [ ]' item with (added by Kevin <date>) + sub-bullets as ONE 3-line insertion, every other byte kept",
+       st == 200 and len(r["queue"]) == 16 and T(r, "Zz test item") and new[0].startswith(b"- [ ] **Zz test item** (added by Kevin 20") and new[1:] == [b"   - first detail", b"   - second detail"]
+       and L1[:k] == L0[:k] and L1[k + 3:] == L0[k:], (st, new[:3]))
+    ok("Q2b ...in the first group with open work, right after its last open item (above that group's done items; never under the archive)",
+       L1[k - 1].startswith(b"- [ ] **Pending bullet D.**") and L1[k + 3].startswith(b"- [x] **Done bullet E.**") and T(r, "Zz test item")["group"] == 0 and T(r, "Zz test item")["state"] == "pending", L1[k - 1:k + 4])
+    st, r = api.call("/api/queue", {"version": r["version"], "op": "add", "title": "Zz needs", "group": 2, "position": "top"})
+    s1 = S(); i_h = s1.index("**Needs you.**")
+    ok("Q2c add with a group and position top lands right under that group's heading", st == 200 and s1[i_h + 1].startswith("- [ ] **Zz needs**") and T(r, "Zz needs")["group"] == 2, s1[i_h:i_h + 3])
+    st, r = api.call("/api/queue", {"version": r["version"], "op": "add", "title": "Zz into archive", "group": 3})
+    s2 = S(); i_t = s2.index("**Top:**")
+    ok("Q2d add into a group with nothing open goes above its done items, right under the heading", st == 200 and s2[i_t + 1].startswith("- [ ] **Zz into archive**") and s2[i_t + 2].startswith("- [x] **Old done one.**"), s2[i_t:i_t + 3])
+    st, e = api.call("/api/queue", {"version": r["version"], "op": "add", "title": "x", "group": 99})
+    ok("Q2e add into a group that doesn't exist is refused (400)", st == 400 and "group" in e.get("error", ""), (st, e))
+    # back to the fixture for the move checks
+    MD.write_bytes(md_bytes0)
+    st, q = api.call("/api/queue")
 
-    order = [i["num"] for i in r["queue"]]
-    st, r2 = api.call("/api/queue", {"version": r["version"], "op": "reorder", "order": order})
-    ok("Q3 a no-op reorder writes nothing (bytes and version unchanged)", st == 200 and MD.read_bytes() == b1 and r2["version"] == r["version"], (st, r2.get("version"), r["version"]))
+    ga, c, d = T(q, "Add Google Analytics"), T(q, "Running bullet C"), T(q, "Pending bullet D")
+    st, r2 = api.call("/api/queue", {"version": q["version"], "op": "move", "id": d["id"], "after": c["id"]})
+    ok("Q3 a move to where the item already is writes nothing (bytes and version unchanged); so does a drop on itself",
+       st == 200 and MD.read_bytes() == md_bytes0 and r2["version"] == q["version"] and api.call("/api/queue", {"version": q["version"], "op": "move", "id": d["id"], "before": d["id"]})[0] == 200 and MD.read_bytes() == md_bytes0, (st, r2.get("version")))
 
-    moved = [order[-1]] + order[:-1]
-    st, r3 = api.call("/api/queue", {"version": r2["version"], "op": "reorder", "order": moved})
-    b3 = MD.read_bytes(); L3 = lines(b3)
-    nums = [i["num"] for i in r3["queue"]]
-    ok("Q4 reorder moves the block (title + sub-bullets) and renumbers 1..n", st == 200 and nums == list(range(1, n0 + 2)) and r3["queue"][0]["title"] == "Zz test item" and r3["queue"][0]["details"] == ["first detail", "second detail"]
-       and r3["queue"][1]["title"] == "Editor suite stress test", (st, nums[:5], r3["queue"][0]["title"]))
-    q_start = next(i for i, l in enumerate(L3) if l.startswith(b"## Queue")); w3 = next(i for i, l in enumerate(L3) if l.startswith(b"## Waiting on Kevin"))
-    ok("Q4b the preamble (FIRST checklist) and everything outside the Queue section are untouched", L3[:q_start + 1] == L1[:q_start + 1] and L3[w3:] == L1[wi:] and L3[q_start + 1:q_start + 7] == L1[q_start + 1:q_start + 7], (L3[q_start + 1:q_start + 3]))
+    # the QA repro: drag an item of "Needs you" to the very top of the list
+    st, r3 = api.call("/api/queue", {"version": q["version"], "op": "move", "id": ga["id"], "before": c["id"]})
+    s3 = S(); s0 = FIXTURE.split("\n"); ga_line = "25. [ ] **Add Google Analytics.** You'd create the account."
+    ok("Q4 move: only the item's own line moves (to just above the target, in the target's group); its number is untouched; every other line keeps its order",
+       st == 200 and s3.index(ga_line) == s3.index("- [~] **Running bullet C.** Found 3 bugs so far.") - 1 and [l for l in s3 if l != ga_line] == [l for l in s0 if l != ga_line]
+       and T(r3, "Add Google Analytics")["group"] == 0 and T(r3, "Add Google Analytics")["num"] == 25, s3[8:14])
+    ok("Q4b ...the headings did not travel with it: 'Needs you' still heads Confirm Google Remote Desktop, and no item was renumbered",
+       s3[s3.index("**Needs you.**") + 1].startswith("- [ ] **Confirm Google Remote Desktop") and sorted(i["num"] for i in r3["queue"] if i["num"] is not None) == sorted(i["num"] for i in q["queue"] if i["num"] is not None)
+       and T(r3, "Confirm Google Remote Desktop is working")["group"] == 2, s3[s3.index("**Needs you.**"):s3.index("**Needs you.**") + 3])
+    mk = T(r3, "Media kit page"); rd = T(r3, "Confirm Google Remote Desktop is working")
+    st, r4 = api.call("/api/queue", {"version": r3["version"], "op": "move", "id": mk["id"], "after": rd["id"]})
+    s4 = S(); i_mk = s4.index("20. [ ] **Media kit page.** For tourism boards and brands.")
+    ok("Q4c an item moves with its indented sub-bullets, across groups, and joins the target's group",
+       st == 200 and s4[i_mk - 1].startswith("- [ ] **Confirm Google Remote Desktop") and s4[i_mk + 1:i_mk + 3] == ["   - detail one", "   - detail two"] and T(r4, "Media kit page")["group"] == 2
+       and T(r4, "Media kit page")["details"] == ["detail one", "detail two"] and "   - detail one" not in s4[:i_mk], s4[i_mk - 1:i_mk + 4])
+    pk = T(r4, "Push package")
+    st, r5 = api.call("/api/queue", {"version": r4["version"], "op": "move", "id": pk["id"], "group": 3, "position": "top"})
+    s5 = S(); i_t = s5.index("**Top:**")
+    ok("Q4d move to a group (a drop on its heading) puts it at the top of that group", st == 200 and s5[i_t + 1].startswith("- [ ] **Push package.**") and T(r5, "Push package")["group"] == 3, s5[i_t:i_t + 3])
+    st, r5b = api.call("/api/queue", {"version": r5["version"], "op": "move", "id": T(r5, "Push package")["id"], "group": 1, "position": "end"})
+    s5b = S(); i_e = s5b.index("18. [-] **Email content for Kit.** The welcome series.")
+    ok("Q4e move to the end of a group lands after its last open item", st == 200 and s5b[i_e + 1].startswith("- [ ] **Push package.**"), s5b[i_e:i_e + 3])
+    q_start = s5b.index("## Queue (in order)"); w5 = s5b.index("## Waiting on Kevin")
+    ok("Q4f everything outside the Queue section and every non-item line inside it is untouched after four moves",
+       s5b[:q_start + 3] == s0[:q_start + 3] and s5b[w5:] == s0[s0.index("## Waiting on Kevin"):] and [l for l in s5b if not ITEM_LINE.match(l) and not l.startswith("   - ")] == [l for l in s0 if not ITEM_LINE.match(l) and not l.startswith("   - ")], "")
+    b5 = MD.read_bytes()
 
-    pend = next(i for i in r3["queue"] if i["state"] == "pending")
-    st, r4 = api.call("/api/queue", {"version": r3["version"], "op": "hold", "num": pend["num"], "hold": True})
-    held = next(i for i in r4["queue"] if i["num"] == pend["num"])
-    ok("Q5 hold writes [-] and the card reads 'hold'", st == 200 and held["state"] == "hold" and held["mark"] == "-" and f"{pend['num']}. [-] ".encode() in MD.read_bytes(), (st, held))
-    st, r5 = api.call("/api/queue", {"version": r4["version"], "op": "hold", "num": pend["num"], "hold": False})
-    ok("Q5b resume gives the exact bytes back", st == 200 and MD.read_bytes() == b3, st)
-    done = next(i for i in r5["queue"] if i["state"] == "done")
-    st, e = api.call("/api/queue", {"version": r5["version"], "op": "hold", "num": done["num"], "hold": True})
-    ok("Q6 a done item cannot go on hold (400)", st == 400 and "done" in e.get("error", ""), (st, e))
+    pend = T(r5b, "Pending bullet D")
+    st, r6 = api.call("/api/queue", {"version": r5b["version"], "op": "hold", "id": pend["id"], "hold": True})
+    held = T(r6, "Pending bullet D")
+    ok("Q5 hold on a '- [ ]' item writes '- [-]' (one character) and the card reads 'hold'", st == 200 and held["state"] == "hold" and held["mark"] == "-" and b"- [-] **Pending bullet D.**" in MD.read_bytes()
+       and len(MD.read_bytes()) == len(b5), (st, held))
+    st, r7 = api.call("/api/queue", {"version": r6["version"], "op": "hold", "id": pend["id"], "hold": False})
+    ok("Q5b resume gives the exact bytes back", st == 200 and MD.read_bytes() == b5, st)
+    st, r7b = api.call("/api/queue", {"version": r7["version"], "op": "hold", "num": 9, "hold": True})
+    ok("Q5c an old client's {num} still works for a numbered item", st == 200 and b"9. [-] **Upgrade the remaining countries.**" in MD.read_bytes(), (st, r7b.get("error")))
+    st, r7 = api.call("/api/queue", {"version": r7b["version"], "op": "hold", "num": 9, "hold": False})
+    done = next(i for i in r7["queue"] if i["state"] == "done")
+    st, e = api.call("/api/queue", {"version": r7["version"], "op": "hold", "id": done["id"], "hold": True})
+    ok("Q6 a done item cannot go on hold (400)", st == 400 and "done" in e.get("error", "") and MD.read_bytes() == b5, (st, e))
 
     # a concurrent edit: Claude appends a Log line while the page holds the old version
-    stale_version = r5["version"]
+    stale_version = r7["version"]
     ext = MD.read_bytes() + ("- 2026-11-07: external edit by Claude" + ("\r\n" if CRLF else "\n")).encode()
     MD.write_bytes(ext)
     st, e = api.call("/api/queue", {"version": stale_version, "op": "add", "title": "Should not land"})
     ok("Q7 a write with a stale version is refused (409, stale, nothing written, fresh list returned)", st == 409 and e.get("stale") and "changed" in e.get("error", "") and MD.read_bytes() == ext and e.get("queue") and e["version"] != stale_version, (st, e.get("error")))
-    st, r6 = api.call("/api/queue", {"version": e["version"], "op": "add", "title": "Lands now"})
-    ok("Q7b ...and the same write with the fresh version lands", st == 200 and r6["queue"][-1]["title"] == "Lands now", st)
-    st, e = api.call("/api/queue", {"version": r6["version"], "op": "reorder", "order": [1, 2]})
-    ok("Q8 a bad reorder is refused (400) and nothing changes", st == 400 and MD.read_bytes() == MD.read_bytes() and "every item" in e.get("error", ""), (st, e))
+    st, r8 = api.call("/api/queue", {"version": e["version"], "op": "add", "title": "Lands now"})
+    ok("Q7b ...and the same write with the fresh version lands", st == 200 and T(r8, "Lands now") is not None, st)
+    b8 = MD.read_bytes()
+    st, e = api.call("/api/queue", {"version": r8["version"], "op": "move", "id": 999, "before": 0})
+    st2, e2 = api.call("/api/queue", {"version": r8["version"], "op": "reorder", "order": [1, 2]})
+    ok("Q8 a move naming no real item, and the old whole-list 'reorder', are refused (400); nothing changes", st == 400 and st2 == 400 and "out of date" in e2.get("error", "") and MD.read_bytes() == b8, (st, e, st2, e2))
+
+    # in-process: CRLF + BOM survive, and the same operations on a copy of the REAL md
+    crlf = b"\xef\xbb\xbf" + FIXTURE.replace("\n", "\r\n").encode("utf-8")
+    dc = qt.Doc(crlf); pc = qt.parse(dc)
+    err = qt.apply_queue_op(dc, {"op": "move", "id": T(pc, "Add Google Analytics")["id"], "before": T(pc, "Running bullet C")["id"]})
+    out = dc.to_bytes()
+    ok("Q9 a CRLF file with a BOM keeps both; a move changes only the moved line's place", err is None and out.startswith(b"\xef\xbb\xbf") and out.count(b"\r\n") == crlf.count(b"\r\n") and b"\n" not in out.replace(b"\r\n", b"")
+       and sorted(out.split(b"\r\n")) == sorted(crlf.split(b"\r\n")) and out != crlf, err)
+    real = REAL_MD.read_bytes(); dr = qt.Doc(real); pr = qt.parse(dr); sec_r = queue_section(real.decode("utf-8-sig").replace("\r\n", "\n"))
+    ok("Q10 the REAL md (read only, in memory): every checkbox line is an item and the open count matches the file",
+       len(pr["queue"]) == sum(1 for l in sec_r if ITEM_LINE.match(l)) and pr["counts"]["open"] == sum(1 for l in sec_r if OPEN_LINE.match(l)) and pr["counts"]["open"] >= 1, (len(pr["queue"]), pr["counts"]))
+    w_r = [i for i in pr["queue"] if i["state"] != "done"]
+    if len(w_r) >= 2 and len({i["group"] for i in w_r}) >= 2:
+        last, first = w_r[-1], w_r[0]
+        dr2 = qt.Doc(real); err = qt.apply_queue_op(dr2, {"op": "move", "id": last["id"], "before": first["id"]})
+        a, b = real.decode("utf-8-sig").splitlines(), dr2.to_bytes().decode("utf-8-sig").splitlines()
+        mline = next(l for l in a if (lambda m: m and m.group(3) == last["text"])(qt.ITEM_RE.match(l)))
+        rest = lambda ls: [l for l in ls if l != mline and not (l[:1] in (" ", "\t") and l.strip())]     # its own sub-bullets travel with it
+        ok("Q10b ...the QA repro on the real md: the last open item dragged to the top moves only its own line(s); every heading and item keeps its place",
+           err is None and rest(b) == rest(a) and b.index(mline) < a.index(mline) and qt.parse(qt.Doc(dr2.to_bytes()))["counts"] == pr["counts"], err)
+        dr3 = qt.Doc(real); err = qt.apply_queue_op(dr3, {"op": "add", "title": "Zz real add"}); p3 = qt.parse(dr3)
+        z = next(i for i in p3["queue"] if i["title"] == "Zz real add"); after_z = p3["queue"][z["id"] + 1:]
+        ok("Q10c ...an add on the real md lands in the first group with open work, above every done item after it in that group, not under the archive",
+           err is None and z["group"] == w_r[0]["group"] and all(i["state"] == "done" or i["group"] != z["group"] for i in after_z) and z["id"] < len(p3["queue"]) - 1, (z, err))
 
     # ----------------------------------------------------------------------------- API: the inbox
     st, t = api.call("/api/todo?sync=1")
@@ -258,6 +389,7 @@ try:
 
     # ----------------------------------------------------------------------------- UI
     TODO.write_text(json.dumps(seed, indent=1), encoding="utf-8")         # a clean inbox for the UI run (the round/shadow items re-sync on GET)
+    MD.write_bytes(md_bytes0)                                              # and the fixture queue again
     with sync_playwright() as p:
         b = p.chromium.launch()
         ctx = b.new_context(viewport={"width": 1440, "height": 900})
@@ -282,10 +414,18 @@ try:
         ok("U3 the badge counts the open items", bdg.is_visible() and bdg.inner_text() == str(nopen), (bdg.inner_text(), nopen))
         qn = pg.locator(".qt-item").count()
         qq = api.call("/api/queue")[1]["queue"]; n_work = sum(1 for i in qq if i["state"] != "done")
-        ok("U4 Claude's queue renders one row per item: the working ones in the list, the done ones (and the done FIRST ticks) in one collapsed Done fold, Log folded at the bottom",
-           qn == len(qq) and pg.locator("[data-list='queue'] .qt-item").count() == n_work and pg.locator("details[data-fold='done:queue'] .qt-item").count() == len(qq) - n_work
-           and not pg.locator("details[data-fold='done:queue']").first.get_attribute("open") and pg.locator(".qt-chk").count() == len(api.call("/api/queue")[1]["queue_pre"]["items"])
+        ok("U4 Claude's queue renders one row per item ('- [ ]' ones too): the working ones in the list, the done ones in one collapsed Done fold, Log folded at the bottom",
+           qn == len(qq) == 15 and pg.locator("[data-list='queue'] .qt-item").count() == n_work == 8 and pg.locator("details[data-fold='done:queue'] .qt-item").count() == len(qq) - n_work
+           and not pg.locator("details[data-fold='done:queue']").first.get_attribute("open")
            and pg.locator("details[data-fold='Log']").count() == 1 and not pg.locator("details[data-fold='Log']").first.get_attribute("open"), (qn, n_work))
+        heads = pg.evaluate("[...document.querySelectorAll(\"[data-list='queue'] > .qt-qgh .nm\")].map(h => h.textContent)")
+        seq = pg.evaluate("[...document.querySelectorAll(\"[data-list='queue'] > .qt-qgh, [data-list='queue'] > .qt-item\")].map(r => r.classList.contains('qt-qgh') ? 'H:' + r.querySelector('.nm').textContent : r.querySelector('.qt-t').textContent)")
+        ok("U4a the md's group headings are drawn in the list (only groups with open work), each above its own items; Confirm Google Remote Desktop shows under 'Needs you'",
+           heads == ["No input from you: Claude works through these in order", "Claude does the work, and you review it later", "Needs you"]
+           and seq == ["H:No input from you: Claude works through these in order", "Running bullet C", "Pending bullet D", "H:Claude does the work, and you review it later", "Push package", "Media kit page",
+                       "Upgrade the remaining countries", "Email content for Kit", "H:Needs you", "Confirm Google Remote Desktop is working", "Add Google Analytics"], seq)
+        hdr = pg.locator(".qt-col[data-col='claude'] > h2 span").inner_text()
+        ok("U4c the column count is the real open count (8, running and held included)", hdr.startswith("8 open") and "1 running" in hdr and "1 held" in hdr, hdr)
         pg.locator(".qt-item .qt-trow[role=button]").first.click()
         ok("U4b a card expands to its details", pg.locator(".qt-item .qt-d").count() == 1, pg.locator(".qt-item .qt-d").count())
         ok("U5 categories are folded by default, each header shows its counts", pg.locator(".qt-cat").count() == 6 and pg.locator(".qt-cat.open").count() == 0
@@ -324,8 +464,11 @@ try:
 
         # drag by the grip (pointer events): Claude's queue, a category, an item inside a category
         def drag(src_sel, dst_sel, where="before"):
-            # both rows must be on screen: a mouse at off-screen coordinates presses nothing
-            pg.locator(dst_sel).first.scroll_into_view_if_needed(); pg.wait_for_timeout(100)
+            # both rows must be on screen: a mouse at off-screen coordinates presses nothing. Center the span between the
+            # two rows (2026-11-11: the status strip above the columns pushed the list down, so "dst into view, then fix
+            # src" scrolled dst off the top)
+            pg.evaluate("""([a, b]) => { const r = document.getElementById('queue-root'), x = document.querySelector(a).getBoundingClientRect(), y = document.querySelector(b).getBoundingClientRect();
+                r.scrollTop += (Math.min(x.top, y.top) + Math.max(x.bottom, y.bottom)) / 2 - 450; }""", [src_sel, dst_sel]); pg.wait_for_timeout(100)
             s = pg.locator(src_sel).first.bounding_box(); d = pg.locator(dst_sel).first.bounding_box()
             if s["y"] < 70 or s["y"] + s["height"] > 880:
                 pg.evaluate("dy => { document.getElementById('queue-root').scrollTop += dy; }", s["y"] - 450); pg.wait_for_timeout(100)
@@ -334,14 +477,35 @@ try:
             pg.mouse.move(s["x"] + s["width"] / 2, s["y"] + s["height"] / 2); pg.mouse.down()
             pg.mouse.move(s["x"] + s["width"] / 2, s["y"] + 12, steps=3); pg.mouse.move(d["x"] + 30, y, steps=8); pg.mouse.move(d["x"] + 30, y + (1 if where == "before" else -1), steps=2)
             pg.mouse.up(); pg.wait_for_timeout(500)
-        q0 = api.call("/api/queue")[1]["queue"]; q_before = [i["num"] for i in q0]; done_before = [(i["num"], i["title"]) for i in q0 if i["state"] == "done"]
-        third_title = pg.locator("[data-list='queue'] .qt-item").nth(2).locator(".qt-t").inner_text()
-        drag(".qt-item[data-idx='2'] .qt-grip", ".qt-item[data-idx='0']", "before")
-        st, q2 = api.call("/api/queue")
-        first_work = next(i for i in q2["queue"] if i["state"] != "done")
-        ok("U8 dragging the third working card above the first reorders Claude's queue (renumbered, written to the md); the done items keep their lines and numbers",
-           first_work["title"] == third_title and [i["num"] for i in q2["queue"]] == q_before and [(i["num"], i["title"]) for i in q2["queue"] if i["state"] == "done"] == done_before
-           and pg.locator("[data-list='queue'] .qt-item").first.locator(".qt-t").inner_text() == third_title, (third_title, first_work["title"]))
+        q0 = api.call("/api/queue")[1]["queue"]; nums_before = sorted(i["num"] for i in q0 if i["num"] is not None)
+        work_titles = lambda: pg.evaluate("[...document.querySelectorAll(\"[data-list='queue'] > .qt-item .qt-t\")].map(t => t.textContent)")
+        md_lines = lambda: MD.read_bytes().decode("utf-8").split("\n")
+        fx = FIXTURE.split("\n")
+        ga_line = "25. [ ] **Add Google Analytics.** You'd create the account."
+        drag(".qt-item[data-idx='7'] .qt-grip", ".qt-item[data-idx='0']", "before")      # the QA repro: the last item of "Needs you" to the very top
+        s8 = md_lines(); q8 = api.call("/api/queue")[1]["queue"]
+        ok("U8 dragging the last card (in 'Needs you') above the first moves ONLY its line, to just above the first card; the 'Needs you' heading and Confirm Google Remote Desktop stay; nothing renumbered",
+           s8.index(ga_line) == s8.index("- [~] **Running bullet C.** Found 3 bugs so far.") - 1 and [l for l in s8 if l != ga_line] == [l for l in fx if l != ga_line]
+           and s8[s8.index("**Needs you.**") + 1].startswith("- [ ] **Confirm Google Remote Desktop") and sorted(i["num"] for i in q8 if i["num"] is not None) == nums_before
+           and work_titles()[0] == "Add Google Analytics" and pg.locator("[data-list='queue'] > .qt-qgh").first.locator(".nm").inner_text().startswith("No input from you"), (s8[8:14], work_titles()[:3]))
+        rd_line = "- [ ] **Confirm Google Remote Desktop is working.** Check it before the 13th. (added by Kevin 2026-11-10)"
+        pg.locator(".qt-item[data-idx='7'] .qt-ib[data-act='move'][data-dir='-1']").click(); pg.wait_for_timeout(500)
+        s8b = md_lines()
+        ok("U8b the up arrow on the first card of a group crosses the heading: it lands at the end of the group above (after its last open item), only its line moved",
+           s8b.index(rd_line) == s8b.index("18. [-] **Email content for Kit.** The welcome series.") + 1 and [l for l in s8b if l != rd_line] == [l for l in s8 if l != rd_line]
+           and next(i for i in api.call("/api/queue")[1]["queue"] if i["title"] == "Confirm Google Remote Desktop is working")["group"] == 1, s8b[14:26])
+        d_line = "- [ ] **Pending bullet D.** Looks for drift. (added by Kevin 2026-11-10)"
+        drag(".qt-item[data-idx='2'] .qt-grip", ".qt-qgh[data-group='1']", "after")     # onto a heading: the top of that group
+        s8c = md_lines()
+        ok("U8c dropping a card on a group heading puts it first in that group (right under the heading); nothing else moves",
+           s8c[s8c.index("**Claude does the work, and you review it later.**") + 1] == d_line and [l for l in s8c if l != d_line] == [l for l in s8b if l != d_line], s8c[12:20])
+        pg.fill("#qt-qa-title", "Zz UI queue item"); pg.select_option("#qt-qa-group", "1")
+        pg.locator("form[data-form='queue-add'] button[type=submit]").click(); pg.wait_for_timeout(500)
+        s8d = md_lines(); zi = next((k for k, l in enumerate(s8d) if l.startswith("- [ ] **Zz UI queue item** (added by Kevin 20")), -1)
+        ok("U8d add from the tab with a group picked lands after that group's last open item, as a '- [ ]' line; nothing else moves",
+           zi > 0 and s8d[zi - 1] == rd_line and s8d[:zi] + s8d[zi + 1:] == s8c and "Zz UI queue item" in work_titles(), s8d[zi - 2:zi + 2] if zi > 0 else zi)
+        ok("U8e after the drags, the arrow and the add, every heading, note and blank line in the Queue section is where it was",
+           [l for l in s8d if not ITEM_LINE.match(l) and not l.startswith("   - ")] == [l for l in fx if not ITEM_LINE.match(l) and not l.startswith("   - ")], "")
         cats0 = [c["id"] for c in api.call("/api/todo?sync=0")[1]["categories"]]
         drag(".qt-cat[data-idx='1'] .qt-cath .qt-grip", ".qt-cat[data-idx='0'] .qt-cath", "before")
         cats1 = [c["id"] for c in api.call("/api/todo?sync=0")[1]["categories"]]
@@ -396,13 +560,13 @@ try:
         pg.set_viewport_size({"width": 1440, "height": 900})
 
         # a concurrent edit while the page is open: Claude appends a line, Kevin presses Hold
-        MD.write_bytes(MD.read_bytes() + ("- 2026-11-07: another external edit" + ("\r\n" if CRLF else "\n")).encode())
-        pg.locator(".qt-item .qt-hold").first.click()
+        ext = MD.read_bytes() + ("- 2026-11-07: another external edit" + ("\r\n" if CRLF else "\n")).encode()
+        MD.write_bytes(ext)
+        pg.locator("[data-list='queue'] .qt-item:not(.st-hold) .qt-hold").first.click()
         pg.wait_for_function("(() => { const t = document.querySelector('.qt-toast'); return t && !t.hidden && t.textContent.includes('changed'); })()", timeout=5000)   # not the previous toast
         toast = pg.inner_text(".qt-toast")
-        held_after = bool(__import__("re").search(r"^\d+\. \[-\]", MD.read_text(encoding="utf-8"), __import__("re").M))
         log_txt = pg.evaluate("document.querySelector(\"details[data-fold='Log']\").textContent")
-        ok("U14 a Hold on a stale page is refused with the message and the list reloads; nothing was written", "changed" in toast and not held_after and log_txt.count("another external edit") == 1, (toast, held_after, log_txt[-80:]))
+        ok("U14 a Hold on a stale page is refused with the message and the list reloads; nothing was written", "changed" in toast and MD.read_bytes() == ext and log_txt.count("another external edit") == 1, (toast, MD.read_bytes() == ext, log_txt[-80:]))
 
         # the live photo server without this build: a 404 means "restart it"
         pg2 = ctx.new_page()
@@ -444,6 +608,11 @@ try:
                 pg.locator(".qt-cat[data-cat='maps'] .qt-catb").click(); pg.wait_for_timeout(300)
             pg.screenshot(path=str(SHOTS / f"queue-tab-{name}.png"), full_page=False)
             ok(f"R4 real render at {w} px: cards, categories, no page errors", pg.locator(".qt-item").count() >= 10 and pg.locator(".qt-cat").count() >= 7 and not errs, errs[:2])
+            n_real_open = sum(1 for l in queue_section(real_md_before.decode("utf-8-sig").replace("\r\n", "\n")) if OPEN_LINE.match(l))
+            hdr = pg.locator(".qt-col[data-col='claude'] > h2 span").inner_text()
+            ok(f"R4b real render at {w} px: one working card per open line in the real md ({n_real_open}), the header says so, every item is a card",
+               pg.locator("[data-list='queue'] > .qt-item").count() == n_real_open and hdr.startswith(f"{n_real_open} open")
+               and pg.locator(".qt-item").count() == sum(1 for l in queue_section(real_md_before.decode("utf-8-sig").replace("\r\n", "\n")) if ITEM_LINE.match(l)), (pg.locator("[data-list='queue'] > .qt-item").count(), n_real_open, hdr))
             ctx.close()
         b.close()
     ok("R5 the read-only run left the real files byte-identical", REAL_MD.read_bytes() == real_md_before and (ROOT / ".tmp" / "kevin_todo.json").read_bytes() == real_todo_before, "")

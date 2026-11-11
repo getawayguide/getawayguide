@@ -1,0 +1,264 @@
+{
+  "outline_file": "tools/itinerary_maps/geo/cyclades-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 860,
+  "margins": {
+    "l": 60,
+    "r": 60,
+    "t": 40,
+    "b": 40
+  },
+  "crop_bounds": [
+    23.15,
+    36.2,
+    26.2,
+    38.25
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/cyclades-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "country_labels": [
+    {
+      "name": "Greece",
+      "lat": 38.15,
+      "lon": 23.55,
+      "size": 12,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Aegean Sea",
+      "lat": 37.85,
+      "lon": 25.55,
+      "size": 10
+    }
+  ],
+  "slug": "mykonos-routes",
+  "page": "Drafts/Full Articles/greece/mykonos.html",
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "stops": [
+    {
+      "n": 0,
+      "name": "Mykonos",
+      "lat": 37.4467,
+      "lon": 25.3289,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 24,
+      "dy": -2,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Athens",
+      "lat": 37.9838,
+      "lon": 23.7275,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": -6,
+      "href": "athens.html"
+    },
+    {
+      "n": 2,
+      "name": "Naxos",
+      "lat": 37.1036,
+      "lon": 25.3766,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "naxos-ios.html#naxos"
+    },
+    {
+      "n": 3,
+      "name": "Ios",
+      "lat": 36.7317,
+      "lon": 25.2823,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "naxos-ios.html#ios"
+    },
+    {
+      "n": 4,
+      "name": "Santorini",
+      "lat": 36.4166,
+      "lon": 25.4316,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "santorini.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Piraeus",
+      "lat": 37.942,
+      "lon": 23.6465,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 12
+    },
+    {
+      "name": "Rafina",
+      "lat": 38.0222,
+      "lon": 24.0094,
+      "anchor": "start",
+      "dx": 8,
+      "dy": -6
+    }
+  ],
+  "legs": [
+    {
+      "a": "dot:Piraeus",
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.7,
+          23.68
+        ],
+        [
+          37.42,
+          23.99
+        ],
+        [
+          37.27,
+          24.5
+        ],
+        [
+          37.28,
+          24.92
+        ],
+        [
+          37.37,
+          25.2
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": "dot:Rafina",
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          37.83,
+          24.34
+        ],
+        [
+          37.73,
+          24.749
+        ],
+        [
+          37.5,
+          25.12
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [],
+      "via_lock": true
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          36.8,
+          25.18
+        ],
+        [
+          36.95,
+          24.98
+        ],
+        [
+          37.2,
+          25.05
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          36.435,
+          25.385
+        ],
+        [
+          36.47,
+          25.345
+        ],
+        [
+          36.55,
+          25.375
+        ],
+        [
+          36.64,
+          25.43
+        ],
+        [
+          36.72,
+          25.44
+        ],
+        [
+          36.83,
+          25.395
+        ],
+        [
+          36.95,
+          25.315
+        ],
+        [
+          37.12,
+          25.31
+        ],
+        [
+          37.3,
+          25.305
+        ]
+      ],
+      "via_lock": true
+    }
+  ]
+}

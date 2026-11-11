@@ -1,0 +1,287 @@
+{
+ "slug": "tallinn-routes",
+ "page": "Drafts/Full Articles/estonia/tallinn.html",
+ "outline_file": "tools/itinerary_maps/geo/tallinn-routes-main.json",
+ "smooth": false,
+ "pin_scale": 1.15,
+ "country_width": 335,
+ "margins": {
+  "l": 240,
+  "r": 240,
+  "t": 130,
+  "b": 130
+ },
+ "crop_bounds": [
+  15.6,
+  56.45,
+  28.3,
+  60.75
+ ],
+ "layers": [
+  {
+   "file": "tools/itinerary_maps/geo/tallinn-routes-neighbors.json",
+   "under": true,
+   "fill": "#EFF0EB",
+   "stroke": "#D5DAD3",
+   "width": 0.9
+  },
+  {
+   "file": "tools/itinerary_maps/geo/tallinn-routes-route.json",
+   "under": true,
+   "fill": "#E6EAE3",
+   "stroke": "#9DB0A5",
+   "width": 1.1
+  }
+ ],
+ "stops": [
+  {
+   "name": "Tallinn",
+   "lat": 59.437,
+   "lon": 24.7536,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 16,
+   "dy": 8,
+   "marker": "star"
+  },
+  {
+   "name": "Helsinki",
+   "lat": 60.1699,
+   "lon": 24.9384,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 12,
+   "dy": -6,
+   "href": "../finland/helsinki.html"
+  },
+  {
+   "name": "Stockholm",
+   "lat": 59.3293,
+   "lon": 18.0686,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": 12,
+   "href": "../sweden/stockholm.html"
+  },
+  {
+   "name": "Riga",
+   "lat": 56.9496,
+   "lon": 24.1052,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": 14,
+   "href": "../latvia/riga.html"
+  }
+ ],
+ "legs": [
+  {
+   "a": 1,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "sea": true,
+   "via": [
+    [
+     60.12,
+     24.99
+    ],
+    [
+     59.9,
+     24.99
+    ],
+    [
+     59.68,
+     24.79
+    ]
+   ],
+   "via_lock": true
+  },
+  {
+   "a": 2,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "sea": true,
+   "via": [
+    [
+     59.385,
+     18.16
+    ],
+    [
+     59.392,
+     18.33
+    ],
+    [
+     59.44,
+     18.39
+    ],
+    [
+     59.5,
+     18.47
+    ],
+    [
+     59.562,
+     18.62
+    ],
+    [
+     59.56,
+     18.88
+    ],
+    [
+     59.57,
+     19.25
+    ],
+    [
+     59.53,
+     23.2
+    ],
+    [
+     59.635,
+     24.4
+    ],
+    [
+     59.62,
+     24.64
+    ],
+    [
+     59.525,
+     24.69
+    ]
+   ],
+   "via_lock": true
+  },
+  {
+   "a": 3,
+   "b": 0,
+   "label": "",
+   "via": [
+    [
+     57.25,
+     24.45
+    ],
+    [
+     57.65,
+     24.6
+    ],
+    [
+     58.2,
+     24.72
+    ]
+   ]
+  }
+ ],
+ "legend": {
+  "pos": "bl",
+  "scale": 0.9,
+  "items": [
+   {
+    "label": "Ferry",
+    "color": "#5E93A3"
+   },
+   {
+    "label": "Bus"
+   }
+  ]
+ },
+ "country_labels": [
+  {
+   "name": "Estonia",
+   "lat": 58.75,
+   "lon": 26.1,
+   "size": 11,
+   "weight": 700,
+   "ls": 3,
+   "color": "#4F6358"
+  },
+  {
+   "name": "Finland",
+   "lat": 60.55,
+   "lon": 23.2,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Latvia",
+   "lat": 56.9,
+   "lon": 26.3,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Sweden",
+   "lat": 58.95,
+   "lon": 16.0,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  }
+ ],
+ "water_labels": [
+  {
+   "name": "Baltic Sea",
+   "lat": 58.2,
+   "lon": 20.0,
+   "size": 10
+  }
+ ],
+ "mobile": {
+  "country_width": 201,
+  "legend": {
+   "pos": "bl",
+   "scale": 0.8,
+   "items": [
+    {
+     "label": "Ferry",
+     "color": "#5E93A3"
+    },
+    {
+     "label": "Bus"
+    }
+   ]
+  },
+  "country_labels": [
+   {
+    "name": "Estonia",
+    "lat": 58.75,
+    "lon": 26.1,
+    "size": 8,
+    "weight": 700,
+    "ls": 3,
+    "color": "#4F6358"
+   },
+   {
+    "name": "Finland",
+    "lat": 60.55,
+    "lon": 23.2,
+    "size": 8,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   },
+   {
+    "name": "Latvia",
+    "lat": 56.9,
+    "lon": 26.3,
+    "size": 8,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   }
+  ],
+  "water_labels": [
+   {
+    "name": "Baltic Sea",
+    "lat": 58.2,
+    "lon": 20.0,
+    "size": 9
+   }
+  ]
+ }
+}

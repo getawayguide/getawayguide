@@ -1,0 +1,323 @@
+{
+  "slug": "split-routes",
+  "page": "Drafts/Upcoming/croatia/split.html",
+  "outline_file": "tools/itinerary_maps/geo/split-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 690,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    15.8,
+    42.35,
+    18.85,
+    43.95
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/split-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Split",
+      "lat": 43.5081,
+      "lon": 16.4402,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -4,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Hvar",
+      "lat": 43.1729,
+      "lon": 16.4411,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8,
+      "href": "hvar.html"
+    },
+    {
+      "n": 2,
+      "name": "Dubrovnik",
+      "lat": 42.6507,
+      "lon": 18.0944,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10,
+      "href": "dubrovnik.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Trogir",
+      "lat": 43.5125,
+      "lon": 16.2517,
+      "anchor": "end",
+      "dx": -8,
+      "dy": -6
+    }
+  ],
+  "airports": [
+    {
+      "name": "SPU Airport",
+      "lat": 43.5389,
+      "lon": 16.298,
+      "anchor": "end",
+      "dx": -6,
+      "dy": -14,
+      "icon_dx": -2,
+      "icon_dy": -2
+    }
+  ],
+  "legs": [
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          42.8,
+          17.86
+        ],
+        [
+          42.94,
+          17.63
+        ],
+        [
+          43.07,
+          17.43
+        ],
+        [
+          43.29,
+          17.03
+        ],
+        [
+          43.44,
+          16.7
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          42.63,
+          17.95
+        ],
+        [
+          42.65,
+          17.7
+        ],
+        [
+          42.68,
+          17.45
+        ],
+        [
+          42.74,
+          17.18
+        ],
+        [
+          42.79,
+          16.98
+        ],
+        [
+          42.84,
+          16.7
+        ],
+        [
+          42.97,
+          16.5
+        ],
+        [
+          43.12,
+          16.3
+        ],
+        [
+          43.28,
+          16.18
+        ],
+        [
+          43.38,
+          16.11
+        ],
+        [
+          43.45,
+          16.16
+        ],
+        [
+          43.47,
+          16.38
+        ]
+      ],
+      "via_lock": true
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3",
+      "sea": true,
+      "via": [
+        [
+          43.165,
+          16.385
+        ],
+        [
+          43.21,
+          16.345
+        ],
+        [
+          43.27,
+          16.365
+        ],
+        [
+          43.33,
+          16.39
+        ],
+        [
+          43.39,
+          16.42
+        ],
+        [
+          43.46,
+          16.425
+        ]
+      ],
+      "via_lock": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Catamaran",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Croatia",
+      "lat": 43.9,
+      "lon": 16.15,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Bosnia and|Herzegovina",
+      "lat": 43.72,
+      "lon": 17.75,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Montenegro",
+      "lat": 42.55,
+      "lon": 18.62,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Adriatic Sea",
+      "lat": 42.6,
+      "lon": 16.55,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 430,
+    "crop_bounds": [
+      15.85,
+      42.35,
+      18.7,
+      43.85
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -10
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      }
+    },
+    "dots": [],
+    "airports": [
+      {
+        "name": "SPU Airport",
+        "lat": 43.5389,
+        "lon": 16.298,
+        "anchor": "end",
+        "dx": -4,
+        "dy": -14,
+        "icon_dx": -2,
+        "icon_dy": -2
+      }
+    ],
+    "water_labels": {
+      "0": {
+        "lat": 42.65,
+        "lon": 16.5,
+        "size": 9
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Croatia",
+        "lat": 43.8,
+        "lon": 16.6,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Bosnia and|Herzegovina",
+        "lat": 43.6,
+        "lon": 17.75,
+        "size": 9,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

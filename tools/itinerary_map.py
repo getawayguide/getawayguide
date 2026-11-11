@@ -21,6 +21,8 @@ CONFIG SCHEMA (see tools/itinerary_maps/el-salvador.json for a full example):
     country_width   px width of the country outline (default 780)
     margins         {l,r,t,b} px around the country for labels
     simplify        outline point target (default 150); smooth (bool)
+    hub_detail      "full": the country at the dataset's own detail, unsmoothed, so it meets a neighbor layer
+                    (itinerary_geo.py --points 0) with no gap at the shared border (2026-11-11)
     palette         optional colour overrides (bg/land/pin/ink/route/muted/chip)
     stops[]         {n,name,lat,lon,days,anchor,dx,dy}  (anchor label offsets)
     dots[]          {name,lat,lon,anchor,dx,dy}  small un-numbered markers
@@ -150,7 +152,8 @@ def _outline(iso3, keep, kc, simplify):
     lats = [pt[1] for r in rings for pt in r]
     K = math.cos(math.radians((max(lats) + min(lats)) / 2.0))
     pr = [[(pt[0] * K, -pt[1]) for pt in r] for r in rings]
-    pr = co.simplify_rings(pr, simplify)
+    if simplify:                                  # None = "hub_detail": "full", the dataset's own vertices
+        pr = co.simplify_rings(pr, simplify)
     _OUTLINES[key] = (K, pr)
     try:
         os.makedirs(os.path.dirname(disk), exist_ok=True)
@@ -167,6 +170,13 @@ def build(cfg):
     ML, MR, MT, MB = m.get("l", 250), m.get("r", 250), m.get("t", 130), m.get("b", 140)
     simplify = cfg.get("simplify", 150)
     smooth = cfg.get("smooth", True)
+    # "hub_detail": "full" (Kevin, 2026-11-11, on the Belgrade day-trip map: "border around serbia doesn't quite
+    # match the other borders - you can see some gaps"). The hub was simplified to ~150 points and smoothed while
+    # the neighbor layer kept its own vertices, so the two edges parted by a few px and the neighbor's border
+    # stroke showed beside the hub's edge. Full detail, no smoothing: the shared border is the same Natural
+    # Earth line in both, so they meet exactly. Pair it with neighbor files cut by itinerary_geo.py --points 0.
+    if cfg.get("hub_detail") == "full":
+        simplify, smooth = None, False
 
     keep = cfg.get("area_keep", co.AREA_KEEP_RATIO)  # lower to keep small islands
     kc = cfg.get("keep_containing")
@@ -228,12 +238,19 @@ def build(cfg):
 
     seg = cfg.get("max_seg", 26)
 
+    # full-detail outlines are clipped to the final window (not known until the end), so a route map's
+    # whole-country neighbors (Italy, Ukraine) don't ship thousands of off-screen vertices: placeholders here
+    CLIP = [] if cfg.get("hub_detail") == "full" else None
+
     def path_d(rings):
         out = []
         for r in rings:
             pts = r[:-1] if r[0] == r[-1] else r
             cv = to_canvas(pts)
-            if smooth:
+            if CLIP is not None:
+                CLIP.append(cv)
+                out.append(f"@@CLIP{len(CLIP) - 1}@@")
+            elif smooth:
                 out.append(smooth_closed(densify(cv, seg)))
             else:
                 out.append("M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in cv) + " Z")
@@ -569,7 +586,44 @@ def build(cfg):
     head = (f'<svg viewBox="{vx:.0f} {vy:.0f} {vw:.0f} {vh:.0f}"{proj} '
             f'xmlns="http://www.w3.org/2000/svg" font-family="Hanken Grotesk,Helvetica,Arial,sans-serif">')
     bg = f'<rect x="{vx:.0f}" y="{vy:.0f}" width="{vw:.0f}" height="{vh:.0f}" fill="{cfg.get("frame_fill") or P["bg"]}"/>'
-    return "\n".join([head, bg] + B + ["</svg>"]), round(vw), round(vh)
+    svg = "\n".join([head, bg] + B + ["</svg>"])
+    if CLIP is not None:
+        box = (vx - 12, vy - 12, vx + vw + 12, vy + vh + 12)
+        import re as _re
+        svg = _re.sub(r"@@CLIP(\d+)@@", lambda m: _clip_d(CLIP[int(m.group(1))], box), svg)
+        svg = _re.sub(r' d="\s*"', ' d="M 0 0"', svg)
+    return svg, round(vw), round(vh)
+
+
+def _clip_d(pts, box):
+    """SVG subpath for one ring clipped to box (Sutherland-Hodgman on the rectangle), points closer than 0.25
+    units to the last kept one dropped. Empty when the ring is wholly outside. For hub_detail "full"."""
+    x0, y0, x1, y1 = box
+    edges = ((lambda p: p[0] >= x0, lambda a, b: (x0, a[1] + (b[1] - a[1]) * (x0 - a[0]) / (b[0] - a[0]))),
+             (lambda p: p[0] <= x1, lambda a, b: (x1, a[1] + (b[1] - a[1]) * (x1 - a[0]) / (b[0] - a[0]))),
+             (lambda p: p[1] >= y0, lambda a, b: (a[0] + (b[0] - a[0]) * (y0 - a[1]) / (b[1] - a[1]), y0)),
+             (lambda p: p[1] <= y1, lambda a, b: (a[0] + (b[0] - a[0]) * (y1 - a[1]) / (b[1] - a[1]), y1)))
+    poly = list(pts)
+    for inside, cut in edges:
+        if not poly:
+            break
+        out = []
+        for i, cur in enumerate(poly):
+            prev = poly[i - 1]
+            if inside(cur):
+                if not inside(prev):
+                    out.append(cut(prev, cur))
+                out.append(cur)
+            elif inside(prev):
+                out.append(cut(prev, cur))
+        poly = out
+    kept = []
+    for p in poly:
+        if not kept or abs(p[0] - kept[-1][0]) + abs(p[1] - kept[-1][1]) >= 0.25:
+            kept.append(p)
+    if len(kept) < 3:
+        return ""
+    return "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in kept) + " Z"
 
 
 MAX_VH = 531   # Egypt's viewBox height — the constant-font / max-height standard.

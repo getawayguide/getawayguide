@@ -1,0 +1,227 @@
+{
+  "slug": "bruges-routes",
+  "page": "Drafts/Upcoming/belgium/bruges.html",
+  "outline_file": "tools/itinerary_maps/geo/bruges-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 463.4,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    0.5,
+    49.15,
+    5.15,
+    51.6
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/bruges-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/bruges-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Bruges",
+      "lat": 51.2086,
+      "lon": 3.2268,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Brussels",
+      "lat": 50.8467,
+      "lon": 4.3525,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 6,
+      "href": "brussels.html"
+    },
+    {
+      "n": 2,
+      "name": "Ghent",
+      "lat": 51.0538,
+      "lon": 3.725,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -8,
+      "href": "ghent.html"
+    },
+    {
+      "n": 3,
+      "name": "Lille",
+      "lat": 50.6366,
+      "lon": 3.0635,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    },
+    {
+      "n": 4,
+      "name": "Rouen",
+      "lat": 49.4405,
+      "lon": 1.094,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 5
+    }
+  ],
+  "dots": [],
+  "airports": [],
+  "legs": [
+    {
+      "a": 0,
+      "b": 2,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 3,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Onward by train to France",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Belgium",
+      "lat": 50.481,
+      "lon": 4.757,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "France",
+      "lat": 49.858,
+      "lon": 3.258,
+      "size": 11,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Netherlands",
+      "lat": 51.607,
+      "lon": 4.778,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "English Channel",
+      "lat": 50.2,
+      "lon": 0.95,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 278.0,
+    "crop_bounds": [
+      0.5,
+      49.15,
+      5.15,
+      51.6
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -2
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 6
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -8
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 4
+      },
+      "4": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 5
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Belgium",
+        "lat": 50.434,
+        "lon": 4.956,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "France",
+        "lat": 49.842,
+        "lon": 3.13,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": []
+  }
+}

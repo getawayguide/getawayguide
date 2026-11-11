@@ -1,0 +1,350 @@
+{
+  "slug": "tbilisi-routes",
+  "page": "Drafts/Full Articles/georgia/tbilisi.html",
+  "outline_file": "tools/itinerary_maps/geo/tbilisi-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 638.9,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    40.6,
+    39.7,
+    47.5,
+    43.45
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/tbilisi-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/tbilisi-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "mobile": {
+    "country_width": 416.1,
+    "crop_bounds": [
+      41.05,
+      39.75,
+      47.0,
+      43.4
+    ],
+    "legend": {
+      "pos": "tr",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        },
+        {
+          "label": "Train",
+          "color": "#5E93A3"
+        },
+        {
+          "label": "Minibus or bus"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Georgia",
+        "lat": 42.15,
+        "lon": 44.0,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Türkiye",
+        "lat": 40.05,
+        "lon": 42.85,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Russia",
+        "lat": 43.3,
+        "lon": 43.85,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": [],
+    "dots": {
+      "0": {
+        "lat": 40.5,
+        "lon": 41.45
+      },
+      "1": {
+        "lat": 40.85,
+        "lon": 46.3,
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 18
+      }
+    }
+  },
+  "stops": [
+    {
+      "name": "Tbilisi",
+      "lat": 41.6935,
+      "lon": 44.8014,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 18,
+      "dy": 6,
+      "marker": "star"
+    },
+    {
+      "name": "Yerevan",
+      "lat": 40.1777,
+      "lon": 44.5126,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4
+    },
+    {
+      "name": "Kutaisi",
+      "lat": 42.2716,
+      "lon": 42.7054,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -8
+    },
+    {
+      "name": "Mestia",
+      "lat": 43.0438,
+      "lon": 42.7245,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -4,
+      "href": "svaneti.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Europe & Istanbul",
+      "lat": 40.5,
+      "lon": 41.0,
+      "anchor": "start",
+      "dx": -8,
+      "dy": 18
+    },
+    {
+      "name": "From Dubai & Doha",
+      "lat": 40.25,
+      "lon": 47.25,
+      "anchor": "end",
+      "dx": 6,
+      "dy": 18
+    },
+    {
+      "name": "Batumi",
+      "lat": 41.651,
+      "lon": 41.636,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 2
+    }
+  ],
+  "airports": [
+    {
+      "name": "",
+      "lat": 41.6093,
+      "lon": 41.6012,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 16,
+      "icon_dx": -16,
+      "icon_dy": 8
+    },
+    {
+      "name": "",
+      "lat": 42.1833,
+      "lon": 42.4651,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 16,
+      "icon_dx": -2,
+      "icon_dy": 2
+    }
+  ],
+  "legs": [
+    {
+      "a": "dot:From Europe & Istanbul",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": "dot:From Dubai & Doha",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3",
+      "via": [
+        [
+          41.93,
+          44.2
+        ],
+        [
+          42.0,
+          43.6
+        ],
+        [
+          42.11,
+          43.05
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": "",
+      "via": [
+        [
+          41.86,
+          44.2
+        ],
+        [
+          41.93,
+          43.6
+        ],
+        [
+          42.02,
+          43.05
+        ],
+        [
+          42.03,
+          42.55
+        ],
+        [
+          42.3,
+          42.1
+        ],
+        [
+          42.62,
+          42.05
+        ],
+        [
+          42.85,
+          42.35
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "color": "#5E93A3",
+      "bow": -0.14
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      },
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Minibus or bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Georgia",
+      "lat": 42.15,
+      "lon": 44.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Armenia",
+      "lat": 40.75,
+      "lon": 45.1,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Türkiye",
+      "lat": 40.05,
+      "lon": 42.85,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Russia",
+      "lat": 43.25,
+      "lon": 44.3,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Azerbaijan",
+      "lat": 41.25,
+      "lon": 46.95,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Black Sea",
+      "lat": 42.5,
+      "lon": 40.95,
+      "size": 10
+    }
+  ]
+}

@@ -170,8 +170,9 @@ def frames_free(country, state):
     """[(key, ref, size)] + the frame texts for the Personal post: final slots 1-10 in order"""
     st = ig_post.load_state(state) if state else {"photos": {}, "post": {}, "captions": []}
     slots = []
+    n_final = ig_post.nfinal_of(st.get("post"))                 # the Final row: 10 slides unless he added more (up to 20)
     for pid, doc in (st.get("photos") or {}).items():
-        if doc.get("state") == "final" and doc.get("slot") and 1 <= int(doc["slot"]) <= 10:
+        if doc.get("state") == "final" and doc.get("slot") and 1 <= int(doc["slot"]) <= n_final:
             slots.append((int(doc["slot"]), pid, doc))
     slots.sort()
     if not slots:

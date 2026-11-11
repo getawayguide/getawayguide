@@ -1,0 +1,142 @@
+{
+  "slug": "athens-guide",
+  "kicker": "Greece",
+  "city": "Athens",
+  "osm": ".tmp/athens-guide_osm.json",
+  "article": "Drafts/Full Articles/greece/athens.html",
+  "embed": {
+    "pre": "<!-- city map: athens-guide -->",
+    "post": "<!-- /city map: athens-guide -->"
+  },
+  "hint": [
+    "Touch to explore",
+    "Double-tap to open in Google Maps"
+  ],
+  "desktop": {
+    "pad": 1.25
+  },
+  "mobile": {
+    "pad": 1.35,
+    "init_w": 0.92,
+    "init_x": 0.5,
+    "init_y": 0.5,
+    "center": {
+      "lat": 37.9772,
+      "lon": 23.7285
+    }
+  },
+  "pois": [
+    {
+      "name": "Acropolis",
+      "cat": "see",
+      "match": "acropolis",
+      "lat": 37.971532,
+      "lon": 23.725749,
+      "href": "https://www.google.com/maps/place/Acropolis/@37.9715299,23.7051065,14z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd115926d4b3:0xc1b7afae2bd1b7ea!8m2!3d37.9715323!4d23.7257491!16s%2Fg%2F11cnckrfgr?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Odeon of Herodes Atticus",
+      "cat": "see",
+      "match": "odeon of herodes atticus",
+      "lat": 37.970795,
+      "lon": 23.724583,
+      "href": "https://www.google.com/maps/place/Odeon+of+Herodes+Atticus/@37.9707076,23.7251812,18z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd176189a415:0xffd97e587cd4a084!8m2!3d37.9707948!4d23.7245831!16zL20vMDVtODNx"
+    },
+    {
+      "name": "Ancient Agora",
+      "cat": "see",
+      "match": "ancient agora",
+      "lat": 37.974897,
+      "lon": 23.722093,
+      "href": "https://www.google.com/maps/place/Ancient+Agora+of+Athens/@37.9715299,23.7051065,14z/data=!4m6!3m5!1s0x14a1bd22f5097987:0x422934da31aa5dc8!8m2!3d37.974897!4d23.7220933!16zL20vMDJqcDBi?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Stoa of Attalos",
+      "cat": "see",
+      "match": "stoa of attalos",
+      "lat": 37.975163,
+      "lon": 23.724203,
+      "href": "https://www.google.com/maps/place/Stoa+of+Attalos+-+Museum+of+the+Ancient+Agora/@37.9751628,23.7242028,17z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd2aee0ebf93:0x867a05d33df9f2c3!8m2!3d37.9751628!4d23.7242028!16zL20vMDQ3ZnB3"
+    },
+    {
+      "name": "Hadrian's Library",
+      "cat": "see",
+      "match": "hadrian's library",
+      "lat": 37.975502,
+      "lon": 23.72603,
+      "href": "https://www.google.com/maps/place/Hadrian's+Library,+Κ,+Areos,+Athens,+Greece/@37.9764083,23.7233056,17z/data=!4m5!3m4!1s0x14a1bd22eb8759ab:0x7753997e1e7f2fd1!8m2!3d37.9755021!4d23.7260304?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Syntagma Square",
+      "cat": "see",
+      "match": "syntagma square",
+      "lat": 37.975525,
+      "lon": 23.734904,
+      "href": "https://www.google.com/maps/place/Plateia+Syntagmatos,+Athina,+Greece/@37.9747852,23.7170669,15z/data=!4m6!3m5!1s0x14a1bd3e92480435:0x68ba1057cb0d560e!8m2!3d37.9755253!4d23.7349038!16zL20vMDV3ZGJo?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Monastiraki Square",
+      "cat": "see",
+      "match": "monastiraki square",
+      "lat": 37.976408,
+      "lon": 23.725886,
+      "href": "https://www.google.com/maps/place/Monastiraki+Square/@37.9720509,23.7239747,16z/data=!4m6!3m5!1s0x14a1bd3da48b820b:0x31bbdce22599d6ec!8m2!3d37.9764083!4d23.7258859!16s%2Fg%2F11bxdvfslj?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Kapnikarea Church",
+      "cat": "see",
+      "match": "kapnikarea church",
+      "lat": 37.976399,
+      "lon": 23.728606,
+      "href": "https://www.google.com/maps/place/Kapnikarea,+Pl.+Kapnikareas+3,+Athina+105+63,+Greece/@37.9763994,23.7286064,17z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd3cdbe09f9b:0x8a4050295f143f0e!8m2!3d37.9763994!4d23.7286064!16s%2Fm%2F02qfybd?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMy4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Eatery Bairaktaris Aiolou 29",
+      "cat": "eat",
+      "match": "eatery bairaktaris aio",
+      "lat": 37.977377,
+      "lon": 23.727652,
+      "href": "https://www.google.com/maps/place/EATERY+Bairaktaris+Aiolou+29/@37.9773767,23.7250712,17z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd96a26e6011:0x7a91907922e59a58!8m2!3d37.9773767!4d23.7276515!16s%2Fg%2F11rg42ztq1?entry=ttu&g_ep=EgoyMDI2MDYyNC4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Street Souvlaki",
+      "cat": "eat",
+      "match": "street souvlaki",
+      "lat": 37.977679,
+      "lon": 23.730294,
+      "href": "https://www.google.com/maps/place/Street+Souvlaki/@37.977679,23.730294,17z/data=!3m1!4b1!4m6!3m5!1s0x14a1bd3c8643beb3:0x4cea8713fa86ad31!8m2!3d37.977679!4d23.730294!16s%2Fg%2F11cmsb6sgx"
+    },
+    {
+      "name": "YellowSquare Athens",
+      "cat": "stay",
+      "match": "yellowsquare athen",
+      "lat": 37.9808803,
+      "lon": 23.7251539,
+      "href": "https://www.google.com/maps/place/YellowSquare+Athens/@37.9809527,23.7252304,17z/data=!4m9!3m8!1s0x14a1bd02573177f3:0x2e20022d250647c3!5m2!4m1!1i2!8m2!3d37.9809527!4d23.7252304!16s%2Fg%2F11xf_jr2cp?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    },
+    {
+      "name": "Mosaikon Glostel",
+      "cat": "stay",
+      "match": "mosaikon glostel",
+      "lat": 37.9777318,
+      "lon": 23.7284494,
+      "href": "https://www.google.com/maps/place/Mosaikon+Hostel/@37.9777685,23.7284364,17z/data=!4m9!3m8!1s0x14a1bd3cba434945:0x41cf13a4ea27627a!5m2!4m1!1i2!8m2!3d37.9777685!4d23.7284364!16s%2Fg%2F11gh6bsd90?hl=en&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D"
+    }
+  ],
+  "center": {
+    "lat": 37.974715,
+    "lon": 23.72777
+  },
+  "district_labels": [
+    {
+      "text": "PLAKA",
+      "lat": 37.9724,
+      "lon": 23.7303
+    },
+    {
+      "text": "MONASTIRAKI",
+      "lat": 37.9773,
+      "lon": 23.7244
+    }
+  ]
+}

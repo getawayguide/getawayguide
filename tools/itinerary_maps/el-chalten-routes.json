@@ -1,0 +1,190 @@
+{
+  "slug": "el-chalten-routes",
+  "page": "Drafts/Full Articles/argentina/el-chalten.html",
+  "outline_file": "tools/itinerary_maps/geo/el-chalten-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 735.3,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -74.1,
+    -50.75,
+    -70.5,
+    -48.9
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/el-chalten-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "El Chaltén",
+      "lat": -49.332,
+      "lon": -72.886,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "marker": "star"
+    },
+    {
+      "name": "El Calafate",
+      "lat": -50.3387,
+      "lon": -72.2737,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -13,
+      "dy": 8,
+      "href": "el-calafate.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "From Buenos Aires",
+      "lat": -49.25,
+      "lon": -70.85,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -50.31,
+          -71.855
+        ],
+        [
+          -50.158,
+          -71.986
+        ],
+        [
+          -50.122,
+          -72.078
+        ],
+        [
+          -50.024,
+          -72.164
+        ],
+        [
+          -49.994,
+          -72.097
+        ],
+        [
+          -49.877,
+          -72.027
+        ],
+        [
+          -49.8,
+          -72.049
+        ],
+        [
+          -49.716,
+          -71.965
+        ],
+        [
+          -49.699,
+          -71.87
+        ],
+        [
+          -49.623,
+          -72.011
+        ],
+        [
+          -49.606,
+          -72.208
+        ],
+        [
+          -49.518,
+          -72.549
+        ]
+      ]
+    },
+    {
+      "a": "dot:From Buenos Aires",
+      "b": 1,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Argentina",
+      "lat": -49.7,
+      "lon": -71.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Chile",
+      "lat": -49.4,
+      "lon": -73.75,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [],
+  "lakes": [
+    "Lago Argentino",
+    "Lago Viedma"
+  ],
+  "mobile": {
+    "country_width": 463.3,
+    "country_labels": {
+      "0": {
+        "lon": -70.85
+      },
+      "1": {
+        "lat": -49.95,
+        "lon": -73.5
+      }
+    },
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Flight",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "slug": "amsterdam-routes",
+  "page": "Drafts/Full Articles/netherlands/amsterdam.html",
+  "outline_file": "tools/itinerary_maps/geo/amsterdam-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 776.7,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    3.3,
+    51.45,
+    6.5,
+    52.75
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/amsterdam-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Amsterdam",
+      "lat": 52.3789,
+      "lon": 4.9006,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Haarlem",
+      "lat": 52.3885,
+      "lon": 4.6388,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -2
+    },
+    {
+      "n": 2,
+      "name": "Utrecht",
+      "lat": 52.0842,
+      "lon": 5.0988,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 6
+    },
+    {
+      "n": 3,
+      "name": "The Hague",
+      "lat": 52.08,
+      "lon": 4.3113,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4
+    },
+    {
+      "n": 4,
+      "name": "Rotterdam",
+      "lat": 51.9244,
+      "lon": 4.4778,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 10
+    }
+  ],
+  "dots": [],
+  "airports": [
+    {
+      "name": "Schiphol Airport",
+      "lat": 52.3105,
+      "lon": 4.7683,
+      "anchor": "end",
+      "dx": -10,
+      "dy": -3,
+      "icon_dx": -92,
+      "icon_dy": -8
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": "",
+      "bow": -0.1
+    },
+    {
+      "a": 4,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "br",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train"
+      },
+      {
+        "label": "Train from Schiphol",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Netherlands",
+      "lat": 51.76,
+      "lon": 5.175,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Belgium",
+      "lat": 51.55,
+      "lon": 4.7,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Germany",
+      "lat": 51.708,
+      "lon": 6.371,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "North Sea",
+      "lat": 52.2,
+      "lon": 3.75,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 466.0,
+    "crop_bounds": [
+      3.3,
+      51.45,
+      6.5,
+      52.75
+    ],
+    "stops": {
+      "0": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -4
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -14
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 6
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 2
+      },
+      "4": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 10
+      }
+    },
+    "country_labels": [
+      {
+        "name": "Netherlands",
+        "lat": 52.685,
+        "lon": 5.602,
+        "size": 11,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Belgium",
+        "lat": 51.364,
+        "lon": 4.695,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ],
+    "water_labels": [],
+    "airports": [
+      {
+        "name": "Schiphol",
+        "lat": 52.3105,
+        "lon": 4.7683,
+        "anchor": "end",
+        "dx": -9,
+        "dy": -3,
+        "icon_dx": -50,
+        "icon_dy": -7
+      }
+    ]
+  }
+}

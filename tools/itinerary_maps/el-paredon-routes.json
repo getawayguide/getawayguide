@@ -1,0 +1,270 @@
+{
+  "slug": "el-paredon-routes",
+  "page": "Drafts/Full Articles/guatemala/el-paredon.html",
+  "outline_file": "tools/itinerary_maps/geo/el-paredon-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1000.0,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -91.8,
+    13.2,
+    -88.75,
+    15.1
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/el-paredon-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/el-paredon-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/el-paredon-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "name": "El Paredón",
+      "lat": 13.9186,
+      "lon": -91.0747,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 8,
+      "marker": "star"
+    },
+    {
+      "name": "Antigua",
+      "lat": 14.5573,
+      "lon": -90.7332,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -16,
+      "href": "antigua.html"
+    },
+    {
+      "name": "Lake Atitlán",
+      "lat": 14.7447,
+      "lon": -91.1537,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6,
+      "href": "lake-atitlan.html"
+    },
+    {
+      "name": "El Tunco",
+      "lat": 13.4932,
+      "lon": -89.3836,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 8
+    }
+  ],
+  "airports": [
+    {
+      "name": "GUA Airport",
+      "lat": 14.588,
+      "lon": -90.5307,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 8,
+      "icon_dx": 6,
+      "icon_dy": 34
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "bow": 0.18
+    },
+    {
+      "a": 1,
+      "b": "air",
+      "label": ""
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true,
+      "via": [
+        [
+          14.05,
+          -90.55
+        ],
+        [
+          13.98,
+          -90.15
+        ],
+        [
+          13.76,
+          -89.75
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Tourist shuttle"
+      },
+      {
+        "label": "International shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Guatemala",
+      "lat": 15.0,
+      "lon": -90.35,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "El Salvador",
+      "lat": 13.95,
+      "lon": -88.95,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Honduras",
+      "lat": 14.75,
+      "lon": -88.95,
+      "size": 10,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Pacific Ocean",
+      "lat": 13.42,
+      "lon": -90.45,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 416.7,
+    "crop_bounds": [
+      -91.7,
+      13.2,
+      -88.95,
+      15.05
+    ],
+    "stops": {
+      "0": {
+        "anchor": "end",
+        "dx": -14,
+        "dy": 8
+      },
+      "1": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": -12
+      },
+      "2": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -4
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": 16
+      }
+    },
+    "airports": [
+      {
+        "name": "GUA Airport",
+        "lat": 14.588,
+        "lon": -90.5307,
+        "anchor": "start",
+        "dx": 10,
+        "dy": 8,
+        "icon_dx": 6,
+        "icon_dy": 34
+      }
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Tourist shuttle"
+        },
+        {
+          "label": "International shuttle",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "water_labels": [],
+    "country_labels": [
+      {
+        "name": "Guatemala",
+        "lat": 14.95,
+        "lon": -90.1,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "El Salvador",
+        "lat": 13.9,
+        "lon": -89.2,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Honduras",
+        "lat": 14.55,
+        "lon": -89.2,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ]
+  }
+}

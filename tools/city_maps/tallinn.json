@@ -121,13 +121,6 @@
       "match": "munga"
     },
     {
-      "name": "Sveta Baar",
-      "lat": 59.4423,
-      "lon": 24.728,
-      "cat": "eat",
-      "match": "sveta"
-    },
-    {
       "name": "Whisper Sister",
       "lat": 59.4346,
       "lon": 24.7473,
@@ -142,5 +135,17 @@
       "match": "lai 22",
       "href": "https://www.google.com/maps/place/The+Monk%C2%B4s+Bunk/@59.4390924,24.7451093,17z/data=!4m9!3m8!1s0x46929363ad67e6bf:0x3b62b77e489f464f!5m2!4m1!1i2!8m2!3d59.4390924!4d24.7451093!16s%2Fg%2F11j0clv1cr?hl=en&entry=ttu&g_ep=EgoyMDI2MTEwMi4wIKXMDSoASAFQAw%3D%3D"
     }
-  ]
+  ],
+  "proj_lock": {
+    "desktop": [
+      0.43205280748876446,
+      1.297443081105544,
+      649867.1431451385
+    ],
+    "mobile": [
+      0.43205276803084003,
+      1.297443085530347,
+      608213.8998136112
+    ]
+  }
 }

@@ -1,0 +1,195 @@
+{
+  "slug": "agra-routes",
+  "page": "Drafts/Full Articles/india/agra.html",
+  "outline_file": "tools/itinerary_maps/geo/agra-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 865.9,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    74.4,
+    24.0,
+    84.6,
+    30.0
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/agra-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Agra",
+      "lat": 27.1753,
+      "lon": 78.0098,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 18,
+      "dy": -10,
+      "marker": "star"
+    },
+    {
+      "name": "Delhi",
+      "lat": 28.6328,
+      "lon": 77.2197,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "delhi.html"
+    },
+    {
+      "name": "Jaipur",
+      "lat": 26.9155,
+      "lon": 75.819,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 6,
+      "href": "jaipur.html"
+    },
+    {
+      "name": "Varanasi",
+      "lat": 25.3356,
+      "lon": 83.0076,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": 6,
+      "href": "varanasi.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Lucknow",
+      "lat": 26.8381,
+      "lon": 80.9346,
+      "anchor": "start",
+      "dx": 10,
+      "dy": -4
+    },
+    {
+      "name": "Gwalior",
+      "lat": 26.2037,
+      "lon": 78.1574,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 18
+    }
+  ],
+  "legs": [
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 1,
+      "b": 0,
+      "label": "",
+      "color": "#5E93A3"
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3"
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Overnight bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "India",
+      "lat": 24.9,
+      "lon": 80.3,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Nepal",
+      "lat": 28.55,
+      "lon": 82.9,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 599.3,
+    "crop_bounds": [
+      75.1,
+      23.9,
+      83.75,
+      30.0
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.85,
+      "items": [
+        {
+          "label": "Train",
+          "color": "#5E93A3"
+        },
+        {
+          "label": "Overnight bus"
+        }
+      ]
+    },
+    "stops": {
+      "2": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 22
+      },
+      "3": {
+        "anchor": "end",
+        "dx": 30,
+        "dy": 22
+      }
+    },
+    "country_labels": [
+      {
+        "name": "India",
+        "lat": 24.95,
+        "lon": 79.6,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Nepal",
+        "lat": 28.75,
+        "lon": 82.6,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ]
+  }
+}

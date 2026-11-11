@@ -3,7 +3,7 @@
   "kicker": "North Macedonia",
   "city": "Ohrid",
   "osm": ".tmp/ohrid-guide_osm.json",
-  "article": "Drafts/Upcoming/north-macedonia/ohrid.html",
+  "article": "north-macedonia/ohrid.html",
   "embed": {
     "pre": "<!-- city map: ohrid-guide -->",
     "post": "<!-- /city map: ohrid-guide -->"

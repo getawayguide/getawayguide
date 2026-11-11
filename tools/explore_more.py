@@ -42,6 +42,21 @@ WPM = 230
 # The editor saves the end marker on its own line ("</section>\n  <!-- /explore-more -->"); the strict pattern missed that
 # block and a re-run added a second one under it (the North Macedonia drafts, 2026-10-25).
 BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section>\s*<!-- /explore-more -->', re.S)
+# The fallback (North Macedonia launch, 2026-11-10): an editor save dropped the closing marker, BLOCK_RE found no block and
+# the launch added a second one under it. Worse, BLOCK_RE's lazy .*? then runs from the marker-less block on to the NEXT
+# block's marker, so a later run would have cut everything between the two. A block is now found by its own opening tag
+# (the xm class and id="explore-more", in either attribute order) and ends at its first </section> (the block holds no
+# nested section), with the marker optional, so every copy is removed on its own and exactly one is written back.
+SECTION_RE = re.compile(r'\n?[ \t]*<section\b(?=[^>]*\bid="explore-more")(?=[^>]*\bclass="xm(?: [^"]*)?")[^>]*>.*?</section>'
+                        r'(?:\s*<!-- /explore-more -->)?', re.S)
+ORPHAN_MARKER_RE = re.compile(r'\n?[ \t]*<!-- /explore-more -->[ \t]*(?=\r?\n|$)|<!-- /explore-more -->')
+
+
+def strip_blocks(s):
+    """the page without any Explore More block, marker or not; (text, number of blocks removed)"""
+    s, n = SECTION_RE.subn("", s)
+    s = ORPHAN_MARKER_RE.sub("", s)                  # a marker whose section the editor dropped
+    return s, n
 # the itinerary template's standing footnote; it belongs to the article, so it goes above the block, not under it
 UPDATED_RE = re.compile(r'[ \t]*<div class="measure gg-updated">.*?</div>', re.S)
 
@@ -408,7 +423,7 @@ def apply_page(rel, cat, pins, dry=False):
     with open(p, encoding="utf-8", newline="") as fh:      # keep the page's own line endings (a mixed CRLF/LF file lost its CRLFs, 2026-10-24)
         s = fh.read()
     nl = "\r\n" if "\r\n" in s else "\n"
-    s = BLOCK_RE.sub("", s)
+    s, _n = strip_blocks(s)                                  # every copy, with or without its closing marker
     chosen = picks(rel, cat, pins)
     at, extra = anchor(s)
     if at is None or not chosen:

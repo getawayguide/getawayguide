@@ -1,0 +1,287 @@
+{
+ "slug": "budapest-routes",
+ "page": "Drafts/Upcoming/hungary/budapest.html",
+ "outline_file": "tools/itinerary_maps/geo/budapest-routes-main.json",
+ "smooth": false,
+ "pin_scale": 1.15,
+ "country_width": 535,
+ "margins": {
+  "l": 240,
+  "r": 240,
+  "t": 130,
+  "b": 130
+ },
+ "crop_bounds": [
+  13.2,
+  44.45,
+  20.95,
+  48.75
+ ],
+ "layers": [
+  {
+   "file": "tools/itinerary_maps/geo/budapest-routes-neighbors.json",
+   "under": true,
+   "fill": "#EFF0EB",
+   "stroke": "#D5DAD3",
+   "width": 0.9
+  },
+  {
+   "file": "tools/itinerary_maps/geo/budapest-routes-route.json",
+   "under": true,
+   "fill": "#E6EAE3",
+   "stroke": "#9DB0A5",
+   "width": 1.1
+  }
+ ],
+ "stops": [
+  {
+   "name": "Budapest",
+   "lat": 47.4979,
+   "lon": 19.0402,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 16,
+   "dy": -8,
+   "marker": "star"
+  },
+  {
+   "name": "Ljubljana",
+   "lat": 46.0569,
+   "lon": 14.5058,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": 4,
+   "href": "../slovenia/ljubljana.html"
+  },
+  {
+   "name": "Vienna",
+   "lat": 48.2082,
+   "lon": 16.3738,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": -4
+  },
+  {
+   "name": "Bratislava",
+   "lat": 48.1486,
+   "lon": 17.1077,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 12,
+   "dy": -8
+  },
+  {
+   "name": "Zagreb",
+   "lat": 45.815,
+   "lon": 15.982,
+   "no_number": true,
+   "anchor": "start",
+   "dx": 12,
+   "dy": 14
+  },
+  {
+   "name": "Belgrade",
+   "lat": 44.787,
+   "lon": 20.457,
+   "no_number": true,
+   "anchor": "end",
+   "dx": -12,
+   "dy": 4,
+   "href": "../serbia/belgrade.html"
+  }
+ ],
+ "airports": [
+  {
+   "name": "BUD Airport",
+   "lat": 47.4369,
+   "lon": 19.2556,
+   "anchor": "start",
+   "dx": 2,
+   "dy": 26,
+   "icon_dx": 18,
+   "icon_dy": 4
+  }
+ ],
+ "legs": [
+  {
+   "a": 1,
+   "b": 0,
+   "label": ""
+  },
+  {
+   "a": 4,
+   "b": 0,
+   "label": ""
+  },
+  {
+   "a": 5,
+   "b": 0,
+   "label": ""
+  },
+  {
+   "a": 2,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "bow": -0.1
+  },
+  {
+   "a": 3,
+   "b": 0,
+   "label": "",
+   "color": "#5E93A3",
+   "bow": 0.1
+  },
+  {
+   "a": "air",
+   "b": 0,
+   "label": "",
+   "color": "#7C9488",
+   "dash": true
+  }
+ ],
+ "legend": {
+  "pos": "tl",
+  "scale": 0.9,
+  "items": [
+   {
+    "label": "Bus"
+   },
+   {
+    "label": "Train",
+    "color": "#5E93A3"
+   },
+   {
+    "label": "Airport bus",
+    "color": "#7C9488",
+    "dash": true
+   }
+  ]
+ },
+ "country_labels": [
+  {
+   "name": "Hungary",
+   "lat": 46.75,
+   "lon": 18.35,
+   "size": 11,
+   "weight": 700,
+   "ls": 3,
+   "color": "#4F6358"
+  },
+  {
+   "name": "Slovenia",
+   "lat": 45.72,
+   "lon": 14.55,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Austria",
+   "lat": 47.55,
+   "lon": 14.6,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Slovakia",
+   "lat": 48.65,
+   "lon": 19.05,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Croatia",
+   "lat": 45.35,
+   "lon": 15.6,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  },
+  {
+   "name": "Serbia",
+   "lat": 45.05,
+   "lon": 19.75,
+   "size": 11,
+   "weight": 600,
+   "ls": 2.5,
+   "color": "#A2ACA5"
+  }
+ ],
+ "mobile": {
+  "country_width": 358,
+  "legend": {
+   "pos": "tl",
+   "scale": 0.8,
+   "items": [
+    {
+     "label": "Bus"
+    },
+    {
+     "label": "Train",
+     "color": "#5E93A3"
+    },
+    {
+     "label": "Airport bus",
+     "color": "#7C9488",
+     "dash": true
+    }
+   ]
+  },
+  "country_labels": [
+   {
+    "name": "Hungary",
+    "lat": 46.75,
+    "lon": 18.35,
+    "size": 9,
+    "weight": 700,
+    "ls": 3,
+    "color": "#4F6358"
+   },
+   {
+    "name": "Austria",
+    "lat": 47.55,
+    "lon": 14.6,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   },
+   {
+    "name": "Slovakia",
+    "lat": 48.65,
+    "lon": 19.05,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   },
+   {
+    "name": "Croatia",
+    "lat": 45.35,
+    "lon": 15.6,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   },
+   {
+    "name": "Serbia",
+    "lat": 45.05,
+    "lon": 19.75,
+    "size": 9,
+    "weight": 600,
+    "ls": 2.5,
+    "color": "#A2ACA5"
+   }
+  ]
+ }
+}

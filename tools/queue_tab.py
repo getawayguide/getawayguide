@@ -12,17 +12,32 @@ Two stores, both under .tmp/ (override the folder with QUEUE_TAB_DIR; QUEUE_TAB_
   kevin_todo.json   Kevin's own to-do list (add, check off, edit, reorder, delete, due date, link).
 
 Markers in the Queue section:  [ ] pending   [x] done   [~] or [>] running   [-] on hold
-(a pending item whose first line says "running" also reads as running). Lines in the Queue section before
-its first numbered item (the "FIRST" setup checklist) come back as `queue_pre`.
+(a pending item whose first line says "running" also reads as running).
+
+Every top-level checkbox line in the Queue section is an item, numbered ("9. [ ] ...") or not ("- [ ] ..."); the
+file mixes both since 2026-11-10. An item is its first line plus the indented lines under it, nothing else. A line
+that is wholly bold ("**Needs you.**", "**Top:**") is a GROUP HEADING: the items under it, up to the next heading,
+are that group. Every other line (blank lines, "**Now:** ..." notes, comments) is fixed: no operation ever moves it.
+Items are addressed by `id` = their position among the section's items in the version the client read (every write
+is a compare-and-swap on that version, so an id can't point at a different item). `num` is the item's own number,
+or null for a "- [ ]" item; numbers are never rewritten.
 
 Routes (CORS open like the rest of the photo server; the cloud editor mirrors them):
 
-  GET  /api/queue                       -> {ok, version, title, intro, sections, queue, counts, path}
-  POST /api/queue   {version, op: "add",     title, details?, position?: "end"|"top"}
-                    {version, op: "reorder", order: [num, ...]}            renumbers 1..n
-                    {version, op: "hold",    num, hold: true|false}
+  GET  /api/queue                       -> {ok, version, title, intro, sections, queue, groups, counts, path}
+       queue item = {id, num, mark, state, title, summary, text, details, group, added_by, done_on}
+       group = {id, name, line, open, total}; an item's `group` is its heading's id, or null above the first heading
+  POST /api/queue   {version, op: "add",  title, details?, group?: id, position?: "end"|"top"}
+                        lands in `group` (default: the first group with an open item) after its last open item
+                        ("top": before its first open item), so never below a done-items archive; a "- [ ]"
+                        line unless every item in the section is numbered
+                    {version, op: "move", id, before: id | after: id}   only that item's lines move; it joins
+                                                                        the target's group; nothing is renumbered
+                    {version, op: "move", id, group: id, position?: "top"|"end"}
+                    {version, op: "hold", id, hold: true|false}         only the marker character changes
                                         -> the GET payload; 409 {stale:true, error, ...GET payload} if the
                                            version differs; 400 on a bad op; 403 when read-only
+                    ("num" is still accepted in place of "id" for move/hold when exactly one item has that number.)
   GET  /api/todo                        -> {ok, version, categories: [{id, name}], items: [...], counts: {cat: {open, new, done, needs}}}
                                            (folds the live rounds under .tmp/redline and the Shadow reviewer's unanswered
                                            threads into the file first, at most every 30 s; ?sync=0 skips that)
@@ -37,6 +52,8 @@ Routes (CORS open like the rest of the photo server; the cloud editor mirrors th
                     {version?, op: "reorder", cat, order: [id, ...]}          Kevin's order inside one category
                     {version?, op: "reorder_cats", order: [cat id, ...]}      his order of the categories
                     {version?, op: "rename_cat", id, name}
+                    {version?, op: "set_upcoming", key, upcoming: bool}   his drag of a review country between Upcoming
+                                                                        and Backlog (kept in upcoming_override; folders never move)
                     {version?, op: "batch",   ops: [ ...any of the above ]}
                                         -> the GET payload; 409 when a version is sent and differs; 400 on a bad op
   An agent adds a review item with: op add, id "<type>-<slug>", cat maps|rounds|upgrades|social, kind "review", title,
@@ -46,6 +63,11 @@ Routes (CORS open like the rest of the photo server; the cloud editor mirrors th
   slug; see item_group), or null. The tab draws the categories in `grouped` ("rounds") as collapsible per-country groups.
   There is no "shadow" category since 2026-11-07: Shadow reviewer items ("<Article>: answer the Shadow reviewer") sit in
   "rounds" right after the article's rounds, and an old store is migrated on load (migrate()).
+
+  GET/POST /api/push, GET /api/push/file/shots/<f>   the Push package section: tools/push_package.py (registered here)
+  GET/POST /api/queue/status, POST /api/queue/held   the strip above it (running now, system status, waiting on you) and
+                                                     the held-back drawer: tools/queue_status.py (registered here)
+  A queue item's "(started YYYY-MM-DD HH:MM)" stamp comes back as `started` (and is left out of its summary).
 
 Standalone (tests, the cloud editor):  python tools/queue_tab.py --serve 5033
 """
@@ -66,7 +88,8 @@ ROOT = Path(__file__).resolve().parent.parent
 bp = Blueprint("queue_tab", __name__)
 _lock = threading.RLock()
 
-QUEUE_RE = re.compile(r"^(\d+)\.\s+\[([ xX~>-])\]\s?(.*)$")         # "3. [ ] text"
+ITEM_RE = re.compile(r"^(?:(\d+)\.|[-*])\s+\[([ xX~>-])\]\s?(.*)$")   # a queue item: "3. [ ] text" or "- [ ] text", not indented
+HEAD_RE = re.compile(r"^\*\*((?:(?!\*\*).)+?)\*\*\s*$")              # a group heading: a line that is wholly bold
 CHECK_RE = re.compile(r"^\s*[-*]\s+\[([ xX~>-])\]\s?(.*)$")          # "- [ ] text"
 BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")                           # "- text"
 QUEUE_NAMES = ("queue",)
@@ -177,30 +200,50 @@ def _is_cont(line):
     return bool(line.strip()) and line[:1] in (" ", "\t")
 
 
-def queue_blocks(lines):
-    """The Queue section's lines as (pre, [block, ...], tail). A block is an item's first line plus its
-    indented continuation lines, plus any loose lines up to the next item (they move with it)."""
-    pre, blocks, i = [], [], 0
-    while i < len(lines) and not QUEUE_RE.match(lines[i]):
-        pre.append(lines[i])
-        i += 1
+def heading_name(raw):
+    """'**No input from you: Claude works ... (reordered 2026-11-10, least input first).**' -> the words the tab shows"""
+    t = KEVIN_PAREN.sub("", raw)
+    t = re.sub(r"\s*\([^()]*\)", "", t)
+    return t.strip().rstrip(" .:;") or raw.strip()
+
+
+def queue_units(lines):
+    """The Queue section's lines as a list of units, in order. An "item" unit is a checkbox line ("3. [ ] ..." or
+    "- [ ] ...") plus the indented lines under it; a "head" unit is a wholly bold line (a group heading); every
+    other line is a "line" unit. Joining every unit's lines gives back exactly the input (see unit_lines)."""
+    units, i, group, nid = [], 0, None, 0
     while i < len(lines):
-        m = QUEUE_RE.match(lines[i])
-        block = {"num": int(m.group(1)), "mark": m.group(2), "text": m.group(3), "first": lines[i], "cont": [], "loose": []}
-        i += 1
-        while i < len(lines) and _is_cont(lines[i]):
-            block["cont"].append(lines[i])
+        l = lines[i]
+        m = ITEM_RE.match(l)
+        if m:
+            u = {"kind": "item", "id": nid, "num": int(m.group(1)) if m.group(1) else None, "mark": m.group(2),
+                 "mark_at": m.start(2), "text": m.group(3), "first": l, "cont": [], "group": group}
+            nid += 1
             i += 1
-        blocks.append(block)
-        j = i
-        while j < len(lines) and not QUEUE_RE.match(lines[j]):
-            j += 1
-        if j >= len(lines):                      # nothing but the section's tail follows
-            break
-        block["loose"] = lines[i:j]              # loose lines between two items ride with the one above
-        i = j
-    tail = lines[i:]
-    return pre, blocks, tail
+            while i < len(lines) and _is_cont(lines[i]):
+                u["cont"].append(lines[i])
+                i += 1
+            units.append(u)
+            continue
+        h = HEAD_RE.match(l)
+        if h:
+            group = 0 if group is None else group + 1
+            units.append({"kind": "head", "group": group, "line": l, "name": heading_name(h.group(1))})
+        else:
+            units.append({"kind": "line", "line": l})
+        i += 1
+    return units
+
+
+def unit_lines(units):
+    out = []
+    for u in units:
+        if u["kind"] == "item":
+            out.append(u["first"])
+            out.extend(u["cont"])
+        else:
+            out.append(u["line"])
+    return out
 
 
 def _strip_md(s):
@@ -235,16 +278,42 @@ def item_of(block):
         state = "running"
     added = re.search(r"\(added by Kevin (\d{4}-\d{2}-\d{2})\)", text)
     done = re.search(r"\bDONE (\d{4}-\d{2}-\d{2})", text)
-    summary = re.sub(r"^[\s.:;,]+", "", rest).strip()
+    done_on = done.group(1) if done else _done_short(text) if state == "done" else None
+    # "(started 2026-11-11 09:47)": the stamp Claude adds when it marks an item [~] (runbook step 3, 2026-11-11); the
+    # tab's "Running now" strip shows it, so it is lifted out of the summary
+    st = STARTED_RE.search(text)
+    started = (st.group(1) + (" " + st.group(2).zfill(5) if st.group(2) else "")) if st else None
+    summary = re.sub(r"^[\s.:;,]+", "", STARTED_RE.sub("", rest)).strip()
     details = [re.sub(r"^\s*[-*]\s*", "", l) for l in block["cont"]]
-    return {"num": block["num"], "mark": block["mark"], "state": state, "title": title, "summary": summary,
-            "text": text, "details": details, "added_by": added.group(1) if added else None,
-            "done_on": done.group(1) if done else None}
+    return {"id": block.get("id"), "num": block["num"], "mark": block["mark"], "state": state, "title": title, "summary": summary,
+            "text": text, "details": details, "group": block.get("group"), "added_by": added.group(1) if added else None,
+            "done_on": done_on, "started": started}
+
+
+STARTED_RE = re.compile(r"\s*\(started (\d{4}-\d{2}-\d{2})(?:[ T](\d{1,2}:\d{2}))?\)")
+
+
+_MONTHS = {m: i for i, m in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
+
+
+def _done_short(text):
+    """'Done Nov 10: ...' -> '2026-11-10' (this year, or last year when that date is still ahead), else None"""
+    m = re.search(r"\bDone (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* (\d{1,2})\b", text)
+    if not m:
+        return None
+    t = date.today()
+    try:
+        d = date(t.year, _MONTHS[m.group(1).lower()], int(m.group(2)))
+        if (d - t).days > 31:
+            d = date(t.year - 1, d.month, d.day)
+    except ValueError:
+        return None
+    return d.isoformat()
 
 
 def parse(doc: Doc):
-    out = {"ok": True, "version": doc.version, "title": "", "intro": [], "sections": [], "queue": [], "queue_pre": {"label": "", "items": []},
-           "counts": {"pending": 0, "done": 0, "hold": 0, "running": 0}}
+    out = {"ok": True, "version": doc.version, "title": "", "intro": [], "sections": [], "queue": [], "groups": [], "queue_pre": {"label": "", "items": []},
+           "counts": {"pending": 0, "done": 0, "hold": 0, "running": 0, "open": 0}}
     secs = doc.sections()
     first = secs[0][1] if secs else len(doc.lines)
     for l in doc.lines[:first]:
@@ -255,17 +324,16 @@ def parse(doc: Doc):
     for name, _h, s, e in secs:
         body = doc.lines[s:e]
         if (s, e) == (doc.queue_span() or (None, None)):
-            pre, blocks, _tail = queue_blocks(body)
-            out["queue"] = [item_of(b) for b in blocks]
-            out["queue_pre"] = {"label": "", "items": []}
-            for l in pre:
-                m = CHECK_RE.match(l)
-                if m:
-                    out["queue_pre"]["items"].append({"text": m.group(2).strip(), "done": m.group(1).lower() == "x"})
-                elif l.strip() and not out["queue_pre"]["items"]:
-                    out["queue_pre"]["label"] = _strip_md(KEVIN_PAREN.sub("", l)).rstrip(" :")
+            units = queue_units(body)
+            out["queue"] = [item_of(u) for u in units if u["kind"] == "item"]
+            out["queue_pre"] = {"label": "", "items": []}      # every checkbox line is an item now; kept for old clients
+            out["groups"] = [{"id": u["group"], "name": u["name"], "line": u["line"],
+                              "open": sum(1 for it in out["queue"] if it["group"] == u["group"] and it["state"] != "done"),
+                              "total": sum(1 for it in out["queue"] if it["group"] == u["group"])}
+                             for u in units if u["kind"] == "head"]
             for it in out["queue"]:
                 out["counts"][it["state"]] += 1
+            out["counts"]["open"] = sum(1 for it in out["queue"] if it["state"] != "done")
             out["sections"].append({"name": name, "kind": "queue"})
             continue
         items, kind = [], "text"
@@ -298,20 +366,66 @@ def load_doc():
     return Doc(p.read_bytes())
 
 
-def _indent_of(blocks):
-    for b in blocks:
+def _indent_of(items, numbered):
+    for b in items:
         for l in b["cont"]:
             return re.match(r"^\s*", l).group(0)
-    return "   "
+    return "   " if numbered else "  "
+
+
+def _ix(units, u):
+    """the unit's index by identity (two items can have equal text)"""
+    return next(i for i, x in enumerate(units) if x is u)
+
+
+def _is_open(u):
+    return u["mark"].lower() != "x"
+
+
+def _find_item(items, ident, num=None):
+    """an item by its id (position in the version the client read), else by a number exactly one item carries"""
+    if ident is not None:
+        if isinstance(ident, bool) or not isinstance(ident, int) or not 0 <= ident < len(items):
+            return None, f"no item {ident!r}"
+        return items[ident], None
+    if num is not None:
+        hits = [u for u in items if u["num"] == num]
+        if len(hits) != 1:
+            return None, f"no single item numbered {num!r}"
+        return hits[0], None
+    return None, "name the item (id)"
+
+
+def _group_slot(units, group, position, skip=None):
+    """where an item goes in a group: "end" = right after the group's last OPEN item, "top" = right before its first
+    open item; a group with no open item takes it before its first item (after its heading when it has none), so a
+    new or moved item never lands below the done items a group keeps as its archive. group None = the items above
+    the first heading (a file without headings). Returns an index into units."""
+    members = [u for u in units if u["kind"] == "item" and u["group"] == group and u is not skip]
+    opened = [u for u in members if _is_open(u)]
+    if opened:
+        return _ix(units, opened[0]) if position == "top" else _ix(units, opened[-1]) + 1
+    if members:
+        return _ix(units, members[0])
+    head = next((u for u in units if u["kind"] == "head" and u["group"] == group), None)
+    if head is not None:
+        return _ix(units, head) + 1
+    k = len(units)                                   # nothing to go by: the end of the section, before its trailing blanks
+    while k > 0 and units[k - 1]["kind"] == "line" and not units[k - 1]["line"].strip():
+        k -= 1
+    return k
 
 
 def apply_queue_op(doc: Doc, body: dict):
-    """edit the Queue section's lines in place; returns an error string or None"""
+    """edit the Queue section's lines in place; returns an error string or None. Only the lines of the item an
+    operation names change or move: headings, notes and blank lines stay where they are, and no number is rewritten."""
     span = doc.queue_span()
     if not span:
         return "the file has no '## Queue' section"
     s, e = span
-    pre, blocks, tail = queue_blocks(doc.lines[s:e])
+    units = queue_units(doc.lines[s:e])
+    items = [u for u in units if u["kind"] == "item"]
+    groups = [u["group"] for u in units if u["kind"] == "head"]
     op = body.get("op")
     if op == "add":
         title = (body.get("title") or "").strip()
@@ -319,54 +433,58 @@ def apply_queue_op(doc: Doc, body: dict):
             return "the item needs a title"
         title = title.replace("\r", " ").replace("\n", " ")
         details = [d.strip() for d in str(body.get("details") or "").replace("\r", "").split("\n") if d.strip()]
-        ind = _indent_of(blocks)
+        g = body.get("group")
+        if g is not None and (isinstance(g, bool) or g not in groups):
+            return f"no group {g!r}"
+        if g is None:                                # the first group that still has open work
+            first_open = next((u for u in items if _is_open(u)), None)
+            g = first_open["group"] if first_open else (items[-1]["group"] if items else (groups[0] if groups else None))
+        numbered = bool(items) and all(u["num"] is not None for u in items)
+        ind = _indent_of(items, numbered)
         stamp = body.get("date") or date.today().isoformat()
-        new = {"num": max([b["num"] for b in blocks] + [0]) + 1, "mark": " ",
-               "text": f"**{title}** (added by Kevin {stamp})", "cont": [f"{ind}- {d}" for d in details], "loose": []}
-        new["first"] = f"{new['num']}. [ ] {new['text']}"
-        if body.get("position") == "top":
-            blocks.insert(0, new)
-            _renumber(blocks)
+        text = f"**{title}** (added by Kevin {stamp})"
+        num = max(u["num"] for u in items) + 1 if numbered else None
+        new = {"kind": "item", "id": None, "num": num, "mark": " ", "text": text, "group": g,
+               "first": f"{num}. [ ] {text}" if numbered else f"- [ ] {text}", "cont": [f"{ind}- {d}" for d in details]}
+        units.insert(_group_slot(units, g, body.get("position") or "end"), new)
+    elif op == "move":
+        src, err = _find_item(items, body.get("id"), body.get("num"))
+        if err:
+            return err
+        if body.get("before") is not None or body.get("after") is not None:
+            after = body.get("before") is None
+            tgt, err = _find_item(items, body.get("after") if after else body.get("before"))
+            if err:
+                return "target: " + err
+            if tgt is src:
+                return None                          # dropped on itself: not a byte changes
+            units.pop(_ix(units, src))
+            units.insert(_ix(units, tgt) + (1 if after else 0), src)
+        elif body.get("group") is not None:
+            g = body.get("group")
+            if isinstance(g, bool) or g not in groups:
+                return f"no group {g!r}"
+            k = _group_slot(units, g, body.get("position") or "top", skip=src)
+            k -= 1 if _ix(units, src) < k else 0     # the slot was counted with the item still in place
+            units.pop(_ix(units, src))
+            units.insert(k, src)
         else:
-            if blocks and blocks[-1]["loose"]:          # the last item keeps the gap after the new one
-                new["loose"], blocks[-1]["loose"] = blocks[-1]["loose"], []
-            blocks.append(new)
-    elif op == "reorder":
-        order = body.get("order")
-        nums = [b["num"] for b in blocks]
-        if not isinstance(order, list) or sorted(order) != sorted(nums) or len(set(order)) != len(nums):
-            return "the order must list every item's number exactly once"
-        if order == nums:
-            return None                           # nothing to do: not a byte changes
-        by = {b["num"]: b for b in blocks}
-        blocks = [by[n] for n in order]           # a blank line under an item travels with it
-        _renumber(blocks)
+            return "say where: before, after or group"
     elif op == "hold":
-        num = body.get("num")
-        b = next((b for b in blocks if b["num"] == num), None)
-        if not b:
-            return f"no item {num}"
+        b, err = _find_item(items, body.get("id"), body.get("num"))
+        if err:
+            return err
         if b["mark"].lower() == "x":
-            return f"item {num} is done; it cannot go on hold"
+            return f"“{title_of(b['text'])[0]}” is done; it cannot go on hold"
         want = "-" if body.get("hold") else " "
+        b["first"] = b["first"][:b["mark_at"]] + want + b["first"][b["mark_at"] + 1:]
         b["mark"] = want
-        b["first"] = f"{b['num']}. [{want}] {b['text']}"
+    elif op == "reorder":
+        return "this tab is out of date (the queue now moves one item at a time); reload the editor"
     else:
         return f"unknown op {op!r}"
-    new_lines = list(pre)
-    for b in blocks:
-        new_lines.append(b["first"])
-        new_lines.extend(b["cont"])
-        new_lines.extend(b["loose"])
-    new_lines.extend(tail)
-    doc.lines[s:e] = new_lines
+    doc.lines[s:e] = unit_lines(units)
     return None
-
-
-def _renumber(blocks):
-    for i, b in enumerate(blocks, 1):
-        b["num"] = i
-        b["first"] = f"{i}. [{b['mark']}] {b['text']}"
 
 
 # ------------------------------------------------------------------------------------- the inbox (My to-do)
@@ -388,6 +506,9 @@ CATEGORIES = [("rounds", "Review"), ("maps", "Review: maps"),
 # review of one article, so they sit together under its country.
 MERGED_CATS = {"shadow": "rounds", "upgrades": "rounds"}
 RENAMED_CATS = {"rounds": ("Review: rounds", "Review")}   # id -> (old default name, new name): a name he set himself stays
+# a category whose items moved out of the inbox; dropped on load once it holds nothing. "push": the Nov 10 push package's
+# items became the Queue tab's own Push package section (tools/push_package.py, 2026-11-10)
+RETIRED_CATS = ("push",)
 STATUSES = ("new", "seen", "done", "needs-changes")
 SHOTS_DIR = ".tmp/review_hub/shots"           # served by the photo server at /site/<path>
 FLAGS_DIR = "Images/web/flags"                # the nav's local flags (tools/localize_flags.py), <iso>.png
@@ -463,6 +584,19 @@ def item_country(it):
         if k:
             return k
     return None
+
+
+def _upcoming_folders():
+    d = ROOT / "Drafts" / "Upcoming"
+    return {x.name for x in d.iterdir() if x.is_dir()} if d.is_dir() else set()
+
+
+def upcoming_keys(obj):
+    """the review countries shown under Upcoming: a Drafts/Upcoming folder, with his drags (upcoming_override) on top"""
+    keys = _upcoming_folders()
+    for k, v in (obj.get("upcoming_override") or {}).items():
+        (keys.add if v else keys.discard)(k)
+    return sorted(keys)
 
 
 def item_group(it):
@@ -550,6 +684,10 @@ def migrate(obj):
         if c["id"] in RENAMED_CATS and c.get("name") == RENAMED_CATS[c["id"]][0]:
             c["name"] = RENAMED_CATS[c["id"]][1]
             changed = True
+    for cid in RETIRED_CATS:
+        if any(c["id"] == cid for c in obj["categories"]) and not any(it.get("cat") == cid for it in obj["items"]):
+            obj["categories"] = [c for c in obj["categories"] if c["id"] != cid]
+            changed = True
     known = {c["id"] for c in obj["categories"]}
     for it in obj["items"]:
         if "title" not in it:
@@ -619,7 +757,12 @@ def todo_payload(obj, version):
             if it["status"] == "needs-changes":
                 c["needs"] += 1
     return {"ok": True, "version": version, "categories": obj["categories"], "items": items, "counts": counts,
-            "statuses": list(STATUSES), "shots_dir": SHOTS_DIR, "flags_dir": FLAGS_DIR, "grouped": ["rounds"]}
+            "statuses": list(STATUSES), "shots_dir": SHOTS_DIR, "flags_dir": FLAGS_DIR, "grouped": ["rounds"],
+            # the review countries split like the Drafts folders (Kevin, 2026-11-11: "the country review should be split
+            # into upcoming and backlog"): a country with a Drafts/Upcoming/<country>/ folder is Upcoming, unless he dragged
+            # it ("let me drag between upcoming and backlog"): his drag is kept in upcoming_override and wins. The folders
+            # never move from here.
+            "upcoming": upcoming_keys(obj)}
 
 
 def _clean_str(v, n=2000):
@@ -693,6 +836,16 @@ def apply_todo_op(obj, body):
         by = {c["id"]: c for c in cats}
         obj["categories"] = [by[i] for i in order]
         return None
+    if op == "set_upcoming":                                # his drag between Upcoming and Backlog
+        key = str(body.get("key") or "").strip()
+        if not key or key == "_other" or key not in COUNTRIES:
+            return f"no country {key!r}"
+        ov = obj.setdefault("upcoming_override", {})
+        if bool(body.get("upcoming")) == (key in _upcoming_folders()):
+            ov.pop(key, None)                                  # back to what the folder says: no override needed
+        else:
+            ov[key] = bool(body.get("upcoming"))
+        return None
     if op == "rename_cat":
         c = next((c for c in cats if c["id"] == body.get("id")), None)
         if not c:
@@ -740,7 +893,7 @@ def apply_todo_op(obj, body):
             it["links"] = _clean_links(body.get("links") if "links" in body else body.get("link"))
         if "shots" in body:
             it["shots"] = _clean_shots(body["shots"])
-        if "cat" in body and body["cat"] in {c["id"] for c in cats} and body["cat"] != it["cat"]:
+        if "cat" in body and isinstance(body["cat"], str) and body["cat"] in {c["id"] for c in cats} and body["cat"] != it["cat"]:
             it["cat"] = body["cat"]
             items.remove(it)
             items.append(it)
@@ -872,6 +1025,24 @@ def sync_live(obj):
             _set_status(it, "done", now)
             it["summary"] = (it.get("summary") or "").split(" waiting")[0].strip(" .") + ". Applied."
             changed = True
+    # Any other item that names a round (the Review Hub's "upgrade-*" articles) carried the count from the day it was
+    # imported, so a round applied since still showed "20 changes" (QA 2026-11-10: Cappadocia, cappadocia-r3, applied).
+    # Now its count follows the live round while it is open, and once the round is applied it says so and counts nothing.
+    # Its status is left alone: the item is about the article, not only that round.
+    for it in obj["items"]:
+        rd = it.get("round")
+        if it["id"].startswith("round-") or not isinstance(rd, dict) or not rd.get("slug"):
+            continue
+        live = rounds.get(rd["slug"])
+        if live:
+            want = {"slug": rd["slug"], "changes": live["changes"], "left": live["left"]}
+        elif (redline_dir() / rd["slug"] / "applied.json").is_file():
+            want = {"slug": rd["slug"], "changes": rd.get("changes"), "left": 0, "applied": True}
+        else:
+            want = {"slug": rd["slug"], "changes": None, "left": None, "gone": True}    # no such round any more: no count
+        if want != rd:
+            it["round"] = want
+            changed = True
     shadow = live_shadow()
     for stem, s in shadow.items():
         iid = "shadow-" + stem.split("__")[-1]
@@ -943,7 +1114,8 @@ def import_review_hub(obj, docs_dir=None):
 
 # ------------------------------------------------------------------------------------- routes
 def _json():
-    return request.get_json(force=True, silent=True) or {}
+    b = request.get_json(force=True, silent=True)
+    return b if isinstance(b, dict) else {}             # a body that is not an object names no op: refused with 400, not a 500
 
 
 @bp.route("/api/queue", methods=["GET", "POST", "OPTIONS"])
@@ -1005,7 +1177,10 @@ def api_todo():
                 return jsonify(dict(todo_payload(obj, v), ok=False, stale=True,
                                     error="The to-do list changed since this page read it. Nothing was written.")), 409
             if body.get("op") == "batch":
-                for i, o in enumerate(body.get("ops") or []):
+                ops = body.get("ops")
+                if not isinstance(ops, list) or not all(isinstance(o, dict) for o in ops):
+                    return jsonify({"ok": False, "error": "a batch needs ops: a list of operations"}), 400
+                for i, o in enumerate(ops):
                     err = apply_todo_op(obj, o)
                     if err:
                         return jsonify({"ok": False, "error": f"op {i}: {err}"}), 400
@@ -1021,8 +1196,12 @@ def api_todo():
 
 
 def register(app):
-    """photo_editor.py calls this: the Queue tab's API lives on the photo server"""
+    """photo_editor.py calls this: the Queue tab's API lives on the photo server, the Push package's too"""
     app.register_blueprint(bp)
+    import push_package                     # GET/POST /api/push: the Queue tab's Push package section (2026-11-10)
+    push_package.register(app)
+    import queue_status                     # /api/queue/status + /api/queue/held: running now, system line, waiting, held back (2026-11-11)
+    queue_status.register(app)
 
 
 # ------------------------------------------------------------------------------------- standalone
@@ -1030,6 +1209,21 @@ def make_app():
     from flask import Flask
     app = Flask("queue_tab")
     register(app)
+
+    @app.after_request
+    def in_pieces(resp):
+        # the photo server's rule (photo_editor._send_in_pieces, stress test 2026-10-09): on this machine's loopback a big
+        # body written in one go and then closed loses its tail. The to-do list is ~200 KB, so the test suites that run on
+        # this standalone server read half an answer now and then (test_queue_rounds_by_country U9, 2026-11-11).
+        try:
+            if not (resp.direct_passthrough or resp.is_streamed):
+                data = resp.get_data()
+                if len(data) > 65536:
+                    resp.response = [data[i:i + 65536] for i in range(0, len(data), 65536)]
+                    resp.headers["Content-Length"] = str(len(data))
+        except Exception:
+            pass
+        return resp
 
     @app.after_request
     def cors(resp):
@@ -1050,6 +1244,26 @@ if __name__ == "__main__":
         port = int(sys.argv[sys.argv.index("--serve") + 1])
         print(f"queue tab api: http://127.0.0.1:{port}  store: {store_dir()}" + ("  READ-ONLY" if readonly() else ""), flush=True)
         make_app().run(port=port, debug=False, threaded=True)
+    elif "--replies" in sys.argv or "--replied" in sys.argv:
+        # Kevin, 2026-11-11: every to-do takes a reply now, not only questions. Claude reads them here and records what
+        # it did in replies_done.json beside the store (his reply field stays his; a changed reply shows up again).
+        side = store_dir() / "todo_replies_done.json"
+        done = json.loads(side.read_text(encoding="utf-8")) if side.is_file() else {}
+        if "--replied" in sys.argv:
+            i = sys.argv.index("--replied")
+            iid, text = sys.argv[i + 1], " ".join(sys.argv[i + 2:])
+            obj, _v = load_todo()
+            it = next((x for x in obj["items"] if x["id"] == iid), None)
+            if not it or not it.get("reply"):
+                sys.exit(f"no item {iid!r} with a reply")
+            done[iid] = {"reply": it["reply"], "did": text, "at": datetime.now().isoformat(timespec="seconds")}
+            side.write_text(json.dumps(done, indent=1, ensure_ascii=False), encoding="utf-8")
+            print(f"{iid}: recorded")
+        else:
+            obj, _v = load_todo()
+            new = [x for x in obj["items"] if x.get("reply") and (done.get(x["id"]) or {}).get("reply") != x["reply"]]
+            out_ = [f"{len(new)} replies waiting"] + [f"  {x['id']} [{x.get('cat')}/{x.get('kind')}, {x.get('status')}] {x.get('title', '')[:70]}\n      reply: {x['reply']}" for x in new]
+            sys.stdout.buffer.write(("\n".join(out_) + "\n").encode("utf-8"))
     elif "--import-hub" in sys.argv:
         with FileLock(todo_path()):
             obj, _v = load_todo()

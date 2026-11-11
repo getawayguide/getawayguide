@@ -1,0 +1,183 @@
+{
+  "slug": "himare-routes",
+  "page": "Drafts/Upcoming/albania/himare.html",
+  "outline_file": "tools/itinerary_maps/geo/himare-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/himare-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    },
+    {
+      "file": "tools/itinerary_maps/geo/tirana-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "country_width": 470,
+  "crop_bounds": [
+    18.6,
+    39.42,
+    20.85,
+    41.66
+  ],
+  "stops": [
+    {
+      "name": "Himarë",
+      "lat": 40.1017,
+      "lon": 19.7447,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 16,
+      "dy": -8,
+      "marker": "star"
+    },
+    {
+      "name": "Tirana",
+      "lat": 41.3275,
+      "lon": 19.8187,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "tirana.html"
+    },
+    {
+      "name": "Sarandë",
+      "lat": 39.8756,
+      "lon": 20.0053,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -2
+    },
+    {
+      "name": "Corfu",
+      "lat": 39.6243,
+      "lon": 19.9217,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -32,
+      "dy": 8
+    }
+  ],
+  "dots": [
+    {
+      "name": "Dhërmi",
+      "lat": 40.153,
+      "lon": 19.636,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    },
+    {
+      "name": "Vlorë",
+      "lat": 40.4667,
+      "lon": 19.4897,
+      "anchor": "end",
+      "dx": -10,
+      "dy": 4
+    }
+  ],
+  "airports": [
+    {
+      "name": "TIA Airport",
+      "lat": 41.4147,
+      "lon": 19.7206,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "icon_dx": -9
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          39.97,
+          19.96
+        ],
+        [
+          40.04,
+          19.9
+        ],
+        [
+          40.085,
+          19.82
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 2,
+      "label": "",
+      "sea": true,
+      "via_lock": true,
+      "color": "#5E93A3",
+      "via": [
+        [
+          39.69,
+          19.94
+        ],
+        [
+          39.77,
+          19.965
+        ],
+        [
+          39.83,
+          19.98
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Ferry",
+        "color": "#5E93A3"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Albania",
+      "lat": 40.85,
+      "lon": 20.1,
+      "size": 13,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Greece",
+      "lat": 39.95,
+      "lon": 20.55,
+      "size": 11,
+      "weight": 700,
+      "ls": 2.5,
+      "color": "#4F6358"
+    }
+  ]
+}

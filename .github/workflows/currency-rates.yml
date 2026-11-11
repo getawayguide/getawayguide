@@ -1,0 +1,41 @@
+name: Currency rates
+
+# Monthly refresh of the site's currency converters (Kevin, 2026-11-08: "currency rates should refresh every
+# month"). tools/currency_widget.py fetches mid-market rates from open.er-api.com, rewrites tools/currency_rates.json
+# and every live <div class="cconv" data-rates=... data-asof=...> plus its fallback line, then this job commits the
+# change to main. The blocks are found by their markup wherever they sit, so the itineraries AND any other page that
+# carries one (the upgraded field notes: armenia, el-salvador, north-macedonia) are refreshed in place (Kevin,
+# 2026-11-11: "tool should update the same wherever it is").
+#
+# It runs on GitHub's runners (they have internet and run while the home PC is off). Drafts are not in this repo, so
+# they get fresh rates when they launch (publish_country.py / retire_field_notes.py run the same refresh).
+#
+# NOTE: getawayguide.io is published by hand in Netlify, so the new rates go live at Kevin's next Netlify publish.
+on:
+  schedule:
+    - cron: "23 14 1 * *"   # the 1st of every month, 14:23 UTC (off the hour: GitHub delays on-the-hour runs)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Refresh rates and apply to every live converter
+        run: python tools/currency_widget.py --refresh-rates --apply --live-only
+      - name: Check every converter is current
+        run: python tools/currency_widget.py --check --live-only
+      - name: Commit if anything changed
+        run: |
+          if git diff --quiet; then echo "rates unchanged"; exit 0; fi
+          git config user.name "getawayguide"
+          git config user.email "getawayguide@users.noreply.github.com"
+          git add -A tools/currency_rates.json '*.html'
+          git commit -m "Currency rates refreshed for $(date -u +%B\ %Y) (monthly workflow; Kevin, 2026-11-08: \"currency rates should refresh every month\")"
+          git push

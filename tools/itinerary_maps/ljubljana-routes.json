@@ -1,0 +1,273 @@
+{
+  "slug": "ljubljana-routes",
+  "page": "Drafts/Upcoming/slovenia/ljubljana.html",
+  "outline_file": "tools/itinerary_maps/geo/ljubljana-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 300,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    13.2,
+    45.0,
+    19.85,
+    48.1
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/ljubljana-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/ljubljana-routes-route.json",
+      "under": true,
+      "fill": "#E6EAE3",
+      "stroke": "#9DB0A5",
+      "width": 1.1
+    }
+  ],
+  "stops": [
+    {
+      "n": 0,
+      "name": "Ljubljana",
+      "lat": 46.0511,
+      "lon": 14.5051,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 30,
+      "marker": "star"
+    },
+    {
+      "n": 1,
+      "name": "Bled",
+      "lat": 46.3683,
+      "lon": 14.1136,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -4,
+      "href": "lake-bled.html"
+    },
+    {
+      "n": 2,
+      "name": "Zagreb",
+      "lat": 45.815,
+      "lon": 15.9819,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 6
+    },
+    {
+      "n": 3,
+      "name": "Budapest",
+      "lat": 47.4979,
+      "lon": 19.0402,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": -6,
+      "href": "../hungary/budapest.html"
+    }
+  ],
+  "airports": [
+    {
+      "name": "LJU Airport",
+      "lat": 46.2237,
+      "lon": 14.4576,
+      "anchor": "start",
+      "dx": 4,
+      "dy": -26,
+      "icon_dx": -12,
+      "icon_dy": 0
+    }
+  ],
+  "legs": [
+    {
+      "a": 1,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 2,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 0,
+      "label": ""
+    },
+    {
+      "a": "air",
+      "b": 0,
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "tl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      },
+      {
+        "label": "Airport bus or shuttle",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Slovenia",
+      "lat": 45.62,
+      "lon": 14.55,
+      "size": 11,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Croatia",
+      "lat": 45.25,
+      "lon": 16.3,
+      "size": 12,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Hungary",
+      "lat": 46.65,
+      "lon": 17.7,
+      "size": 12,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Austria",
+      "lat": 47.3,
+      "lon": 15.0,
+      "size": 12,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Slovakia",
+      "lat": 48.02,
+      "lon": 18.9,
+      "size": 9,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "mobile": {
+    "country_width": 190,
+    "crop_bounds": [
+      13.3,
+      45.0,
+      19.45,
+      47.95
+    ],
+    "legend": {
+      "pos": "bl",
+      "scale": 0.8,
+      "items": [
+        {
+          "label": "Bus"
+        },
+        {
+          "label": "Airport bus or shuttle",
+          "color": "#7C9488",
+          "dash": true
+        }
+      ]
+    },
+    "stops": {
+      "0": {
+        "anchor": "middle",
+        "dx": 0,
+        "dy": 26
+      },
+      "1": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -2
+      },
+      "2": {
+        "anchor": "start",
+        "dx": 12,
+        "dy": 10
+      },
+      "3": {
+        "anchor": "end",
+        "dx": -12,
+        "dy": -10
+      }
+    },
+    "airports": [
+      {
+        "name": "LJU Airport",
+        "lat": 46.2237,
+        "lon": 14.4576,
+        "anchor": "start",
+        "dx": -4,
+        "dy": -22,
+        "icon_dx": -12,
+        "icon_dy": -2
+      }
+    ],
+    "country_labels": [
+      {
+        "name": "Slovenia",
+        "lat": 45.54,
+        "lon": 14.6,
+        "size": 8,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      },
+      {
+        "name": "Croatia",
+        "lat": 45.3,
+        "lon": 17.0,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Hungary",
+        "lat": 46.45,
+        "lon": 17.9,
+        "size": 10,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      },
+      {
+        "name": "Austria",
+        "lat": 47.4,
+        "lon": 15.4,
+        "size": 9,
+        "weight": 600,
+        "ls": 2.5,
+        "color": "#A2ACA5"
+      }
+    ]
+  }
+}
