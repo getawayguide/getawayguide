@@ -13,6 +13,8 @@ here, so a choice is placed exactly the way the editor places one:
 
 plan.json: {"slots": <the count `slots` reported>, "photos": [{"slot": 3, "photo": "Greece (2023)/IMG_1234.HEIC",
             "alt": "...", "city": "Athens", "pos": "50% 40%"}, ...]}
+           optional per photo: "reuse": true (allow a photo already on another page), "country": "chile" (a
+           cross-border page: archive under that country's Images folder and reuse its copy)
 
 apply: each photo is archived through the photo server's /api/import (HEIC -> JPEG, ICC kept, Images/<Country>/<City>/;
 Kevin's edited copy is reused when it is already there), the slot's [PHOTO] placeholder is replaced by the <img> the
@@ -316,6 +318,13 @@ def apply(page, plan, pipeline=True):
         i = int(it["slot"])
         if i in chosen or not 0 <= i < len(found):
             raise SystemExit("slot %s is out of range or chosen twice" % i)
+        # a cross-border page (Drafts/.../argentina/patagonia-itinerary.html, 2026-11-12) takes photos of the other
+        # country too: "country": "chile" archives the photo under Images/Chile/<City>/ (and finds the Chile copy
+        # already there) instead of making a second copy under the page's own country
+        cty = (it.get("country") or country).lower()
+        if cty != country:
+            for k, v in used_files(cty).items():
+                taken.setdefault(k, set()).update(v)
         name = it["photo"].split("/", 1)[1]
         stem = re.sub(r"\(\d+\)$", "", Path(name).stem)
         key = _key(Path(name).stem)
@@ -324,12 +333,12 @@ def apply(page, plan, pipeline=True):
         if clash and not it.get("reuse"):
             raise SystemExit("%s is already on %s: pick another (or say reuse: true)" % (stem, ", ".join(clash)))
         taken.setdefault(key, set()).add((page, None if not src_dto else "__pending__%s" % src_dto))
-        hit = _existing_copy(country, stem, src_dto)
+        hit = _existing_copy(cty, stem, src_dto)
         if hit:
             src = hit.relative_to(ROOT).as_posix()
             log.append("slot %d: %s (the copy already in %s)" % (i, hit.name, hit.parent.relative_to(ROOT).as_posix()))
         else:
-            r = _post("/api/import", {"root": root, "path": it["photo"], "country": country_dir(country), "city": _ascii(it.get("city", "")),
+            r = _post("/api/import", {"root": root, "path": it["photo"], "country": country_dir(cty), "city": _ascii(it.get("city", "")),
                                       "rot": 0, "flip": None, "angle": 0, "dev": {}, "masks": [], "recipe": {"erases": []}})
             if not r.get("ok"):
                 raise SystemExit("import failed for %s: %s" % (it["photo"], r))

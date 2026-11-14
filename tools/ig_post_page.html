@@ -108,12 +108,18 @@ main { max-width: 1280px; margin: 0 auto; padding-block: 1rem 1.5rem; min-height
 .mixed { font-size: .8rem; color: var(--warn); margin: 0 0 .75rem }
 
 /* bottom strip of mini slots */
-.strip { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-top: 1px solid var(--line);
+/* no text selection in the strip: a selected slot number turned the next drag from that row into the browser's own
+   text drag, which cancels the pointer (found 2026-11-11 testing strip-to-strip drags) */
+.strip { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-top: 1px solid var(--line); user-select: none; -webkit-user-select: none;
   padding-top: .5rem; padding-bottom: calc(.5rem + env(safe-area-inset-bottom, 0px)) }
 .strip-in { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: .35rem }
 .strip-row { display: flex; align-items: center; gap: .5rem; min-width: 0 }
 .strip-row .lbl { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); flex: 0 0 4.2rem; line-height: 1.1 }
-.minis { display: flex; gap: .3rem; flex: 1; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 2px; scrollbar-width: none }
+.minis { display: flex; gap: .3rem; flex: 0 1 auto; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 2px; scrollbar-width: none }
+/* − / + right after a row's last slot (Kevin, 2026-11-11: "add / remove slots in the small preview") */
+.sbtns { flex: none; display: inline-flex; gap: .25rem; align-items: center }
+.sbtn { width: 26px; height: 26px; padding: 0 !important; border-radius: 50% !important; display: inline-grid; place-items: center; font: 400 16px/1 var(--ui) !important; color: var(--muted) !important }
+.sbtn:hover { color: var(--accent) !important; border-color: var(--accent) !important }
 .minis::-webkit-scrollbar { display: none }
 .mini { position: relative; flex: 0 0 auto; height: 58px; aspect-ratio: 4/5; border-radius: 6px; border: 2px dashed var(--line); background: var(--slot); overflow: hidden; display: grid; place-items: center; color: var(--muted); font-size: .72rem; cursor: pointer; font-variant-numeric: tabular-nums }
 .mini.filled { border-style: solid; border-color: transparent }
@@ -160,13 +166,21 @@ input[type=range] { width: 100%; accent-color: var(--accent); margin: .3rem 0 0 
 .modal { padding-left: 84px; padding-right: 84px }
 @media (max-width: 700px) { .sidenav { width: 34px; height: 60px } .sidenav.l { left: 3px } .sidenav.r { right: 3px } .modal { padding-left: 40px; padding-right: 40px } }
 /* the preview: only the photos, big, on black (Kevin, 2026-11-11) */
-#pv { position: fixed; inset: 0; z-index: 70; background: #000; display: flex; align-items: center; justify-content: center }
+#pv { position: fixed; inset: 0; z-index: 70; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px }
 #pv[hidden] { display: none }
-#pv .pv-stage { width: calc(100vw - 168px); height: calc(100vh - 40px); display: flex; align-items: center; justify-content: center }
+#pv .pv-stage { width: calc(100vw - 168px); height: calc(100vh - 92px); display: flex; align-items: center; justify-content: center }
+/* under the photo: where it is, Edit, and the Shortlist moves (Kevin, 2026-11-11: "clicking on a photo should open the
+   preview ... and click option to edit / add to shortlist") */
+#pv .pv-acts { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; min-height: 36px; padding: 0 16px; font: 500 12px/1 var(--ui) }
+#pv .pv-acts .pv-where { color: rgba(255,255,255,.6); letter-spacing: .08em; text-transform: uppercase; font-size: 11px; font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums }
+#pv .pv-acts button { background: rgba(255,255,255,.10) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #fff !important; border-radius: 999px !important; padding: .55rem .95rem !important; font: 500 12.5px/1 var(--ui) !important }
+#pv .pv-acts button:hover { background: rgba(255,255,255,.22) !important }
+#pv .pv-acts button.pv-main { background: #fff !important; color: #1C2821 !important; border-color: #fff !important }
+#pv .pv-acts button:disabled { opacity: .4; cursor: default }
 #pv .pv-stage img, #pv .pv-stage canvas { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; object-fit: contain }
 #pv .pv-x { position: fixed; top: 10px; right: 14px; background: none !important; border: 0 !important; color: #fff !important; font: 300 1.9rem/1 var(--ui) !important; padding: .2rem .4rem !important; opacity: .6; cursor: pointer }
 #pv .pv-x:hover { opacity: 1 }
-@media (max-width: 700px) { #pv .pv-stage { width: 100vw; height: calc(100vh - 24px) } }   /* a phone: the photo edge to edge, the arrows over it (or swipe) */
+@media (max-width: 700px) { #pv .pv-stage { width: 100vw; height: calc(100vh - 110px) } #pv .pv-acts .pv-where { width: 100%; text-align: center; margin: 0 0 2px } }   /* a phone: the photo edge to edge, the arrows over it (or swipe) */
 
 /* captions */
 .capwrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.5rem; align-items: start }
@@ -420,7 +434,7 @@ S  into the shortlist (again: out)
 Delete  out of its slot
 A  archive
 Enter  edit (crop and tilt)
-P or Space  preview
+Click, P or Space  preview
 Esc  close">?</button>
   </div>
 </header>
@@ -431,7 +445,7 @@ Esc  close">?</button>
 </main>
 
 <div class="strip wrap" id="strip" aria-label="Final 10 carousel" hidden>
-  <div class="strip-in"><div class="strip-row"><span class="lbl">Final</span><div class="minis" id="minis"></div></div><div class="strip-row"><span class="lbl">Shortlist</span><div class="minis bl" id="minisBl"></div></div></div>
+  <div class="strip-in"><div class="strip-row"><span class="lbl">Final</span><div class="minis" id="minis"></div><span id="sbF"></span></div><div class="strip-row"><span class="lbl">Shortlist</span><div class="minis bl" id="minisBl"></div><span id="sbS"></span></div></div>
 </div>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
@@ -456,6 +470,7 @@ Esc  close">?</button>
 <div id="pv" hidden role="dialog" aria-modal="true" aria-label="Preview" tabindex="-1" style="outline:none">
   <button class="sidenav l" data-pv="-1" title="Previous (←)" aria-label="Previous">&#8249;</button>
   <div class="pv-stage" id="pvStage"></div>
+  <div class="pv-acts" id="pvActs"></div>
   <button class="sidenav r" data-pv="1" title="Next (→)" aria-label="Next">&#8250;</button>
   <button class="pv-x" data-pv="close" title="Close (Esc)" aria-label="Close">&times;</button>
 </div>
@@ -498,14 +513,37 @@ const list = (st) => S.items.filter(it => stateOf(it.id) === st);
 // row, the carousel that is rendered (10 unless he adds more; Instagram takes up to 20 photos in a post), and every
 // slot after it is his Shortlist, as long as he likes. A photo is in a slot when its state is 'final'. The old
 // 'shortlist' state is migrated into the Shortlist slots (tools/social_tab.py on disk, migrateShortlist() here).
-const NMAX = 20, NDEF = 10, SLOTCAP = 2000;
+const NMAX = 20, NDEF = 10, SLOTCAP = 2000, NSHORT = 20, SHORTMAX = 200;
 const nfinal = () => Math.max(1, Math.min(NMAX, (S.post.nfinal | 0) || NDEF));
-const slotMap = () => { const m = []; for (const it of list('final')) { const s = doc(it.id).slot | 0; if (s >= 1 && s <= SLOTCAP && !m[s]) m[s] = it.id; } return m; };
-const finalIds = () => { const m = slotMap(), out = []; for (let k = 1; k <= nfinal(); k++) if (m[k]) out.push(m[k]); return out; };
-const shortIds = () => { const m = slotMap(), out = []; for (let k = nfinal() + 1; k < m.length; k++) if (m[k]) out.push(m[k]); return out; };
-const freeSlot = (from, to = SLOTCAP) => { const m = slotMap(); for (let k = from; k <= to; k++) if (!m[k]) return k; return 0; };
-// how many Shortlist slots to draw: rows of five, at least 20, always one free past the last photo
-const shortCount = () => { const m = slotMap(), N = nfinal(); let hi = 0; for (let k = N + 1; k < m.length; k++) if (m[k]) hi = k - N; return Math.max(20, Math.ceil((hi + 1) / 5) * 5); };
+// PACKED ROWS (Kevin, 2026-11-11, second round: "no blanks in between photos, only at the end"; "drag keeps the same
+// order and pushes everything down one instead of swapping cards"). Each row is an ordered list: the Final row's photos
+// sit in slots 1..k, the Shortlist's in N+1..N+j, empty slots only after the last photo of a row. rows() reads the
+// order from the stored slots (a store with gaps or two photos on one slot still reads in order), commitRows() writes
+// the packed slot numbers back, and every move goes through those two, so a drop INSERTS and the rest move along one.
+const slotKey = (id) => { const v = doc(id).slot | 0; return v >= 1 && v <= SLOTCAP ? v : SLOTCAP + 1; };
+function rows() {
+  const N = nfinal(); const all = list('final').map(it => it.id);
+  all.sort((a, b) => slotKey(a) - slotKey(b) || (a < b ? -1 : a > b ? 1 : 0));
+  const fin = all.filter(id => slotKey(id) <= N), sho = all.filter(id => slotKey(id) > N);
+  if (fin.length > N) sho.unshift(...fin.splice(N));
+  return { fin, sho };
+}
+const slotMap = () => { const { fin, sho } = rows(), N = nfinal(), m = []; fin.forEach((id, i) => { m[i + 1] = id; }); sho.forEach((id, j) => { m[N + 1 + j] = id; }); return m; };
+const slotOf = (id) => { const m = slotMap(); const k = m.indexOf(id); return k > 0 ? k : 0; };
+const finalIds = () => rows().fin;
+const shortIds = () => rows().sho;
+// how many Shortlist slots to draw: post/main.nshort (20 unless he changes it with + / −), and always one free past the last photo
+const nshort = () => Math.max(1, Math.min(SHORTMAX, (S.post.nshort | 0) || NSHORT));
+const shortCount = () => Math.max(nshort(), shortIds().length + 1);
+// write the packed slot numbers; only the documents that change are written. Returns how many were.
+function commitRows(fin, sho, N = nfinal()) {
+  fin = fin.slice(); sho = sho.slice();
+  if (fin.length > N) sho = fin.splice(N).concat(sho);              // a full Final row: its last slide heads the Shortlist
+  let n = 0;
+  const put = (id, k) => { const d = doc(id); if (d.state !== 'final' || (d.slot | 0) !== k) { savePhoto(id, { state: 'final', slot: k, order: 0 }); n++; } };
+  fin.forEach((id, i) => put(id, i + 1)); sho.forEach((id, j) => put(id, N + 1 + j));
+  return n;
+}
 
 // one write at a time per document; the latest body wins
 const chains = new Map();
@@ -529,46 +567,69 @@ const debounced = new Map();
 function debounce(key, fn, ms = 500) { clearTimeout(debounced.get(key)); debounced.set(key, setTimeout(fn, ms)); }
 
 // ---------------------------------------------------------------- actions
-const inSlot = (id) => stateOf(id) === 'final' && (doc(id).slot | 0) >= 1;
-// S: into the Shortlist; a Shortlist photo comes out again; a slide moves down to the Shortlist
+const inSlot = (id) => stateOf(id) === 'final';
+const inFinal = (id) => finalIds().includes(id);
+const inShort = (id) => shortIds().includes(id);
+// S: into the Shortlist (at its end); a Shortlist photo comes out again; a slide moves down to the head of the Shortlist
 function toggleShortlist(id) {
-  if (inSlot(id) && doc(id).slot > nfinal()) { unslot(id); return; }
+  if (inShort(id)) { unslot(id); return; }
   toShortlist(id);
 }
-function toShortlist(id) { place(id, freeSlot(nfinal() + 1)); }
-function unslot(id) { if (!inSlot(id)) return; savePhoto(id, { state: 'pool', slot: null, order: 0 }); toast('Out of its slot'); render(); }
+function toShortlist(id) { const { fin, sho } = rows(); const N = nfinal(); place(id, fin.includes(id) ? N + 1 : N + 1 + sho.filter(x => x !== id).length); }
+// to the end of the Final row (the preview's Move to Final); a full row says so instead of pushing a slide out
+function toFinal(id) { const fin = finalIds().filter(x => x !== id); if (fin.length >= nfinal()) { toast('The Final row is full: drag it onto a slide, or add a slide'); return; } place(id, fin.length + 1); }
+// out of its slot: the photos after it close the gap
+function unslot(id) {
+  if (!inSlot(id)) return;
+  const { fin, sho } = rows();
+  savePhoto(id, { state: 'pool', slot: null, order: 0 });
+  commitRows(fin.filter(x => x !== id), sho.filter(x => x !== id));
+  toast('Out of its slot'); render();
+}
 function archive(id) {
   const d = doc(id);
   if (d.state === 'archived') { savePhoto(id, { state: 'pool' }); toast('Restored'); }
-  else { savePhoto(id, { state: 'archived', slot: null }); toast('Archived'); }
-  render();
-}
-function place(id, n) {
-  n = n | 0; if (n < 1 || n > SLOTCAP) return;
-  const m = slotMap(); const occupant = m[n];
-  if (occupant === id) return;
-  if (inSlot(id)) {
-    // moving between slots: swap
-    const from = doc(id).slot;
-    if (occupant) savePhoto(occupant, { slot: from });
-    savePhoto(id, { slot: n });
-  } else {
-    if (occupant) { let free = 0; for (let k = n + 1; k <= SLOTCAP; k++) if (!m[k]) { free = k; break; } savePhoto(occupant, { slot: free }); }   // the one there moves along
-    savePhoto(id, { state: 'final', slot: n, order: 0 });
+  else {
+    const { fin, sho } = rows(), was = inSlot(id);
+    savePhoto(id, { state: 'archived', slot: null });
+    if (was) commitRows(fin.filter(x => x !== id), sho.filter(x => x !== id));
+    toast('Archived');
   }
-  toast(n <= nfinal() ? 'Slide ' + n : 'Shortlist');
   render();
 }
-function moveSlot(id, dir) { if (!inSlot(id)) return; const n = (doc(id).slot | 0) + dir; if (n >= 1) place(id, n); }
-// the Final row grows one slide at a time up to Instagram's 20: the Shortlist moves one slot along first, so its
-// first photo does not land in the post; it shrinks back to 10, and the last slide's photo heads the Shortlist
+// put a photo at slot n: it is INSERTED there and the photos from n on move along one, in their order (the Final row's
+// last slide heads the Shortlist when the row is full); a slot past a row's last photo means "at the end of that row"
+function place(id, n) {
+  n = n | 0; if (n < 1 || n > SLOTCAP || !S.byId.has(id)) return;
+  const N = nfinal(); const { fin, sho } = rows();
+  const cur = fin.indexOf(id) >= 0 ? fin.indexOf(id) + 1 : sho.indexOf(id) >= 0 ? N + 1 + sho.indexOf(id) : 0;
+  const f = fin.filter(x => x !== id), s = sho.filter(x => x !== id);
+  let at;
+  if (n <= N) { const i = Math.min(n - 1, f.length); f.splice(i, 0, id); at = i + 1; }
+  else { const j = Math.min(n - N - 1, s.length); s.splice(j, 0, id); at = N + 1 + j; }
+  if (at === cur && stateOf(id) === 'final') { render(); return; }
+  commitRows(f, s, N);
+  toast(at <= N ? 'Slide ' + at : 'Shortlist ' + (at - N));
+  render();
+}
+function moveSlot(id, dir) { const k = slotOf(id); if (!k) return; if (k + dir >= 1) place(id, k + dir); }
+// the Final row grows one slide at a time up to Instagram's 20 (the Shortlist moves one slot along, so its first photo
+// does not land in the post); it shrinks back to 10, and the last slide's photo heads the Shortlist
 function addFinalSlot() {
   const N = nfinal(); if (N >= NMAX) { toast('Instagram takes up to 20 photos in one post'); return; }
-  const m = slotMap();
-  for (let k = m.length - 1; k > N; k--) if (m[k]) savePhoto(m[k], { slot: k + 1 });
-  savePost({ nfinal: N + 1 }); render();
+  const { fin, sho } = rows();
+  savePost({ nfinal: N + 1 }); commitRows(fin, sho, N + 1); render();
 }
-function removeFinalSlot() { const N = nfinal(); if (N <= NDEF) return; savePost({ nfinal: N - 1 }); render(); }
+function removeFinalSlot() { const N = nfinal(); if (N <= NDEF) return; const { fin, sho } = rows(); savePost({ nfinal: N - 1 }); commitRows(fin, sho, N - 1); render(); }
+// the Shortlist's empty slots (Kevin, 2026-11-11: "add / remove slots in the small preview"): one more, or one fewer,
+// never fewer than its photos plus the one free slot at the end
+function addShortSlot() { const K = shortCount(); if (K >= SHORTMAX) return; savePost({ nshort: K + 1 }); render(); }
+function removeShortSlot() {
+  const K = shortCount(), floor = shortIds().length + 1;
+  if (K - 1 < floor) { toast(floor > 1 ? 'Every Shortlist slot but the last holds a photo' : 'One empty slot stays'); return; }
+  savePost({ nshort: K - 1 }); render();
+}
+function slotsBtn(row, d) { if (row === 'short') { if (d > 0) addShortSlot(); else removeShortSlot(); } else if (d > 0) addFinalSlot(); else removeFinalSlot(); }
 // one ratio for the whole post (Instagram shows a carousel at one ratio): every slotted photo's crop follows it
 function setPostAspect(a) {
   if (!FEED.includes(a)) return;
@@ -581,12 +642,15 @@ function setPostAspect(a) {
   }
   toast('Every slide is ' + a); render();
 }
-// a store written before 2026-11-11 (an artifact's db) may still hold 'shortlist' photos: into the Shortlist slots
+// a store written before 2026-11-11 (an artifact's db) may still hold 'shortlist' photos: to the end of the Shortlist,
+// in their order; and slots with gaps between photos (or two photos on one slot) are packed, in the same order.
+// In the editor tools/social_tab.py migrate_store has done both on disk before the page reads the store.
 function migrateShortlist() {
-  const old = S.items.filter(it => stateOf(it.id) === 'shortlist').sort((a, b) => (doc(a.id).order || 0) - (doc(b.id).order || 0));
-  if (!old.length || !S.db) return;
-  for (const it of old) savePhoto(it.id, { state: 'final', slot: freeSlot(nfinal() + 1), order: 0 });
-  toast(old.length + ' shortlisted photo' + (old.length > 1 ? 's' : '') + ' moved into the Shortlist slots');
+  if (!S.db) return;
+  const old = S.items.filter(it => stateOf(it.id) === 'shortlist').sort((a, b) => (doc(a.id).order || 0) - (doc(b.id).order || 0) || (a.id < b.id ? -1 : 1)).map(it => it.id);
+  const { fin, sho } = rows();
+  commitRows(fin, sho.concat(old));
+  if (old.length) toast(old.length + ' shortlisted photo' + (old.length > 1 ? 's' : '') + ' moved into the Shortlist slots');
 }
 
 // ---------------------------------------------------------------- crop math (mirrors tools/ig_post.py clamp_crop / render_one)
@@ -668,8 +732,8 @@ if (EMB) window.addEventListener('message', e => {
 function cardHTML(it, opts = {}) {
   // no caption overlay (Kevin, 2026-11-11: "no descriptions on hover, they cover the photos") and no shortlist star:
   // a photo goes into the slots by dragging it there (or a key); the one button archives it
-  const d = doc(it.id), st = d.state || 'pool';
-  const badge = inSlot(it.id) ? (d.slot <= nfinal() ? `<span class="badge">${d.slot}</span>` : `<span class="badge dot" title="In the Shortlist"></span>`) : '';
+  const d = doc(it.id), st = d.state || 'pool', k = opts.pos ? opts.pos.get(it.id) || 0 : slotOf(it.id);
+  const badge = k ? (k <= nfinal() ? `<span class="badge">${k}</span>` : `<span class="badge dot" title="In the Shortlist"></span>`) : '';
   const arch = `<button class="ico" data-act="arch" title="${st === 'archived' ? 'Restore' : 'Archive (A)'}" aria-label="${st === 'archived' ? 'Restore' : 'Archive'}">${st === 'archived' ? ICON.back : ICON.x}</button>`;
   const text = it.caption || it.alt || '';
   return `<div class="card ${S.sel === it.id ? 'selected' : ''}" data-id="${it.id}" data-drop="${opts.drop || ''}" tabindex="0" role="button" aria-label="${esc(text)}">
@@ -698,7 +762,8 @@ function render() {
   $('#articleSel').hidden = v === 'final' || v === 'caption';
   if (v === 'all') {
     const arr = filtered(S.items.filter(it => stateOf(it.id) !== 'archived'));
-    viewEl.innerHTML = arr.length ? `<div class="grid">${arr.map(it => cardHTML(it)).join('')}</div>` : `<div class="empty"><h2>Nothing left here</h2><p>Every photo is archived.</p></div>`;
+    const pos = new Map(); slotMap().forEach((id, k) => { if (id) pos.set(id, k); });
+    viewEl.innerHTML = arr.length ? `<div class="grid">${arr.map(it => cardHTML(it, { pos })).join('')}</div>` : `<div class="empty"><h2>Nothing left here</h2><p>Every photo is archived.</p></div>`;
   } else if (v === 'archived') {
     const arr = filtered(list('archived'));
     viewEl.innerHTML = arr.length ? `<p class="note">Hidden from All. Restore any of them with ↩.</p><div class="grid">${arr.map(it => cardHTML(it)).join('')}</div>`
@@ -720,17 +785,26 @@ function slotHTML(n, m) {
 function renderFinal() {
   const m = slotMap(), N = nfinal(), K = shortCount(); const aspects = new Set(); for (const id of finalIds()) aspects.add(aspectOf(id));
   const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
-  const ctl = `<span class="rbtns">${N > NDEF ? `<button class="rbtn" data-slots="-1" title="One slide fewer" aria-label="One slide fewer">&minus;</button>` : ''}${N < NMAX ? `<button class="rbtn" data-slots="1" title="Add a slide (Instagram takes up to 20)" aria-label="Add a slide">+</button>` : ''}</span>`;
+  const ctl = slotBtns('final', 'rbtn'), ctlS = slotBtns('short', 'rbtn');
   viewEl.innerHTML = `${aspects.size > 1 ? `<p class="mixed">The slides mix ${[...aspects].join(', ')}. Instagram shows a carousel at one ratio: pick one at the top.</p>` : ''}
     <div class="rows"><section class="rowwrap final"><div class="rowhead"><b>Final</b><span class="cnt">${finalIds().length}/${N}</span>${ctl}</div><div class="slots">${range(1, N).map(n => slotHTML(n, m)).join('')}</div></section>
-    <section class="rowwrap backlog"><div class="rowhead"><b>Shortlist</b><span class="cnt">${shortIds().length}</span></div><div class="slots">${range(N + 1, N + K).map(n => slotHTML(n, m)).join('')}</div></section></div>`;
+    <section class="rowwrap backlog"><div class="rowhead"><b>Shortlist</b><span class="cnt">${shortIds().length}</span>${ctlS}</div><div class="slots">${range(N + 1, N + K).map(n => slotHTML(n, m)).join('')}</div></section></div>`;
   for (const cv of viewEl.querySelectorAll('canvas[data-paint]')) paint(cv, cv.dataset.paint, 480);
+}
+// − / + for a row: the Final row runs 10..20 slides (Instagram's cap), the Shortlist any number of slots down to its
+// photos plus one free slot. The same buttons sit on the Shortlist view's row heads and at the end of the strip's rows.
+function slotBtns(row, cls) {
+  const N = nfinal(), K = shortCount();
+  const minus = row === 'final' ? N > NDEF : K > shortIds().length + 1, plus = row === 'final' ? N < NMAX : K < SHORTMAX;
+  const what = row === 'final' ? ['One slide fewer', 'Add a slide (Instagram takes up to 20)'] : ['One Shortlist slot fewer', 'One more Shortlist slot'];
+  return `<span class="${cls}s">${minus ? `<button class="${cls}" data-slots="-1" data-row="${row}" title="${what[0]}" aria-label="${what[0]}">&minus;</button>` : ''}${plus ? `<button class="${cls}" data-slots="1" data-row="${row}" title="${what[1]}" aria-label="${what[1]}">+</button>` : ''}</span>`;
 }
 function renderStrip() {
   const m = slotMap(), N = nfinal();
-  const mini = (n) => { const id = m[n]; return `<div class="mini ${id ? 'filled' : ''}" style="aspect-ratio:${arCss(id ? aspectOf(id) : postAspect())}" data-drop="slot" data-slot="${n}" ${id ? `data-id="${id}"` : ''} title="${n <= N ? 'Slide ' + n : 'Shortlist'}">${id ? `<canvas data-paint="${id}"></canvas>${n <= N ? `<i>${n}</i>` : ''}` : ''}</div>`; };
+  const mini = (n) => { const id = m[n]; return `<div class="mini ${id ? 'filled' : ''}" style="aspect-ratio:${arCss(id ? aspectOf(id) : postAspect())}" data-drop="slot" data-slot="${n}" ${id ? `data-id="${id}"` : ''} title="${n <= N ? 'Slide ' + n : 'Shortlist ' + (n - N)}">${id ? `<canvas data-paint="${id}"></canvas>${n <= N ? `<i>${n}</i>` : ''}` : ''}</div>`; };
   $('#minis').innerHTML = Array.from({ length: N }, (_, i) => mini(i + 1)).join('');
   $('#minisBl').innerHTML = Array.from({ length: shortCount() }, (_, i) => mini(N + 1 + i)).join('');
+  $('#sbF').innerHTML = slotBtns('final', 'sbtn'); $('#sbS').innerHTML = slotBtns('short', 'sbtn');
   for (const cv of $('#strip').querySelectorAll('canvas[data-paint]')) paint(cv, cv.dataset.paint, 100);
 }
 
@@ -739,27 +813,64 @@ function renderStrip() {
 // on screen, whole. Inside the editor the tab lets the iframe fill the window while it is open (event 'full').
 const PV = { list: [], i: 0, crop: false };
 function full(on) { if (EMB && window.parent !== window) window.parent.postMessage({ ig: 1, event: 'full', on: !!on }, '*'); }
-function openPreview(startId) {
+// opts.list / opts.crop: a click on a slotted photo previews its own row (the Final row or the Shortlist), cropped
+function openPreview(startId, opts = {}) {
   if (S.mode === 'template' || !S.loaded) return;
   const v = S.view;
-  PV.crop = v === 'final' || v === 'caption';
-  PV.list = PV.crop ? finalIds() : [...viewEl.querySelectorAll('.card[data-id]')].map(el => el.dataset.id);
+  if (opts.list) { PV.list = opts.list.slice(); PV.crop = !!opts.crop; }
+  else {
+    PV.crop = v === 'final' || v === 'caption';
+    const sid = startId || S.sel;
+    PV.list = !PV.crop ? [...viewEl.querySelectorAll('.card[data-id]')].map(el => el.dataset.id) : sid && inShort(sid) && v === 'final' ? shortIds() : finalIds();
+  }
   if (!PV.list.length) { toast(PV.crop ? 'No slides yet' : 'No photos here'); return; }
   const at = PV.list.indexOf(startId || S.sel); PV.i = at >= 0 ? at : 0;
   $('#pv').hidden = false; full(true); pvShow(); setTimeout(() => $('#pv').focus({ preventScroll: true }), 0); report();
 }
-function closePreview() { if ($('#pv').hidden) return; $('#pv').hidden = true; $('#pvStage').innerHTML = ''; full(false); report(); }
+// the row list a click on this element previews: a slot or a strip slot = its row, cropped; a card = the cards on screen
+function previewFrom(el) {
+  const id = el.dataset.id; if (!id) return;
+  select(id);
+  if (el.dataset.slot) { const fin = inFinal(id); openPreview(id, { list: fin ? finalIds() : shortIds(), crop: true }); }
+  else openPreview(id);
+}
+function closePreview() { if ($('#pv').hidden) return; $('#pv').hidden = true; $('#pvStage').innerHTML = ''; $('#pvActs').innerHTML = ''; full(false); report(); }
 function pvShow() {
   const id = PV.list[PV.i]; const it = S.byId.get(id); const st = $('#pvStage'); if (!it) return;
   if (PV.crop) { st.innerHTML = '<canvas></canvas>'; paint(st.firstChild, id, 1440); }
   else st.innerHTML = `<img src="${blob(it.asset)}" alt="${esc(it.alt)}">`;
   for (const b of $('#pv').querySelectorAll('.sidenav')) b.disabled = (+b.dataset.pv < 0 ? PV.i <= 0 : PV.i >= PV.list.length - 1);
+  pvActs();
+}
+// the preview's buttons for the photo on screen: Edit always; then by where it is: Photos -> Add to shortlist,
+// Shortlist -> Move to Final / Remove from shortlist, Final -> Move to Shortlist
+function pvActs() {
+  const id = PV.list[PV.i]; if (!id) return;
+  const fin = finalIds(), sho = shortIds(), N = nfinal(), f = fin.indexOf(id), s = sho.indexOf(id);
+  const where = f >= 0 ? `Slide ${f + 1} of ${N}` : s >= 0 ? `Shortlist ${s + 1}` : stateOf(id) === 'archived' ? 'Archived' : `${PV.i + 1} / ${PV.list.length}`;
+  const b = (act, label, title, extra = '') => `<button type="button" data-pva="${act}" title="${esc(title)}" ${extra}>${label}</button>`;
+  let h = `<span class="pv-where">${where}</span>` + b('edit', 'Edit', 'Crop and tilt (Enter)', 'class="pv-main"');
+  if (f >= 0) h += b('toshort', 'Move to Shortlist', 'Out of the post, to the head of the Shortlist (S)');
+  else if (s >= 0) h += b('tofinal', 'Move to Final', fin.length >= N ? 'The Final row is full' : 'To the end of the Final row', fin.length >= N ? 'disabled' : '') + b('unslot', 'Remove from shortlist', 'Back with the photos (S)');
+  else h += b('short', 'Add to shortlist', 'To the end of the Shortlist (S)');
+  $('#pvActs').innerHTML = h;
+}
+function pvAct(a) {
+  const id = PV.list[PV.i]; if (!id) return;
+  if (a === 'edit') { closePreview(); select(id); openEditor(id); return; }
+  if (a === 'toshort' || a === 'short') toShortlist(id);
+  else if (a === 'tofinal') toFinal(id);
+  else if (a === 'unslot') unslot(id);
+  pvActs(); $('#pv').focus({ preventScroll: true });
 }
 function pvStep(d) { const j = PV.i + d; if (j < 0 || j >= PV.list.length) return; PV.i = j; pvShow(); }
 { let sx = null; $('#pv').addEventListener('pointerdown', e => { sx = e.pointerType === 'mouse' ? null : e.clientX; });
   $('#pv').addEventListener('pointerup', e => { if (sx !== null && Math.abs(e.clientX - sx) > 50) { pvStep(e.clientX < sx ? 1 : -1); PV.swiped = true; } sx = null; }); }
 $('#pv').addEventListener('click', e => {
-  if (PV.swiped) { PV.swiped = false; return; } const b = e.target.closest('[data-pv]'); if (b) { if (b.dataset.pv === 'close') closePreview(); else pvStep(+b.dataset.pv); return; } if (!e.target.closest('img, canvas')) closePreview(); });
+  if (PV.swiped) { PV.swiped = false; return; }
+  const a = e.target.closest('[data-pva]'); if (a) { if (!a.disabled) pvAct(a.dataset.pva); return; }
+  const b = e.target.closest('[data-pv]'); if (b) { if (b.dataset.pv === 'close') closePreview(); else pvStep(+b.dataset.pv); return; }
+  if (!e.target.closest('img, canvas, .pv-acts')) closePreview(); });
 
 // ---------------------------------------------------------------- caption view
 function rankedIdeas() { return [...S.captions.values()].sort((a, b) => (b.stars || 0) - (a.stars || 0) || (a.order || 0) - (b.order || 0)); }
@@ -1029,8 +1140,8 @@ function openEditor(id) {
   if (!id || !S.byId.has(id)) return;
   ED.target = null; editorMode(false);
   ED.id = id; ED.crop = cropFor(id); modal.hidden = false; S.sel = id;
-  const it = S.byId.get(id); const d = doc(id);
-  $('#edTitle').textContent = inSlot(id) ? (d.slot <= nfinal() ? 'Slide ' + d.slot : 'Shortlist') : 'Crop';
+  const it = S.byId.get(id); const k = slotOf(id);
+  $('#edTitle').textContent = k ? (k <= nfinal() ? 'Slide ' + k : 'Shortlist ' + (k - nfinal())) : 'Crop';
   $('#edMeta').textContent = (it.caption || it.alt || '') + ' · ' + (it.article_title || it.article) + (it.section ? ' · ' + it.section : '') + (it.time ? ' · ' + it.time.slice(0, 16) : '');
   const slotted = slotMap().filter(Boolean);
   $('#prevBtn').disabled = $('#nextBtn').disabled = !(inSlot(id) && slotted.length > 1);
@@ -1091,7 +1202,7 @@ cropbox.addEventListener('pointerup', endPtr); cropbox.addEventListener('pointer
 cropbox.addEventListener('wheel', e => { e.preventDefault(); edSet({ w: ED.crop.w * (e.deltaY > 0 ? 1.05 : 1 / 1.05) }); }, { passive: false });
 
 // ---------------------------------------------------------------- pointer drag (cards and slots -> slots / shortlist order)
-const DR = { id: null, ghost: null, from: null, target: null, timer: null, start: null, active: false };
+const DR = { id: null, ghost: null, from: null, target: null, timer: null, start: null, active: false, ended: 0 };   // ended: a drag's end, so its click does not open the preview
 function dropTargetAt(x, y) {
   const el = document.elementFromPoint(x, y); if (!el) return null;
   return el.closest('[data-drop="slot"], .tframe .ph[data-key]');
@@ -1117,6 +1228,7 @@ function endDrag(x, y) {
   else if (S.mode === 'template') { /* dropped outside a box: nothing changes */ }
   else if (t && t.dataset.drop === 'slot') place(id, +t.dataset.slot);    // dropped anywhere else: nothing changes (the x takes a photo out)
   if (DR.target) DR.target.classList.remove('over', 'over-target');
+  DR.ended = Date.now();
   DR.ghost.remove(); DR.srcEl && DR.srcEl.classList.remove('dragging');
   DR.active = false; DR.id = null; DR.target = null; DR.start = null; DR.from = null;
 }
@@ -1160,7 +1272,7 @@ viewEl.addEventListener('click', e => {
     if (act.dataset.act === 'arch') archive(id); else if (act.dataset.act === 'crop') openEditor(id); else if (act.dataset.act === 'unslot') unslot(id);
     return;
   }
-  const sl = e.target.closest('button[data-slots]'); if (sl) { if (+sl.dataset.slots > 0) addFinalSlot(); else removeFinalSlot(); return; }
+  const sl = e.target.closest('button[data-slots]'); if (sl) { slotsBtn(sl.dataset.row, +sl.dataset.slots); return; }
   const star = e.target.closest('button[data-star]'); if (star) { saveIdea(star.closest('[data-cid]').dataset.cid, { stars: +star.dataset.star }); render(); return; }
   if (e.target.closest('button[data-cfinal]')) { markFinal(e.target.closest('[data-cid]').dataset.cid); return; }
   if (e.target.closest('button[data-cdel]')) { const id = e.target.closest('[data-cid]').dataset.cid; S.captions.delete(id); write('captions/' + id, null); render(); return; }
@@ -1171,7 +1283,9 @@ viewEl.addEventListener('click', e => {
   const sf = e.target.closest('button[data-sfinal]'); if (sf) { savePost({ finalCaption: S.sugg[+sf.dataset.sfinal] }); render(); toast('Set as the final caption'); return; }
   const card = e.target.closest('.card, .frame');
   if (card) {
-    if (card.dataset.id) { if (S.sel === card.dataset.id && card.classList.contains('frame')) openEditor(card.dataset.id); else select(card.dataset.id); }
+    // a click on a photo opens the preview on it (Kevin, 2026-11-11), with Edit and the Shortlist moves under it;
+    // Enter (or the pencil on a slot) still opens the crop editor straight away
+    if (card.dataset.id) { if (Date.now() - DR.ended < 400) return; previewFrom(card); }
     else if (card.classList.contains('frame') && S.sel && card.dataset.slot) place(S.sel, +card.dataset.slot);   // tap a photo, then a slot (the phone's way to move one)
     else if (card.classList.contains('frame') && card.dataset.slot) { S.cur = +card.dataset.slot; card.focus({ preventScroll: true }); }
   }
@@ -1182,9 +1296,11 @@ viewEl.addEventListener('focusin', e => {
   if (c.dataset.slot) { S.cur = +c.dataset.slot; for (const x of viewEl.querySelectorAll('.frame.cur')) x.classList.remove('cur'); if (!c.dataset.id) c.classList.add('cur'); }
   if (c.dataset.id && S.sel !== c.dataset.id) select(c.dataset.id);
 });
+// (a double click no longer edits a slot in the Personal post: its first click opens the preview, whose Edit button and
+// the Enter key do it)
 viewEl.addEventListener('dblclick', e => {
   if (S.mode === 'template') { const ph = e.target.closest('.tframe .ph[data-key]'); if (ph && ph.dataset.id) { S.tsel = ph.dataset.key; openBoxEditor(ph.dataset.key); } return; }
-  const c = e.target.closest('.card[data-id], .frame[data-id]'); if (c) openEditor(c.dataset.id); });
+});
 viewEl.addEventListener('input', e => {
   const t = e.target;
   if (S.mode === 'template' && t.dataset.tf) {
@@ -1198,7 +1314,11 @@ viewEl.addEventListener('input', e => {
   else if (t.id === 'hashtags') { $('#tagN').textContent = t.value.split(/\s+/).filter(x => x.startsWith('#')).length; debounce('hashtags', () => savePost({ hashtags: t.value }), 600); }
 });
 viewEl.addEventListener('keydown', e => { if (e.target.id === 'ideaText' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { addIdea(e.target.value, 'me'); e.target.value = ''; } });
-$('#strip').addEventListener('click', e => { const m = e.target.closest('.mini'); if (!m) return; if (m.dataset.id) { select(m.dataset.id); openEditor(m.dataset.id); } else if (S.sel) place(S.sel, +m.dataset.slot); else { S.view = 'final'; render(); } });
+$('#strip').addEventListener('click', e => {
+  const sl = e.target.closest('button[data-slots]'); if (sl) { slotsBtn(sl.dataset.row, +sl.dataset.slots); return; }
+  const m = e.target.closest('.mini'); if (!m) return;
+  if (m.dataset.id) { if (Date.now() - DR.ended < 400) return; previewFrom(m); }          // a strip photo: the preview of its row
+  else if (S.sel) place(S.sel, +m.dataset.slot); else { S.view = 'final'; render(); } });
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) { S.view = b.dataset.view; render(); } });
 $('#articleSel').addEventListener('change', e => { S.article = e.target.value; render(); });
 $('#modeSeg').addEventListener('click', e => { const b = e.target.closest('button[data-mode]'); if (!b || b.dataset.mode === S.mode) return; S.mode = b.dataset.mode; S.tsel = null; try { localStorage.setItem('igpost.mode', S.mode); } catch (x) {} render(); });
@@ -1214,7 +1334,14 @@ document.addEventListener('keydown', e => {
   if (S.mode === 'template') { if (e.key === 'Escape') { S.sel = null; if (S.tsel) tSelBox(S.tsel); select(null); } else if (e.key === 'Enter' && S.tsel) { openBoxEditor(S.tsel); e.preventDefault(); } return; }
   const k = e.key;
   if (tag === 'button' && (k === ' ' || k === 'Enter') && $('#pv').hidden) return;   // a focused button's own key
-  if (!$('#pv').hidden) { if (k === 'Escape') closePreview(); else if (k === 'ArrowLeft') pvStep(-1); else if (k === 'ArrowRight' || k === ' ') pvStep(1); e.preventDefault(); return; }
+  if (!$('#pv').hidden) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const pid = PV.list[PV.i];
+    if (k === 'Escape') closePreview(); else if (k === 'ArrowLeft') pvStep(-1); else if (k === 'ArrowRight' || k === ' ') pvStep(1);
+    else if (k === 'Enter' && pid) pvAct('edit');                                              // Enter still edits
+    else if ((k === 's' || k === 'S') && pid) pvAct(inFinal(pid) ? 'toshort' : inShort(pid) ? 'unslot' : 'short');
+    e.preventDefault(); return;
+  }
   if (k === 'Escape') { select(null); return; }
   if (S.view === 'caption') return;
   // THE GRID'S KEYS (Kevin, 2026-11-11): arrows walk the grid (empty slots too), Shift+arrows carry the photo along,
@@ -1235,7 +1362,7 @@ document.addEventListener('keydown', e => {
   if (k === 's' || k === 'S') { toggleShortlist(id); refocus(id); return; }
   if (k === 'a' || k === 'A') { archive(id); return; }
   if (k === 'r' || k === 'R') { if (stateOf(id) === 'archived') archive(id); return; }
-  if (k === 'Delete' || k === 'Backspace') { const slot = doc(id).slot; unslot(id); const c = viewEl.querySelector(`.frame[data-slot="${slot}"]`); if (c) focusCell(c); e.preventDefault(); return; }
+  if (k === 'Delete' || k === 'Backspace') { const slot = slotOf(id); unslot(id); const c = viewEl.querySelector(`.frame[data-slot="${slot}"]`); if (c) focusCell(c); e.preventDefault(); return; }
   if (k === 'Enter') { openEditor(id); e.preventDefault(); return; }
   if (k === '[') { moveSlot(id, -1); refocus(id); return; } if (k === ']') { moveSlot(id, 1); refocus(id); return; }
 });

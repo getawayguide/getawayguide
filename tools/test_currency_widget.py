@@ -229,6 +229,26 @@ def main():
         run(site, "--apply")
         check("a re-serialized block is replaced, not doubled", rd(arm).count('class="cconv"') == 1 and 'data-x' not in rd(arm))
 
+        # a cross-border itinerary with two blocks (Patagonia: one per currency, placed by hand) keeps both, each
+        # refreshed in place, and is never collapsed into the folder country's one block
+        two = site / "Drafts/Upcoming/armenia/two-country-itinerary.html"
+        two.parent.mkdir(parents=True, exist_ok=True)
+        old_amd = C.widget("armenia", dict(RATES, asof="2026-11-01", rates=dict(RATES["rates"], AMD=350.0)))
+        old_mkd = C.widget("north-macedonia", dict(RATES, asof="2026-11-01", rates=dict(RATES["rates"], MKD=50.0)))
+        two_html = PRETTY.replace('<p class="copy">Second.</p>', '<p class="copy">Second.</p>\n    ' + old_mkd).replace(
+            '<p class="copy">Last.</p>', '<p class="copy">Last.</p>\n    ' + old_amd)
+        with open(two, "w", encoding="utf-8", newline="") as f:
+            f.write(two_html)
+        run(site, "--apply")
+        t = rd(two)
+        check("two-currency itinerary: both blocks kept in their own spots, each refreshed in place",
+              t.count('class="cconv"') == 2 and C.widget("north-macedonia", RATES) in t and C.widget("armenia", RATES) in t
+              and t.index('data-local="MKD"') < t.index('data-local="AMD"'), t)
+        before_two = t
+        run(site, "--apply")
+        check("two-currency itinerary: a second --apply changes nothing", rd(two) == before_two)
+        two.unlink()
+
         # refresh: new rates + date rewrite the block
         r2 = dict(RATES, asof="2026-12-01", rates=dict(RATES["rates"], AMD=400.0))
         (site / "tools" / C.RATES_NAME).write_text(json.dumps(r2), encoding="utf-8")

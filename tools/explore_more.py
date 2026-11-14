@@ -41,15 +41,17 @@ WPM = 230
 # stacked another block on the two live itineraries (four each by 2026-10-24).
 # The editor saves the end marker on its own line ("</section>\n  <!-- /explore-more -->"); the strict pattern missed that
 # block and a re-run added a second one under it (the North Macedonia drafts, 2026-10-25).
-BLOCK_RE = re.compile(r'\n?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section>\s*<!-- /explore-more -->', re.S)
+BLOCK_RE = re.compile(r'(?:\r?\n)?[ \t]*<section class="xm(?: [^"]*)?"[^>]*>.*?</section>\s*<!-- /explore-more -->', re.S)
 # The fallback (North Macedonia launch, 2026-11-10): an editor save dropped the closing marker, BLOCK_RE found no block and
 # the launch added a second one under it. Worse, BLOCK_RE's lazy .*? then runs from the marker-less block on to the NEXT
 # block's marker, so a later run would have cut everything between the two. A block is now found by its own opening tag
 # (the xm class and id="explore-more", in either attribute order) and ends at its first </section> (the block holds no
 # nested section), with the marker optional, so every copy is removed on its own and exactly one is written back.
-SECTION_RE = re.compile(r'\n?[ \t]*<section\b(?=[^>]*\bid="explore-more")(?=[^>]*\bclass="xm(?: [^"]*)?")[^>]*>.*?</section>'
+SECTION_RE = re.compile(r'(?:\r?\n)?[ \t]*<section\b(?=[^>]*\bid="explore-more")(?=[^>]*\bclass="xm(?: [^"]*)?")[^>]*>.*?</section>'
                         r'(?:\s*<!-- /explore-more -->)?', re.S)
-ORPHAN_MARKER_RE = re.compile(r'\n?[ \t]*<!-- /explore-more -->[ \t]*(?=\r?\n|$)|<!-- /explore-more -->')
+ORPHAN_MARKER_RE = re.compile(r'(?:\r?\n)?[ \t]*<!-- /explore-more -->[ \t]*(?=\r?\n|$)|<!-- /explore-more -->')
+# (?:\r?\n)? and not \n? in all three (Serbia launch, 2026-11-13): on a CRLF page \n? took the \n and left the \r, so
+# every launch added a blank line above "Last updated" (59 pages that day, one more at North Macedonia's).
 
 
 def strip_blocks(s):

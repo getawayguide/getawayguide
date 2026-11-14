@@ -33,7 +33,7 @@ def pages():
                          cwd=ROOT).stdout.split()
     # a retired page's redirect stub (retire_field_notes.py) carries its own canonical to the page
     # it sends readers to; giving it one to itself, or Article dates, would undo the redirect's point
-    return [f for f in out if not f.startswith(("Drafts/", ".tmp/", "archive/"))
+    return [f for f in out if not f.startswith(("Drafts/", ".tmp/", "archive/", "tools/"))
             and os.path.basename(f) not in ("editor.html", "404.html")
             and 'http-equiv="refresh"' not in open(os.path.join(ROOT, f), encoding="utf-8", errors="replace").read()]
 
@@ -130,7 +130,7 @@ def main():
     n_can = n_og = n_dt = 0
     for rel in pages():
         p = os.path.join(ROOT, rel)
-        s0 = open(p, encoding="utf-8", errors="replace").read()
+        s0 = open(p, encoding="utf-8", errors="replace", newline="").read()     # newline="": a CRLF page keeps its endings
         s = s0
         if a.canonical:
             s, url = add_canonical(s, rel)

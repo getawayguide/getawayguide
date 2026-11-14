@@ -1,72 +1,130 @@
 {
-  "iso3": "SRB",
-  "hub_detail": "full",
-  "simplify": 120,
-  "smooth": true,
-  "pin_scale": 1.15,
-  "slug": "belgrade-daytrips",
-  "page": "Drafts/Upcoming/serbia/belgrade.html",
-  "country_width": 330,
-  "margins": {
-    "l": 200,
-    "r": 200,
-    "t": 110,
-    "b": 110
-  },
-  "stops": [
+  "airports": [],
+  "country_labels": [
     {
-      "n": 1,
-      "name": "Belgrade",
-      "lat": 44.8125,
-      "lon": 20.4612,
-      "anchor": "start",
-      "dx": 16,
-      "dy": -10,
-      "no_number": true,
-      "marker": "star"
+      "color": "#4F6358",
+      "lat": 44.3,
+      "lon": 20,
+      "ls": 2.5,
+      "name": "Serbia",
+      "size": 13,
+      "weight": 700
     },
     {
-      "n": 2,
-      "name": "Novi Sad",
-      "lat": 45.2396,
-      "lon": 19.8227,
-      "anchor": "end",
-      "dx": -12,
-      "dy": 4,
-      "no_number": true
+      "color": "#A2ACA5",
+      "lat": 46.35,
+      "lon": 20.2,
+      "ls": 2.5,
+      "name": "Hungary",
+      "size": 9,
+      "weight": 600
     },
     {
-      "n": 3,
-      "name": "Sombor",
-      "lat": 45.7733,
-      "lon": 19.1151,
-      "anchor": "end",
-      "dx": -12,
-      "dy": 4,
-      "no_number": true
+      "color": "#A2ACA5",
+      "lat": 45.3,
+      "lon": 22.4,
+      "ls": 2.5,
+      "name": "Romania",
+      "size": 9,
+      "weight": 600
     },
     {
-      "n": 4,
-      "name": "Manasija &|Krupajsko Vrelo",
-      "lat": 44.1425,
-      "lon": 21.54,
-      "anchor": "start",
-      "dx": 14,
-      "dy": 4,
-      "no_number": true
+      "color": "#A2ACA5",
+      "lat": 44.2,
+      "lon": 18.4,
+      "ls": 2.5,
+      "name": "Bosnia",
+      "size": 9,
+      "weight": 600
     },
     {
-      "n": 5,
-      "name": "Kopaonik",
-      "lat": 43.268,
-      "lon": 20.8263,
-      "anchor": "start",
-      "dx": 14,
-      "dy": 4,
-      "no_number": true
+      "color": "#A2ACA5",
+      "lat": 45.55,
+      "lon": 18.3,
+      "ls": 2.5,
+      "name": "Croatia",
+      "size": 9,
+      "weight": 600,
+      "dx": -5.3,
+      "dy": 11.4
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 43.3,
+      "lon": 23.2,
+      "ls": 2.5,
+      "name": "Bulgaria",
+      "size": 9,
+      "weight": 600,
+      "dx": 29.6,
+      "dy": 38.7
+    },
+    {
+      "color": "#A2ACA5",
+      "lat": 42.3,
+      "lon": 20.55,
+      "ls": 1.8,
+      "name": "Kosovo",
+      "size": 9,
+      "weight": 600,
+      "dx": 17.4,
+      "dy": -19.7
+    },
+    {
+      "color": "#1C2821",
+      "lat": 44.6,
+      "lon": 20.16,
+      "ls": 1.5,
+      "name": "Avala",
+      "size": 12,
+      "weight": 600
     }
   ],
-  "airports": [],
+  "country_width": 330,
+  "crop_bounds": [
+    17.8,
+    42,
+    23.4,
+    46.4
+  ],
+  "dots": [
+    {
+      "anchor": "end",
+      "dx": -9,
+      "dy": 12,
+      "lat": 44.6892,
+      "lon": 20.5161,
+      "name": ""
+    }
+  ],
+  "hub_detail": "full",
+  "iso3": "SRB",
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-daytrips-neighbors.json",
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "under": true,
+      "width": 0.9
+    },
+    {
+      "file": "tools/itinerary_maps/geo/belgrade-daytrips-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "legend": {
+    "items": [
+      {
+        "label": "Day trip"
+      },
+      {
+        "dash": true,
+        "label": "Better with a night"
+      }
+    ],
+    "pos": "tr",
+    "scale": 0.9
+  },
   "legs": [
     {
       "a": 1,
@@ -76,117 +134,100 @@
     {
       "a": 2,
       "b": 1,
-      "label": "",
-      "dash": true
+      "dash": true,
+      "label": ""
     },
     {
       "a": 3,
       "b": 0,
-      "label": "",
-      "dash": true
+      "dash": true,
+      "label": ""
     },
     {
       "a": 4,
       "b": 0,
-      "label": "",
-      "dash": true
+      "dash": true,
+      "label": ""
+    },
+    {
+      "a": 5,
+      "b": 4,
+      "dash": true,
+      "label": ""
     }
   ],
-  "legend": {
-    "pos": "tr",
-    "scale": 0.9,
-    "items": [
-      {
-        "label": "Day trip"
-      },
-      {
-        "label": "Better with a night",
-        "dash": true
-      }
-    ]
+  "margins": {
+    "b": 110,
+    "l": 200,
+    "r": 200,
+    "t": 110
   },
-  "layers": [
+  "page": "serbia/belgrade.html",
+  "pin_scale": 1.15,
+  "simplify": 120,
+  "slug": "belgrade-daytrips",
+  "smooth": true,
+  "stops": [
     {
-      "file": "tools/itinerary_maps/geo/belgrade-daytrips-neighbors.json",
-      "under": true,
-      "fill": "#EFF0EB",
-      "stroke": "#D5DAD3",
-      "width": 0.9
+      "anchor": "start",
+      "dx": 16,
+      "dy": -10,
+      "lat": 44.8125,
+      "lon": 20.4612,
+      "marker": "star",
+      "n": 1,
+      "name": "Belgrade",
+      "no_number": true
     },
     {
-      "file": "tools/itinerary_maps/geo/belgrade-daytrips-lakes.json",
-      "fill": "#A9CBD6"
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "lat": 45.2396,
+      "lon": 19.8227,
+      "n": 2,
+      "name": "Novi Sad",
+      "no_number": true
+    },
+    {
+      "anchor": "end",
+      "dx": -12,
+      "dy": 4,
+      "lat": 45.7733,
+      "lon": 19.1151,
+      "n": 3,
+      "name": "Sombor",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 44.1425,
+      "lon": 21.54,
+      "n": 4,
+      "name": "Manasija &|Krupajsko Vrelo",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 43.268,
+      "lon": 20.8263,
+      "n": 5,
+      "name": "Kopaonik",
+      "no_number": true
+    },
+    {
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "lat": 42.6629,
+      "lon": 21.1655,
+      "n": 6,
+      "name": "Prishtina",
+      "no_number": true
     }
-  ],
-  "country_labels": [
-    {
-      "name": "Serbia",
-      "lat": 44.3,
-      "lon": 20.0,
-      "size": 13,
-      "weight": 700,
-      "ls": 2.5,
-      "color": "#4F6358"
-    },
-    {
-      "name": "Hungary",
-      "lat": 46.35,
-      "lon": 20.2,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Romania",
-      "lat": 45.3,
-      "lon": 22.4,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Bosnia",
-      "lat": 44.2,
-      "lon": 18.4,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Croatia",
-      "lat": 45.55,
-      "lon": 18.3,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Bulgaria",
-      "lat": 43.3,
-      "lon": 23.2,
-      "size": 9,
-      "weight": 600,
-      "ls": 2.5,
-      "color": "#A2ACA5"
-    },
-    {
-      "name": "Kosovo",
-      "lat": 42.55,
-      "lon": 20.95,
-      "size": 9,
-      "weight": 600,
-      "ls": 1.8,
-      "color": "#A2ACA5"
-    }
-  ],
-  "crop_bounds": [
-    17.8,
-    42.0,
-    23.4,
-    46.4
   ]
 }

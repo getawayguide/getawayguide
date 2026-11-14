@@ -38,7 +38,8 @@
   const typeOf = t => TYPES[t] ? t : 'personal';
   const S = { root: null, state: 'loading', error: '', countries: [], slug: store.get('country', ''), type: typeOf(store.get('type', 'personal')),
               views: { personal: store.get('view:personal', 'all'), blog: store.get('view:blog', 'layout') }, article: { personal: '', blog: '' },
-              renders: null, rendersFor: null, job: null, light: null, loadedAt: 0, busy: false, pg: null, pgFor: null, synced: false };
+              renders: null, rendersFor: null, job: null, light: null, loadedAt: 0, busy: false, pg: null, pgFor: null, synced: false,
+              post: null, postFor: null, ig: { i: 0, more: false, grid: store.get('iggrid', '') === '1' } };
   if (S.views.personal === 'shortlist') S.views.personal = 'final';           // the old Shortlist view (2026-11-11)
   for (const t of Object.keys(TYPES)) if (!TYPES[t].views.some(v => v[0] === S.views[t])) S.views[t] = TYPES[t].home;
   // the feed ratios Instagram takes: Meta's publishing docs allow 4:5 to 1.91:1, and since May 2025 the app takes 3:4 too
@@ -172,6 +173,60 @@
   #so-lib .btn{font:600 .62rem/1 'Hanken Grotesk',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:999px;padding:.62rem 1rem;border:1px solid #E7E6DF;background:#fff;color:#1C2821;min-height:34px}
   #so-lib .btn.primary{background:#2D6B50;border-color:#2D6B50;color:#fff} #so-lib .btn[disabled]{opacity:.55;cursor:default}
   @media (max-width:700px){#so-lib{padding:0}#so-lib .box{border-radius:0;height:100%}#so-lib .grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:10px}}
+  /* the Post view (Kevin, 2026-11-11: "can the post tab show how it would look on IG?"): the Instagram preview on the
+     left, the email card and the rendered files on the right. Inside the phone card Instagram's own type and colors. */
+  .so-post{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:32px;align-items:start}
+  .so-ig-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;max-width:400px}
+  .so-ig-head .so-group{margin:0}
+  .so-ig-phone{width:100%;max-width:400px;box-sizing:border-box;background:#fff;border:1px solid var(--so-line);border-radius:14px;overflow:hidden;color:#000;
+    font:400 14px/18px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;box-shadow:0 1px 2px rgba(28,40,33,.04),0 10px 30px rgba(28,40,33,.07)}
+  .so-ig-top{display:flex;align-items:center;gap:10px;padding:10px 6px 10px 12px}
+  .so-ig-av{width:32px;height:32px;border-radius:50%;border:1px solid #dbdbdb;object-fit:cover;flex:none;box-sizing:border-box;background:#fafafa}
+  .so-ig-top .who{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+  .so-ig-top b{font-weight:600;font-size:14px} .so-ig-top span{font-size:12px;color:#262626}
+  .so-ig-ib{background:none;border:0;padding:7px;color:#000;display:grid;place-items:center;cursor:default}
+  .so-ig-ib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .so-ig-ib.dots svg{fill:currentColor;stroke:none}
+  .so-ig-media{position:relative;overflow:hidden;background:#efefef;touch-action:pan-y;user-select:none;-webkit-user-select:none;outline:none;cursor:grab}
+  .so-ig-media.drag{cursor:grabbing} .so-ig-media:focus-visible{box-shadow:inset 0 0 0 2px #0095f6}
+  .so-ig-track{display:flex;height:100%;transition:transform .32s ease;will-change:transform}
+  .so-ig-track>*{flex:0 0 100%;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+  .so-ig-count{position:absolute;top:12px;right:12px;background:rgba(18,18,18,.72);color:#fff;font-size:12px;font-weight:600;line-height:1;padding:6px 8px;border-radius:13px;font-variant-numeric:tabular-nums}
+  .so-ig-nav{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.88);border:0;display:grid;place-items:center;cursor:pointer;
+    opacity:0;transition:opacity .15s;box-shadow:0 0 5px rgba(0,0,0,.18);padding:0;color:#262626}
+  .so-ig-media:hover .so-ig-nav,.so-ig-nav:focus-visible{opacity:1} .so-ig-nav.l{left:8px} .so-ig-nav.r{right:8px} .so-ig-nav[hidden]{display:none}
+  .so-ig-nav svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .so-ig-acts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:4px 4px 2px}
+  .so-ig-acts .l{display:flex} .so-ig-acts .r{justify-self:end}
+  .so-ig-dots{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;max-width:150px}
+  .so-ig-dots i{width:6px;height:6px;border-radius:50%;background:#a8a8a8;transition:background .2s}
+  .so-ig-dots i.on{background:#0095f6}
+  .so-ig-cap{padding:2px 12px 0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+  .so-ig-cap b{font-weight:600} .so-ig-cap .tag{color:#00376b} .so-ig-cap i{color:#737373}
+  .so-ig-more{background:none;border:0;padding:0;color:#737373;font:inherit;cursor:pointer}
+  .so-ig-more:hover{color:#262626} .so-ig-more:focus-visible{outline:2px solid #0095f6;outline-offset:1px;border-radius:2px}
+  .so-ig-time{padding:8px 12px 14px;font-size:12px;color:#737373}
+  .so-ig-prof{display:flex;align-items:center;gap:18px;padding:18px 16px 14px}
+  .so-ig-prof .so-ig-av{width:76px;height:76px}
+  .so-ig-prof b{font-size:17px;font-weight:600;display:block;margin-bottom:4px} .so-ig-prof span{font-size:13px;color:#737373}
+  .so-ig-gtab{display:flex;justify-content:center;border-top:1px solid #dbdbdb}
+  .so-ig-gtab span{border-top:1px solid #000;margin-top:-1px;padding:10px 26px;display:grid;place-items:center}
+  .so-ig-gtab svg{width:20px;height:20px;fill:none;stroke:#000;stroke-width:1.8}
+  .so-ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+  .so-ig-grid .tile{aspect-ratio:3/4;background:#efefef;position:relative;overflow:hidden}
+  .so-ig-grid .tile.old{background:#f3f3f3}
+  .so-ig-grid .tile>img,.so-ig-grid .tile>canvas{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+  .so-ig-grid .multi{position:absolute;top:7px;right:7px;width:18px;height:18px;fill:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.45))}
+  .so-ig-note{font-size:12px;color:var(--so-mute);margin:9px 2px 0;max-width:400px;line-height:1.5}
+  .so-ig-empty{padding:40px 22px;text-align:center;color:#737373;font-size:13px;line-height:1.5}
+  .so-mail{background:var(--so-soft);border:1px solid var(--so-line);border-radius:10px;padding:14px 16px;margin:0 0 26px;max-width:720px}
+  .so-mail .so-group{margin-bottom:8px}
+  .so-mail p{margin:0;line-height:1.55;color:var(--so-ink)} .so-mail p+p,.so-mail p+.so-btn,.so-mail p+.so-mail-st{margin-top:10px}
+  .so-mail .warn{color:var(--so-amber)} .so-mail .faint{color:var(--so-mute);font-size:12px}
+  .so-mail-st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--so-mute)}
+  .so-mail-st.run::before{content:'';width:10px;height:10px;border-radius:50%;border:2px solid var(--so-line);border-top-color:var(--so-green);animation:so-spin .8s linear infinite;flex:none}
+  .so-mail-st.ok{color:var(--so-green);font-weight:600} .so-mail-st.bad{color:var(--so-red)}
+  @media (max-width:900px){.so-post{grid-template-columns:minmax(0,1fr);gap:24px}}
   @media (max-width:700px){.so-wrap{padding:12px 12px 0}.so-country{font-size:1.5rem}.so-meta{display:none}.so-top{gap:10px 12px}.so-seg{order:5;width:100%;justify-content:stretch}.so-seg button{flex:1;text-align:center}
     .so-seg.sm{order:0;width:auto}.so-seg.sm button{flex:none;padding:6px 8px}
     .so-btn.art span,.so-tabs .acts .so-btn span{display:none}.so-btn.art{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%}.so-tabs .acts{margin-left:0;width:100%;justify-content:flex-start}.so-body{margin-bottom:12px}
@@ -186,9 +241,20 @@
     copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
     down: '<svg viewBox="0 0 24 24"><path d="M12 3v13M6 10l6 6 6-6M4 21h16"/></svg>', refresh: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>',
     plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-    eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+    eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>'
   };
-  const SHORTCUTS = 'Keyboard shortcuts\nArrows  move around the grid\nShift+arrows  move the photo\n1–0  into slide 1–10\nS  into the Shortlist (again: out)\nDelete  out of its slot\nA  archive\nEnter  edit (crop and tilt)\nP or Space  preview\nEsc  close';
+  // Instagram's own glyphs for the preview (outline, 24 px)
+  const IG = {
+    heart: '<svg viewBox="0 0 24 24"><path d="M16.8 3.9c-2 0-3.6 1.1-4.8 2.8-1.2-1.7-2.8-2.8-4.8-2.8C4.3 3.9 2 6.3 2 9.3c0 5.4 7.6 10.3 10 11.7 2.4-1.4 10-6.3 10-11.7 0-3-2.3-5.4-5.2-5.4z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24"><path d="M20.66 16.92A9.5 9.5 0 1 0 17.1 20.3L22 21.5z"/></svg>',
+    share: '<svg viewBox="0 0 24 24"><path d="M22 3 9.2 10.1M22 3 15 21.5l-5.8-11.4L2 7.6z"/></svg>',
+    save: '<svg viewBox="0 0 24 24"><path d="M19.5 21 12 14.6 4.5 21V3h15z"/></svg>',
+    dots: '<svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg>',
+    grid: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>',
+    multi: '<svg viewBox="0 0 48 48"><path d="M34.8 29.7V11c0-2.9-2.3-5.2-5.2-5.2H11c-2.9 0-5.2 2.3-5.2 5.2v18.7c0 2.9 2.3 5.2 5.2 5.2h18.7c2.8-.1 5.1-2.4 5.1-5.2zM39.2 15v16.1c0 4.5-3.7 8.2-8.2 8.2H14.9c-.6 0-.9.7-.5 1.1 1 1.1 2.4 1.8 4.1 1.8h13.4c5.7 0 10.3-4.6 10.3-10.3V18.5c0-1.6-.7-3.1-1.8-4.1-.5-.4-1.2 0-1.2.6z"/></svg>'
+  };
+  const SHORTCUTS = 'Keyboard shortcuts\nArrows  move around the grid\nShift+arrows  move the photo\n1–0  into slide 1–10\nS  into the Shortlist (again: out)\nDelete  out of its slot\nA  archive\nEnter  edit (crop and tilt)\nClick, P or Space  preview\nEsc  close';
 
   // ------------------------------------------------------------------ api
   async function api(path, body) {
@@ -218,7 +284,7 @@
       if (e.status === 404) S.state = 'old'; else if (e.status === 0) S.state = 'down'; else { S.state = S.countries.length ? 'ok' : 'error'; S.error = e.message; }
     }
     render();
-    if (S.state === 'ok' && S.slug) loadRenders();
+    if (S.state === 'ok' && S.slug) { loadRenders(); if (S.type === 'personal' && view() === 'renders') loadPost(); }
   }
   async function loadRenders() {
     const slug = S.slug; if (!slug) return;
@@ -240,8 +306,41 @@
     S.jobT = setTimeout(async () => {
       try { const j = await api('/api/social/job/' + S.job.id); S.job = j.job; } catch (e) { S.job = null; render(); return; }
       if (['queued', 'running'].includes(S.job.status)) { render(); pollJob(); }
-      else { render(); toast(S.job.status === 'done' ? 'Rendered.' : 'The render failed; the log is below.', S.job.status !== 'done'); loadRenders(); load(true); }
+      else if (S.job.kind === 'email') { toast(S.job.status === 'done' ? 'Sent. Check your phone.' : 'The email failed: ' + (S.job.error || 'see the log below'), S.job.status !== 'done'); loadPost(); loadRenders(); }
+      else { render(); toast(S.job.status === 'done' ? 'Rendered.' : 'The render failed; the log is below.', S.job.status !== 'done'); loadRenders(); loadPost(); load(true); }
     }, 1500);
+  }
+  // the Post view's data: the Final row with its crops, caption, render (and whether it is stale) and the last email
+  async function loadPost() {
+    const slug = S.slug; if (!slug) return;
+    const was = S.postFor === slug && S.post && S.post.email ? S.post.email.status : null;
+    try {
+      const p = await api('/api/social/' + encodeURIComponent(slug) + '/post');
+      if (slug !== S.slug) return;
+      S.post = p; S.postFor = slug;
+      if (was === 'requested' && p.email && p.email.status === 'sent') toast('Sent. Check your phone.');
+      else if (was === 'requested' && p.email && p.email.status === 'failed') toast('The email failed: ' + (p.email.error || ''), true);
+      render();
+    } catch (e) { if (slug === S.slug && e.status === 404 && !e.body) { S.post = { missing: true }; S.postFor = slug; render(); } }   // a photo server from before the route
+    pollMail();
+  }
+  // a request Claude sends (no Gmail keys in .env): look again every 5 s while the Post view is open
+  function pollMail() {
+    clearTimeout(S.mailT);
+    const e = S.post && S.post.email;
+    if (!e || e.status !== 'requested') return;
+    S.mailT = setTimeout(() => { const a = $('#app-social'); if ((!a || !a.hidden) && S.type === 'personal' && view() === 'renders') loadPost(); else pollMail(); }, 5000);
+  }
+  async function sendEmail() {
+    if (S.busy || !S.slug) return;
+    const slug = S.slug; S.busy = true; render();
+    try {
+      const j = await api('/api/social/' + encodeURIComponent(slug) + '/email', {});
+      if (S.postFor === slug && S.post) S.post.email = j.email;
+      if (j.job) { S.job = j.job; pollJob(); toast('Sending to your phone…'); }
+      else { toast(j.already ? 'Already requested: Claude sends it in a moment.' : 'Requested: Claude sends it in a moment.'); pollMail(); }
+    } catch (e) { toast(e.status === 0 ? 'The photo server is not answering.' : e.status === 404 && !e.body ? 'The photo server needs a restart for email (re-click the Editor Suite shortcut).' : e.message, true); loadPost(); }
+    finally { S.busy = false; render(); }
   }
   async function seed() {
     if (S.busy) return; S.busy = true; render();
@@ -332,7 +431,15 @@
       const canRender = pg && (personal ? k.final > 0 : hasPlan);
       const renderBtn = pg && (personal || hasPlan) ? `<button class="so-btn sm primary" data-act="rendernow" ${off || !canRender ? 'disabled' : ''} title="${personal ? (k.final ? 'Render the Final row at 1080 px from the originals' : 'Put a photo in the Final row first') : 'Render the carousel at 1080 × 1350'}">Render</button>` : '';
       acts = `${jobLine}${filter}${ratio}${add}${prev}${help}${seedBtn}${renderBtn}`;
-    } else if (v === 'renders') acts = `${jobLine}${rbtn('free', 'Render the post', true, 'Render the Final row from the originals at 1080 px (tools/ig_post.py)', true)}`;
+    } else if (v === 'renders') {
+      // Email to my phone: only a render that still matches the Final row goes out (the card under it says why not)
+      const P = S.postFor === c.slug && S.post && !S.post.missing ? S.post : null, rs = P ? P.render.state : '';
+      const sending = !!(job && job.kind === 'email' && ['queued', 'running'].includes(job.status)) || !!(P && P.email && P.email.status === 'sending');
+      const why = !P ? 'Loading' : sending ? 'Sending it now' : rs === 'ok' ? 'Email the rendered slides at full quality, numbered in order, with the caption on top, to your phone'
+        : rs === 'stale' ? 'The render is out of date: render again first' : rs === 'rendering' ? 'A render is running' : 'Render the post first';
+      acts = `${jobLine}<button class="so-btn sm" data-act="email" ${P && rs === 'ok' && !off && !sending ? '' : 'disabled'} title="${esc(why)}">${I.mail}Email to my phone</button>`
+        + rbtn('free', 'Render the post', true, 'Render the Final row from the originals at 1080 px (tools/ig_post.py)', true);
+    }
     else if (v === 'slides') acts = `${jobLine}${rbtn('carousel', 'Render the carousel', hasPlan, hasPlan ? 'Render the slides at 1080 × 1350 from the originals (tools/ig_carousel.py)' : 'No plan yet: seed one or lay it out in Layout', true)}`;
     else if (v === 'stories') acts = S.type === 'blog'
       ? `${jobLine}${rbtn('stories-carousel', 'Render stories', hasPlan, hasPlan ? 'Story frames at 1080 × 1920: cover, route map, one per stop, call to action (tools/ig_story.py)' : 'No plan yet: seed one or lay it out in Layout', true)}`
@@ -362,7 +469,9 @@
     }
     if (!panel) { panel = document.createElement('div'); panel.className = 'so-panel'; body.appendChild(panel); }
     frame.hidden = !isMaker(); panel.hidden = isMaker();
+    if (igDrag && v === 'renders' && !isMaker()) return;          // never pull the carousel from under a drag (a job poll re-draws)
     panel.innerHTML = isMaker() ? '' : v === 'renders' ? renderFree(c, rd, job) : v === 'slides' ? renderSlides(c, rd, job) : v === 'stories' ? renderStories(c, rd, job) : renderPins(c, rd, job);
+    if (!isMaker() && v === 'renders') paintIg();
     renderLight();
   }
   function renderMaker(c) {
@@ -378,11 +487,151 @@
   const slideKey = f => f.name.replace(/\.png$/, '').replace(/^\d+-/, '');
   function renderFree(c, rd, job) {
     if (!rd) return '<div class="so-empty">Loading…</div>';
-    let h = failLog(job) + `<div class="so-group" title="1080 px wide · also in Pictures\\IG\\${esc(c.slug)}">The post <span class="n">${rd.free.length}</span></div>`;
-    const ar = S.pg && S.pgFor === c.slug && S.pg.aspect ? S.pg.aspect : '4:5';
-    h += rd.free.length ? thumbs(rd.free, 'f', (f, i) => i + 1).replace('<div class="so-grid f', `<div style="--so-ar:${arCss(ar)}" class="so-grid f`) + capBox((rd.free_caption || '').trim() + (rd.free_notes ? '\n\n' + rd.free_notes.trim() : ''), 'so-cap-f')
+    const P = S.postFor === c.slug ? S.post : null;
+    let side = `<div class="so-group" title="1080 px wide · also in Pictures\\IG\\${esc(c.slug)}">The post <span class="n">${rd.free.length}</span></div>`;
+    const ar = P && !P.missing ? ((P.slides[0] && P.slides[0].aspect) || P.aspect) : S.pg && S.pgFor === c.slug && S.pg.aspect ? S.pg.aspect : '4:5';
+    side += rd.free.length ? thumbs(rd.free, 'f', (f, i) => i + 1).replace('<div class="so-grid f', `<div style="--so-ar:${arCss(ar)}" class="so-grid f`) + capBox((rd.free_caption || '').trim() + (rd.free_notes ? '\n\n' + rd.free_notes.trim() : ''), 'so-cap-f')
       : '<div class="so-empty">No render yet. Fill the Final row in Shortlist, then press Render.</div>';
-    return h;
+    const ig = !P ? '<div class="so-empty">Loading the preview…</div>'
+      : P.missing ? '<div class="so-empty">The photo server needs a restart for the Instagram preview: re-click the Editor Suite shortcut.</div>' : igBlock(c, P);
+    return failLog(job) + `<div class="so-post"><div class="so-post-ig">${ig}</div><div class="so-post-side">${P && !P.missing ? mailCard(c, P, job) : ''}${side}</div></div>`;
+  }
+
+  // ------------------------------------------------------------------ the Instagram preview (Post view)
+  // How the Personal post looks in the feed: the account, the carousel at the post's ratio (the rendered files when they
+  // are current, else the Final row's photos cut by their crops, the same math as the page and ig_post.py), the dots,
+  // the action row and the caption cut like Instagram's (about 125 characters, then "more"). "Profile grid" shows the
+  // cover as the grid tile: 3:4, cut around its center (Instagram's grid since January 2025).
+  const ASPECT = { '4:5': 5 / 4, '3:4': 4 / 3, '1:1': 1, '1.91:1': 1 / 1.91 };
+  function clampCrop(c, W, H, ratio) {                      // tools/ig_post_page.html clampCrop (= ig_post.py clamp_crop)
+    const rot = Math.max(-45, Math.min(45, +c.rot || 0));
+    const th = rot * Math.PI / 180, cs = Math.abs(Math.cos(th)), sn = Math.abs(Math.sin(th));
+    const fwMax = Math.min(W / (cs + ratio * sn), H / (sn + ratio * cs));
+    let fw = Math.min((+c.w || 1) * W, fwMax); fw = Math.max(fw, Math.min(fwMax, .05 * W));
+    const fh = fw * ratio, hx = fw / 2 * cs + fh / 2 * sn, hy = fw / 2 * sn + fh / 2 * cs;
+    const cx = Math.min(Math.max((c.cx ?? .5) * W, hx), W - hx), cy = Math.min(Math.max((c.cy ?? .5) * H, hy), H - hy);
+    return { cx: cx / W, cy: cy / H, w: fw / W, rot };
+  }
+  const imgCache = new Map();
+  function loadImg(url) {
+    if (imgCache.has(url)) return imgCache.get(url);
+    const p = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; });
+    imgCache.set(url, p); p.catch(() => imgCache.delete(url)); return p;
+  }
+  function paintIg() {
+    const P = S.post; if (!P || P.missing) return;
+    const r = root(); if (!r) return;
+    r.querySelectorAll('canvas.so-igc').forEach(cv => {
+      const s = P.slides[+cv.dataset.k]; if (!s) return;
+      loadImg(API + s.blob).then(img => {
+        if (!cv.isConnected) return;
+        const W = s.w || img.naturalWidth, H = s.h || img.naturalHeight;
+        const c = clampCrop(Object.assign({ cx: .5, cy: .5, w: 1, rot: 0 }, s.crop || {}), W, H, ASPECT[s.aspect] || 1.25);
+        const ctx = cv.getContext('2d'), cw = cv.width, ch = cv.height, iw = img.naturalWidth, ih = img.naturalHeight, k = cw / (c.w * iw);
+        ctx.save(); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
+        ctx.translate(cw / 2, ch / 2); ctx.rotate(c.rot * Math.PI / 180); ctx.scale(k, k); ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, -c.cx * iw, -c.cy * ih); ctx.restore(); cv.dataset.painted = '1';
+      }).catch(() => {});
+    });
+  }
+  // the slides the preview shows: the rendered files when they match the Final row, else the crops
+  const igFromRender = P => P.render && P.render.state === 'ok' && P.render.files.length === P.slides.length;
+  function igSlide(P, k, cls) {
+    if (igFromRender(P)) { const f = P.render.files[k]; return `<img class="${cls || ''}" src="${esc(API + f.url)}?t=${Math.round(f.mtime)}" alt="Slide ${k + 1}" draggable="false">`; }
+    const s = P.slides[k], w = 720;
+    return `<canvas class="so-igc ${cls || ''}" data-k="${k}" width="${w}" height="${Math.round(w * (ASPECT[s.aspect] || 1.25))}" aria-label="Slide ${k + 1}"></canvas>`;
+  }
+  function igCaption(P, handle) {
+    const full = (P.caption || '') + (P.hashtags ? (P.caption ? '\n\n' : '') + P.hashtags : '');
+    if (!full.trim()) return `<div class="so-ig-cap"><b>${esc(handle)}</b> <i>No caption yet: write it in the Caption tab.</i></div>`;
+    const tags = t => esc(t).replace(/(^|[\s(])(#[\p{L}\p{N}_]+)/gu, '$1<span class="tag">$2</span>');
+    // Instagram's feed shows about 125 characters (and never past the first line break), then "… more"
+    let cut = null;
+    const nl = full.indexOf('\n');
+    if (nl >= 0 && nl <= 125) cut = full.slice(0, nl);
+    else if (full.length > 125) { cut = full.slice(0, 125); const sp = cut.lastIndexOf(' '); if (sp > 90) cut = cut.slice(0, sp); }
+    if (cut === null || S.ig.more) return `<div class="so-ig-cap" data-full="1"><b>${esc(handle)}</b> ${tags(full)}</div>`;
+    return `<div class="so-ig-cap"><b>${esc(handle)}</b> ${tags(cut.trimEnd())}<button type="button" class="so-ig-more" data-act="igmore" aria-label="Show the whole caption">… more</button></div>`;
+  }
+  function igBlock(c, P) {
+    const n = P.slides.length, a = (P.slides[0] && P.slides[0].aspect) || P.aspect, handle = P.handle || 'getawayguide';
+    S.ig.i = Math.max(0, Math.min(S.ig.i, n - 1));
+    const i = S.ig.i, av = `<img class="so-ig-av" src="${esc(siteUrl(P.avatar || 'Images/web/icons/icon-192.png'))}" alt="">`;
+    const head = `<div class="so-ig-head"><span class="so-group">On Instagram</span><div class="so-seg sm" role="group" aria-label="Preview">
+        <button type="button" class="${S.ig.grid ? '' : 'on'}" data-act="iggrid" data-grid="0" aria-pressed="${!S.ig.grid}">Post</button>
+        <button type="button" class="${S.ig.grid ? 'on' : ''}" data-act="iggrid" data-grid="1" aria-pressed="${S.ig.grid}" title="The cover as your profile grid shows it: 3:4, cut around its center">Profile grid</button></div></div>`;
+    if (!n) return head + `<div class="so-ig-phone"><div class="so-ig-empty">Put photos in the Final row (Shortlist) and the post shows here as Instagram will show it.</div></div>`;
+    const src = igFromRender(P) ? `The rendered files: ${n} slide${n > 1 ? 's' : ''} at ${a}.`
+      : P.render.state === 'stale' ? `From your crops: the render is out of date (${esc(P.render.reason)}).` : 'From your crops: not rendered yet.';
+    if (S.ig.grid) {
+      const tiles = [`<div class="tile">${igSlide(P, 0)}${n > 1 ? IG.multi.replace('<svg ', '<svg class="multi" aria-label="Carousel" ') : ''}</div>`]
+        .concat(Array.from({ length: 5 }, () => '<div class="tile old" aria-hidden="true"></div>')).join('');
+      return head + `<div class="so-ig-phone so-ig-gridview"><div class="so-ig-prof">${av}<div><b>${esc(handle)}</b><span>Your newest post leads the grid</span></div></div>
+          <div class="so-ig-gtab"><span>${IG.grid}</span></div><div class="so-ig-grid">${tiles}</div></div>
+        <div class="so-ig-note">The grid shows the cover cut to 3:4 around its center${a === '3:4' ? ' (your 3:4 post fits it exactly)' : ''}. ${src}</div>`;
+    }
+    const slides = P.slides.map((s, k) => igSlide(P, k)).join('');
+    const dots = n > 1 ? `<span class="so-ig-dots" aria-hidden="true">${P.slides.map((s, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</span>` : '<span></span>';
+    return head + `<div class="so-ig-phone">
+        <div class="so-ig-top">${av}<div class="who"><b>${esc(handle)}</b><span>${esc(P.country || c.country)}</span></div><span class="so-ig-ib dots" aria-hidden="true">${IG.dots}</span></div>
+        <div class="so-ig-media" tabindex="0" style="aspect-ratio:${arCss(a)}" role="region" aria-roledescription="carousel" aria-label="Slide ${i + 1} of ${n}">
+          <div class="so-ig-track" style="transform:translateX(${-i * 100}%)">${slides}</div>
+          ${n > 1 ? `<span class="so-ig-count">${i + 1}/${n}</span>
+          <button type="button" class="so-ig-nav l" data-act="igstep" data-d="-1" aria-label="Previous slide" ${i === 0 ? 'hidden' : ''}>${I.left}</button>
+          <button type="button" class="so-ig-nav r" data-act="igstep" data-d="1" aria-label="Next slide" ${i >= n - 1 ? 'hidden' : ''}>${I.right}</button>` : ''}
+        </div>
+        <div class="so-ig-acts"><span class="l"><span class="so-ig-ib">${IG.heart}</span><span class="so-ig-ib">${IG.comment}</span><span class="so-ig-ib">${IG.share}</span></span>${dots}<span class="r"><span class="so-ig-ib">${IG.save}</span></span></div>
+        ${igCaption(P, handle)}
+        <div class="so-ig-time">Just now</div></div>
+      <div class="so-ig-note">${src}</div>`;
+  }
+  // move the carousel without re-drawing the tab (a drag or an arrow keeps its place)
+  function igGo(k) {
+    const P = S.post; if (!P || P.missing) return;
+    const n = P.slides.length; S.ig.i = Math.max(0, Math.min(n - 1, k));
+    const r = root(), m = r && r.querySelector('.so-ig-media'); if (!m) return;
+    const tr = m.querySelector('.so-ig-track'); tr.style.transition = ''; tr.style.transform = `translateX(${-S.ig.i * 100}%)`;
+    const cnt = m.querySelector('.so-ig-count'); if (cnt) cnt.textContent = (S.ig.i + 1) + '/' + n;
+    m.setAttribute('aria-label', `Slide ${S.ig.i + 1} of ${n}`);
+    const l = m.querySelector('.so-ig-nav.l'), rr = m.querySelector('.so-ig-nav.r'); if (l) l.hidden = S.ig.i === 0; if (rr) rr.hidden = S.ig.i >= n - 1;
+    r.querySelectorAll('.so-ig-dots i').forEach((d, k2) => d.classList.toggle('on', k2 === S.ig.i));
+  }
+  let igDrag = null;
+  function igDown(e) {
+    const m = e.target.closest && e.target.closest('.so-ig-media');
+    if (!m || e.button !== 0 || e.target.closest('.so-ig-nav') || !S.post || S.post.slides.length < 2) return;
+    igDrag = { x: e.clientX, dx: 0, m, w: m.clientWidth, tr: m.querySelector('.so-ig-track') };
+    igDrag.tr.style.transition = 'none'; m.classList.add('drag');
+    try { m.setPointerCapture(e.pointerId); } catch (x) {}
+  }
+  function igMove(e) {
+    if (!igDrag) return;
+    igDrag.dx = e.clientX - igDrag.x;
+    const n = S.post.slides.length, edge = (S.ig.i === 0 && igDrag.dx > 0) || (S.ig.i === n - 1 && igDrag.dx < 0);
+    igDrag.tr.style.transform = `translateX(calc(${-S.ig.i * 100}% + ${edge ? igDrag.dx / 3 : igDrag.dx}px))`;
+  }
+  function igUp() {
+    if (!igDrag) return;
+    const d = igDrag.dx, w = igDrag.w; igDrag.m.classList.remove('drag'); igDrag = null;
+    igGo(S.ig.i + (d < -Math.min(60, w / 5) ? 1 : d > Math.min(60, w / 5) ? -1 : 0));
+  }
+  function mailCard(c, P, job) {
+    const R = P.render, E = P.email, n = R.files.length, mb = (R.total_bytes / 1e6).toFixed(1), pad = x => String(x).padStart(2, '0');
+    let h = '<div class="so-mail"><div class="so-group">Email to my phone</div>';
+    if (R.state === 'none') h += '<p>Render the post first, then email it to your phone: the slides at full quality, numbered 01.jpg, 02.jpg … in order, with the caption at the top.</p>';
+    else if (R.state === 'rendering') h += '<p>Rendering. You can email it when the render is done.</p>';
+    else if (R.state === 'stale') h += `<p class="warn">The render is out of date: ${esc(R.reason)}. Render again before you email it, so the phone gets what you see.</p><button class="so-btn sm" data-act="render" data-kind="free">Render again</button>`;
+    else h += `<p>${n} slide${n === 1 ? '' : 's'}, ${mb} MB: the rendered files themselves at full quality, named 01.jpg to ${pad(n)}.jpg, with the caption and hashtags at the top of the email, ready to copy.${R.emails > 1 ? ` It comes in ${R.emails} emails (Gmail takes 25 MB each).` : ''}</p>`;
+    const sendJob = job && job.kind === 'email' ? job : null;
+    const t = iso => { if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return iso; const same = d.toDateString() === new Date().toDateString();
+      return (same ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ') + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
+    if (sendJob && ['queued', 'running'].includes(sendJob.status)) h += `<p class="so-mail-st run">Sending… ${esc((sendJob.log || '').trim().split('\n').pop() || '')}</p>`;
+    else if (E && E.status === 'sending') h += '<p class="so-mail-st run">Sending…</p>';
+    else if (E && E.status === 'requested') h += '<p class="so-mail-st run">Requested. Claude sends it in a moment.</p>';
+    else if (E && E.status === 'sent') h += `<p class="so-mail-st ok">Sent ${esc(t(E.sent_at))}${E.emails > 1 ? ` in ${E.emails} emails` : ''} · ${E.slides} slide${E.slides === 1 ? '' : 's'}</p>`;
+    else if (E && E.status === 'failed') h += `<p class="so-mail-st bad">Failed: ${esc(E.error || 'unknown')}</p>`;
+    if (!P.direct) h += '<p class="faint">No Gmail keys in .env on this server, so Claude sends it for you from your Gmail.</p>';
+    return h + '</div>';
   }
   function renderSlides(c, rd, job) {
     if (!rd) return '<div class="so-empty">Loading…</div>';
@@ -503,13 +752,13 @@
   function closeLib() { const v = $('#so-lib'); if (v) { v.hidden = true; v.innerHTML = ''; } }
 
   // ------------------------------------------------------------------ events
-  function setView(id) { S.views[S.type] = id; store.set('view:' + S.type, id); render(); if (isMaker()) sync(); else loadRenders(); }
+  function setView(id) { S.views[S.type] = id; store.set('view:' + S.type, id); render(); if (isMaker()) sync(); else { loadRenders(); if (id === 'renders') loadPost(); } }
   function onClick(e) {
     const r = root(); if (!r || !r.contains(e.target)) return;
     const el = e.target.closest('[data-act]'); if (!el) return;
     const act = el.dataset.act;
     if (act === 'reload') { e.preventDefault(); load(); return; }
-    if (act === 'type') { const t = typeOf(el.dataset.type); if (t === S.type) return; S.type = t; store.set('type', t); S.job = null; render(); if (isMaker()) sync(); else loadRenders(); return; }
+    if (act === 'type') { const t = typeOf(el.dataset.type); if (t === S.type) return; S.type = t; store.set('type', t); S.job = null; render(); if (isMaker()) sync(); else { loadRenders(); if (t === 'personal' && view() === 'renders') loadPost(); } return; }
     if (act === 'view') { setView(el.dataset.view); return; }
     if (act === 'render') { startRender(el.dataset.kind); return; }
     if (act === 'rendernow') { renderNow(); return; }
@@ -519,11 +768,16 @@
     if (act === 'seed') { seed(); return; }
     if (act === 'help') { toast(SHORTCUTS.replace(/\n/g, ' · ')); return; }
     if (act === 'light') { openLight(el.dataset.set, +el.dataset.i); return; }
+    if (act === 'email') { sendEmail(); return; }
+    if (act === 'igstep') { igGo(S.ig.i + (+el.dataset.d || 0)); return; }
+    if (act === 'igmore') { S.ig.more = true; render(); return; }
+    if (act === 'iggrid') { S.ig.grid = el.dataset.grid === '1'; store.set('iggrid', S.ig.grid ? '1' : ''); render(); return; }
     if (act === 'copy') { const box = document.getElementById(el.dataset.for); const text = box ? box.textContent : ''; (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast('Copied.'), () => toast('Could not copy.', true)); }
   }
   function onChange(e) {
     const r = root(); if (!r || !r.contains(e.target)) return;
-    if (e.target.matches('[data-act="country"]')) { S.slug = e.target.value; store.set('country', S.slug); S.renders = null; S.rendersFor = null; S.job = null; S.article = { personal: '', blog: '' }; render(); loadRenders(); }
+    if (e.target.matches('[data-act="country"]')) { S.slug = e.target.value; store.set('country', S.slug); S.renders = null; S.rendersFor = null; S.job = null; S.article = { personal: '', blog: '' };
+      S.post = null; S.postFor = null; S.ig.i = 0; S.ig.more = false; render(); loadRenders(); if (S.type === 'personal' && view() === 'renders') loadPost(); }
     else if (e.target.matches('[data-act="article"]')) { S.article[S.type] = e.target.value; render(); sync(); }
   }
 
@@ -533,12 +787,16 @@
     const r = root(); if (!r || r.dataset.soMounted) { if (r) load(); return; }
     r.dataset.soMounted = '1';
     r.addEventListener('click', onClick); r.addEventListener('change', onChange);
+    r.addEventListener('pointerdown', igDown); r.addEventListener('pointermove', igMove);
+    r.addEventListener('pointerup', igUp); r.addEventListener('pointercancel', igUp);
+    r.addEventListener('keydown', e => { if (!e.target.matches || !e.target.matches('.so-ig-media')) return;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); igGo(S.ig.i - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); igGo(S.ig.i + 1); } });
     load();
   }
   function show() {
     const r = root(); if (!r) return;
     if (!r.dataset.soMounted) return mount();
-    if (Date.now() - S.loadedAt > 30000) load(true); else { render(); if (!isMaker()) loadRenders(); }
+    if (Date.now() - S.loadedAt > 30000) load(true); else { render(); if (!isMaker()) loadRenders(); if (S.type === 'personal' && view() === 'renders') loadPost(); }
   }
   window.__socialShow = show;
   window.__socialMount = mount;

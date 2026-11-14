@@ -1,0 +1,276 @@
+{
+  "slug": "mtskheta-gori-routes",
+  "page": "Drafts/Upcoming/georgia/mtskheta-gori-day-trip.html",
+  "outline_file": "tools/itinerary_maps/geo/svaneti-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.15,
+  "country_width": 1000,
+  "margins": {
+    "l": 200,
+    "r": 200,
+    "t": 120,
+    "b": 120
+  },
+  "crop_bounds": [
+    40.95,
+    41.25,
+    45.5,
+    43.25
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/svaneti-routes-neighbors.json",
+      "under": true,
+      "fill": "#EFF0EB",
+      "stroke": "#D5DAD3",
+      "width": 0.9
+    }
+  ],
+  "stops": [
+    {
+      "name": "Kutaisi",
+      "lat": 42.2716,
+      "lon": 42.7054,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "svaneti.html#kutaisi"
+    },
+    {
+      "name": "Chiatura",
+      "lat": 42.2914,
+      "lon": 43.2832,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -6,
+      "href": "#chiatura"
+    },
+    {
+      "name": "Gori",
+      "lat": 41.9847,
+      "lon": 44.1088,
+      "no_number": true,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -44,
+      "href": "#gori"
+    },
+    {
+      "name": "Mtskheta",
+      "lat": 41.8454,
+      "lon": 44.7203,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": -22,
+      "href": "#mtskheta"
+    },
+    {
+      "name": "Tbilisi",
+      "lat": 41.6935,
+      "lon": 44.8014,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 14,
+      "dy": 10,
+      "href": "tbilisi.html",
+      "marker": "star"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Katskhi Pillar",
+      "lat": 42.2876,
+      "lon": 43.2156,
+      "anchor": "end",
+      "dx": -12,
+      "dy": 26,
+      "href": "#katskhi"
+    },
+    {
+      "name": "Uplistsikhe",
+      "lat": 41.9668,
+      "lon": 44.2073,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 24,
+      "href": "#uplistsikhe"
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": "dot:Katskhi Pillar",
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": "dot:Katskhi Pillar",
+      "b": 1,
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "color": "#1C2821",
+      "via": [
+        [
+          42.12,
+          43.22
+        ],
+        [
+          42.02,
+          43.5
+        ],
+        [
+          41.97,
+          43.8
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "label": "",
+      "color": "#1C2821",
+      "via": [
+        [
+          41.98,
+          44.45
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "",
+      "color": "#1C2821"
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "via": [
+        [
+          42.36,
+          42.98
+        ]
+      ]
+    },
+    {
+      "a": 4,
+      "b": 3,
+      "label": "",
+      "via": [
+        [
+          41.78,
+          44.7
+        ]
+      ]
+    },
+    {
+      "a": 4,
+      "b": 2,
+      "label": "",
+      "color": "#5E93A3",
+      "via": [
+        [
+          41.76,
+          44.55
+        ],
+        [
+          41.88,
+          44.35
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": "dot:Uplistsikhe",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "My GoTrip driver",
+        "color": "#1C2821"
+      },
+      {
+        "label": "Minibus"
+      },
+      {
+        "label": "Train",
+        "color": "#5E93A3"
+      },
+      {
+        "label": "Taxi",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Georgia",
+      "lat": 42.45,
+      "lon": 44.0,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Russia",
+      "lat": 43.1,
+      "lon": 44.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Armenia",
+      "lat": 41.32,
+      "lon": 44.0,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Azerbaijan",
+      "lat": 41.38,
+      "lon": 45.15,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    },
+    {
+      "name": "Türkiye",
+      "lat": 41.33,
+      "lon": 42.3,
+      "size": 10,
+      "weight": 600,
+      "ls": 2.5,
+      "color": "#A2ACA5"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Black Sea",
+      "lat": 42.4,
+      "lon": 41.35,
+      "size": 10
+    }
+  ]
+}

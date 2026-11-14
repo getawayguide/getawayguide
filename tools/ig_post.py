@@ -38,7 +38,9 @@ HOW IT WORKS (three steps; Claude runs 1 and 3, Kevin does 2 in the artifact)
      P3 -> sRGB, one Lanczos/bicubic resample, JPEG q92 4:4:4, named 01-<id>.jpg ... into
        .tmp/ig/<slug>/out/            and a copy in
        C:\Users\kevin\Pictures\IG\<slug>\   (--copy-to changes it, --no-copy skips it)
-     plus caption.txt (the final caption, then the hashtags) and notes.txt (each slot's note).
+     plus caption.txt (the final caption, then the hashtags) and notes.txt (each slot's note), and render.json (each
+     slide's photo, ratio and crop as rendered: the Social tab compares it with the Final row to flag a stale render;
+     not copied to Pictures).
      `render --preview` draws the same crops at 540 px for a quick look (.tmp/ig/<slug>/preview/).
 
 ITINERARY TEMPLATE MODE (2026-11-07): the same page has a "Free 10 | Itinerary template" switch. The template is a
@@ -491,6 +493,7 @@ def cmd_render(args):
         old.unlink()
     post_aspect = post.get("aspect") if post.get("aspect") in ASPECTS else "4:5"
     notes = []
+    rendered = []                     # what went into each slide: render.json, so the Social tab can tell a stale render
     for n, pid, doc in slots:
         p = by_id.get(pid)
         if not p:
@@ -504,6 +507,11 @@ def cmd_render(args):
         out("  %02d %-36s %s %dx%d  crop cx=%.0f cy=%.0f w=%.0f rot=%+.1f  %s" % (
             n, pid, aspect, img.size[0], img.size[1], cx, cy, fw, rot, p["original"]))
         notes.append("%02d %s: %s" % (n, pid, (doc.get("note") or "").strip()))
+        rendered.append({"n": n, "id": pid, "aspect": aspect, "crop": doc.get("crop") or {}, "file": dst.name})
+    # the inputs of this render (tools/social_tab.py compares them with the Final row now: a changed order, photo, crop
+    # or ratio = a stale render that must not be emailed). Kept out of the Pictures\IG copy.
+    (out_dir / "render.json").write_text(json.dumps({"rendered": datetime.now().isoformat(timespec="seconds"), "post_aspect": post_aspect,
+                                                      "slides": rendered}, ensure_ascii=False, indent=1), encoding="utf-8")
     cap = (post.get("finalCaption") or "").strip()
     if not cap:
         fin = [c for c in st["captions"] if c.get("final")]
@@ -516,7 +524,8 @@ def cmd_render(args):
         dest = Path(args.copy_to) if args.copy_to else PICTURES / slug
         dest.mkdir(parents=True, exist_ok=True)
         for f in out_dir.iterdir():
-            shutil.copy2(f, dest / f.name)
+            if f.name != "render.json":
+                shutil.copy2(f, dest / f.name)
         out("copied to %s" % dest)
     out("rendered %d slides into %s" % (len(slots), out_dir))
 

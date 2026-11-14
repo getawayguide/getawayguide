@@ -1,0 +1,420 @@
+{
+  "slug": "patagonia-itinerary",
+  "page": "Drafts/Upcoming/argentina/patagonia-itinerary.html",
+  "pages": [
+    "Drafts/Upcoming/argentina/patagonia-itinerary.html"
+  ],
+  "outline_file": "tools/itinerary_maps/geo/el-calafate-routes-main.json",
+  "smooth": false,
+  "pin_scale": 1.0,
+  "country_width": 560,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "crop_bounds": [
+    -74.3,
+    -53.9,
+    -68.4,
+    -48.75
+  ],
+  "lakes": [
+    "Lago Argentino",
+    "Lago Viedma"
+  ],
+  "layers": [
+    {
+      "file": "tools/itinerary_maps/geo/el-calafate-routes-neighbors.json",
+      "under": true,
+      "fill": "#C9E0D2",
+      "stroke": "#8FB09D",
+      "width": 1.0
+    },
+    {
+      "file": "tools/itinerary_maps/geo/torres-del-paine-routes-lakes.json",
+      "fill": "#A9CBD6"
+    }
+  ],
+  "stops": [
+    {
+      "n": 1,
+      "name": "Punta Arenas",
+      "lat": -53.1626,
+      "lon": -70.9078,
+      "days": "Days 1–2",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 4,
+      "href": "../chile/punta-arenas.html"
+    },
+    {
+      "n": 2,
+      "name": "Puerto Natales",
+      "lat": -51.7262,
+      "lon": -72.506,
+      "days": "Days 3 & 7",
+      "anchor": "end",
+      "dx": -14,
+      "dy": 8,
+      "href": "../chile/puerto-natales.html"
+    },
+    {
+      "n": 3,
+      "name": "Torres del Paine",
+      "lat": -51.0612,
+      "lon": -72.9898,
+      "days": "Days 4–6",
+      "anchor": "end",
+      "dx": -14,
+      "dy": -16,
+      "href": "../chile/torres-del-paine-w-trek.html"
+    },
+    {
+      "n": 4,
+      "name": "El Calafate",
+      "lat": -50.3387,
+      "lon": -72.2737,
+      "days": "Days 8–10",
+      "anchor": "end",
+      "dx": -16,
+      "dy": -30,
+      "href": "el-calafate.html"
+    },
+    {
+      "n": 5,
+      "name": "El Chaltén",
+      "lat": -49.332,
+      "lon": -72.886,
+      "days": "Days 11–14",
+      "anchor": "start",
+      "dx": 14,
+      "dy": 4,
+      "href": "el-chalten.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "King penguins",
+      "lat": -53.4618,
+      "lon": -69.3083,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Porvenir",
+      "lat": -53.2955,
+      "lon": -70.3688,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 16
+    },
+    {
+      "name": "Paine Grande",
+      "lat": -51.0725,
+      "lon": -73.0948,
+      "anchor": "end",
+      "dx": -8,
+      "dy": 22
+    },
+    {
+      "name": "Border",
+      "lat": -51.256,
+      "lon": -72.344,
+      "anchor": "start",
+      "dx": 9,
+      "dy": 4
+    },
+    {
+      "name": "Perito Moreno",
+      "lat": -50.4696,
+      "lon": -73.0305,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": 24
+    },
+    {
+      "name": "To Buenos Aires",
+      "lat": -49.3,
+      "lon": -69.4,
+      "anchor": "middle",
+      "dx": 0,
+      "dy": -9
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": "dot:Porvenir",
+      "label": "",
+      "color": "#3E7C92",
+      "via": [
+        [
+          -53.12,
+          -70.86
+        ],
+        [
+          -53.2,
+          -70.62
+        ]
+      ]
+    },
+    {
+      "a": "dot:Porvenir",
+      "b": "dot:King penguins",
+      "label": ""
+    },
+    {
+      "a": "dot:King penguins",
+      "b": 0,
+      "label": "",
+      "via": [
+        [
+          -53.0,
+          -69.6
+        ],
+        [
+          -52.55,
+          -69.62
+        ],
+        [
+          -52.57,
+          -70.07
+        ],
+        [
+          -52.8,
+          -70.6
+        ]
+      ]
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "label": "Bus · 3 hr",
+      "via": [
+        [
+          -52.982,
+          -70.818
+        ],
+        [
+          -52.425,
+          -71.414
+        ],
+        [
+          -52.219,
+          -71.33
+        ],
+        [
+          -52.077,
+          -71.375
+        ],
+        [
+          -52.04,
+          -71.938
+        ],
+        [
+          -51.701,
+          -72.325
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "label": "",
+      "via": [
+        [
+          -51.447,
+          -72.486
+        ],
+        [
+          -51.306,
+          -72.427
+        ],
+        [
+          -51.218,
+          -72.451
+        ],
+        [
+          -51.063,
+          -72.544
+        ],
+        [
+          -50.981,
+          -72.639
+        ],
+        [
+          -51.028,
+          -72.774
+        ]
+      ]
+    },
+    {
+      "a": 2,
+      "b": "dot:Paine Grande",
+      "label": "",
+      "color": "#3E7C92",
+      "via": [
+        [
+          -51.075,
+          -72.9995
+        ],
+        [
+          -51.0945,
+          -73.018
+        ],
+        [
+          -51.0985,
+          -73.043
+        ]
+      ]
+    },
+    {
+      "a": 1,
+      "b": 3,
+      "label": "Bus · 5–6 hr",
+      "via": [
+        [
+          -51.657,
+          -72.345
+        ],
+        [
+          -51.54,
+          -72.339
+        ],
+        [
+          -51.256,
+          -72.344
+        ],
+        [
+          -51.203,
+          -72.123
+        ],
+        [
+          -51.058,
+          -71.811
+        ],
+        [
+          -50.985,
+          -71.34
+        ],
+        [
+          -51.007,
+          -70.968
+        ],
+        [
+          -50.589,
+          -71.413
+        ],
+        [
+          -50.345,
+          -71.516
+        ]
+      ],
+      "chip_dx": 70,
+      "chip_dy": 10
+    },
+    {
+      "a": 3,
+      "b": "dot:Perito Moreno",
+      "label": ""
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "label": "Bus · 3 hr",
+      "via": [
+        [
+          -50.31,
+          -71.855
+        ],
+        [
+          -50.024,
+          -72.164
+        ],
+        [
+          -49.877,
+          -72.027
+        ],
+        [
+          -49.8,
+          -72.049
+        ],
+        [
+          -49.716,
+          -71.965
+        ],
+        [
+          -49.699,
+          -71.87
+        ],
+        [
+          -49.623,
+          -72.011
+        ],
+        [
+          -49.518,
+          -72.549
+        ]
+      ]
+    },
+    {
+      "a": 3,
+      "b": "dot:To Buenos Aires",
+      "label": "",
+      "color": "#7C9488",
+      "dash": true
+    }
+  ],
+  "legend": {
+    "pos": "bl",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus or van"
+      },
+      {
+        "label": "Ferry or catamaran",
+        "color": "#3E7C92"
+      },
+      {
+        "label": "Flight",
+        "color": "#7C9488",
+        "dash": true
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Chile",
+      "lat": -52.3,
+      "lon": -73.6,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    },
+    {
+      "name": "Argentina",
+      "lat": -51.75,
+      "lon": -69.9,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [],
+  "airports": [
+    {
+      "name": "PUQ · from Santiago",
+      "lat": -53.0026,
+      "lon": -70.8546,
+      "anchor": "end",
+      "dx": -30,
+      "dy": -6
+    }
+  ]
+}

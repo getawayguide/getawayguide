@@ -377,6 +377,11 @@ def refresh_page(html, rel, data, stamp):
 def apply_page(html, rel, slug, data, stamp):
     """(new html, status) where status is 'ok' (no change), 'inserted:<where>', 'moved:<where>', 'refreshed', 'script',
     'unknown-country', 'no-place'"""
+    if len(BLOCK_RE.findall(html)) > 1:
+        # a cross-border itinerary carries one block per currency, placed by hand (Drafts/.../argentina/
+        # patagonia-itinerary.html: ARS and CLP, 2026-11-12). Refresh each in place; never collapse them into the
+        # folder country's single block
+        return refresh_page(html, rel, data, stamp)
     block = widget(slug, data)
     if block is None:
         return html, "unknown-country"

@@ -1,0 +1,241 @@
+{
+  "slug": "cairns-routes",
+  "page": "Drafts/Upcoming/australia/cairns.html",
+  "outline_file": "tools/itinerary_maps/geo/whitsundays-routes-main.json",
+  "smooth": false,
+  "pin_scale": 0.75,
+  "margins": {
+    "l": 240,
+    "r": 240,
+    "t": 130,
+    "b": 130
+  },
+  "layers": [],
+  "country_width": 820,
+  "crop_bounds": [
+    143.2,
+    -21.0,
+    150.6,
+    -15.6
+  ],
+  "stops": [
+    {
+      "name": "Cairns",
+      "lat": -16.9233,
+      "lon": 145.7733,
+      "no_number": true,
+      "anchor": "end",
+      "dx": -16,
+      "dy": 8,
+      "marker": "star"
+    },
+    {
+      "name": "Airlie Beach",
+      "lat": -20.2725,
+      "lon": 148.7181,
+      "no_number": true,
+      "anchor": "start",
+      "dx": 12,
+      "dy": -2,
+      "href": "whitsundays.html"
+    }
+  ],
+  "dots": [
+    {
+      "name": "Townsville",
+      "lat": -19.2569,
+      "lon": 146.824,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    },
+    {
+      "name": "Mission Beach",
+      "lat": -17.87,
+      "lon": 146.106,
+      "anchor": "start",
+      "dx": 10,
+      "dy": 4
+    }
+  ],
+  "airports": [
+    {
+      "name": "Cairns Airport",
+      "lat": -16.8858,
+      "lon": 145.7552,
+      "anchor": "start",
+      "dx": 26,
+      "dy": -14,
+      "icon_dx": 14,
+      "icon_dy": -6
+    }
+  ],
+  "legs": [
+    {
+      "a": 0,
+      "b": 1,
+      "label": "",
+      "via": [
+        [
+          -16.99,
+          145.742
+        ],
+        [
+          -17.095,
+          145.774
+        ],
+        [
+          -17.225,
+          145.917
+        ],
+        [
+          -17.421,
+          145.909
+        ],
+        [
+          -17.577,
+          146.042
+        ],
+        [
+          -17.706,
+          146.051
+        ],
+        [
+          -17.937,
+          145.931
+        ],
+        [
+          -18.104,
+          145.907
+        ],
+        [
+          -18.507,
+          146.188
+        ],
+        [
+          -18.763,
+          146.134
+        ],
+        [
+          -18.859,
+          146.166
+        ],
+        [
+          -19.239,
+          146.662
+        ],
+        [
+          -19.324,
+          146.7
+        ],
+        [
+          -19.319,
+          146.832
+        ],
+        [
+          -19.394,
+          147.019
+        ],
+        [
+          -19.512,
+          147.039
+        ],
+        [
+          -19.558,
+          147.108
+        ],
+        [
+          -19.558,
+          147.386
+        ],
+        [
+          -19.634,
+          147.389
+        ],
+        [
+          -19.813,
+          147.549
+        ],
+        [
+          -19.985,
+          147.989
+        ],
+        [
+          -20.015,
+          148.221
+        ],
+        [
+          -20.128,
+          148.256
+        ],
+        [
+          -20.305,
+          148.519
+        ],
+        [
+          -20.331,
+          148.623
+        ]
+      ]
+    }
+  ],
+  "legend": {
+    "pos": "tr",
+    "scale": 0.9,
+    "items": [
+      {
+        "label": "Bus"
+      }
+    ]
+  },
+  "country_labels": [
+    {
+      "name": "Australia",
+      "lat": -19.6,
+      "lon": 144.4,
+      "size": 12,
+      "weight": 700,
+      "ls": 3,
+      "color": "#4F6358"
+    }
+  ],
+  "water_labels": [
+    {
+      "name": "Coral Sea",
+      "lat": -18.2,
+      "lon": 149.0,
+      "size": 10
+    }
+  ],
+  "mobile": {
+    "country_width": 700,
+    "crop_bounds": [
+      144.4,
+      -21.0,
+      150.2,
+      -15.8
+    ],
+    "pin_scale": 0.6,
+    "legend": {
+      "pos": "tr",
+      "scale": 0.9,
+      "items": [
+        {
+          "label": "Bus"
+        }
+      ]
+    },
+    "country_labels": [
+      {
+        "name": "Australia",
+        "lat": -19.8,
+        "lon": 145.2,
+        "size": 10,
+        "weight": 700,
+        "ls": 3,
+        "color": "#4F6358"
+      }
+    ],
+    "water_labels": []
+  }
+}

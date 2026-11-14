@@ -118,7 +118,14 @@ N = {}                                  # the package's own counts (calls, optio
 
 def seed():
     PKG.mkdir(parents=True)
-    shutil.copy2(REAL_PKG / "package.json", PKG / "package.json")
+    # The fixture is a package WITH calls (call-1..call-6, the nmlaunch section). After a push the live package.json starts
+    # empty, so fall back to the newest archived package-<id>.json that still has them (2026-11-13: the suite failed on
+    # KeyError 'call-1' the first time it ran after the Nov 11 push reset the package).
+    fixture = REAL_PKG / "package.json"
+    if "call-1" not in {c.get("id") for c in json.loads(fixture.read_text(encoding="utf-8")).get("calls", [])}:
+        archived = sorted(REAL_PKG.glob("package-push-*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+        fixture = next(f for f in archived if "call-1" in {c.get("id") for c in json.loads(f.read_text(encoding="utf-8")).get("calls", [])})
+    shutil.copy2(fixture, PKG / "package.json")
     pk = json.loads((PKG / "package.json").read_text(encoding="utf-8"))
     N.update(calls=len(pk["calls"]), opts=sum(len(c["options"]) for c in pk["calls"]),
              secs=len(pk["sections"]) + (1 if pk.get("unreviewed_pages") else 0), id=pk["id"],

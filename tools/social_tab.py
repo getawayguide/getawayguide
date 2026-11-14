@@ -43,13 +43,25 @@ Routes (CORS open like the rest of the photo server):
   POST /api/social/<slug>/import {dir}      -> copies an ArtifactData out_dir (under .tmp) into the store; {ok, copied}
                                                (the tab's Import button went 2026-11-11; Claude calls this route directly)
   GET  /api/social/<slug>/library?album=    -> {ok, names}: that album's photos already in this country
+  GET  /api/social/<slug>/post              -> the Post view: {handle, avatar, country, aspect, caption, hashtags, slides: [{id, aspect,
+                                               crop, w, h, blob}], render: {state none|ok|stale|rendering, reason, files, total_bytes,
+                                               emails}, email: the last request's status, direct: Gmail keys in .env}
+  POST /api/social/<slug>/email             -> Email to my phone. With GMAIL_SMTP_USER + GMAIL_APP_PASSWORD (+ IG_EMAIL_TO) in .env:
+                                               sends now by Gmail SMTP (smtp.gmail.com:465) as a job {ok, email, job}. Without
+                                               them: writes .tmp/ig/<slug>/email_request.json for Claude {ok, email, job: null}.
+                                               400 not rendered, 409 stale / rendering / sending. GET -> {ok, email}
+  CLI (Claude):  --email-requests  (pending requests as JSON: per email part its subject, body and attachments as
+                 "sha256:<hex>:<absolute path>" + filename)  |  --email-sent <slug> <id> <message ids...>  |
+                 --email-failed <slug> <id> <reason>
   POST /api/social/<slug>/add {album, names} -> photos from the photo library (~/Backup/<album>, SOCIAL_BACKUP_DIR for tests):
                                                1280 px sRGB web copies + manifest entries; {ok, added, skipped, version}
 
 2026-11-11 redesign (Kevin: "remove the Shortlist, the slots are the shortlist"): a photo's state is pool, archived or
-final; slots 1..post/main.nfinal (10, up to Instagram's 20) are the post and every later slot is the Shortlist. A store
-still holding the old 'shortlist' state (or two photos in one slot) is migrated on the next read (migrate_store), after a
-copy of the state folder to .tmp/ig/<slug>/state.bak-<time>.
+final; slots 1..post/main.nfinal (10, up to Instagram's 20) are the post and every later slot is the Shortlist. Second
+round, same day ("no blanks in between photos, only at the end"; "drag ... pushes everything down one instead of
+swapping"): each row is packed from its first slot and a drop inserts. A store still holding the old 'shortlist' state,
+gaps between photos or two photos in one slot is migrated on the page's first read (migrate_store; never on a poll), after
+a copy of the state folder to .tmp/ig/<slug>/state.bak-<time>. post/main.nshort = how many Shortlist slots to draw.
 
 Standalone (tests):  python tools/social_tab.py --serve 5041
 """
@@ -200,54 +212,65 @@ def nfinal_of(post):
     return max(1, min(NFINAL_MAX, n))
 
 
+SLOTCAP = 2000                                # the page's own bound on a slot number
+
+
+def _num(v):
+    """a slot or order that is not a number counts as none"""
+    try:
+        return int(v or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def packed_rows(photos, n_final):
+    """the two rows in order, exactly as the page's rows() reads them: every 'final' photo sorted by (slot, id), a slot
+    that is missing or out of range sorting last; the Final row is the ones on slots 1..n_final (at most n_final of
+    them, any more head the Shortlist), the Shortlist the rest"""
+    key = lambda pid: (lambda s: s if 1 <= s <= SLOTCAP else SLOTCAP + 1)(_num(photos[pid].get("slot")))
+    finals = sorted((pid for pid, d in photos.items() if d.get("state") == "final"), key=lambda pid: (key(pid), pid))
+    fin = [p for p in finals if key(p) <= n_final]
+    sho = [p for p in finals if key(p) > n_final]
+    if len(fin) > n_final:
+        fin, sho = fin[:n_final], fin[n_final:] + sho
+    return fin, sho
+
+
 def migrate_store(slug, docs):
-    """Kevin, 2026-11-11: "remove the Shortlist: the slots are the shortlist". A photo still in the old shortlist
-    state (or a final photo without a usable slot, or two photos claiming one slot) moves into the next free slot
-    after the Final row, so nothing he picked is lost. The state folder is copied to state.bak-<time> first, once per
-    migration. Returns True when it wrote anything."""
+    """Kevin, 2026-11-11: "remove the Shortlist: the slots are the shortlist", then "no blanks in between photos, only
+    at the end". The slots are PACKED: the Final row's photos on slots 1..k, the Shortlist's on n_final+1..n_final+j,
+    empty slots only after a row's last photo. A store with gaps (or two photos on one slot) is packed in its own
+    order; a photo still in the old 'shortlist' state goes to the end of the Shortlist (by its order); nothing he
+    picked is lost. The state folder is copied to state.bak-<time> first, once per migration. Returns True when it
+    wrote anything."""
     photos = {k.split("/", 1)[1]: v for k, v in docs.items() if k.startswith("photos/") and isinstance(v, dict)}
     n_final = nfinal_of(docs.get("post/main"))
-    taken, moves = set(), []
-
-    def num(v):                                         # a slot or order that is not a number counts as none
-        try:
-            return int(v or 0)
-        except (TypeError, ValueError):
-            return 0
-    for pid, d in sorted(photos.items(), key=lambda kv: (num(kv[1].get("slot")), kv[0])):
-        if d.get("state") != "final":
-            continue
-        s = num(d.get("slot"))
-        if s >= 1 and s not in taken:
-            taken.add(s)
-        else:
-            moves.append(pid)                                     # a duplicate or a missing slot
+    fin, sho = packed_rows(photos, n_final)
     olds = sorted((pid for pid, d in photos.items() if d.get("state") == "shortlist"),
-                  key=lambda pid: (num(photos[pid].get("order")), pid))
-    moves = olds + moves
+                  key=lambda pid: (_num(photos[pid].get("order")), pid))
+    want = {pid: i + 1 for i, pid in enumerate(fin)}
+    want.update({pid: n_final + 1 + j for j, pid in enumerate(sho + olds)})
+    moves = [pid for pid, s in want.items() if photos[pid].get("state") != "final" or _num(photos[pid].get("slot")) != s]
     if not moves:
         return False
     bak = state_dir(slug).parent / ("state.bak-" + time.strftime("%Y%m%d-%H%M%S"))
     if not bak.exists():
         import shutil
         shutil.copytree(state_dir(slug), bak)
-    nxt = n_final + 1
     for pid in moves:
-        while nxt in taken:
-            nxt += 1
-        taken.add(nxt)
         d = dict(photos[pid])
-        d.update(state="final", slot=nxt, order=0)
+        d.update(state="final", slot=want[pid], order=0)
         write_doc(slug, "photos/" + pid, d)
     return True
 
 
-def ensure_store(slug, man):
+def ensure_store(slug, man, migrate=True):
     """first read of a country: a catalog from the manifest, and the seed's plan + map (ig_carousel.py seed wrote
     .tmp/ig/<slug>/carousel/main.json + map.json) copied in, so the template mode opens on the current plan; then the
-    old shortlist migrated into the slots (migrate_store)"""
+    slots packed and the old shortlist migrated into them (migrate_store). migrate=False for the page's polls: a poll
+    can land between the documents of one move the page is writing, and must not "repair" that half-written order."""
     docs = read_store(slug)
-    changed = migrate_store(slug, docs)
+    changed = migrate_store(slug, docs) if migrate else False
     if "catalog/main" not in docs or (docs["catalog/main"].get("source") == "manifest" and len(docs["catalog/main"].get("items") or []) != len(man.get("photos") or [])):
         write_doc(slug, "catalog/main", catalog_from_manifest(man, slug))
         changed = True
@@ -298,11 +321,14 @@ def renders(slug):
 def busy():
     """photo_editor's /api/build busy list: a render under way must not be cut by a restart"""
     with _lock:
-        return ["social render: %s %s" % (j["slug"], j["kind"]) for j in _jobs.values() if j["status"] in ("queued", "running")]
+        return ["social %s: %s %s" % ("email" if j["kind"] == "email" else "render", j["slug"], j["kind"]) for j in _jobs.values() if j["status"] in ("queued", "running")]
 
 
-def _running(slug):
-    return any(j["slug"] == slug and j["status"] in ("queued", "running") for j in _jobs.values())
+def _running(slug, kind=None):
+    """a job for this country under way (kind 'render' = any render, 'email' = a send; None = either: a render must not
+    rewrite the files an email is attaching, and an email must not take files a render is writing)"""
+    return any(j["slug"] == slug and j["status"] in ("queued", "running") and (kind is None or (j["kind"] == "email") == (kind == "email"))
+               for j in list(_jobs.values()))
 
 
 def start_render(slug, kind, country):
@@ -360,6 +386,408 @@ def start_render(slug, kind, country):
 
 def job_payload(j):
     return {k: v for k, v in j.items() if k != "cmd"}
+
+
+# ------------------------------------------------------------------------------------- the Post view: Instagram preview + email
+# Kevin, 2026-11-11: "can the post tab show how it would look on IG?" and "add a button to email to my phone ... at full
+# quality and easy to download and post with caption". The preview is drawn by social.js from GET .../post (the Final
+# row with its crops, the caption + hashtags as they stand now, and the render with a stale flag). The email is a
+# REQUEST (Kevin: "you send me emails already, can't we use that mechanism?"): the button writes
+# .tmp/ig/<slug>/email_request.json and Claude's session, which has the Gmail connector, sends it with the render files
+# attached by reference, then marks it sent (`--email-sent`). No mail server, no password, no address anywhere here:
+# Claude sends to Kevin's own address at send time.
+POST_ASPECTS = ("4:5", "3:4", "1:1", "1.91:1")
+# Gmail's 25 MB cap counts the message as sent, and base64 makes an attachment 4/3 its size: 18 MiB of JPEGs is ~24 MiB
+# on the wire, so each email carries at most this much (a 1080 px q92 slide is ~0.4 to 1.2 MB: 20 slides usually fit one)
+EMAIL_PART_BYTES = 18 * 1024 * 1024
+
+
+def ig_handle():
+    """the account the preview shows: the site's own Instagram link (index.html), else getawayguide"""
+    global _HANDLE
+    try:
+        return _HANDLE
+    except NameError:
+        pass
+    _HANDLE = "getawayguide"
+    try:
+        m = re.search(r"instagram\.com/([A-Za-z0-9_.]{1,30})", (ROOT / "index.html").read_text(encoding="utf-8", errors="replace"))
+        if m:
+            _HANDLE = m.group(1)
+    except OSError:
+        pass
+    return _HANDLE
+
+
+def post_state(slug, man):
+    """the Personal post as it stands now: the Final row in order with each slide's ratio and crop (what ig_post.py
+    render would cut), the caption and hashtags (ig_post's own rule: post/main.finalCaption, else the caption marked
+    final). Reads the store as it is (no migration)."""
+    docs = read_store(slug)
+    post = docs.get("post/main") or {}
+    photos = {k.split("/", 1)[1]: v for k, v in docs.items() if k.startswith("photos/") and isinstance(v, dict)}
+    fin, _ = packed_rows(photos, nfinal_of(post))
+    aspect = post.get("aspect") if post.get("aspect") in POST_ASPECTS else "4:5"
+    by_id = {p["id"]: p for p in man.get("photos") or []}
+    slides = []
+    for pid in fin:
+        d, p = photos[pid], by_id.get(pid)
+        if not p:                                           # ig_post.py skips a photo the manifest lost: so does the preview
+            continue
+        crop = d.get("crop") or {}
+        slides.append({"n": len(slides) + 1, "id": pid, "aspect": crop.get("aspect") if crop.get("aspect") in POST_ASPECTS else aspect,
+                       "crop": crop, "w": p.get("w"), "h": p.get("h"), "blob": "/api/social/%s/blob/%s" % (slug, _q(pid))})
+    cap = (post.get("finalCaption") or "").strip()
+    if not cap:
+        fc = [v for k, v in docs.items() if k.startswith("captions/") and isinstance(v, dict) and v.get("final")]
+        cap = (fc[0].get("text") or "").strip() if fc else ""
+    return {"aspect": aspect, "nfinal": nfinal_of(post), "caption": cap, "hashtags": (post.get("hashtags") or "").strip(), "slides": slides}
+
+
+def free_render(slug, slides):
+    """the Personal post's render and whether it still matches the Final row: state none | ok | stale | rendering, with
+    a plain reason when stale. render.json (ig_post.py writes it) holds each slide's photo, ratio and crop; a render made
+    before it existed is compared on its file names (the photos and their order) only."""
+    folder = render_folder(slug, "free")
+    files = sorted(folder.glob("*.jpg")) if folder.is_dir() else []
+    out = {"files": [{"name": f.name, "url": "/api/social/%s/file/free/%s" % (slug, _q(f.name)), "bytes": f.stat().st_size, "mtime": f.stat().st_mtime}
+                     for f in files], "rendered": None, "reason": ""}
+    out["total_bytes"] = sum(f["bytes"] for f in out["files"])
+    out["emails"] = len(split_parts([f["bytes"] for f in out["files"]]))       # how many emails it would take
+    if _running(slug, "render"):
+        return dict(out, state="rendering", reason="a render is running")
+    if not files:
+        return dict(out, state="none", reason="not rendered yet")
+    rec = None
+    try:
+        rec = json.loads((folder / "render.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        pass
+    names = [f.name for f in files]
+    now_ids = [s["id"] for s in slides]
+    if rec and isinstance(rec.get("slides"), list):
+        out["rendered"] = rec.get("rendered")
+        was = rec["slides"]
+        if [x.get("file") for x in was] != names:
+            return dict(out, state="stale", reason="the render folder no longer matches its record: render again")
+        was_ids = [x.get("id") for x in was]
+    else:
+        was = None
+        was_ids = [re.sub(r"^\d+-", "", n[:-4]) for n in names]
+    if not now_ids:
+        return dict(out, state="stale", reason="the Final row is empty now")
+    if was_ids != now_ids:
+        if sorted(was_ids) == sorted(now_ids):
+            why = "the slides were reordered after the render"
+        else:
+            why = "the Final row has other photos now (%d, the render has %d)" % (len(now_ids), len(was_ids)) if len(now_ids) != len(was_ids) \
+                else "a photo in the Final row was swapped after the render"
+        return dict(out, state="stale", reason=why)
+    if was:
+        for i, (x, s) in enumerate(zip(was, slides)):
+            if x.get("aspect") != s["aspect"]:
+                return dict(out, state="stale", reason="the ratio is %s now, the render is %s" % (s["aspect"], x.get("aspect")))
+            if json.dumps(x.get("crop") or {}, sort_keys=True) != json.dumps(s["crop"] or {}, sort_keys=True):
+                return dict(out, state="stale", reason="slide %d's crop changed after the render" % (i + 1))
+    return dict(out, state="ok")
+
+
+def email_file(slug):
+    return ig_dir() / slug / "email_request.json"
+
+
+def read_email(slug):
+    try:
+        r = json.loads(email_file(slug).read_text(encoding="utf-8"))
+        return r if isinstance(r, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def write_email(slug, req):
+    f = email_file(slug)
+    f.parent.mkdir(parents=True, exist_ok=True)
+    tmp = f.with_name(f.name + ".%d.%s.tmp" % (os.getpid(), uuid.uuid4().hex[:6]))
+    tmp.write_text(json.dumps(req, ensure_ascii=False, indent=1), encoding="utf-8")
+    for _ in range(40):
+        try:
+            os.replace(tmp, f)
+            return
+        except PermissionError:
+            time.sleep(0.05)
+    os.replace(tmp, f)
+
+
+def email_summary(req):
+    """what the page needs (no paths)"""
+    if not req:
+        return None
+    s = {k: req.get(k) for k in ("id", "status", "requested", "sent_at", "failed_at", "error", "subject", "slides", "total_bytes", "via")} | {
+        "emails": len(req.get("parts") or [])}
+    if s["status"] == "sending" and not _running(req.get("slug") or "", "email"):
+        s.update(status="failed", error="the send was cut off (the photo server restarted): press Email again")
+    return s
+
+
+def _sha256(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def split_parts(sizes, limit=None):
+    """consecutive runs of file indexes, each run's total under the limit (order kept; a file over the limit goes alone).
+    SOCIAL_EMAIL_PART_BYTES lowers the limit for a test, so a few small files split too."""
+    limit = limit or int(os.environ.get("SOCIAL_EMAIL_PART_BYTES") or EMAIL_PART_BYTES)
+    parts, cur, tot = [], [], 0
+    for i, n in enumerate(sizes):
+        if cur and tot + n > limit:
+            parts.append(cur)
+            cur, tot = [], 0
+        cur.append(i)
+        tot += n
+    if cur:
+        parts.append(cur)
+    return parts
+
+
+def email_texts(country, caption, tags, n, aspect, parts):
+    """[(subject, body)] per email: the caption + hashtags at the very top of the first (a long-press copies them),
+    then how to post; a later part says which photos it holds"""
+    subject = "IG post: %s (%d slide%s)" % (country, n, "" if n == 1 else "s")
+    k = len(parts)
+    top = (caption or "(No caption marked final yet: write it in the Caption tab.)") + ("\n\n" + tags if tags else "")
+    how = ["----", "How to post (%d slide%s, %s):" % (n, "" if n == 1 else "s", aspect)]
+    if k > 1:
+        how.append("This post comes in %d emails. Save the photos from all of them, in order, before you start." % k)
+    how += ["1. Save the photos in order, 01.jpg first: tap each attachment, then Share, then Save Image.",
+            "2. Open Instagram, tap +, then Post.",
+            "3. Tap Select (the stacked squares) and pick the photos in order, 01 to %02d. They are the newest in Recents." % n]
+    if aspect != "1:1":
+        how.append("4. If Instagram squares them, tap the crop button at the bottom left of the preview so they stay %s." % aspect)
+    how.append("%d. Back in this email, long-press the caption at the top, Copy, and paste it into the caption box."
+               % (1 + sum(1 for x in how if x[:1].isdigit())))
+    first = top + "\n\n" + "\n".join(how) + "\n"
+    out = []
+    for i, idx in enumerate(parts):
+        subj = subject if k == 1 else "%s %d of %d" % (subject, i + 1, k)
+        if i == 0:
+            body = first
+        else:
+            which = ("Photos %02d to %02d, in order." % (idx[0] + 1, idx[-1] + 1)) if len(idx) > 1 else ("Photo %02d." % (idx[0] + 1))
+            body = "Part %d of %d of your IG post: %s. %s\nThe caption and how to post are in part 1.\n" % (i + 1, k, country, which)
+        out.append((subj, body))
+    return out
+
+
+class EmailRefused(Exception):
+    def __init__(self, msg, status=400, code=""):
+        super().__init__(msg)
+        self.status, self.code = status, code
+
+
+def build_email_request(slug, man):
+    """the request for the render as it is, or EmailRefused: not rendered, rendering, or stale. The files are the
+    render's own JPEGs, untouched: their absolute paths, sizes and sha256, named 01.jpg ... in slide order."""
+    ps = post_state(slug, man)
+    rs = free_render(slug, ps["slides"])
+    if rs["state"] == "none":
+        raise EmailRefused("Not rendered yet: press Render first, then email it.", 400, "none")
+    if rs["state"] == "rendering":
+        raise EmailRefused("A render is running: email it when it finishes.", 409, "rendering")
+    if rs["state"] == "stale":
+        raise EmailRefused("The render is out of date (%s). Render again, then email it." % rs["reason"], 409, "stale")
+    folder = render_folder(slug, "free")
+    files = []
+    for i, f in enumerate(rs["files"]):
+        p = (folder / f["name"]).resolve()
+        files.append({"path": str(p).replace("\\", "/"), "filename": "%02d.jpg" % (i + 1), "bytes": p.stat().st_size, "sha256": _sha256(p),
+                      "source": f["name"]})
+    parts = split_parts([x["bytes"] for x in files])
+    country = man.get("country") or slug
+    aspect = ps["slides"][0]["aspect"] if ps["slides"] else ps["aspect"]
+    texts = email_texts(country, ps["caption"], ps["hashtags"], len(files), aspect, parts)
+    return {"id": time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6], "slug": slug, "country": country,
+            "requested": time.strftime("%Y-%m-%dT%H:%M:%S"), "status": "requested",
+            "subject": "IG post: %s (%d slide%s)" % (country, len(files), "" if len(files) == 1 else "s"), "body": texts[0][1],
+            "files": files, "parts": parts, "slides": len(files), "total_bytes": sum(x["bytes"] for x in files),
+            "messages": [{"part": i + 1, "of": len(parts), "subject": s, "body": b, "files": parts[i]} for i, (s, b) in enumerate(texts)],
+            "rendered": rs.get("rendered")}
+
+
+def _env_values(names):
+    """keys from the environment, else the repo's .env (SOCIAL_ENV_FILE for tests), read at SEND time so a key Kevin
+    adds works without a restart. The values never leave this process: not logged, not returned."""
+    vals = {n: os.environ.get(n, "") for n in names}
+    f = Path(os.environ.get("SOCIAL_ENV_FILE") or (ROOT / ".env"))
+    if f.is_file() and not all(vals.values()):
+        for line in f.read_text(encoding="utf-8", errors="replace").splitlines():
+            k, sep, v = line.strip().partition("=")
+            if sep and k.strip() in vals and not vals[k.strip()]:
+                vals[k.strip()] = v.strip().strip('"').strip("'")
+    return vals
+
+
+def smtp_config():
+    """Gmail SMTP from .env (GMAIL_SMTP_USER + GMAIL_APP_PASSWORD; IG_EMAIL_TO, else the sender), or None when the keys
+    are missing (then the button writes a request for Claude instead). SOCIAL_SMTP_HOST / _PORT / _SSL point a test at a
+    local sink; a test store (SOCIAL_IG_DIR) never reaches smtp.gmail.com."""
+    v = _env_values(("GMAIL_SMTP_USER", "GMAIL_APP_PASSWORD", "IG_EMAIL_TO"))
+    if not (v["GMAIL_SMTP_USER"] and v["GMAIL_APP_PASSWORD"]):
+        return None
+    host = os.environ.get("SOCIAL_SMTP_HOST") or "smtp.gmail.com"
+    if host == "smtp.gmail.com" and os.environ.get("SOCIAL_IG_DIR"):
+        return None
+    return {"host": host, "port": int(os.environ.get("SOCIAL_SMTP_PORT") or 465), "ssl": os.environ.get("SOCIAL_SMTP_SSL", "1") != "0",
+            "user": v["GMAIL_SMTP_USER"], "password": v["GMAIL_APP_PASSWORD"], "to": v["IG_EMAIL_TO"] or v["GMAIL_SMTP_USER"]}
+
+
+def _smtp_send(cfg, req, job):
+    """one email per part over one SMTP session: the render's JPEG bytes attached as they are (checked against the
+    request's sha256 first, never re-encoded), plain-text body. Returns the Message-IDs."""
+    import smtplib
+    import ssl
+    from email.message import EmailMessage
+    from email.utils import make_msgid
+    files = req["files"]
+    blobs = []
+    for x in files:
+        data = Path(x["path"]).read_bytes()
+        if len(data) != x["bytes"] or hashlib.sha256(data).hexdigest() != x["sha256"]:
+            raise RuntimeError("%s changed since the request (re-rendered?): press Email again" % x["filename"])
+        blobs.append(data)
+    ids = []
+    domain = cfg["user"].rpartition("@")[2] or "localhost"
+    conn = smtplib.SMTP_SSL(cfg["host"], cfg["port"], timeout=120, context=ssl.create_default_context()) if cfg["ssl"] else smtplib.SMTP(cfg["host"], cfg["port"], timeout=120)
+    try:
+        conn.login(cfg["user"], cfg["password"])
+        for m in req["messages"]:
+            msg = EmailMessage()
+            msg["From"], msg["To"], msg["Subject"] = cfg["user"], cfg["to"], m["subject"]
+            msg["Message-ID"] = make_msgid(domain=domain)
+            msg.set_content(m["body"])
+            for i in m["files"]:
+                msg.add_attachment(blobs[i], maintype="image", subtype="jpeg", filename=files[i]["filename"])
+            job["log"] += "Email %d of %d: %d photo%s, %.1f MB ... " % (m["part"], m["of"], len(m["files"]), "" if len(m["files"]) == 1 else "s",
+                                                                       sum(files[i]["bytes"] for i in m["files"]) / 1e6)
+            conn.send_message(msg)
+            job["log"] += "sent\n"
+            ids.append(msg["Message-ID"])
+    finally:
+        try:
+            conn.quit()
+        except Exception:
+            pass
+    return ids
+
+
+def _smtp_error(e):
+    """a plain reason, without anything from .env"""
+    import smtplib
+    if isinstance(e, smtplib.SMTPAuthenticationError):
+        return "Gmail refused the sign-in: check GMAIL_SMTP_USER and GMAIL_APP_PASSWORD in .env (an app password, not your Google password)"
+    if isinstance(e, smtplib.SMTPRecipientsRefused):
+        return "Gmail refused the recipient: check IG_EMAIL_TO in .env"
+    if isinstance(e, smtplib.SMTPDataError) and e.smtp_code == 552:
+        return "Gmail says the email is too big"
+    if isinstance(e, (OSError, smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError)) and not isinstance(e, smtplib.SMTPException):
+        return "could not reach the mail server (%s)" % (type(e).__name__)
+    return str(e)[:200] or type(e).__name__
+
+
+def start_email(slug, req, cfg):
+    """the send as a job in this process (the render jobs' pattern and list, so /api/build counts it busy)"""
+    jid = "s%s" % uuid.uuid4().hex[:8]
+    job = {"id": jid, "slug": slug, "kind": "email", "status": "queued", "log": "", "started": time.time(), "ended": None, "error": None, "cmd": None}
+    with _lock:
+        _jobs[jid] = job
+
+    def run():
+        job["status"] = "running"
+        try:
+            ids = _smtp_send(cfg, req, job)
+            req.update(status="sent", sent_at=time.strftime("%Y-%m-%dT%H:%M:%S"), message_ids=ids)
+            req.pop("error", None)
+            job["status"] = "done"
+        except Exception as e:
+            why = _smtp_error(e)
+            req.update(status="failed", error=why, failed_at=time.strftime("%Y-%m-%dT%H:%M:%S"))
+            job["status"], job["error"] = "failed", why
+            job["log"] += "failed: %s\n" % why
+        with _lock:
+            write_email(slug, req)
+        job["ended"] = time.time()
+    threading.Thread(target=run, daemon=True, name="social-" + jid).start()
+    return job
+
+
+def request_email(slug, man):
+    """Email to my phone: with the Gmail keys in .env, send now (a job); without them, write the request for Claude
+    (a pending one for the same files is kept, not doubled). Returns (request, job or None, already)."""
+    old = read_email(slug)
+    if _running(slug, "email"):
+        raise EmailRefused("It is being sent right now.", 409, "sending")
+    req = build_email_request(slug, man)
+    cfg = smtp_config()
+    if cfg:
+        req.update(status="sending", via="smtp")
+        write_email(slug, req)
+        return req, start_email(slug, req, cfg), False
+    req["via"] = "claude"
+    if old and old.get("status") == "requested" and [x.get("sha256") for x in old.get("files") or []] == [x["sha256"] for x in req["files"]]:
+        return old, None, True
+    write_email(slug, req)
+    return req, None, False
+
+
+def pending_email_requests(verify=True):
+    """every request still waiting for Claude, each file checked against its sha256 (a re-render since = a problem);
+    verify=False skips the hashing (.tmp/answers_watch.py only needs to know that one is waiting)"""
+    out = []
+    base = ig_dir()
+    if not base.is_dir():
+        return out
+    for d in sorted(base.iterdir()):
+        if not d.is_dir() or not _slug(d.name):
+            continue
+        req = read_email(d.name)
+        if not req or req.get("status") != "requested":
+            continue
+        problems = []
+        for x in (req.get("files") or []) if verify else []:
+            p = Path(x.get("path") or "")
+            if not p.is_file():
+                problems.append("%s is gone" % x.get("filename"))
+            elif p.stat().st_size != x.get("bytes") or _sha256(p) != x.get("sha256"):
+                problems.append("%s changed since the request (re-rendered?)" % x.get("filename"))
+        files = req.get("files") or []
+        msgs = req.get("messages") or [{"part": 1, "of": 1, "subject": req.get("subject"), "body": req.get("body"), "files": list(range(len(files)))}]
+        out.append({"slug": d.name, "id": req.get("id"), "requested": req.get("requested"), "subject": req.get("subject"),
+                    "slides": len(files), "total_bytes": req.get("total_bytes"), "problems": problems,
+                    "emails": [{"part": m["part"], "of": m["of"], "subject": m["subject"], "body": m["body"],
+                                "attachments": [{"ref": "sha256:%s:%s" % (files[i]["sha256"], files[i]["path"]), "filename": files[i]["filename"],
+                                                 "bytes": files[i]["bytes"]} for i in m["files"]]} for m in msgs]})
+    return out
+
+
+def mark_email(slug, rid, status, message_ids=None, error=None):
+    """Claude's side: status sent (with the Gmail message ids) or failed (with the reason). Returns the request."""
+    slug = _slug(slug)
+    req = read_email(slug) if slug else None
+    if not req or req.get("id") != rid:
+        raise ValueError("no email request %s for %s" % (rid, slug))
+    req["status"] = status
+    if status == "sent":
+        req["sent_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+        req["message_ids"] = list(message_ids or [])
+        req.pop("error", None)
+    else:
+        req["error"] = str(error or "unknown")[:300]
+        req["failed_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    write_email(slug, req)
+    return req
 
 
 # ------------------------------------------------------------------------------------- the page + its runtime shim
@@ -508,7 +936,7 @@ def api_db(slug):
             v = version_of(slug)
             if request.args.get("version") and request.args["version"] == v and (state_dir(slug) / "catalog" / "main.json").is_file():
                 return "", 304
-            docs = ensure_store(slug, man)
+            docs = ensure_store(slug, man, migrate=not request.args.get("version"))   # the page's first read, not its polls
             return jsonify({"ok": True, "version": version_of(slug), "docs": docs, "slug": slug, "country": man.get("country")})
         body = _json()
         try:
@@ -577,7 +1005,7 @@ def api_render(slug):
     kind = (_json().get("kind") or "carousel").strip()
     with _lock:
         if _running(slug):
-            return jsonify({"ok": False, "error": "a render for this country is already running"}), 409
+            return jsonify({"ok": False, "error": "a render or an email for this country is already running"}), 409
         if kind in ("carousel", "stories-carousel") and not (state_dir(slug) / "carousel" / "main.json").is_file():
             return jsonify({"ok": False, "error": "no carousel plan yet: open the Itinerary template mode (or Seed) first"}), 400
         if kind == "pins" and not (SEEDS / (slug + ".json")).is_file():
@@ -587,6 +1015,41 @@ def api_render(slug):
         except ValueError as e:
             return jsonify({"ok": False, "error": str(e)}), 400
     return jsonify({"ok": True, "job": job_payload(job)})
+
+
+@bp.route("/api/social/<slug>/post", methods=["GET", "OPTIONS"])
+def api_post(slug):
+    """the Post view: the Instagram preview's data (account, Final row with crops, caption, hashtags), the render and
+    whether it is stale, and the last email"""
+    if request.method == "OPTIONS":
+        return "", 204
+    slug = _slug(slug)
+    man = manifest(slug) if slug else None
+    if not man:
+        return jsonify({"ok": False, "error": "no such country"}), 404
+    ps = post_state(slug, man)
+    return jsonify(dict(ps, ok=True, country=man.get("country") or slug, handle=ig_handle(), avatar="Images/web/icons/icon-192.png",
+                        render=free_render(slug, ps["slides"]), email=email_summary(read_email(slug)), direct=smtp_config() is not None))
+
+
+@bp.route("/api/social/<slug>/email", methods=["GET", "POST", "OPTIONS"])
+def api_email(slug):
+    """GET -> {ok, email}; POST -> sends the render now (Gmail keys in .env: {ok, email, job}) or writes the request for
+    Claude ({ok, email, job: null}); 400 not rendered, 409 stale / rendering / sending"""
+    if request.method == "OPTIONS":
+        return "", 204
+    slug = _slug(slug)
+    man = manifest(slug) if slug else None
+    if not man:
+        return jsonify({"ok": False, "error": "no such country"}), 404
+    if request.method == "GET":
+        return jsonify({"ok": True, "email": email_summary(read_email(slug))})
+    try:
+        with _lock:
+            req, job, already = request_email(slug, man)
+    except EmailRefused as e:
+        return jsonify({"ok": False, "error": str(e), "code": e.code}), e.status
+    return jsonify({"ok": True, "email": email_summary(req), "job": job_payload(job) if job else None, "already": already})
 
 
 @bp.route("/api/social/job/<jid>", methods=["GET", "OPTIONS"])
@@ -742,7 +1205,7 @@ def add_library_photos(slug, album, names):
             new = [p for p in photos if p["id"] in set(added)]
             cat["items"] = (cat.get("items") or []) + [{k: p.get(k) for k in ("id", "article", "article_title", "section", "caption", "alt", "time", "w", "h")} | {"asset": p["id"]} for p in new]
             write_doc(slug, "catalog/main", cat)
-        ensure_store(slug, man)                                # a manifest catalog is rebuilt, so the version moves and the page's poll sees it
+        ensure_store(slug, man, migrate=False)                 # a manifest catalog is rebuilt, so the version moves and the page's poll sees it
     return added, skipped
 
 
@@ -806,8 +1269,25 @@ def make_app():
     return app
 
 
+def _say(obj):
+    sys.stdout.buffer.write((json.dumps(obj, indent=1, ensure_ascii=False) + "\n").encode("utf-8"))
+    sys.stdout.buffer.flush()
+
+
 if __name__ == "__main__":
-    if "--serve" in sys.argv:
+    a = sys.argv[1:]
+    if a[:1] == ["--email-requests"]:
+        _say(pending_email_requests())
+    elif a[:1] in (["--email-sent"], ["--email-failed"]):
+        if len(a) < 3 or (a[0] == "--email-failed" and len(a) < 4):
+            raise SystemExit("usage: --email-sent <slug> <id> [message ids...] | --email-failed <slug> <id> <reason>")
+        try:
+            r = mark_email(a[1], a[2], "sent" if a[0] == "--email-sent" else "failed",
+                           message_ids=a[3:] if a[0] == "--email-sent" else None, error=" ".join(a[3:]) if a[0] == "--email-failed" else None)
+        except ValueError as e:
+            raise SystemExit(str(e))
+        _say(email_summary(r))
+    elif "--serve" in sys.argv:
         port = int(sys.argv[sys.argv.index("--serve") + 1])
         print("social tab api: http://127.0.0.1:%d  store: %s  out: %s" % (port, ig_dir(), out_dir()), flush=True)
         make_app().run(port=port, debug=False, threaded=True)

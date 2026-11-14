@@ -113,7 +113,7 @@ def main():
     tot = dict(title=0, ogtitle=0, h1=0, desc=0, jsonld=0, alt=0)
     for rel in sorted(set(props) | set(by_file)):
         p = os.path.join(ROOT, rel)
-        s0 = open(p, encoding="utf-8", errors="replace").read()
+        s0 = open(p, encoding="utf-8", errors="replace", newline="").read()     # newline="": a CRLF page keeps its endings
         s = s0
         r = props.get(rel)
         if r:
